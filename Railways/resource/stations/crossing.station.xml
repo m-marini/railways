@@ -1,0 +1,960 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: crossing.station.xml,v 1.2 2012/02/08 22:03:34 marco Exp $ -->
+<s:station direction="90" reference="A W"
+	xmlns:s="http://www.mmarini.org/railways-1.2.5"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mmarini.org/railways-1.2.5 station-1.2.5.xsd ">
+	<s:name>Delta Crossing</s:name>
+	<s:nodes>
+		<!-- Semaphores -->
+		<s:semaphore>s.w.1</s:semaphore>
+		<s:semaphore>s.w.1.1</s:semaphore>
+		<s:semaphore>s.w.1.2</s:semaphore>
+		<s:semaphore>s.w.2</s:semaphore>
+		<s:semaphore>s.w.3</s:semaphore>
+		<s:semaphore>s.w.4</s:semaphore>
+		<s:semaphore>s.w.4.1</s:semaphore>
+		<s:semaphore>s.w.4.2</s:semaphore>
+		<s:semaphore>s.w.5</s:semaphore>
+		<s:semaphore>s.w.6</s:semaphore>
+		<s:semaphore>s.w.7</s:semaphore>
+		<s:semaphore>s.w.8</s:semaphore>
+		<s:semaphore>s.w.9</s:semaphore>
+		<s:semaphore>s.w.10</s:semaphore>
+		<s:semaphore>s.w.11</s:semaphore>
+		<s:semaphore>s.w.12</s:semaphore>
+		<s:semaphore>s.e.1</s:semaphore>
+		<s:semaphore>s.e.2</s:semaphore>
+		<s:semaphore>s.e.3</s:semaphore>
+		<s:semaphore>s.e.4</s:semaphore>
+		<s:semaphore>s.e.5</s:semaphore>
+		<s:semaphore>s.e.6</s:semaphore>
+		<s:semaphore>s.e.7</s:semaphore>
+		<s:semaphore>s.e.7.1</s:semaphore>
+		<s:semaphore>s.e.7.2</s:semaphore>
+		<s:semaphore>s.e.8</s:semaphore>
+		<s:semaphore>s.e.9</s:semaphore>
+		<s:semaphore>s.e.10</s:semaphore>
+		<s:semaphore>s.e.10.1</s:semaphore>
+		<s:semaphore>s.e.10.2</s:semaphore>
+		<s:semaphore>s.e.11</s:semaphore>
+		<s:semaphore>s.e.12</s:semaphore>
+		<s:semaphore>s.nw.i.1</s:semaphore>
+		<s:semaphore>s.nw.i.2</s:semaphore>
+		<s:semaphore>s.nw.o.1</s:semaphore>
+		<s:semaphore>s.nw.o.2</s:semaphore>
+		<s:semaphore>s.w.i</s:semaphore>
+		<s:semaphore>s.w.o</s:semaphore>
+		<s:semaphore>s.sw.i</s:semaphore>
+		<s:semaphore>s.sw.o</s:semaphore>
+		<s:semaphore>s.ne.i</s:semaphore>
+		<s:semaphore>s.ne.o</s:semaphore>
+		<s:semaphore>s.e.i</s:semaphore>
+		<s:semaphore>s.e.o</s:semaphore>
+		<s:semaphore>s.se.i.1</s:semaphore>
+		<s:semaphore>s.se.i.2</s:semaphore>
+		<s:semaphore>s.se.o.1</s:semaphore>
+		<s:semaphore>s.se.o.2</s:semaphore>
+		<!-- Cross deviators -->
+		<s:crossDeviator angle="15">xd.e.4.1</s:crossDeviator>
+		<s:crossDeviator angle="15">xd.e.4.2</s:crossDeviator>
+		<s:crossDeviator angle="15">xd.e.7.1</s:crossDeviator>
+		<s:crossDeviator angle="15">xd.e.7.2</s:crossDeviator>
+		<s:crossDeviator angle="15">xd.w.4.1</s:crossDeviator>
+		<s:crossDeviator angle="15">xd.w.4.2</s:crossDeviator>
+		<s:crossDeviator angle="15">xd.w.7.1</s:crossDeviator>
+		<s:crossDeviator angle="15">xd.w.7.2</s:crossDeviator>
+		<!-- Deviators -->
+		<s:deviator deviated="true">d.e.1.1</s:deviator>
+		<s:deviator deviated="true">d.e.1.2</s:deviator>
+		<s:deviator deviated="true">d.e.1.3</s:deviator>
+		<s:deviator>d.e.1.4</s:deviator>
+		<s:deviator deviated="true">d.e.4.1</s:deviator>
+		<s:deviator>d.e.4.2</s:deviator>
+		<s:deviator>d.e.4.3</s:deviator>
+		<s:deviator>d.e.4.4</s:deviator>
+		<s:deviator>d.e.4.5</s:deviator>
+		<s:deviator>d.e.4.6</s:deviator>
+		<s:deviator>d.e.7.1</s:deviator>
+		<s:deviator>d.e.7.2</s:deviator>
+		<s:deviator>d.e.7.3</s:deviator>
+		<s:deviator>d.e.7.4</s:deviator>
+		<s:deviator>d.e.7.5</s:deviator>
+		<s:deviator>d.e.7.6</s:deviator>
+		<s:deviator deviated="true">d.e.8.1</s:deviator>
+		<s:deviator deviated="true">d.e.10.1</s:deviator>
+		<s:deviator deviated="true">d.e.10.2</s:deviator>
+		<s:deviator>d.e.10.3</s:deviator>
+		<s:deviator>d.e.10.4</s:deviator>
+		<s:deviator deviated="true">d.e.11.1</s:deviator>
+
+		<s:deviator deviated="true">d.w.1.1</s:deviator>
+		<s:deviator deviated="true">d.w.1.2</s:deviator>
+		<s:deviator deviated="true">d.w.1.3</s:deviator>
+		<s:deviator>d.w.1.4</s:deviator>
+		<s:deviator>d.w.1.5</s:deviator>
+		<s:deviator deviated="true">d.w.4.1</s:deviator>
+		<s:deviator>d.w.4.2</s:deviator>
+		<s:deviator>d.w.4.3</s:deviator>
+		<s:deviator>d.w.4.4</s:deviator>
+		<s:deviator>d.w.4.5</s:deviator>
+		<s:deviator>d.w.4.6</s:deviator>
+		<s:deviator>d.w.4.7</s:deviator>
+		<s:deviator>d.w.7.1</s:deviator>
+		<s:deviator>d.w.7.2</s:deviator>
+		<s:deviator>d.w.7.3</s:deviator>
+		<s:deviator>d.w.7.4</s:deviator>
+		<s:deviator>d.w.7.5</s:deviator>
+		<s:deviator deviated="true">d.w.8.1</s:deviator>
+		<s:deviator deviated="true">d.w.10.1</s:deviator>
+		<s:deviator deviated="true">d.w.10.2</s:deviator>
+		<s:deviator>d.w.10.3</s:deviator>
+		<s:deviator deviated="true">d.w.11.1</s:deviator>
+		<!-- Points -->
+		<s:point>p.w.1.1</s:point>
+		<s:point>p.w.1.2</s:point>
+		<s:point>p.w.1.3</s:point>
+		<s:point>p.w.1.4</s:point>
+		<s:point>p.w.2.1</s:point>
+		<s:point>p.w.3.1</s:point>
+		<s:point>p.w.4.1</s:point>
+		<s:point>p.w.4.2</s:point>
+		<s:point>p.w.4.3</s:point>
+		<s:point>p.w.5.1</s:point>
+		<s:point>p.w.7.1</s:point>
+		<s:point>p.w.8.1</s:point>
+		<s:point>p.w.9.1</s:point>
+		<s:point>p.w.10.1</s:point>
+		<s:point>p.w.10.2</s:point>
+		<s:point>p.w.10.3</s:point>
+		<s:point>p.w.11.1</s:point>
+		<s:point>p.w.12.1</s:point>
+
+		<s:point>p.w.i.1</s:point>
+		<s:point>p.w.i.2</s:point>
+		<s:point>p.w.o.1</s:point>
+		<s:point>p.w.o.2</s:point>
+		<s:point>p.sw.i.1</s:point>
+		<s:point>p.sw.o.1</s:point>
+		<s:point>p.nw.i.1</s:point>
+		<s:point>p.nw.i.2</s:point>
+		<s:point>p.nw.o.1</s:point>
+		<s:point>p.nw.o.2</s:point>
+		<s:point>p.e.1.1</s:point>
+		<s:point>p.e.1.2</s:point>
+		<s:point>p.e.2.1</s:point>
+		<s:point>p.e.3.1</s:point>
+		<s:point>p.e.4.1</s:point>
+		<s:point>p.e.4.2</s:point>
+		<s:point>p.e.5.1</s:point>
+		<s:point>p.e.7.1</s:point>
+		<s:point>p.e.7.2</s:point>
+		<s:point>p.e.7.3</s:point>
+		<s:point>p.e.7.4</s:point>
+		<s:point>p.e.8.1</s:point>
+		<s:point>p.e.9.1</s:point>
+		<s:point>p.e.10.1</s:point>
+		<s:point>p.e.10.2</s:point>
+		<s:point>p.e.10.3</s:point>
+		<s:point>p.e.10.4</s:point>
+		<s:point>p.e.10.5</s:point>
+		<s:point>p.e.11.1</s:point>
+		<s:point>p.e.12.1</s:point>
+		<s:point>p.se.o.1</s:point>
+		<s:point>p.se.o.2</s:point>
+		<s:point>p.se.o.3</s:point>
+		<s:point>p.se.i.1</s:point>
+		<s:point>p.se.i.2</s:point>
+		<s:point>p.se.i.3</s:point>
+		<s:point>p.ne.o.1</s:point>
+		<s:point>p.ne.i.1</s:point>
+
+		<s:point>p.e.7-10.1</s:point>
+		<s:point>p.e.7-10.2</s:point>
+		<s:point>p.e.1-4.1</s:point>
+		<s:point>p.e.1-4.2</s:point>
+
+		<s:point>p.w.1-4.1</s:point>
+		<s:point>p.w.1-4.2</s:point>
+		<s:point>p.w.7-10.1</s:point>
+		<s:point>p.w.7-10.2</s:point>
+		<!-- Cross -->
+		<s:cross>x.e.4-7</s:cross>
+		<s:cross>x.w.4-7</s:cross>
+		<s:cross angle="20.577187578414417">x.e-ne</s:cross>
+		<s:cross angle="20.577187578414417">x.sw-w</s:cross>
+		<!-- Lines -->
+		<s:line reference="Da NW" />
+		<s:line reference="A NW" destination="true" />
+		<s:line reference="Da W" />
+		<s:line reference="A W" destination="true" />
+		<s:line reference="Da SW" />
+		<s:line reference="A SW" destination="true" />
+		<s:line reference="A NE" destination="true" />
+		<s:line reference="Da NE" />
+		<s:line reference="A E" destination="true" />
+		<s:line reference="Da E" />
+		<s:line reference="A SE" destination="true" />
+		<s:line reference="Da SE" />
+
+		<s:deadtrack>t.e.1</s:deadtrack>
+		<s:deadtrack>t.e.2</s:deadtrack>
+		<s:deadtrack>t.e.3</s:deadtrack>
+		<s:deadtrack>t.e.4</s:deadtrack>
+		<s:deadtrack>t.e.5</s:deadtrack>
+		<s:deadtrack>t.e.6</s:deadtrack>
+		<s:deadtrack>t.e.7</s:deadtrack>
+		<s:deadtrack>t.e.8</s:deadtrack>
+		<s:deadtrack>t.e.9</s:deadtrack>
+		<s:deadtrack>t.e.10</s:deadtrack>
+		<s:deadtrack>t.e.11</s:deadtrack>
+		<s:deadtrack>t.e.12</s:deadtrack>
+		<s:deadtrack>t.w.1</s:deadtrack>
+		<s:deadtrack>t.w.2</s:deadtrack>
+		<s:deadtrack>t.w.3</s:deadtrack>
+		<s:deadtrack>t.w.4</s:deadtrack>
+		<s:deadtrack>t.w.5</s:deadtrack>
+		<s:deadtrack>t.w.6</s:deadtrack>
+		<s:deadtrack>t.w.7</s:deadtrack>
+		<s:deadtrack>t.w.8</s:deadtrack>
+		<s:deadtrack>t.w.9</s:deadtrack>
+		<s:deadtrack>t.w.10</s:deadtrack>
+		<s:deadtrack>t.w.11</s:deadtrack>
+		<s:deadtrack>t.w.12</s:deadtrack>
+		<s:deadtrack>t.x</s:deadtrack>
+	</s:nodes>
+	<s:links>
+		<!-- Via #12 -->
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="1">d.w.11.1</s:node>
+			<s:node index="0">p.w.12.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="1">p.w.12.1</s:node>
+			<s:node index="1">s.w.12</s:node>
+		</s:curve>
+		<s:platform name="Binario 12" length="10">
+			<s:node index="0">s.w.12</s:node>
+			<s:node index="0">s.e.12</s:node>
+		</s:platform>
+		<s:curve versus="right" length="1">
+			<s:node index="1">s.e.12</s:node>
+			<s:node index="0">p.e.12.1</s:node>
+		</s:curve>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="1">p.e.12.1</s:node>
+			<s:node index="1">d.e.11.1</s:node>
+		</s:segment>
+		<!-- Via #11 -->
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="1">d.w.10.1</s:node>
+			<s:node index="0">d.w.11.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="2">d.w.11.1</s:node>
+			<s:node index="0">p.w.11.1</s:node>
+		</s:curve>
+		<s:segment length="0.5">
+			<s:node index="1">p.w.11.1</s:node>
+			<s:node index="1">s.w.11</s:node>
+		</s:segment>
+		<s:platform name="Binario 11" length="10">
+			<s:node index="0">s.w.11</s:node>
+			<s:node index="0">s.e.11</s:node>
+		</s:platform>
+		<s:segment length="0.5">
+			<s:node index="1">s.e.11</s:node>
+			<s:node index="0">p.e.11.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="1">p.e.11.1</s:node>
+			<s:node index="2">d.e.11.1</s:node>
+		</s:curve>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="0">d.e.11.1</s:node>
+			<s:node index="1">d.e.10.1</s:node>
+		</s:segment>
+		<!-- Via #10 -->
+		<s:segment length="30">
+			<s:node index="0">Da NW</s:node>
+			<s:node index="0">s.nw.i.2</s:node>
+		</s:segment>
+		<s:segment length="3">
+			<s:node index="1">s.nw.i.2</s:node>
+			<s:node index="0">p.nw.i.2</s:node>
+		</s:segment>
+		<s:curve versus="left" length="4" gap="5">
+			<s:node index="1">p.nw.i.2</s:node>
+			<s:node index="0">p.nw.i.1</s:node>
+		</s:curve>
+		<s:segment length="5">
+			<s:node index="1">p.nw.i.1</s:node>
+			<s:node index="0">s.nw.i.1</s:node>
+		</s:segment>
+		<s:segment length="0.25">
+			<s:node index="1">s.nw.i.1</s:node>
+			<s:node index="0">d.w.10.3</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="2">d.w.10.3</s:node>
+			<s:node index="0">p.w.7-10.2</s:node>
+		</s:curve>
+		<s:segment length="1.474001429818501093471531437428">
+			<s:node index="1">d.w.10.3</s:node>
+			<s:node index="0">p.w.10.2</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="1">p.w.10.2</s:node>
+			<s:node index="2">d.w.10.2</s:node>
+		</s:curve>
+		<s:segment length="0.76299928509074945326423428128599">
+			<s:node index="1">d.w.10.2</s:node>
+			<s:node index="3">xd.w.7.1</s:node>
+		</s:segment>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="0">d.w.10.2</s:node>
+			<s:node index="0">d.w.10.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="2">d.w.10.1</s:node>
+			<s:node index="0">p.w.10.1</s:node>
+		</s:curve>
+		<s:segment length="0.5">
+			<s:node index="1">p.w.10.1</s:node>
+			<s:node index="1">s.w.10</s:node>
+		</s:segment>
+		<s:platform name="Binario 10" length="11">
+			<s:node index="0">s.w.10</s:node>
+			<s:node index="0">s.e.10</s:node>
+		</s:platform>
+		<s:segment length="0.5">
+			<s:node index="1">s.e.10</s:node>
+			<s:node index="0">p.e.10.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="1">p.e.10.1</s:node>
+			<s:node index="2">d.e.10.1</s:node>
+		</s:curve>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="0">d.e.10.1</s:node>
+			<s:node index="0">d.e.10.2</s:node>
+		</s:segment>
+		<s:segment length="0.76299928509074945326423428128599">
+			<s:node index="1">d.e.10.2</s:node>
+			<s:node index="0">xd.e.7.1</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="2">d.e.10.2</s:node>
+			<s:node index="0">p.e.10.2</s:node>
+		</s:curve>
+		<s:segment length="1.474001429818501093471531437428">
+			<s:node index="1">p.e.10.2</s:node>
+			<s:node index="1">d.e.10.3</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="1">p.e.7-10.2</s:node>
+			<s:node index="2">d.e.10.3</s:node>
+		</s:curve>
+		<s:segment length="0.25">
+			<s:node index="0">d.e.10.3</s:node>
+			<s:node index="0">s.e.10.1</s:node>
+		</s:segment>
+		<s:curve versus="left" length="2" gap="4">
+			<s:node index="1">s.e.10.1</s:node>
+			<s:node index="0">p.e.10.3</s:node>
+		</s:curve>
+		<s:segment length="4">
+			<s:node index="1">p.e.10.3</s:node>
+			<s:node index="0">p.e.10.4</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1" gap="5">
+			<s:node index="1">p.e.10.4</s:node>
+			<s:node index="0">p.e.10.5</s:node>
+		</s:curve>
+		<s:segment length="5">
+			<s:node index="1">p.e.10.5</s:node>
+			<s:node index="0">s.e.10.2</s:node>
+		</s:segment>
+		<s:segment length="0.25">
+			<s:node index="1">s.e.10.2</s:node>
+			<s:node index="0">d.e.10.4</s:node>
+		</s:segment>
+		<s:curve versus="left" length="2">
+			<s:node index="2">d.e.10.4</s:node>
+			<s:node index="0">s.ne.o</s:node>
+		</s:curve>
+		<!-- NE out -->
+		<s:curve versus="left" length="2">
+			<s:node index="1">s.ne.o</s:node>
+			<s:node index="0">p.ne.o.1</s:node>
+		</s:curve>
+		<s:segment length="29">
+			<s:node index="1">p.ne.o.1</s:node>
+			<s:node index="0">A NE</s:node>
+		</s:segment>
+		<!-- E out -->
+		<s:segment length="0.7252575888479192">
+			<s:node index="1">d.e.10.4</s:node>
+			<s:node index="0">x.e-ne</s:node>
+		</s:segment>
+		<s:segment length="0.27474241115208076">
+			<s:node index="2">x.e-ne</s:node>
+			<s:node index="0">s.e.o</s:node>
+		</s:segment>
+		<s:segment length="30">
+			<s:node index="1">s.e.o</s:node>
+			<s:node index="0">A E</s:node>
+		</s:segment>
+		<!-- Via #9 -->
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="1">d.w.8.1</s:node>
+			<s:node index="0">p.w.9.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="1">p.w.9.1</s:node>
+			<s:node index="1">s.w.9</s:node>
+		</s:curve>
+		<s:platform name="Binario 9" length="11">
+			<s:node index="0">s.w.9</s:node>
+			<s:node index="0">s.e.9</s:node>
+		</s:platform>
+		<s:curve versus="right" length="1">
+			<s:node index="1">s.e.9</s:node>
+			<s:node index="0">p.e.9.1</s:node>
+		</s:curve>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="1">p.e.9.1</s:node>
+			<s:node index="1">d.e.8.1</s:node>
+		</s:segment>
+		<!-- Via #8 -->
+		<s:curve versus="right" length="1">
+			<s:node index="2">d.w.8.1</s:node>
+			<s:node index="0">p.w.8.1</s:node>
+		</s:curve>
+		<s:segment length="0.5">
+			<s:node index="1">p.w.8.1</s:node>
+			<s:node index="1">s.w.8</s:node>
+		</s:segment>
+		<s:platform name="Binario 8" length="11">
+			<s:node index="0">s.w.8</s:node>
+			<s:node index="0">s.e.8</s:node>
+		</s:platform>
+		<s:segment length="0.5">
+			<s:node index="1">s.e.8</s:node>
+			<s:node index="0">p.e.8.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="1">p.e.8.1</s:node>
+			<s:node index="2">d.e.8.1</s:node>
+		</s:curve>
+		<!-- Via #7 -->
+		<s:segment length="30">
+			<s:node index="0">A NW</s:node>
+			<s:node index="0">s.nw.o.2</s:node>
+		</s:segment>
+		<s:segment length="3">
+			<s:node index="1">s.nw.o.2</s:node>
+			<s:node index="0">p.nw.o.2</s:node>
+		</s:segment>
+		<s:curve versus="left" length="4" gap="6">
+			<s:node index="1">p.nw.o.2</s:node>
+			<s:node index="0">p.nw.o.1</s:node>
+		</s:curve>
+		<s:segment length="5.25">
+			<s:node index="1">p.nw.o.1</s:node>
+			<s:node index="0">s.nw.o.1</s:node>
+		</s:segment>
+		<s:segment length="0.745666904969750182245255239571">
+			<s:node index="1">s.nw.o.1</s:node>
+			<s:node index="1">xd.w.7.2</s:node>
+		</s:segment>
+		<s:segment length="0.49133380993950036449051047914268">
+			<s:node index="0">xd.w.7.1</s:node>
+			<s:node index="3">xd.w.7.2</s:node>
+		</s:segment>
+		<s:segment length="0.73700071490925054673576571871401">
+			<s:node index="2">xd.w.7.1</s:node>
+			<s:node index="0">d.w.7.1</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="2">d.w.7.1</s:node>
+			<s:node index="0">d.w.8.1</s:node>
+		</s:curve>
+		<s:segment length="1">
+			<s:node index="1">d.w.7.1</s:node>
+			<s:node index="1">s.w.7</s:node>
+		</s:segment>
+		<s:platform name="Binario 7" length="12">
+			<s:node index="0">s.w.7</s:node>
+			<s:node index="0">s.e.7</s:node>
+		</s:platform>
+		<s:segment length="1">
+			<s:node index="1">s.e.7</s:node>
+			<s:node index="1">d.e.7.1</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="0">d.e.8.1</s:node>
+			<s:node index="2">d.e.7.1</s:node>
+		</s:curve>
+		<s:segment length="0.73700071490925054673576571871401">
+			<s:node index="0">d.e.7.1</s:node>
+			<s:node index="1">xd.e.7.1</s:node>
+		</s:segment>
+		<s:segment length="0.745666904969750182245255239571">
+			<s:node index="2">xd.e.7.2</s:node>
+			<s:node index="0">s.e.7.1</s:node>
+		</s:segment>
+		<s:segment length="0.25">
+			<s:node index="1">s.e.7.1</s:node>
+			<s:node index="0">p.e.7.4</s:node>
+		</s:segment>
+		<s:curve versus="left" length="2" gap="5">
+			<s:node index="1">p.e.7.4</s:node>
+			<s:node index="0">p.e.7.1</s:node>
+		</s:curve>
+		<s:segment length="4">
+			<s:node index="1">p.e.7.1</s:node>
+			<s:node index="0">p.e.7.2</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1" gap="4">
+			<s:node index="1">p.e.7.2</s:node>
+			<s:node index="0">p.e.7.3</s:node>
+		</s:curve>
+		<s:segment length="5">
+			<s:node index="1">p.e.7.3</s:node>
+			<s:node index="0">s.e.7.2</s:node>
+		</s:segment>
+		<s:segment length="0.25">
+			<s:node index="1">s.e.7.2</s:node>
+			<s:node index="0">d.e.7.6</s:node>
+		</s:segment>
+		<s:curve length="1.3718125052276278" versus="left" gap="1">
+			<s:node index="2">d.e.7.6</s:node>
+			<s:node index="1">x.e-ne</s:node>
+		</s:curve>
+		<s:curve length="0.6281874947723722" versus="left" gap="1">
+			<s:node index="3">x.e-ne</s:node>
+			<s:node index="0">s.ne.i</s:node>
+		</s:curve>
+		<s:segment length="1">
+			<s:node index="1">d.e.7.6</s:node>
+			<s:node index="0">s.e.i</s:node>
+		</s:segment>
+		<!-- NE in -->
+		<s:curve versus="left" length="2" gap="1">
+			<s:node index="1">s.ne.i</s:node>
+			<s:node index="0">p.ne.i.1</s:node>
+		</s:curve>
+		<s:segment length="29">
+			<s:node index="1">p.ne.i.1</s:node>
+			<s:node index="0">Da NE</s:node>
+		</s:segment>
+		<!-- E in -->
+		<s:segment length="30">
+			<s:node index="1">s.e.i</s:node>
+			<s:node index="0">Da E</s:node>
+		</s:segment>
+		<!-- Via #6 -->
+		<s:segment length="1">
+			<s:node index="1">d.w.4.2</s:node>
+			<s:node index="1">s.w.6</s:node>
+		</s:segment>
+		<s:platform name="Binario 6" length="12">
+			<s:node index="0">s.w.6</s:node>
+			<s:node index="0">s.e.6</s:node>
+		</s:platform>
+		<s:segment length="1">
+			<s:node index="1">s.e.6</s:node>
+			<s:node index="1">d.e.4.2</s:node>
+		</s:segment>
+		<!-- Via #5 -->
+		<s:curve versus="left" length="1">
+			<s:node index="2">d.w.4.1</s:node>
+			<s:node index="0">p.w.5.1</s:node>
+		</s:curve>
+		<s:segment length="0.5">
+			<s:node index="1">p.w.5.1</s:node>
+			<s:node index="1">s.w.5</s:node>
+		</s:segment>
+		<s:platform name="Binario 5" length="11">
+			<s:node index="0">s.w.5</s:node>
+			<s:node index="0">s.e.5</s:node>
+		</s:platform>
+		<s:segment length="0.5">
+			<s:node index="1">s.e.5</s:node>
+			<s:node index="0">p.e.5.1</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="1">p.e.5.1</s:node>
+			<s:node index="2">d.e.4.1</s:node>
+		</s:curve>
+		<!-- Da W -->
+		<s:segment length="10">
+			<s:node index="0">Da W</s:node>
+			<s:node index="0">p.w.i.2</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1" gap="5">
+			<s:node index="1">p.w.i.2</s:node>
+			<s:node index="0">p.w.i.1</s:node>
+		</s:curve>
+		<s:segment length="19">
+			<s:node index="1">p.w.i.1</s:node>
+			<s:node index="0">s.w.i</s:node>
+		</s:segment>
+		<s:segment length="1">
+			<s:node index="1">s.w.i</s:node>
+			<s:node index="1">d.w.4.7</s:node>
+		</s:segment>
+		<!-- Da SW -->
+		<s:segment length="29">
+			<s:node index="0">Da SW</s:node>
+			<s:node index="0">p.sw.i.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="2" gap="1">
+			<s:node index="1">p.sw.i.1</s:node>
+			<s:node index="0">s.sw.i</s:node>
+		</s:curve>
+		<s:curve length="0.6281874947723722" versus="right" gap="1">
+			<s:node index="1">s.sw.i</s:node>
+			<s:node index="3">x.sw-w</s:node>
+		</s:curve>
+		<s:curve length="1.3718125052276278" versus="right" gap="1">
+			<s:node index="1">x.sw-w</s:node>
+			<s:node index="2">d.w.4.7</s:node>
+		</s:curve>
+		<!-- Via #4 -->
+		<s:segment length="0.25">
+			<s:node index="0">d.w.4.7</s:node>
+			<s:node index="0">s.w.4.2</s:node>
+		</s:segment>
+		<s:segment length="2">
+			<s:node index="1">s.w.4.2</s:node>
+			<s:node index="0">p.w.4.3</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1" gap="6">
+			<s:node index="1">p.w.4.3</s:node>
+			<s:node index="0">p.w.4.2</s:node>
+		</s:curve>
+		<s:segment length="8.25">
+			<s:node index="1">p.w.4.2</s:node>
+			<s:node index="0">s.w.4.1</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="1">p.w.7-10.2</s:node>
+			<s:node index="0">xd.w.7.2</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="2">xd.w.7.2</s:node>
+			<s:node index="0">x.w.4-7</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="0">p.w.1-4.1</s:node>
+			<s:node index="1">xd.w.4.2</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="3">xd.w.4.2</s:node>
+			<s:node index="1">x.w.4-7</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="1">xd.w.7.1</s:node>
+			<s:node index="3">x.w.4-7</s:node>
+		</s:segment>
+		<s:segment length="0.745666904969750182245255239571">
+			<s:node index="1">s.w.4.1</s:node>
+			<s:node index="0">xd.w.4.2</s:node>
+		</s:segment>
+		<s:segment length="0.49133380993950036449051047914268">
+			<s:node index="2">xd.w.4.2</s:node>
+			<s:node index="1">xd.w.4.1</s:node>
+		</s:segment>
+		<s:segment length="0.73700071490925054673576571871401">
+			<s:node index="3">xd.w.4.1</s:node>
+			<s:node index="0">d.w.4.2</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="2">d.w.4.2</s:node>
+			<s:node index="0">d.w.4.1</s:node>
+		</s:curve>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="1">d.w.4.1</s:node>
+			<s:node index="0">p.w.4.1</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="1">p.w.4.1</s:node>
+			<s:node index="1">s.w.4</s:node>
+		</s:curve>
+		<s:platform name="Binario 4" length="11">
+			<s:node index="0">s.w.4</s:node>
+			<s:node index="0">s.e.4</s:node>
+		</s:platform>
+		<s:curve versus="left" length="1">
+			<s:node index="1">s.e.4</s:node>
+			<s:node index="0">p.e.4.1</s:node>
+		</s:curve>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="1">p.e.4.1</s:node>
+			<s:node index="1">d.e.4.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="0">d.e.4.1</s:node>
+			<s:node index="2">d.e.4.2</s:node>
+		</s:curve>
+		<s:segment length="0.73700071490925054673576571871401">
+			<s:node index="0">d.e.4.2</s:node>
+			<s:node index="0">xd.e.4.1</s:node>
+		</s:segment>
+		<s:segment length="0.25">
+			<s:node index="1">s.se.o.1</s:node>
+			<s:node index="0">p.e.4.2</s:node>
+		</s:segment>
+		<s:curve versus="right" length="3" gap="6">
+			<s:node index="1">p.e.4.2</s:node>
+			<s:node index="0">p.se.o.1</s:node>
+		</s:curve>
+		<s:segment length="9">
+			<s:node index="1">p.se.o.1</s:node>
+			<s:node index="0">s.se.o.2</s:node>
+		</s:segment>
+		<s:segment length="10">
+			<s:node index="1">s.se.o.2</s:node>
+			<s:node index="0">p.se.o.2</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1" gap="5">
+			<s:node index="1">p.se.o.2</s:node>
+			<s:node index="0">p.se.o.3</s:node>
+		</s:curve>
+		<s:segment length="28">
+			<s:node index="1">p.se.o.3</s:node>
+			<s:node index="0">A SE</s:node>
+		</s:segment>
+		<!-- Via #3 -->
+		<s:curve versus="left" length="1">
+			<s:node index="2">d.w.1.2</s:node>
+			<s:node index="0">p.w.3.1</s:node>
+		</s:curve>
+		<s:segment length="0.5">
+			<s:node index="1">p.w.3.1</s:node>
+			<s:node index="1">s.w.3</s:node>
+		</s:segment>
+		<s:platform name="Binario 3" length="11">
+			<s:node index="0">s.w.3</s:node>
+			<s:node index="0">s.e.3</s:node>
+		</s:platform>
+		<s:segment length="0.5">
+			<s:node index="1">s.e.3</s:node>
+			<s:node index="0">p.e.3.1</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="1">p.e.3.1</s:node>
+			<s:node index="2">d.e.1.2</s:node>
+		</s:curve>
+		<!-- Via #2 -->
+		<s:curve versus="left" length="1">
+			<s:node index="2">d.w.1.1</s:node>
+			<s:node index="0">p.w.2.1</s:node>
+		</s:curve>
+		<s:segment length="0.5">
+			<s:node index="1">p.w.2.1</s:node>
+			<s:node index="1">s.w.2</s:node>
+		</s:segment>
+		<s:platform name="Binario 2" length="10">
+			<s:node index="0">s.w.2</s:node>
+			<s:node index="0">s.e.2</s:node>
+		</s:platform>
+		<s:segment length="0.5">
+			<s:node index="1">s.e.2</s:node>
+			<s:node index="0">p.e.2.1</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="1">p.e.2.1</s:node>
+			<s:node index="2">d.e.1.1</s:node>
+		</s:curve>
+		<!-- A W -->
+		<s:segment length="10">
+			<s:node index="0">A W</s:node>
+			<s:node index="0">p.w.o.2</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1" gap="6">
+			<s:node index="1">p.w.o.2</s:node>
+			<s:node index="0">p.w.o.1</s:node>
+		</s:curve>
+		<s:segment length="19">
+			<s:node index="1">p.w.o.1</s:node>
+			<s:node index="0">s.w.o</s:node>
+		</s:segment>
+		<s:segment length="0.27474241115208076">
+			<s:node index="1">s.w.o</s:node>
+			<s:node index="2">x.sw-w</s:node>
+		</s:segment>
+		<s:segment length="0.7252575888479192">
+			<s:node index="0">x.sw-w</s:node>
+			<s:node index="1">d.w.1.5</s:node>
+		</s:segment>
+		<!-- A SW -->
+		<s:segment length="29">
+			<s:node index="0">A SW</s:node>
+			<s:node index="0">p.sw.o.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="2">
+			<s:node index="1">p.sw.o.1</s:node>
+			<s:node index="0">s.sw.o</s:node>
+		</s:curve>
+		<s:curve versus="right" length="2">
+			<s:node index="1">s.sw.o</s:node>
+			<s:node index="2">d.w.1.5</s:node>
+		</s:curve>
+		<!-- Via #1 -->
+		<s:segment length="0.25">
+			<s:node index="0">d.w.1.5</s:node>
+			<s:node index="0">s.w.1.2</s:node>
+		</s:segment>
+		<s:segment length="2">
+			<s:node index="1">s.w.1.2</s:node>
+			<s:node index="0">p.w.1.4</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1" gap="5">
+			<s:node index="1">p.w.1.4</s:node>
+			<s:node index="0">p.w.1.3</s:node>
+		</s:curve>
+		<s:segment length="8">
+			<s:node index="1">p.w.1.3</s:node>
+			<s:node index="0">s.w.1.1</s:node>
+		</s:segment>
+		<s:segment length="0.25">
+			<s:node index="1">s.w.1.1</s:node>
+			<s:node index="0">d.w.1.4</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="2">d.w.1.4</s:node>
+			<s:node index="1">p.w.1-4.1</s:node>
+		</s:curve>
+		<s:segment length="1.474001429818501093471531437428">
+			<s:node index="1">d.w.1.4</s:node>
+			<s:node index="0">p.w.1.2</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="1">p.w.1.2</s:node>
+			<s:node index="2">d.w.1.3</s:node>
+		</s:curve>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="2">x.w.4-7</s:node>
+			<s:node index="0">xd.w.4.1</s:node>
+		</s:segment>
+		<s:segment length="0.76299928509074945326423428128599">
+			<s:node index="1">d.w.1.3</s:node>
+			<s:node index="2">xd.w.4.1</s:node>
+		</s:segment>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="0">d.w.1.3</s:node>
+			<s:node index="0">d.w.1.2</s:node>
+		</s:segment>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="1">d.w.1.2</s:node>
+			<s:node index="0">d.w.1.1</s:node>
+		</s:segment>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="1">d.w.1.1</s:node>
+			<s:node index="0">p.w.1.1</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="1">p.w.1.1</s:node>
+			<s:node index="1">s.w.1</s:node>
+		</s:curve>
+		<s:platform name="Binario 1" length="10">
+			<s:node index="0">s.w.1</s:node>
+			<s:node index="0">s.e.1</s:node>
+		</s:platform>
+		<s:curve versus="left" length="1">
+			<s:node index="1">s.e.1</s:node>
+			<s:node index="0">p.e.1.1</s:node>
+		</s:curve>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="1">p.e.1.1</s:node>
+			<s:node index="1">d.e.1.1</s:node>
+		</s:segment>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="0">d.e.1.1</s:node>
+			<s:node index="1">d.e.1.2</s:node>
+		</s:segment>
+		<s:segment length="0.5176380902050415246977976752481">
+			<s:node index="0">d.e.1.2</s:node>
+			<s:node index="0">d.e.1.3</s:node>
+		</s:segment>
+		<s:segment length="0.76299928509074945326423428128599">
+			<s:node index="1">d.e.1.3</s:node>
+			<s:node index="1">xd.e.4.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="1">
+			<s:node index="2">d.e.1.3</s:node>
+			<s:node index="0">p.e.1.2</s:node>
+		</s:curve>
+		<s:segment length="1.474001429818501093471531437428">
+			<s:node index="1">p.e.1.2</s:node>
+			<s:node index="1">d.e.1.4</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="1">p.e.1-4.2</s:node>
+			<s:node index="2">xd.e.4.2</s:node>
+		</s:segment>
+		<s:segment length="0.49133380993950036449051047914268">
+			<s:node index="3">xd.e.7.1</s:node>
+			<s:node index="0">xd.e.7.2</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="2">xd.e.7.1</s:node>
+			<s:node index="0">x.e.4-7</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="2">x.e.4-7</s:node>
+			<s:node index="0">xd.e.4.2</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="1">xd.e.7.2</s:node>
+			<s:node index="3">x.e.4-7</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="0">p.e.7-10.2</s:node>
+			<s:node index="3">xd.e.7.2</s:node>
+		</s:segment>
+		<s:segment length="0.25433309503024981775474476042866">
+			<s:node index="1">x.e.4-7</s:node>
+			<s:node index="3">xd.e.4.1</s:node>
+		</s:segment>
+		<s:segment length="0.49133380993950036449051047914268">
+			<s:node index="2">xd.e.4.1</s:node>
+			<s:node index="1">xd.e.4.2</s:node>
+		</s:segment>
+		<s:segment length="0.745666904969750182245255239571">
+			<s:node index="0">s.se.o.1</s:node>
+			<s:node index="3">xd.e.4.2</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1">
+			<s:node index="0">p.e.1-4.2</s:node>
+			<s:node index="2">d.e.1.4</s:node>
+		</s:curve>
+		<s:segment length="0.25">
+			<s:node index="0">d.e.1.4</s:node>
+			<s:node index="0">s.se.i.1</s:node>
+		</s:segment>
+		<s:curve versus="right" length="3" gap="5">
+			<s:node index="1">s.se.i.1</s:node>
+			<s:node index="0">p.se.i.1</s:node>
+		</s:curve>
+		<s:segment length="9">
+			<s:node index="1">p.se.i.1</s:node>
+			<s:node index="0">s.se.i.2</s:node>
+		</s:segment>
+		<s:segment length="10">
+			<s:node index="1">s.se.i.2</s:node>
+			<s:node index="0">p.se.i.2</s:node>
+		</s:segment>
+		<s:curve versus="left" length="1" gap="6">
+			<s:node index="1">p.se.i.2</s:node>
+			<s:node index="0">p.se.i.3</s:node>
+		</s:curve>
+		<s:segment length="28">
+			<s:node index="1">p.se.i.3</s:node>
+			<s:node index="0">Da SE</s:node>
+		</s:segment>
+	</s:links>
+</s:station>

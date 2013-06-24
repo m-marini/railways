@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: station-1.2.5.xsd,v 1.2 2012/02/08 22:03:34 marco Exp $ -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.mmarini.org/railways-1.2.5"
+	xmlns="http://www.mmarini.org/railways-1.2.5"
+	elementFormDefault="qualified">	<xs:simpleType name="angleType">
+		<xs:restriction base="xs:positiveInteger">
+			<xs:maxInclusive value="360" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="versusType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="left|right" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="nonNegativeDecimal">
+		<xs:restriction base="xs:decimal">
+			<xs:minInclusive value="0" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="nodeRefType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="index" use="required"
+					type="xs:nonNegativeInteger" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="segmentType">
+		<xs:sequence minOccurs="2" maxOccurs="2">
+			<xs:element name="node" type="nodeRefType" />
+		</xs:sequence>
+		<xs:attribute name="length" type="nonNegativeDecimal"
+			use="required" />
+	</xs:complexType>
+	<xs:complexType name="platformType">
+		<xs:sequence minOccurs="2" maxOccurs="2">
+			<xs:element name="node" type="nodeRefType" />
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:string" use="required" />
+		<xs:attribute name="length" type="nonNegativeDecimal"
+			use="required" />
+	</xs:complexType>
+	<xs:complexType name="curveType">
+		<xs:sequence minOccurs="2" maxOccurs="2">
+			<xs:element name="node" type="nodeRefType" />
+		</xs:sequence>
+		<xs:attribute name="length" type="nonNegativeDecimal"
+			use="required" />
+		<xs:attribute name="versus" type="versusType" use="required" />
+		<xs:attribute name="gap" type="xs:integer" default="0" />
+	</xs:complexType>
+	<xs:complexType name="linkType">
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="platform" type="platformType" />
+			<xs:element name="segment" type="segmentType" />
+			<xs:element name="curve" type="curveType" />
+		</xs:choice>
+	</xs:complexType>	<xs:complexType name="deviatorNodeType">
+		<xs:complexContent>
+			<xs:extension base="baseNodeType">
+				<xs:attribute name="deviated" type="xs:boolean"
+					default="false" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="lineNodeType">		<xs:attribute name="reference" type="xs:string" use="required" />
+		<xs:attribute name="destination" type="xs:boolean"
+			default="false" />
+	</xs:complexType>
+	<xs:complexType name="baseNodeType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string" />
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="crossDeviatorNodeType">
+		<xs:complexContent>
+			<xs:extension base="baseNodeType">
+				<xs:attribute name="angle" type="nonNegativeDecimal" />
+				<xs:attribute name="deviated" type="xs:boolean"
+					default="false" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="crossNodeType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="angle" type="nonNegativeDecimal" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="nodeType">
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="line" type="lineNodeType" />
+			<xs:element name="semaphore" type="baseNodeType" />
+			<xs:element name="deviator" type="deviatorNodeType" />
+			<xs:element name="point" type="baseNodeType" />
+			<xs:element name="cross" type="crossNodeType" />
+			<xs:element name="crossDeviator" type="crossDeviatorNodeType" />
+			<xs:element name="deadtrack" type="baseNodeType" />
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="stationType">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" />
+			<xs:element name="nodes" type="nodeType" />
+			<xs:element name="links" type="linkType" />
+		</xs:sequence>
+		<xs:attribute name="reference" type="xs:string" use="required" />
+		<xs:attribute name="direction" type="angleType" use="required" />
+	</xs:complexType>
+	<xs:element name="station" type="stationType" />
+</xs:schema>

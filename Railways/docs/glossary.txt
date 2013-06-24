@@ -1,0 +1,82 @@
+﻿Glossario
+
+HoldingPathElement - elemento di blocco
+	Elementi di path bloccanti fungono da semafori e permettono di controllare l'accesso dei treni ad un path
+	
+Path - percorso
+	Elenco degli elementi che compongono una tratta del percorso che un treno ha effettuato o effettuerà.
+
+Block - blocco
+	Elenco degli elementi contigui i cui nodi di confine sono semafori o linee
+	Il blocco determina la transitabilità di un percorso e la capacità di modificare
+	lo stato dei deviatori.
+
+PathBlock - blocco di percorso
+	Contiene un sottoinsieme contiguo di un path in cui l'elemento entrante è un HoldingPathElement e l'elemento uscente
+	è connesso ad un HoldingPath o non è transitabile.
+
+PathBlockEntry
+	E' un'entità che permette di conoscere se esiste un treno	in transito direttamente o inversamente
+	contiene quindi	il PathBlock e il PathBlockEntry opposto.
+	I PathBlockEntry opposti cambiano quando si cambia di stato i deviatori quindi deve essere dinamico
+	
+Transiting
+	Proprietà di un PathBlock che determina se esiste un treno in transito sul PathBlock
+	Proprietà di un PathBlockEntry che determina se esiste un treno in transito sul PathBlock	o su quello inverso
+
+Transitable
+	Proprietà di un PathBlock che determina se tutti gli elementi del pathblock sono transitabili
+	(un deviatore attraversato in senso contrario all'ingresso non può essere transitabile se la linea
+	di attraversamento non è attiva)
+
+Held
+	Proprietà di un HoldingPathElement che determina l'impossibilità di entrata nel path
+
+Locked
+	Proprietà di un blocco che inibisce la possibilità di cambiare lo	stato degli elementi di scambio
+	del blocco
+	Il blocco è in stato di locked se nel blocco esiste almeno un elemento di confine non held e
+	se esiste almeno un treno in transito in tutti i PathBlock del blocco.
+
+MaxSpace
+	Proprietà di un treno che determina lo spazio massimo di movimento del treno.
+	Da verificare la definizione in quanto proprietà legata alla posizione del treno.
+
+IPathElement
+	E' l'elemento che compone i Path, gestisce il transito dei treni.
+
+IElement
+	E' l'elemento che compone il grafo della stazione
+
+INode
+	Sono gli IElement nodo del grafo della stazione
+
+ILink
+	Sono gli IElement che congiungono gli INode
+
+Line
+	E' un INode che rappresenta il punto di ingresso/uscita dei treni nella stazione.
+	Le line sono allacciate a linee/stazioni/depositi virtuali per il gioco singolo utente o
+	a line di altre stazioni per il gioco multi utente
+	Essendo un elemento di confine tra Block espone due proprietà di PathBlockEntry
+	south (block esterno alla stazione) e north (block interno alla stazione).
+
+Semaphore
+	E' un nodo di giunzione tra block interni alla stazione.
+	Essendo un elemento di confine tra Block espone due proprietà PathBlockEntry south e north.
+
+Link (curve/segment)
+	Sono elementi che congiungono gli INode
+	Contengono due elementi IJunction (south, north) di connessione verso gli INode
+
+Point
+	Sono elementi di raccordo che congiungono due ILink
+	Contengono due elementi IJunction (south, north) di connessione verso i ILink
+
+Deviator
+	Sono elementi di raccordo a tre link
+	Contengono tre elementi IJunction (incoming, direct, deviated)
+
+IJunction
+	Raccordo bidirezionale tra PathElement
+	Contiene due elementi PathElement (income, outcome)

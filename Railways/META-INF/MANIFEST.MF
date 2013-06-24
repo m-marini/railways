@@ -1,0 +1,2 @@
+Main-class: org.mmarini.railways.swing.GameFrame
+Class-Path: commons-logging.jar log4j-1.2.7.jar

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.mmarini.org/railways/hallOfFame-0.0.1"
+	elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:hof="http://www.mmarini.org/railways/hallOfFame-0.0.1" xmlns:mi="http://www.mmarini.org/railways/managerInfo-0.0.1">
+
+	<xsd:element name="hallOfFame" type="hof:HallOfFame"></xsd:element>
+
+	<xsd:complexType name="HallOfFame">
+		<xsd:sequence maxOccurs="unbounded" minOccurs="0">
+			<xsd:element name="managerInfos" type="hof:ManagerInfosType">
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="ManagerInfosType">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="gameLength" type="xsd:double"
+					use="required"></xsd:attribute>
+				<xsd:attribute name="incomeTrainCount" type="xsd:nonNegativeInteger"
+					use="required"></xsd:attribute>
+				<xsd:attribute name="rightOutcomeTrainCount" type="xsd:nonNegativeInteger"
+					use="required"></xsd:attribute>
+				<xsd:attribute name="stationName" type="xsd:string"
+					use="required"></xsd:attribute>
+				<xsd:attribute name="timestamp" type="xsd:long" use="required"></xsd:attribute>
+				<xsd:attribute name="totalLifeTime" type="xsd:double"
+					use="required"></xsd:attribute>
+				<xsd:attribute name="trainsDistance" type="xsd:double"
+					use="required"></xsd:attribute>
+				<xsd:attribute name="trainsLifeTime" type="xsd:double"
+					use="required"></xsd:attribute>
+				<xsd:attribute name="trainsStopCount" type="xsd:nonNegativeInteger"
+					use="required"></xsd:attribute>
+				<xsd:attribute name="trainsWaitTime" type="xsd:double"
+					use="required"></xsd:attribute>
+				<xsd:attribute name="wrongOutcomeTrainCount" type="xsd:nonNegativeInteger"
+					use="required"></xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+
+</xsd:schema>
