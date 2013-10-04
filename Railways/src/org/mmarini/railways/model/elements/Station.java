@@ -6,8 +6,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.ManagerInfos;
 import org.mmarini.railways.model.RailwayConstants;
 import org.mmarini.railways.model.StationEvent;
@@ -22,6 +20,8 @@ import org.mmarini.railways.model.visitor.InOutVisitor;
 import org.mmarini.railways.model.visitor.LineListVisitor;
 import org.mmarini.railways.model.visitor.LockAllVisitor;
 import org.mmarini.railways.sounds.SoundPlayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $$Author: marco $$
@@ -31,7 +31,7 @@ public class Station implements RailwayConstants, Serializable {
 	public static final double INCOME_CANCEL_FREQUENCE = 10. * FREQUENCE_TRAIN_SCALE;
 	public static final double OUTCOME_BUILD_FREQUENCE = 0;
 	private static final long serialVersionUID = 1L;
-	private static Log log = LogFactory.getLog(Station.class);
+	private static Logger log = LoggerFactory.getLogger(Station.class);
 
 	private StationNode reference;
 	private int direction;

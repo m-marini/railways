@@ -1,7 +1,5 @@
 package org.mmarini.railways.model.visitor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.elements.Cross;
 import org.mmarini.railways.model.elements.CrossDeviator;
 import org.mmarini.railways.model.elements.Curve;
@@ -15,6 +13,8 @@ import org.mmarini.railways.model.elements.Semaphore;
 import org.mmarini.railways.model.elements.StationElement;
 import org.mmarini.railways.model.elements.StationNode;
 import org.mmarini.railways.model.elements.Track;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Vistor scan the path to set the deviation status of the deviators in the
@@ -26,7 +26,8 @@ import org.mmarini.railways.model.elements.Track;
  */
 public class RouteDeviationVisitor extends TraverseSet<StationElement>
 		implements ElementVisitor {
-	private static Log log = LogFactory.getLog(RouteDeviationVisitor.class);
+	private static Logger log = LoggerFactory
+			.getLogger(RouteDeviationVisitor.class);
 	private Track from;
 
 	/**

@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.elements.Cross;
 import org.mmarini.railways.model.elements.CrossDeviator;
 import org.mmarini.railways.model.elements.Curve;
@@ -18,6 +16,8 @@ import org.mmarini.railways.model.elements.Point;
 import org.mmarini.railways.model.elements.Segment;
 import org.mmarini.railways.model.elements.Semaphore;
 import org.mmarini.railways.model.elements.Station;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author: marco $
@@ -25,7 +25,7 @@ import org.mmarini.railways.model.elements.Station;
  */
 public class TopologyBuilder implements RailwayConstants {
 
-	private static Log log = LogFactory.getLog(TopologyBuilder.class);
+	private static Logger log = LoggerFactory.getLogger(TopologyBuilder.class);
 
 	private Topology topology;
 	private Queue<Topology> stack;

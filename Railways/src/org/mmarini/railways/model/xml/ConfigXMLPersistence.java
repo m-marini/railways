@@ -17,13 +17,13 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.HallOfFame;
 import org.mmarini.railways.model.HallOfFameImpl;
 import org.mmarini.railways.model.RailwayConstants;
 import org.mmarini.railways.model.SystemOptions;
 import org.mmarini.railways.model.SystemOptionsImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -58,7 +58,8 @@ public class ConfigXMLPersistence implements RailwayConstants {
 	private static final String HALL_OF_FAME_ZIP_ENTRY = "hallOfFame.xml";
 	private static final String SYSTEM_OPTIONS_ZIP_ENTRY = "systemOptions.xml";
 
-	private static Log log = LogFactory.getLog(ConfigXMLPersistence.class);
+	private static Logger log = LoggerFactory
+			.getLogger(ConfigXMLPersistence.class);
 
 	private File resource;
 	private HallOfFame hallOfFame;

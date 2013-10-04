@@ -1,9 +1,9 @@
 package org.mmarini.railways.model.routes;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.elements.StationElement;
 import org.mmarini.railways.model.train.Train;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $$Author: marco $$
@@ -31,7 +31,7 @@ public abstract class AbstractPointRoute implements TrainHead {
 		if (currentTrain == null || currentTrain == ctxTrain)
 			return;
 		String assertion = currentTrain + " != " + ctxTrain;
-		Log log = LogFactory.getLog(getClass());
+		Logger log = LoggerFactory.getLogger(getClass());
 		log.error(assertion);
 		log.error("Train context = " + ctxTrain);
 		log.error("Length        = " + ctxTrain.getLength());

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.elements.CrossDeviator;
 import org.mmarini.railways.model.elements.Deviator;
 import org.mmarini.railways.model.elements.Line;
@@ -17,6 +15,8 @@ import org.mmarini.railways.model.visitor.ChangeStateVisitor;
 import org.mmarini.railways.model.xml.ConfigXMLPersistence;
 import org.mmarini.railways.model.xml.StationList;
 import org.mmarini.railways.sounds.SoundPlayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author: marco $
@@ -24,7 +24,7 @@ import org.mmarini.railways.sounds.SoundPlayer;
  */
 public class GameHandlerImpl implements RailwayConstants, GameHandler {
 
-	private static Log log = LogFactory.getLog(GameHandlerImpl.class);
+	private static Logger log = LoggerFactory.getLogger(GameHandlerImpl.class);
 
 	private StationList stationList;
 	private Game game;

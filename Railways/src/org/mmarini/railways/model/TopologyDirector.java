@@ -1,7 +1,5 @@
 package org.mmarini.railways.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.elements.Cross;
 import org.mmarini.railways.model.elements.CrossDeviator;
 import org.mmarini.railways.model.elements.Curve;
@@ -18,6 +16,8 @@ import org.mmarini.railways.model.elements.StationNode;
 import org.mmarini.railways.model.elements.Track;
 import org.mmarini.railways.model.visitor.ElementVisitor;
 import org.mmarini.railways.model.visitor.TraverseSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $$Author: marco $$
@@ -26,7 +26,7 @@ import org.mmarini.railways.model.visitor.TraverseSet;
  */
 public class TopologyDirector extends TraverseSet<StationElement> implements
 		ElementVisitor {
-	private static Log log = LogFactory.getLog(TopologyDirector.class);
+	private static Logger log = LoggerFactory.getLogger(TopologyDirector.class);
 
 	private Station station;
 	private TopologyBuilder builder;

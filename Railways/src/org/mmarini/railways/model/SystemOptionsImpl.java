@@ -3,8 +3,8 @@ package org.mmarini.railways.model;
 import org.mmarini.railways.model.xml.XMLBuilder;
 import org.mmarini.railways.model.xml.XmlConstants;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
-import com.sun.xml.internal.bind.util.AttributesImpl;
 
 /**
  * 

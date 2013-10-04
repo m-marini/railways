@@ -1,8 +1,8 @@
 package org.mmarini.railways.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.elements.Station;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author: marco $
@@ -11,7 +11,7 @@ import org.mmarini.railways.model.elements.Station;
 public class GameImpl implements RailwayConstants, Game {
 	private static final double DEFAULT_TIME_SPEED = 1e-3;
 
-	private static Log log = LogFactory.getLog(GameImpl.class);
+	private static Logger log = LoggerFactory.getLogger(GameImpl.class);
 
 	private Station station;
 	private ManagerInfos managerInfos;

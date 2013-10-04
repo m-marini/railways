@@ -27,11 +27,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.GameHandler;
 import org.mmarini.railways.model.GameParameters;
 import org.mmarini.railways.model.GameParametersImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author: marco $
@@ -52,7 +52,7 @@ public class GameDialog extends AbstractOKCancelDialog {
 
 	private static final long serialVersionUID = 1L;
 
-	private static Log log = LogFactory.getLog(GameDialog.class);
+	private static Logger log = LoggerFactory.getLogger(GameDialog.class);
 
 	private DefaultListModel stationModel;
 	private JList stationList;

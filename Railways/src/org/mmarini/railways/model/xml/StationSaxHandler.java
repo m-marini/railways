@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.RailwayConstants;
 import org.mmarini.railways.model.TopologyBuilder;
 import org.mmarini.railways.model.TopologyDirector;
@@ -29,6 +27,8 @@ import org.mmarini.railways.model.elements.Semaphore;
 import org.mmarini.railways.model.elements.Station;
 import org.mmarini.railways.model.elements.StationNode;
 import org.mmarini.railways.model.elements.VirtualStation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -44,7 +44,8 @@ public class StationSaxHandler extends DefaultHandler implements
 	public static final double INCOME_CANCEL_FREQUENCE = 0.;
 	private static final double OUTCOME_BUILD_FREQUENCE = 0.;
 
-	private static Log log = LogFactory.getLog(StationSaxHandler.class);
+	private static Logger log = LoggerFactory
+			.getLogger(StationSaxHandler.class);
 	private Locator locator;
 	private StringBuilder text;
 	private Station station;

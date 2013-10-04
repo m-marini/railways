@@ -13,11 +13,11 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.GameHandler;
 import org.mmarini.railways.model.GameParameters;
 import org.mmarini.railways.model.graphics.StationGraphEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author: marco $
@@ -27,7 +27,7 @@ public class MainPane extends JPanel {
 	private static final long serialVersionUID = 1L;
 	public static final int REFRESH_TIME = 20;
 
-	private static Log log = LogFactory.getLog(MainPane.class);
+	private static Logger log = LoggerFactory.getLogger(MainPane.class);
 
 	private JSplitPane verticalSplitPane;
 	private JSplitPane upperPane;
@@ -219,7 +219,7 @@ public class MainPane extends JPanel {
 				handleGameEnded();
 			}
 		} catch (Throwable e) {
-			LogFactory.getLog(getClass()).error("Error", e); //$NON-NLS-1$
+			LoggerFactory.getLogger(getClass()).error("Error", e); //$NON-NLS-1$
 			if (JOptionPane
 					.showConfirmDialog(
 							this,

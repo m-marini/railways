@@ -13,9 +13,9 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.GameHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -26,7 +26,7 @@ public class SummaryPane extends JPanel {
 	public static final Insets SEPARATOR_INSETS = new Insets(2, 0, 2, 0);
 	public static final Insets DEFAULT_INSETS = new Insets(2, 2, 2, 2);
 	private static final long serialVersionUID = -5918932430408182511L;
-	private static Log log = LogFactory.getLog(SummaryPane.class);
+	private static Logger log = LoggerFactory.getLogger(SummaryPane.class);
 
 	private ManagerPane managerPane;
 	private JTextField nameField;

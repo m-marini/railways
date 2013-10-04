@@ -6,8 +6,8 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.Line;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author US00852
@@ -22,7 +22,7 @@ public class SoundPlayer {
 	private static final String LEOPOLD_SOUND = "/sounds/leopold.wav";
 	private static final String DEVIATOR_SOUNDS = "/sounds/deviator.wav";
 
-	public static Log log = LogFactory.getLog(SoundPlayer.class);
+	public static Logger log = LoggerFactory.getLogger(SoundPlayer.class);
 
 	private Clip deviatorClip;
 	private Clip leopoldClip;

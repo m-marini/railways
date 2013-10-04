@@ -11,9 +11,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.GameHandlerImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author: marco $
@@ -24,7 +24,7 @@ public class GameFrame extends JFrame implements LookAndFeelListener {
 
 	private static final long serialVersionUID = 1L;
 
-	private static Log logger = LogFactory.getLog(GameFrame.class);
+	private static Logger logger = LoggerFactory.getLogger(GameFrame.class);
 
 	/**
 	 * @param arg

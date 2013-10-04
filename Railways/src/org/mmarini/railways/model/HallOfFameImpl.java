@@ -3,10 +3,10 @@ package org.mmarini.railways.model;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.xml.XMLBuilder;
 import org.mmarini.railways.model.xml.XmlConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -17,7 +17,7 @@ import org.xml.sax.SAXException;
 public class HallOfFameImpl implements HallOfFame, XmlConstants {
 
 	public static final int MAX_ENTRIES = 20;
-	private static Log log = LogFactory.getLog(HallOfFameImpl.class);
+	private static Logger log = LoggerFactory.getLogger(HallOfFameImpl.class);
 
 	private SortedSet<ManagerInfos> entries;
 

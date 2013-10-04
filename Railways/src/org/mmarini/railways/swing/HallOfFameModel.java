@@ -6,12 +6,12 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.GameHandler;
 import org.mmarini.railways.model.HallOfFame;
 import org.mmarini.railways.model.ManagerInfos;
 import org.mmarini.railways.model.RailwayConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -23,7 +23,7 @@ public class HallOfFameModel extends AbstractTableModel implements
 
 	public static final String UNKNOWN = "???"; //$NON-NLS-1$
 	private static final long serialVersionUID = -4709768516955635414L;
-	private static Log log = LogFactory.getLog(HallOfFameModel.class);
+	private static Logger log = LoggerFactory.getLogger(HallOfFameModel.class);
 
 	private List<ManagerInfos> entries;
 	private GameHandler gameHandler;

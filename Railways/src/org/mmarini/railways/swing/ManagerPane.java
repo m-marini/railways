@@ -9,11 +9,11 @@ import java.text.MessageFormat;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.GameHandler;
 import org.mmarini.railways.model.ManagerInfos;
 import org.mmarini.railways.model.RailwayConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author: marco $
@@ -23,7 +23,7 @@ public class ManagerPane extends JPanel implements RailwayConstants {
 	private static final Font MANAGER_FONT = Font.decode("Dialog Bold 10");
 	private static final long serialVersionUID = 1L;
 
-	private static Log log = LogFactory.getLog(ManagerPane.class);
+	private static Logger log = LoggerFactory.getLogger(ManagerPane.class);
 
 	private JLabel incomeTrainCount;
 	private JLabel wrongOutcomeTrainCount;

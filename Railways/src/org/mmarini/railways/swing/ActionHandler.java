@@ -28,9 +28,9 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.GameHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author: marco $
@@ -66,7 +66,7 @@ public class ActionHandler {
 
 	public static final String DISABLED_ICON = "selectedIcon";
 
-	private static Log log = LogFactory.getLog(ActionHandler.class);
+	private static Logger log = LoggerFactory.getLogger(ActionHandler.class);
 
 	private JMenu lookAndFeelMenu;
 	private JMenuBar gameMenuBar;

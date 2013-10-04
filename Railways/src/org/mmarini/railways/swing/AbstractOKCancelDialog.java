@@ -17,8 +17,8 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -29,7 +29,8 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractOKCancelDialog extends JDialog {
 	private static final long serialVersionUID = -4452519314259357683L;
 
-	private static Log log = LogFactory.getLog(AbstractOKCancelDialog.class);
+	private static Logger log = LoggerFactory
+			.getLogger(AbstractOKCancelDialog.class);
 
 	private boolean completed;
 	private Action okAction;

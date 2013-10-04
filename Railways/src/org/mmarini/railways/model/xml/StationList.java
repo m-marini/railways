@@ -12,10 +12,10 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.ValidationException;
 import org.mmarini.railways.model.elements.Station;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -28,7 +28,7 @@ public class StationList {
 			"/stations/downville.station.xml", "/stations/passing.station.xml",
 			"/stations/terminal.station.xml", "/stations/crossing.station.xml" };
 	private static final String STATION_XSD = "/stations/station-1.2.5.xsd";
-	private static Log log = LogFactory.getLog(StationList.class);
+	private static Logger log = LoggerFactory.getLogger(StationList.class);
 
 	private Map<String, URL> stationMap;
 	private StationSaxHandler handler;

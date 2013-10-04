@@ -15,9 +15,9 @@ import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.mmarini.railways.model.GameHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author: marco $
@@ -30,7 +30,7 @@ public class OptionsPane extends JPanel {
 			-36, -42, -48 };
 	private static final int[] SPEED_LABELS = { 1, 5, 10 };
 
-	private static Log log = LogFactory.getLog(OptionsPane.class);
+	private static Logger log = LoggerFactory.getLogger(OptionsPane.class);
 
 	private JSlider speedSlider;
 	private JSlider volumeSlider;
