@@ -1,14 +1,14 @@
 @echo off
 rem Batch file to run on Windows
-rem $Id: runnit.bat,v 1.2 2005/10/17 22:37:19 marco Exp $
 
 rem Remove "rem" from following two lines, if you'd like to use j2sdk.
-rem set JAVA_HOME=C:\j2sdk1.4.2_08
+rem set JAVA_HOME=...
 rem set PATH=%JAVA_HOME%\bin
 
 rem run
 cd ..
-start javaw -jar "lib/railways.jar"
+echo 
+start javaw -jar "lib/${pom.build.finalName}.jar"
 IF ERRORLEVEL 2 goto noJavaw
 goto end
 
@@ -24,10 +24,10 @@ echo.
 echo If you would like to run java in your specified folder, you can edit runnit.bat
 echo like followings and set your JAVA_HOME.
 echo     before:
-echo       rem set JAVA_HOME=C:\j2sdk1.4.2_08
+echo       rem set JAVA_HOME=...
 echo       rem set PATH=%JAVA_HOME%\bin
 echo     after:
-echo       set JAVA_HOME=C:\j2sdk1.4.2_08
+echo       set JAVA_HOME=...
 echo       set PATH=%JAVA_HOME%\bin
 echo.
 echo.
