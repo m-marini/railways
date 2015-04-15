@@ -1,9 +1,12 @@
-package org.mmarini.scalajme3
+package org.mmarini.railways3d
 
 import com.jme3.app.SimpleApplication
 
 object Main extends SimpleApplication {
 
+  /**
+   * 
+   */
   @Override
   def simpleInitApp: Unit = {
   }
@@ -11,5 +14,7 @@ object Main extends SimpleApplication {
   /**
    *
    */
-  def main(args: Array[String]): Unit = Main.start()
+  def main(args: Array[String]): Unit = {
+    Main.start()
+  }
 }
