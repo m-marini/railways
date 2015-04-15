@@ -1,0 +1,9 @@
+/.classpath
+/.project
+/project
+/target
+/bin
+/.cache
+/*.so
+/*.dll
+/.settings
