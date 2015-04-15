@@ -9,6 +9,8 @@ object Main extends SimpleApplication {
    */
   @Override
   def simpleInitApp: Unit = {
+    val spatial = assetManager.loadModel("Interface/coatch.j3o")
+    rootNode.attachChild(spatial);
   }
 
   /**
