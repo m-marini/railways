@@ -7,5 +7,9 @@
 /*.so
 /*.dll
 /.settings
+<<<<<<< HEAD
 /assets.jmp
+=======
+/*.jmp
+>>>>>>> branch '3d' of file:////mnt/WIN8/MMData/git-backup/railways.git
 /private
