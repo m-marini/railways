@@ -7,4 +7,5 @@
 /*.so
 /*.dll
 /.settings
-/assets.jmp
+/*.jmp
+/private
