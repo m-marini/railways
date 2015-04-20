@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
+
+	<useStyles filename="nifty-default-styles.xml" />
+	<useControls filename="nifty-default-controls.xml" />
+	<screen id="opts-screen" controller="org.mmarini.railways3d.OptionsScreen">
+		<layer backgroundColor="#000f" childLayout="center">
+			<image filename="Interface/treni.jpg" width="100%" height="100%" />
+		</layer>
+		<layer backgroundColor="#fff7" childLayout="center" />
+		<layer childLayout="center">
+			<panel height="80%" width="80%" childLayout="vertical"
+				backgroundColor="#000e" padding="30px">
+				<panel height="90%" width="*" childLayout="vertical">
+					<panel width="*" height="17%" childLayout="horizontal">
+						<panel width="50%" height="*" childLayout="center">
+							<control name="label" text="Stazione" />
+						</panel>
+						<panel width="*" height="*" childLayout="center">
+							<control id="station" name="dropDown" />
+						</panel>
+					</panel>
+					<panel width="*" height="17%" childLayout="horizontal">
+						<panel width="50%" height="*" childLayout="center">
+							<control name="label" text="Livello" />
+						</panel>
+						<panel width="*" height="*" childLayout="center">
+							<control id="level" name="dropDown" />
+						</panel>
+					</panel>
+					<panel width="*" height="17%" childLayout="horizontal">
+						<panel width="50%" height="*" childLayout="center">
+							<control name="label" text="Durata" />
+						</panel>
+						<panel width="*" height="*" childLayout="center">
+							<control id="duration" name="dropDown" />
+						</panel>
+					</panel>
+					<panel width="*" height="17%" childLayout="horizontal">
+						<panel width="50%" height="*" childLayout="center">
+							<control name="label" text="Auto lock" />
+						</panel>
+						<panel width="*" height="*" childLayout="center">
+							<control id="autoLock" name="checkbox" />
+						</panel>
+					</panel>
+					<panel width="*" height="17%" childLayout="horizontal">
+						<panel width="50%" height="*" childLayout="center">
+							<control name="label" text="Mute" />
+						</panel>
+						<panel width="*" height="*" childLayout="center">
+							<control id="mute" name="checkbox" />
+						</panel>
+					</panel>
+					<panel width="*" height="*" childLayout="horizontal">
+						<panel width="50%" height="*" childLayout="center">
+							<control name="label" text="Volume" />
+						</panel>
+						<panel width="*" height="*" childLayout="center">
+							<control id="volume" name="horizontalSlider" />
+						</panel>
+					</panel>
+				</panel>
+				<panel width="*" height="*" childLayout="center">
+					<control id="ok" name="button" label="OK">
+					</control>
+				</panel>
+			</panel>
+		</layer>
+	</screen>
+</nifty>

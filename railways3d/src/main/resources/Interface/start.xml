@@ -1,19 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
-    <!-- +++++++++++++++++++++++++++++++++++++++ -->
-    <!-- start screen -->
-    <!-- +++++++++++++++++++++++++++++++++++++++ -->
-    <screen id="start" controller="mygame.Main">
-        <layer id="layer" backgroundColor="#003f" childLayout="center">
-            <panel id="panel" height="25%" width="35%" align="center" valign="center" backgroundColor="#f60f" childLayout="center" visibleToMouse="true">
-                <interact onClick="quit()"/>
-                <effect>
-                    <onStartScreen name="move" mode="in" direction="top" length="300" startDelay="0" inherit="true"/>
-                    <onEndScreen name="move" mode="out" direction="bottom" length="300" startDelay="0" inherit="true"/>
-                    <onHover name="pulsate" scaleFactor="0.008" startColor="#f600" endColor="#ffff" post="true"/>
-                </effect>
-                <text id="text" font="Fonts/default.fnt" color="#000f" text="Hello World!" align="center" valign="center" />
-            </panel>
-        </layer>
-    </screen>
+<nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
+	<!-- +++++++++++++++++++++++++++++++++++++++ -->
+	<!-- start screen -->
+	<!-- +++++++++++++++++++++++++++++++++++++++ -->
+	<useStyles filename="nifty-default-styles.xml" />
+	<useControls filename="nifty-default-controls.xml" />
+	<style id="text.bluPanel">
+		<attributes font="Fonts/UbuntuMedium.fnt" color="#ffff"
+			align="center" />
+	</style>
+	<style id="image.bluPanel">
+		<attributes filename="Interface/panel.png" height="80"
+			width="300" imageMode="resize:13,3,13,13,13,3,13,3,13,3,13,13" />
+	</style>
+	<screen id="start" controller="org.mmarini.railways3d.StartScreen">
+		<layer backgroundColor="#000f" childLayout="center">
+			<image filename="Interface/Stazione-ferroviaria-cinese1.jpg"
+				width="100%" height="100%" />
+		</layer>
+		<layer backgroundColor="#fffc" childLayout="center">
+			<panel height="80%" width="80%" childLayout="horizontal">
+				<panel height="100%" width="25%" childLayout="vertical">
+					<panel height="25%" width="*" childLayout="center">
+						<control name="button" label="Start" id="StartButton">
+						</control>
+					</panel>
+					<panel height="25%" width="*" childLayout="center">
+						<control id="optionsButton" name="button" label="Options">
+						</control>
+					</panel>
+					<panel height="25%" width="*" childLayout="center">
+						<control name="button" label="Hall Of Fame" id="HallOfFameButton">
+						</control>
+					</panel>
+					<panel height="25%" width="*" childLayout="center">
+						<control name="button" label="Quit" id="QuitButton">
+							<interact onClick="quitGame()" />
+						</control>
+					</panel>
+				</panel>
+				<panel width="75%" height="*" childLayout="vertical">
+					<panel height="33%" width="*" childLayout="center">
+						<image style="image.bluPanel" />
+						<panel align="center" childLayout="vertical">
+							<text text="Stazione" style="text.bluPanel" />
+							<text id="station" text="Jacksonville" style="text.bluPanel" />
+						</panel>
+					</panel>
+					<panel height="33%" width="*" childLayout="center">
+						<image style="image.bluPanel" />
+						<panel align="center" childLayout="vertical">
+							<text text="Difficoltà" style="text.bluPanel" />
+							<text id="level" text="Facile" style="text.bluPanel" />
+						</panel>
+					</panel>
+					<panel height="33%" width="*" childLayout="center">
+						<image style="image.bluPanel" />
+						<panel align="center" childLayout="vertical">
+							<text text="Durata" style="text.bluPanel" />
+							<text id="duration" text="Corto" style="text.bluPanel" />
+						</panel>
+					</panel>
+				</panel>
+			</panel>
+		</layer>
+	</screen>
 </nifty>
