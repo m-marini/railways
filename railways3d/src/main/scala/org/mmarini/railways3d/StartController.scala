@@ -12,21 +12,23 @@ import de.lessvoid.nifty.elements.render.TextRenderer
 import org.mmarini.railways3d.model.GameParameters
 import scala.collection.parallel.mutable.ParMap
 import org.mmarini.railways3d.model.GameParameters
+import de.lessvoid.nifty.controls.ButtonClickedEvent
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * @author us00852
  *
  */
-class StartScreen extends AbstractAppState with ScreenController {
-  private var nifty: Option[Nifty] = None
+class StartController extends AbstractAppState with AbstractController with LazyLogging {
   private var screen: Option[Screen] = None
   private var handler: Option[GameHandler] = None
 
   /**
    *
    */
-  def bind(nifty: Nifty, screen: Screen) {
-    this.nifty = Some(nifty)
+  override def bind(nifty: Nifty, screen: Screen) {
+    logger.debug("bind ...")
+    super.bind(nifty, screen)
     this.screen = Some(screen)
   }
 
@@ -64,7 +66,7 @@ class StartScreen extends AbstractAppState with ScreenController {
   /**
    *
    */
-  def applyHandler(handler: GameHandler): StartScreen = {
+  def applyHandler(handler: GameHandler): StartController = {
     this.handler = Some(handler)
     applyUI
   }
@@ -72,27 +74,21 @@ class StartScreen extends AbstractAppState with ScreenController {
   /**
    *
    */
-  def onStartScreen() {
+  override def onStartScreen {
     applyUI
   }
 
   /**
    *
    */
-  def onEndScreen() {
+  def startGame {
+    handler.foreach(Main.startGame(_))
   }
 
   /**
    *
    */
-  def gotoScreen(id: String) {
-    nifty.map(_.gotoScreen(id))
-  }
-
-  /**
-   *
-   */
-  def quitGame() {
+  def quitGame {
     Main.stop()
   }
 }

@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
-    <useStyles filename="nifty-default-styles.xml" />
-    <useControls filename="nifty-default-controls.xml" />
+<nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
+	<useStyles filename="nifty-default-styles.xml" />
+	<useControls filename="nifty-default-controls.xml" />
 
-    <screen id="game-screen">
-        <layer backgroundColor="#888f"/>
-        <layer childLayout="vertical">
-            <panel width="200" height="200" align="right" childLayout="center" backgroundColor="#000f" padding="10px">
-                <control name="listBox" vertical="optional" horizontal="optional" displayItems="8" selection="Multiple" />            
-            </panel>
-            <panel width="200" height="100" align="right" childLayout="center" backgroundColor="#000f">
-                <control name="button" label="Do something!" />            
-            </panel>
-        </layer>
-    </screen>
+	<screen id="game-screen" controller="org.mmarini.railways3d.GameController">
+		<layer childLayout="vertical">
+			<panel width="200" height="200" align="right" childLayout="center"
+				backgroundColor="#0008" padding="10px">
+				<control id="trainList" name="listBox" vertical="optional"
+					horizontal="optional" displayItems="8" selection="Multiple" />
+			</panel>
+			<panel width="200" height="100" align="right" childLayout="center"
+				backgroundColor="#0008">
+				<control id="doButton" name="button" label="Do something!" />
+			</panel>
+		</layer>
+	</screen>
 </nifty>

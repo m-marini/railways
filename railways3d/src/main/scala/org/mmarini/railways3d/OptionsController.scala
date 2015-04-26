@@ -11,23 +11,13 @@ import de.lessvoid.nifty.controls.DropDown
 import de.lessvoid.nifty.controls.CheckBox
 import de.lessvoid.nifty.controls.Slider
 import org.mmarini.railways3d.model.GameParameters
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * @author us00852
  *
  */
-class OptionsScreen extends AbstractAppState with ScreenController {
-  private val DefaultVolume = 50f
-  private val frequenceEnum = new Enumeration {
-    val Easy, Medium, Difficult, Custom = Value
-    val valueById = Map(Easy -> 10, Medium -> 20, Difficult -> 60).map { case (k, v) => (k.id -> v.toFloat / 60) }
-  }
-  private val durationEnum = new Enumeration {
-    val Short, Medium, Long, Custom = Value
-    val valueById = Map(Short -> 5, Medium -> 10, Long -> 30).map { case (k, v) => (k.id -> v.toFloat * 60) }
-  }
-
-  private var nifty: Option[Nifty] = None
+class OptionsController extends AbstractAppState with AbstractController with LazyLogging {
   private var station: Option[DropDown[String]] = None
   private var level: Option[DropDown[String]] = None
   private var duration: Option[DropDown[String]] = None
@@ -38,8 +28,9 @@ class OptionsScreen extends AbstractAppState with ScreenController {
   /**
    *
    */
-  def bind(nifty: Nifty, screen: Screen) {
-    this.nifty = Some(nifty)
+  override def bind(nifty: Nifty, screen: Screen) {
+    super.bind(nifty, screen)
+    logger.debug("bind ...")
 
     station = Some(screen.findNiftyControl("station", classOf[DropDown[String]]))
     level = Some(screen.findNiftyControl("level", classOf[DropDown[String]]))
@@ -81,8 +72,8 @@ class OptionsScreen extends AbstractAppState with ScreenController {
       station.map(_.getSelection()).getOrElse("???"),
       level.map(_.getSelection()).getOrElse("???"),
       duration.map(_.getSelection()).getOrElse("???"),
-      frequenceEnum.valueById(level.map(_.getSelectedIndex()).getOrElse(0)),
-      durationEnum.valueById(duration.map(_.getSelectedIndex()).getOrElse(0)),
+      OptionsController.FrequenceEnum.valueById(level.map(_.getSelectedIndex()).getOrElse(0)),
+      OptionsController.DurationEnum.valueById(duration.map(_.getSelectedIndex()).getOrElse(0)),
       autoLock.map(_.isChecked()).getOrElse(true),
       mute.map(_.isChecked()).getOrElse(false),
       volume.map(_.getValue() / 100).getOrElse(0.5f))
@@ -91,14 +82,23 @@ class OptionsScreen extends AbstractAppState with ScreenController {
   /**
    *
    */
-  def onStartScreen() {
-    autoLock.foreach(_.check())
-    volume.foreach(_.setValue(DefaultVolume))
+  def okPressed {
+    logger.debug("okPressed ...")
+    Main.optionChanged(parameters)
   }
+}
 
-  /**
-   *
-   */
-  def onEndScreen() {
+/**
+ *
+ */
+object OptionsController {
+  val DefaultVolume = 50f
+  val FrequenceEnum = new Enumeration {
+    val Easy, Medium, Difficult, Custom = Value
+    val valueById = Map(Easy -> 10, Medium -> 20, Difficult -> 60).map { case (k, v) => (k.id -> v.toFloat / 60) }
+  }
+  val DurationEnum = new Enumeration {
+    val Short, Medium, Long, Custom = Value
+    val valueById = Map(Short -> 5, Medium -> 10, Long -> 30).map { case (k, v) => (k.id -> v.toFloat * 60) }
   }
 }
