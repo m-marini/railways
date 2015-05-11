@@ -19,28 +19,23 @@ import org.mmarini.railways3d.model.GameParameters
 trait AbstractController extends ScreenController {
 
   private var _nifty: Option[Nifty] = None
+  private var _screen: Option[Screen] = None
 
   def nifty: Nifty = _nifty.get
+  def screen: Screen = _screen.get
 
   /**
    *
    */
   def bind(nifty: Nifty, screen: Screen) {
     _nifty = Some(nifty)
+    _screen = Some(screen)
   }
 
   /**
    *
    */
   def onStartScreen() {
-
-  }
-
-  /**
-   *
-   */
-  def gotoScreen(id: String) {
-    nifty.gotoScreen(id)
   }
 
   /**

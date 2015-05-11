@@ -15,6 +15,7 @@ import org.mmarini.railways3d.model.GameParameters
 import de.lessvoid.nifty.screen.ScreenController
 import org.mmarini.railways3d.model.GameParameters
 import org.mmarini.railways3d.model.GameParameters
+import rx.lang.scala.Observer
 
 /**
  *
@@ -22,6 +23,22 @@ import org.mmarini.railways3d.model.GameParameters
 object Main extends SimpleApplication with LazyLogging {
 
   private var niftyDisplay: Option[NiftyJmeDisplay] = None
+
+  private val startPaneObserver = Observer((id: String) => id match {
+    case "optionsButton" =>
+      for (n <- nifty)
+        n.gotoScreen("opts-screen")
+    case "quitButton" =>
+      stop
+    case "startButton" =>
+      for (n <- nifty)
+        n.gotoScreen("game-screen")
+    case t => logger.info(s"selected $t")
+  })
+
+  private val optsPaneObserver = Observer((id: String) =>
+    for (n <- nifty)
+      n.gotoScreen("start"))
 
   /**
    *
@@ -33,74 +50,61 @@ object Main extends SimpleApplication with LazyLogging {
     niftyDisplay = Some(new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort))
 
     // Read your XML and initialize your custom ScreenController
-    nifty.foreach(n => {
+    for (n <- nifty) {
       n.fromXml("Interface/start.xml", "start")
       n.addXml("Interface/opts.xml")
       n.addXml("Interface/game.xml")
-    })
+    }
+
     // attach the Nifty display to the gui view port as a processor
-    niftyDisplay.foreach(guiViewPort.addProcessor(_))
+    for (nd <- niftyDisplay) {
+      guiViewPort.addProcessor(nd)
+    }
+
     // disable the fly cam
     flyCam.setDragToRotate(true)
+
+    wireUp
+  }
+
+  /**
+   *
+   */
+  private def wireUp {
     for {
-      start <- niftyController("start")
+      start <- controller[StartController]("start")
+      opts <- controller[OptionsController]("opts-screen")
+      game <- controller[GameController]("game-screen")
     } {
-      start.asInstanceOf[StartController].applyHandler(
-        new GameHandler(GameParameters(
-          "Delta Crossing",
-          "Easy",
-          "Short",
-          OptionsController.DurationEnum.valueById(OptionsController.DurationEnum.Short.id),
-          OptionsController.FrequenceEnum.valueById(OptionsController.FrequenceEnum.Easy.id),
-          true,
-          false,
-          OptionsController.DefaultVolume)))
+      start.selection.subscribe(startPaneObserver)
+      opts.completed.subscribe(optsPaneObserver)
+      opts.gameParameters.subscribe(start.gameParameter)
+//      game.gameStarter.onNext(this, new GameHandler(opts.gameParameters ))
     }
   }
 
   /**
    *
    */
-  private def nifty = {
-    niftyDisplay.map(n => n.getNifty())
-  }
+  private def nifty = niftyDisplay.map(n => n.getNifty())
 
   /**
    *
    */
-  private def niftyScreen(id: String) = {
+  private def screen(id: String) = {
     nifty.map(n => n.getScreen(id))
   }
 
   /**
    *
    */
-  private def niftyController(id: String) = {
-    niftyScreen(id).map(n => n.getScreenController())
-  }
+  private def controller[T](id: String) =
+    screen(id).map(n => n.getScreenController().asInstanceOf[T])
 
   /**
    *
    */
   def main(args: Array[String]): Unit = {
     Main.start()
-  }
-
-  /**
-   *
-   */
-  def optionChanged(p: GameParameters) {
-    logger.debug(s"optionChanged $p")
-    niftyController("start").foreach(co => co.asInstanceOf[StartController].applyHandler(new GameHandler(p)))
-    nifty.foreach(n => n.gotoScreen("start"))
-  }
-
-  /**
-   *
-   */
-  def startGame(handler: GameHandler) {
-    logger.debug(s"starting game $handler")
-    nifty.foreach(n => n.gotoScreen("game-screen"))
-    niftyController("game-screen").foreach(_.asInstanceOf[GameController].startGame(this,handler))
   }
 }

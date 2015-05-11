@@ -32,4 +32,8 @@ libraryDependencies += "com.jme3" % "jme3-niftygui" % "3.0.10"
 
 libraryDependencies += "org.bushe" % "eventbus" % "1.4"
 
+libraryDependencies += "io.reactivex" %% "rxscala" % "0.23.0"
+
+libraryDependencies += "io.reactivex" % "rxswing" % "0.21.0"
+
 lazy val root = project in file(".")

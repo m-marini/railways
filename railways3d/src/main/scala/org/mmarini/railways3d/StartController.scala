@@ -14,81 +14,45 @@ import scala.collection.parallel.mutable.ParMap
 import org.mmarini.railways3d.model.GameParameters
 import de.lessvoid.nifty.controls.ButtonClickedEvent
 import com.typesafe.scalalogging.LazyLogging
+import rx.lang.scala.Observable
+import rx.lang.scala.Subject
+import rx.lang.scala.Observer
+import org.mmarini.railways3d.model.GameParameters
 
 /**
  * @author us00852
  *
  */
 class StartController extends AbstractAppState with AbstractController with LazyLogging {
-  private var screen: Option[Screen] = None
-  private var handler: Option[GameHandler] = None
+
+  val selection = Subject[String]()
+
+  val gameParameter = Observer((parms: GameParameters) => parms match {
+    case GameParameters(stationName, levelName, durationName, _, _, _, _, _) =>
+      station.setText(stationName)
+      level.setText(levelName)
+      duration.setText(durationName)
+  })
 
   /**
    *
    */
-  override def bind(nifty: Nifty, screen: Screen) {
-    logger.debug("bind ...")
-    super.bind(nifty, screen)
-    this.screen = Some(screen)
-  }
+  private def station = screen.findElementByName("station").getRenderer(classOf[TextRenderer])
 
   /**
    *
    */
-  private def applyUI = {
-    // Read data
-    val (stationName, levelName, durationName) = handler match {
-      case Some(h) => h.parms match {
-        case GameParameters(stationName, levelName, durationName, _, _, _, _, _) =>
-          (stationName, levelName, durationName)
-      }
-      case None => ("???", "???", "???")
-    }
-
-    /*
-     * apply to UI
-     */
-    screen.map(s => {
-      s.findElementByName("station").
-        getRenderer(classOf[TextRenderer]).
-        setText(stationName)
-      s.findElementByName("level").
-        getRenderer(classOf[TextRenderer]).
-        setText(levelName)
-      s.
-        findElementByName("duration").
-        getRenderer(classOf[TextRenderer]).
-        setText(durationName)
-    })
-    this
-  }
+  private def level = screen.findElementByName("level").getRenderer(classOf[TextRenderer])
 
   /**
    *
    */
-  def applyHandler(handler: GameHandler): StartController = {
-    this.handler = Some(handler)
-    applyUI
-  }
+  private def duration = screen.
+    findElementByName("duration").getRenderer(classOf[TextRenderer])
 
   /**
    *
    */
-  override def onStartScreen {
-    applyUI
-  }
-
-  /**
-   *
-   */
-  def startGame {
-    handler.foreach(Main.startGame(_))
-  }
-
-  /**
-   *
-   */
-  def quitGame {
-    Main.stop()
-  }
+  def select(id: String): Unit =
+    selection.onNext(id)
 }

@@ -20,36 +20,34 @@ import com.jme3.scene.shape.Box
 import com.jme3.math.ColorRGBA
 import com.jme3.asset.AssetManager
 import com.jme3.app.SimpleApplication
+import com.jme3.util.SkyFactory
+import rx.lang.scala.Observer
 
 /**
  * @author us00852
  *
  */
 class GameController extends AbstractAppState with AbstractController with LazyLogging {
-  private var screen: Option[Screen] = None
-  private var handler: Option[GameHandler] = None
 
-  /**
-   *
-   */
-  override def bind(nifty: Nifty, screen: Screen) {
-    logger.debug("bind ...")
-    super.bind(nifty, screen)
-    this.screen = Some(screen)
-  }
+  val gameStarter = Observer((o: (SimpleApplication, GameHandler)) => {
+    o match {
+      case (app, handler) =>
+        val assetManager = app.getAssetManager
+        val coatch = assetManager.loadModel("Models/veichles/coatch.j3o")
+        val mat = new Material(app.getAssetManager, "Common/MatDefs/Misc/Unshaded.j3md")
+        mat.setColor("Color", ColorRGBA.Blue)
+        coatch.setMaterial(mat)
+        val rootNode = app.getRootNode
+        rootNode.attachChild(coatch)
+        val west = assetManager.loadTexture("Textures/sky/lagoon_west.jpg")
+        val east = assetManager.loadTexture("Textures/sky/lagoon_east.jpg")
+        val north = assetManager.loadTexture("Textures/sky/lagoon_north.jpg")
+        val south = assetManager.loadTexture("Textures/sky/lagoon_south.jpg")
+        val up = assetManager.loadTexture("Textures/sky/lagoon_up.jpg")
+        val down = assetManager.loadTexture("Textures/sky/lagoon_down.jpg")
 
-  /**
-   *
-   */
-  def startGame(app: SimpleApplication, handler: GameHandler) {
-    this.handler = Some(handler)
-    val player = new Geometry("Player", new Box(1, 1, 1))
-
-    val mat = new Material(app.getAssetManager, "Common/MatDefs/Misc/Unshaded.j3md")
-    mat.setColor("Color", ColorRGBA.Blue)
-
-    player.setMaterial(mat)
-
-    app.getRootNode.attachChild(player)
-  }
+        val sky = SkyFactory.createSky(assetManager, west, east, north, south, up, down)
+        rootNode.attachChild(sky)
+    }
+  })
 }

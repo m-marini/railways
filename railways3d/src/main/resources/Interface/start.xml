@@ -24,22 +24,23 @@
 			<panel height="80%" width="80%" childLayout="horizontal">
 				<panel height="100%" width="25%" childLayout="vertical">
 					<panel height="25%" width="*" childLayout="center">
-						<control name="button" label="Start" id="StartButton">
-							<interact onClick="startGame()" />
+						<control name="button" label="Start" id="startButton">
+							<interact onClick="select(startButton)" />
 						</control>
 					</panel>
 					<panel height="25%" width="*" childLayout="center">
 						<control id="optionsButton" name="button" label="Options">
-							<interact onClick="gotoScreen(opts-screen)" />
+							<interact onClick="select(optionsButton)" />
 						</control>
 					</panel>
 					<panel height="25%" width="*" childLayout="center">
-						<control name="button" label="Hall Of Fame" id="HallOfFameButton">
+						<control name="button" label="Hall Of Fame" id="hallOfFameButton">
+							<interact onClick="select(hallOfFameButton)" />
 						</control>
 					</panel>
 					<panel height="25%" width="*" childLayout="center">
-						<control name="button" label="Quit" id="QuitButton">
-							<interact onClick="quitGame()" />
+						<control name="button" label="Quit" id="quitButton">
+							<interact onClick="select(quitButton)" />
 						</control>
 					</panel>
 				</panel>
