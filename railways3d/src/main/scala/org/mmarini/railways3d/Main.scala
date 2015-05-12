@@ -16,6 +16,8 @@ import de.lessvoid.nifty.screen.ScreenController
 import org.mmarini.railways3d.model.GameParameters
 import org.mmarini.railways3d.model.GameParameters
 import rx.lang.scala.Observer
+import rx.lang.scala.Observable
+import rx.lang.scala.Subject
 
 /**
  *
@@ -24,15 +26,24 @@ object Main extends SimpleApplication with LazyLogging {
 
   private var niftyDisplay: Option[NiftyJmeDisplay] = None
 
+  /**
+   *
+   */
+  def sampled[T, S](trigger: Observable[T], value: Observable[S]): Observable[(T, S)] = {
+    val r = Subject[(T, S)]()
+    var v: Option[S] = None
+    value.subscribe((s) => v = Some(s))
+    trigger.subscribe(
+      (t) => if (!v.isEmpty) r.onNext((t, v.get)),
+      (ex) => r.onError(ex),
+      r.onCompleted)
+    r
+  }
+
   private val startPaneObserver = Observer((id: String) => id match {
-    case "optionsButton" =>
-      for (n <- nifty)
-        n.gotoScreen("opts-screen")
-    case "quitButton" =>
-      stop
-    case "startButton" =>
-      for (n <- nifty)
-        n.gotoScreen("game-screen")
+    case "optionsButton" => for (n <- nifty) n.gotoScreen("opts-screen")
+    case "quitButton" => stop
+    case "startButton" => for (n <- nifty) n.gotoScreen("game-screen")
     case t => logger.info(s"selected $t")
   })
 
@@ -79,7 +90,11 @@ object Main extends SimpleApplication with LazyLogging {
       start.selection.subscribe(startPaneObserver)
       opts.completed.subscribe(optsPaneObserver)
       opts.gameParameters.subscribe(start.gameParameter)
-//      game.gameStarter.onNext(this, new GameHandler(opts.gameParameters ))
+      val startGameObs = sampled(
+        start.selection.filter(_ == "startButton"),
+        opts.gameParameters).
+        map(m => (this, new GameHandler(m._2)))
+      startGameObs.subscribe(game.gameStarter)
     }
   }
 
