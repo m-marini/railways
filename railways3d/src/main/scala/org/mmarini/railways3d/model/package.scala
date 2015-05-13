@@ -14,4 +14,8 @@ import com.jme3.math.Vector2f
 package object model {
   val Pif = Pi.toFloat
   val Pi2f = (2 * Pi).toFloat
+  
+  type Path = IndexedSeq[Track]
+  type Endpoint = (Block, Int)
+  type Junction = (Endpoint, Endpoint)
 }
