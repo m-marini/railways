@@ -69,12 +69,12 @@ object Main extends SimpleApplication with LazyLogging {
     } {
       start.selection.subscribe(startPaneObserver)
       opts.completed.subscribe(optsPaneObserver)
-      opts.gameParameters.subscribe(start.gameParameter)
+      opts.gameParameters.subscribe(start.gameParameterObserver)
       val startGameObs = sampled(
         start.selection.filter(_ == "startButton"),
         opts.gameParameters).
         map(m => (this, m._2))
-      startGameObs.subscribe(game.gameStarter)
+      startGameObs.subscribe(game.gameStarterObserver)
     }
   }
 

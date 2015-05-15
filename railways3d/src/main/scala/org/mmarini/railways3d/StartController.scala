@@ -25,9 +25,17 @@ import org.mmarini.railways3d.model.GameParameters
  */
 class StartController extends AbstractAppState with AbstractController with LazyLogging {
 
-  val selection = Subject[String]()
+  private val _selection = Subject[String]()
 
-  val gameParameter = Observer((parms: GameParameters) => parms match {
+  /**
+   * 
+   */
+  def selection: Observable[String] = _selection
+
+  /**
+   * 
+   */
+  val gameParameterObserver = Observer((parms: GameParameters) => parms match {
     case GameParameters(stationName, levelName, durationName, _, _, _, _, _) =>
       station.setText(stationName)
       level.setText(levelName)
@@ -54,5 +62,5 @@ class StartController extends AbstractAppState with AbstractController with Lazy
    *
    */
   def select(id: String): Unit =
-    selection.onNext(id)
+    _selection.onNext(id)
 }

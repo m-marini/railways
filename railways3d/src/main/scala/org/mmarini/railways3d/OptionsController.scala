@@ -15,6 +15,7 @@ import com.typesafe.scalalogging.LazyLogging
 import rx.lang.scala.Observable
 import rx.lang.scala.Subscription
 import rx.lang.scala.Subject
+import org.mmarini.railways3d.model.GameParameters
 
 /**
  * @author us00852
@@ -44,9 +45,19 @@ class OptionsController extends AbstractAppState with AbstractController with La
 
   private def volume = screen.findNiftyControl("volume", classOf[Slider])
 
-  val gameParameters = Subject[GameParameters]()
+  private val _gameParameters = Subject[GameParameters]()
 
-  val completed = Subject[String]()
+  private val _completed = Subject[String]()
+
+  /**
+   *
+   */
+  def gameParameters: Observable[GameParameters] = _gameParameters
+
+  /**
+   *
+   */
+  def completed: Observable[String] = _completed
 
   /**
    *
@@ -71,7 +82,7 @@ class OptionsController extends AbstractAppState with AbstractController with La
    *
    */
   def okPressed {
-    gameParameters.onNext(
+    _gameParameters.onNext(
       GameParameters(
         station.getSelection,
         level.getSelection,
@@ -81,6 +92,6 @@ class OptionsController extends AbstractAppState with AbstractController with La
         autoLock.isChecked,
         mute.isChecked,
         volume.getValue / 100))
-    completed.onNext("completed")
+    _completed.onNext("completed")
   }
 }
