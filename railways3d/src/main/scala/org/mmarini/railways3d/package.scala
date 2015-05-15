@@ -9,34 +9,52 @@ package org.mmarini
  */
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
+import rx.lang.scala.Subscription
+import rx.lang.scala.Observer
+import rx.lang.scala.subscriptions.CompositeSubscription
 
 package object railways3d {
 
   /**
    *
    */
-  def sampled[T, S](trigger: Observable[T], value: Observable[S]): Observable[(T, S)] = {
-    val r = Subject[(T, S)]()
-    var v: Option[S] = None
-    value.subscribe((s) => v = Some(s))
-    trigger.subscribe(
-      (t) => if (!v.isEmpty) r.onNext((t, v.get)),
-      (ex) => r.onError(ex),
-      r.onCompleted)
+  def sampled[T, S](trigger: Observable[T], value: Observable[S], init: Option[S] = None): Observable[(T, S)] = {
+
+    val r = Observable.create((o: Observer[(T, S)]) => {
+
+      var v: Option[S] = init
+
+      val triggerSubscription = trigger.subscribe(
+        (t) => if (!v.isEmpty) o.onNext((t, v.get)),
+        (ex) => o.onError(ex),
+        o.onCompleted)
+
+      val valueSubscription = value.subscribe(
+        (s) => v = Some(s),
+        (ex) => {
+          o.onError(ex)
+          triggerSubscription.unsubscribe
+          o.onCompleted
+        },
+        () => {})
+      CompositeSubscription(valueSubscription, triggerSubscription)
+    })
     r
   }
 
   /**
    *
    */
-  def fold[E, S](f: ((E, S)) => S)(s0: S)(e: Observable[E]): Observable[S] = {
-    val s = Subject[S]
-    sampled(e, s).
-      map(f).subscribe(
-        x => s.onNext(x),
-        ex => s.onError(ex),
-        s.onCompleted)
-    s.onNext(s0)
-    s
-  }
+  def stateFlow[S](s0: S)(transition: Observable[S => S]): Observable[S] =
+    Observable.create((o: Observer[S]) => {
+      o.onNext(s0)
+      var s = s0
+      transition.subscribe(
+        f => {
+          s = f(s)
+          o.onNext(s)
+        },
+        ex => o.onError(ex),
+        o.onCompleted)
+    })
 }

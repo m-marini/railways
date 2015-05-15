@@ -7,7 +7,6 @@ import com.jme3.app.state.AbstractAppState
 import de.lessvoid.nifty.screen.ScreenController
 import de.lessvoid.nifty.Nifty
 import de.lessvoid.nifty.screen.Screen
-import org.mmarini.railways3d.model.GameHandler
 import de.lessvoid.nifty.elements.render.TextRenderer
 import org.mmarini.railways3d.model.GameParameters
 import scala.collection.parallel.mutable.ParMap

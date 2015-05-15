@@ -11,9 +11,13 @@ object Prova {
   /**
    * genera un'osservabile che produce una sequenza di gioco ad ogni variazione di parametri
    */
-  def createGameObservable(parms: Observable[GameParameters], events: Observable[Any]): Observable[Observable[GameStatus]] =
-    parms.map(p => fold[Any, GameStatus] {
-      case (event: String, status) => status.doSomething(event)
-      case (event: Int, status) => status.doSomething(event)
-    }(GameStatus(p))(events))
+  def createGameObservable(parms: Observable[GameParameters], events: Observable[GameTransition]): Observable[Observable[GameStatus]] = {
+    parms.map(p => stateFlow(initState(p))(events))
+  }
+
+  /**
+   *
+   */
+  def initState(parms: GameParameters): GameStatus =
+    GameStatus(parms, Topology(Set()), 0f)
 }

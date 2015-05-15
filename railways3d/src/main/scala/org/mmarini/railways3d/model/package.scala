@@ -38,4 +38,6 @@ package object model {
   type Path = IndexedSeq[Track]
   type Endpoint = (Block, Int)
   type Junction = (Endpoint, Endpoint)
+  type GameTransition = GameStatus => GameStatus
+  
 }

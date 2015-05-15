@@ -5,7 +5,6 @@ package org.mmarini.railways3d
 
 import com.jme3.app.SimpleApplication
 import com.jme3.niftygui.NiftyJmeDisplay
-import org.mmarini.railways3d.model.GameHandler
 import de.lessvoid.nifty.Nifty
 import de.lessvoid.nifty.controls.ButtonClickedEvent
 import com.typesafe.scalalogging.LazyLogging
@@ -43,7 +42,7 @@ object Main extends SimpleApplication with LazyLogging {
   @Override
   def simpleInitApp: Unit = {
     setDisplayStatView(false)
-    setDisplayFps(false)
+//    setDisplayFps(false)
     niftyDisplay = Some(new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort))
 
     // Read your XML and initialize your custom ScreenController
@@ -61,8 +60,7 @@ object Main extends SimpleApplication with LazyLogging {
     // disable the fly cam
     flyCam.setDragToRotate(true)
 
-       opts.gameParameters.subscribe(start.gameParameterObserver)
-  for {
+    for {
       start <- controller[StartController]("start")
       opts <- controller[OptionsController]("opts-screen")
       game <- controller[GameController]("game-screen")
@@ -76,6 +74,20 @@ object Main extends SimpleApplication with LazyLogging {
         map(m => (this, m._2))
       startGameObs.subscribe(game.gameStarterObserver)
     }
+  }
+
+  val _time = Subject[(SimpleApplication, Float)]()
+
+  /**
+   *
+   */
+  def timeObservable: Observable[(SimpleApplication, Float)] = _time
+
+  /**
+   *
+   */
+  override def simpleUpdate(tpf: Float) {
+    _time.onNext(this, tpf)
   }
 
   /**
