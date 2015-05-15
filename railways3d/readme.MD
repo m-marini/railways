@@ -60,3 +60,20 @@ I blocchi sono costituti da punti di connessione, percorsi validi che legano i p
 I percorsi sono costituiti da insiemi ordinati di binari di due tipi:
   * Binari rettilinei
   * Binari curvi
+
+
+## Gioco
+
+Il gioco è una sequenza di stati generati dallo scorre del tempo di simulazione e dall'interazione del giocatore.
+E' quindi descritto da un'osservabile.
+
+  
+## Start del gioco
+
+Alla partenza del gioco è necessario caricare tutte le risorse 3D, poi generare il modello della stazione contenete la
+topologia, creare lo stato iniziale del gioco e eseguire la simulazione.
+
+Lo stato del gioco cambia durante il tempo e quindi è un'osservabile.
+La topologia della stazione è contenuta nello stato del gioco.
+
+

@@ -26,20 +26,6 @@ object Main extends SimpleApplication with LazyLogging {
 
   private var niftyDisplay: Option[NiftyJmeDisplay] = None
 
-  /**
-   *
-   */
-  def sampled[T, S](trigger: Observable[T], value: Observable[S]): Observable[(T, S)] = {
-    val r = Subject[(T, S)]()
-    var v: Option[S] = None
-    value.subscribe((s) => v = Some(s))
-    trigger.subscribe(
-      (t) => if (!v.isEmpty) r.onNext((t, v.get)),
-      (ex) => r.onError(ex),
-      r.onCompleted)
-    r
-  }
-
   private val startPaneObserver = Observer((id: String) => id match {
     case "optionsButton" => for (n <- nifty) n.gotoScreen("opts-screen")
     case "quitButton" => stop
@@ -75,14 +61,8 @@ object Main extends SimpleApplication with LazyLogging {
     // disable the fly cam
     flyCam.setDragToRotate(true)
 
-    wireUp
-  }
-
-  /**
-   *
-   */
-  private def wireUp {
-    for {
+       opts.gameParameters.subscribe(start.gameParameterObserver)
+  for {
       start <- controller[StartController]("start")
       opts <- controller[OptionsController]("opts-screen")
       game <- controller[GameController]("game-screen")
@@ -93,7 +73,7 @@ object Main extends SimpleApplication with LazyLogging {
       val startGameObs = sampled(
         start.selection.filter(_ == "startButton"),
         opts.gameParameters).
-        map(m => (this, new GameHandler(m._2)))
+        map(m => (this, m._2))
       startGameObs.subscribe(game.gameStarter)
     }
   }

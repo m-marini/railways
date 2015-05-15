@@ -22,6 +22,7 @@ import com.jme3.asset.AssetManager
 import com.jme3.app.SimpleApplication
 import com.jme3.util.SkyFactory
 import rx.lang.scala.Observer
+import org.mmarini.railways3d.model.GameParameters
 
 /**
  * @author us00852
@@ -29,11 +30,11 @@ import rx.lang.scala.Observer
  */
 class GameController extends AbstractAppState with AbstractController with LazyLogging {
 
-  val gameStarter = Observer((o: (SimpleApplication, GameHandler)) => {
-    logger.info("Game start")
+  val gameStarter = Observer((o: (SimpleApplication, GameParameters)) => {
     o match {
-      case (app, handler) =>
+      case (app, parms) =>
         val assetManager = app.getAssetManager
+        
         val coatch = assetManager.loadModel("Models/veichles/coatch.j3o")
         val mat = new Material(app.getAssetManager, "Common/MatDefs/Misc/Unshaded.j3md")
         mat.setColor("Color", ColorRGBA.Blue)
