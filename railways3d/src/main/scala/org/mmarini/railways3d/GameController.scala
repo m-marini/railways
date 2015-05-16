@@ -23,32 +23,46 @@ class GameController extends AbstractAppState with AbstractController with LazyL
   val gameStarterObserver = Observer((o: (Main.type, GameParameters)) => {
     o match {
       case (app, parms) =>
+        logger.info("starting game ...")
         val assetManager = app.getAssetManager
 
-        val coatch = assetManager.loadModel("Models/veichles/coatch.j3o")
+        val coach = assetManager.loadModel("Models/veichles/coach.j3o")
         val mat = new Material(app.getAssetManager, "Common/MatDefs/Misc/Unshaded.j3md")
-        mat.setColor("Color", ColorRGBA.Blue)
-        coatch.setMaterial(mat)
+        mat.setColor("Color", ColorRGBA.Gray)
+
+        logger.info("loading platform ...")
+        val platform = assetManager.loadModel("Models/blocks/green_plat.j3o")
+        logger.info("Platform loaded ...")
+        val mat1 = new Material(app.getAssetManager, "Common/MatDefs/Misc/Unshaded.j3md")
+        mat1.setColor("Color", ColorRGBA.Green)
+        platform.setMaterial(mat1)
+
         val rootNode = app.getRootNode
-        rootNode.attachChild(coatch)
-        val west = assetManager.loadTexture("Textures/sky/lagoon_west.jpg")
-        val east = assetManager.loadTexture("Textures/sky/lagoon_east.jpg")
-        val north = assetManager.loadTexture("Textures/sky/lagoon_north.jpg")
-        val south = assetManager.loadTexture("Textures/sky/lagoon_south.jpg")
-        val up = assetManager.loadTexture("Textures/sky/lagoon_up.jpg")
-        val down = assetManager.loadTexture("Textures/sky/lagoon_down.jpg")
+        rootNode.attachChild(platform)
+        rootNode.attachChild(coach)
+        logger.info("Platform attached ...")
+
+        val name = "sky"
+        val west = assetManager.loadTexture(s"Textures/sky/${name}_west.png")
+        val east = assetManager.loadTexture(s"Textures/sky/${name}_east.png")
+        val north = assetManager.loadTexture(s"Textures/sky/${name}_north.png")
+        val south = assetManager.loadTexture(s"Textures/sky/${name}_south.png")
+        val up = assetManager.loadTexture(s"Textures/sky/${name}_up.png")
+        val down = assetManager.loadTexture(s"Textures/sky/${name}_down.png")
 
         val sky = SkyFactory.createSky(assetManager, west, east, north, south, up, down)
 
         rootNode.attachChild(sky)
+        logger.info("Sky attached...")
 
         import scala.math.sin
 
         val state =
           stateFlow(0f)(app.timeObservable.map(p => (x => x + p._2 * 10)))
 
-        state.subscribe(x => coatch.setLocalTranslation(100f * sin(x / 10).toFloat, 0f, 0f))
-
+        state.subscribe {
+          x => coach.setLocalTranslation(192.5f * sin(x / 10).toFloat, 0f, 0f)
+        }
     }
   })
 }
