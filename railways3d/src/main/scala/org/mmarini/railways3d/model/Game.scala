@@ -5,7 +5,7 @@ import rx.lang.scala.Observable
 /**
  *
  */
-object Prova {
+object Game {
 
   import org.mmarini.railways3d._
   /**

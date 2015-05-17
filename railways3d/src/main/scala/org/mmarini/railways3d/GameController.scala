@@ -19,7 +19,6 @@ import rx.lang.scala.Observer
  *
  */
 class GameController extends AbstractAppState with AbstractController with LazyLogging {
-
   val gameStarterObserver = Observer((o: (Main.type, GameParameters)) => {
     o match {
       case (app, parms) =>

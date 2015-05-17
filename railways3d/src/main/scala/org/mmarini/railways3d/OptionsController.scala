@@ -16,6 +16,7 @@ import rx.lang.scala.Observable
 import rx.lang.scala.Subscription
 import rx.lang.scala.Subject
 import org.mmarini.railways3d.model.GameParameters
+import org.mmarini.railways3d.model.GameParameters
 
 /**
  * @author us00852
@@ -45,14 +46,9 @@ class OptionsController extends AbstractAppState with AbstractController with La
 
   private def volume = screen.findNiftyControl("volume", classOf[Slider])
 
-  private val _gameParameters = Subject[GameParameters]()
-
   private val _completed = Subject[String]()
 
-  /**
-   *
-   */
-  def gameParameters: Observable[GameParameters] = _gameParameters
+  def gameParameters: Observable[GameParameters] = _completed.map(_ => parameters)
 
   /**
    *
@@ -82,16 +78,22 @@ class OptionsController extends AbstractAppState with AbstractController with La
    *
    */
   def okPressed {
-    _gameParameters.onNext(
-      GameParameters(
-        station.getSelection,
-        level.getSelection,
-        duration.getSelection,
-        FrequenceEnum.valueById(level.getSelectedIndex),
-        DurationEnum.valueById(duration.getSelectedIndex),
-        autoLock.isChecked,
-        mute.isChecked,
-        volume.getValue / 100))
+    _gameParameters.onNext(parameters)
     _completed.onNext("completed")
+  }
+
+  /**
+   *
+   */
+  private def parameters: GameParameters = {
+    GameParameters(
+      station.getSelection,
+      level.getSelection,
+      duration.getSelection,
+      FrequenceEnum.valueById(level.getSelectedIndex),
+      DurationEnum.valueById(duration.getSelectedIndex),
+      autoLock.isChecked,
+      mute.isChecked,
+      volume.getValue / 100)
   }
 }
