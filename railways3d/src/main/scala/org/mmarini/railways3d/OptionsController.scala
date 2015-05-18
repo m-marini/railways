@@ -34,26 +34,31 @@ class OptionsController extends AbstractAppState with AbstractController with La
     val valueById = Map(Short -> 5, Medium -> 10, Long -> 30).map { case (k, v) => (k.id -> v.toFloat * 60) }
   }
 
-  private def station = screen.findNiftyControl("station", classOf[DropDown[String]])
+  private def station = screen.map(_.findNiftyControl("station", classOf[DropDown[String]]))
 
-  private def level = screen.findNiftyControl("level", classOf[DropDown[String]])
+  private def level = screen.map(_.findNiftyControl("level", classOf[DropDown[String]]))
 
-  private def duration = screen.findNiftyControl("duration", classOf[DropDown[String]])
+  private def duration = screen.map(_.findNiftyControl("duration", classOf[DropDown[String]]))
 
-  private def autoLock = screen.findNiftyControl("autoLock", classOf[CheckBox])
+  private def autoLock = screen.map(_.findNiftyControl("autoLock", classOf[CheckBox]))
 
-  private def mute = screen.findNiftyControl("mute", classOf[CheckBox])
+  private def mute = screen.map(_.findNiftyControl("mute", classOf[CheckBox]))
 
-  private def volume = screen.findNiftyControl("volume", classOf[Slider])
+  private def volume = screen.map(_.findNiftyControl("volume", classOf[Slider]))
 
-  private val _completed = Subject[String]()
+  private val _confirmed = Subject[String]()
 
-  def gameParameters: Observable[GameParameters] = _completed.map(_ => parameters)
+  private val DefaultParms = GameParameters(
+    "Delta Crossing",
+    "Facile",
+    "Corto (5 min.)",
+    FrequenceEnum.valueById(0),
+    DurationEnum.valueById(0),
+    true,
+    false,
+    0.5f)
 
-  /**
-   *
-   */
-  def completed: Observable[String] = _completed
+  def confirmed: Observable[String] = _confirmed
 
   /**
    *
@@ -61,39 +66,66 @@ class OptionsController extends AbstractAppState with AbstractController with La
   override def bind(nifty: Nifty, screen: Screen) {
     super.bind(nifty, screen)
 
-    for (s <- List("Delta Crossing", "Downville Station", "Jackville Terminal", "Passing Station"))
-      station.addItem(s)
-    station.selectItemByIndex(0)
+    for {
+      st <- station
+      value <- List(
+        "Delta Crossing",
+        "Downville Station",
+        "Jackville Terminal",
+        "Passing Station")
+    } st.addItem(value)
+    station.foreach(_.selectItemByIndex(0))
 
-    for (s <- List("Facile", "Medio", "Difficile", "Personalizzato"))
-      level.addItem(s)
-    level.selectItemByIndex(0)
+    for {
+      lev <- level
+      value <- List(
+        "Facile",
+        "Medio", "Difficile",
+        "Personalizzato")
+    } lev.addItem(value)
+    level.map(_.selectItemByIndex(0))
 
-    for (s <- List("Corto (5 min.)", "Medio (15 min.)", "Lungo (30 min.)", "Personalizzato"))
-      duration.addItem(s)
-    duration.selectItemByIndex(0)
+    for {
+      dur <- duration
+      s <- List(
+        "Corto (5 min.)",
+        "Medio (15 min.)",
+        "Lungo (30 min.)",
+        "Personalizzato")
+    } dur.addItem(s)
+    duration.map(_.selectItemByIndex(0))
   }
 
   /**
    *
    */
   def okPressed {
-    _gameParameters.onNext(parameters)
-    _completed.onNext("completed")
+    _confirmed.onNext("confirmed")
   }
 
   /**
    *
    */
-  private def parameters: GameParameters = {
-    GameParameters(
-      station.getSelection,
-      level.getSelection,
-      duration.getSelection,
-      FrequenceEnum.valueById(level.getSelectedIndex),
-      DurationEnum.valueById(duration.getSelectedIndex),
-      autoLock.isChecked,
-      mute.isChecked,
-      volume.getValue / 100)
-  }
+  private def optParameters: Option[GameParameters] =
+    for {
+      s <- station
+      l <- level
+      d <- duration
+      a <- autoLock
+      m <- mute
+      v <- volume
+    } yield GameParameters(
+      s.getSelection,
+      l.getSelection,
+      d.getSelection,
+      FrequenceEnum.valueById(l.getSelectedIndex),
+      DurationEnum.valueById(d.getSelectedIndex),
+      a.isChecked,
+      m.isChecked,
+      v.getValue / 100)
+
+  /**
+   *
+   */
+  def parameters: GameParameters = optParameters.getOrElse(DefaultParms)
 }

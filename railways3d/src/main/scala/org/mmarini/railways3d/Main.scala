@@ -3,18 +3,13 @@
  */
 package org.mmarini.railways3d
 
+import org.mmarini.railways3d.model.GameParameters
+import org.mmarini.railways3d.model.GameStatus
+
 import com.jme3.app.SimpleApplication
 import com.jme3.niftygui.NiftyJmeDisplay
-import de.lessvoid.nifty.Nifty
-import de.lessvoid.nifty.controls.ButtonClickedEvent
 import com.typesafe.scalalogging.LazyLogging
-import de.lessvoid.nifty.elements.events.ElementShowEvent
-import de.lessvoid.nifty.NiftyDefaults
-import org.mmarini.railways3d.model.GameParameters
-import de.lessvoid.nifty.screen.ScreenController
-import org.mmarini.railways3d.model.GameParameters
-import org.mmarini.railways3d.model.GameParameters
-import rx.lang.scala.Observer
+
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
 
@@ -25,24 +20,14 @@ object Main extends SimpleApplication with LazyLogging {
 
   private var niftyDisplay: Option[NiftyJmeDisplay] = None
 
-  private val startPaneObserver = Observer((id: String) => id match {
-    case "optionsButton" => for (n <- nifty) n.gotoScreen("opts-screen")
-    case "quitButton" => stop
-    case "startButton" => for (n <- nifty) n.gotoScreen("game-screen")
-    case t => logger.info(s"selected $t")
-  })
-
-  private val optsPaneObserver = Observer((id: String) =>
-    for (n <- nifty)
-      n.gotoScreen("start"))
-
   /**
    *
    */
   @Override
   def simpleInitApp: Unit = {
     setDisplayStatView(false)
-//    setDisplayFps(false)
+    //    setDisplayFps(false)
+    setShowSettings(false)
     niftyDisplay = Some(new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort))
 
     // Read your XML and initialize your custom ScreenController
@@ -65,18 +50,49 @@ object Main extends SimpleApplication with LazyLogging {
       opts <- controller[OptionsController]("opts-screen")
       game <- controller[GameController]("game-screen")
     } {
-      start.selection.subscribe(startPaneObserver)
-      opts.completed.subscribe(optsPaneObserver)
-      opts.gameParameters.subscribe(start.gameParameterObserver)
-      val startGameObs = sampled(
-        start.selection.filter(_ == "startButton"),
-        opts.gameParameters).
-        map(m => (this, m._2))
-      startGameObs.subscribe(game.gameStarterObserver)
+
+      // GameParameter observable
+      val gpo = stateFlow(opts.parameters)(opts.confirmed.map(_ => _ => opts.parameters))
+
+      // Bind gpo to start controller observer
+      gpo.subscribe(start.gameParameterObserver)
+
+      // Bind gpo to start screen
+      gpo.subscribe(_ => {
+        nifty.foreach(_.gotoScreen("start"))
+      })
+
+      // Bind option button to options screen 
+      start.selection.
+        filter(_ == "optionsButton").
+        subscribe(_ => for (n <- nifty) n.gotoScreen("opts-screen"))
+
+      // Bind start button to game screen 
+      start.selection.
+        filter(_ == "startButton").
+        subscribe(_ => for (n <- nifty) n.gotoScreen("game-screen"))
+
+      // Bind quit button to game exit 
+      start.selection.
+        filter(_ == "quitButton").
+        subscribe(_ => stop)
+
+      // Bind gpo to triggered start
+      val gameStart = trigger(start.selection.
+        filter(_ == "startButton"), gpo).map(t => (this, t._2))
+
+      gameStart.subscribe(game.gameStarterObserver)
+
     }
   }
 
   val _time = Subject[(SimpleApplication, Float)]()
+
+  /**
+   *
+   */
+  def gameStarter(parms: Observable[GameParameters], events: Observable[GameStatus => GameStatus]) =
+    ???
 
   /**
    *
@@ -112,6 +128,7 @@ object Main extends SimpleApplication with LazyLogging {
    *
    */
   def main(args: Array[String]): Unit = {
+    Main.setShowSettings(false)
     Main.start()
   }
 }

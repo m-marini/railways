@@ -21,8 +21,8 @@ trait AbstractController extends ScreenController {
   private var _nifty: Option[Nifty] = None
   private var _screen: Option[Screen] = None
 
-  def nifty: Nifty = _nifty.get
-  def screen: Screen = _screen.get
+  def nifty: Option[Nifty] = _nifty
+  def screen: Option[Screen] = _screen
 
   /**
    *

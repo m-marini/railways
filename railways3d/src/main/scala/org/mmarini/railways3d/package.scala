@@ -18,7 +18,7 @@ package object railways3d {
   /**
    *
    */
-  def sampled[T, S](trigger: Observable[T], value: Observable[S], init: Option[S] = None): Observable[(T, S)] = {
+  def trigger[T, S](trigger: Observable[T], value: Observable[S], init: Option[S] = None): Observable[(T, S)] = {
 
     val r = Observable.create((o: Observer[(T, S)]) => {
 

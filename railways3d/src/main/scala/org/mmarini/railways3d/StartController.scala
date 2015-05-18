@@ -27,35 +27,34 @@ class StartController extends AbstractAppState with AbstractController with Lazy
   private val _selection = Subject[String]()
 
   /**
-   * 
+   *
    */
   def selection: Observable[String] = _selection
 
   /**
-   * 
+   *
    */
   val gameParameterObserver = Observer((parms: GameParameters) => parms match {
     case GameParameters(stationName, levelName, durationName, _, _, _, _, _) =>
-      station.setText(stationName)
-      level.setText(levelName)
-      duration.setText(durationName)
+      station.foreach(_.setText(stationName))
+      level.foreach(_.setText(levelName))
+      duration.foreach(_.setText(durationName))
   })
 
   /**
    *
    */
-  private def station = screen.findElementByName("station").getRenderer(classOf[TextRenderer])
+  private def station = screen.map(_.findElementByName("station").getRenderer(classOf[TextRenderer]))
 
   /**
    *
    */
-  private def level = screen.findElementByName("level").getRenderer(classOf[TextRenderer])
+  private def level = screen.map(_.findElementByName("level").getRenderer(classOf[TextRenderer]))
 
   /**
    *
    */
-  private def duration = screen.
-    findElementByName("duration").getRenderer(classOf[TextRenderer])
+  private def duration = screen.map(_.findElementByName("duration").getRenderer(classOf[TextRenderer]))
 
   /**
    *
