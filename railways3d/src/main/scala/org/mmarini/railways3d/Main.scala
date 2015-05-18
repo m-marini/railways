@@ -5,13 +5,13 @@ package org.mmarini.railways3d
 
 import org.mmarini.railways3d.model.GameParameters
 import org.mmarini.railways3d.model.GameStatus
-
 import com.jme3.app.SimpleApplication
 import com.jme3.niftygui.NiftyJmeDisplay
 import com.typesafe.scalalogging.LazyLogging
-
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
+import com.jme3.math.Quaternion
+import com.jme3.math.Vector3f
 
 /**
  *
@@ -41,10 +41,20 @@ object Main extends SimpleApplication with LazyLogging {
     for (nd <- niftyDisplay) {
       guiViewPort.addProcessor(nd)
     }
+    wireUp
 
     // disable the fly cam
     flyCam.setDragToRotate(true)
 
+    import org.mmarini.railways3d.model._
+
+//    cam.setAxes(new Quaternion().fromAngleAxis(-Pif / 2, new Vector3f(0f, 1f, 0f)))
+  }
+
+  /**
+   *
+   */
+  private def wireUp {
     for {
       start <- controller[StartController]("start")
       opts <- controller[OptionsController]("opts-screen")

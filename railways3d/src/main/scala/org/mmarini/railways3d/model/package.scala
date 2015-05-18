@@ -30,6 +30,9 @@ package object model {
    */
   val TrackWidth = 1.435f
 
+  // Segment * (1-cos(curve))/sin(curve) 
+  val TrackGap = 4.608f
+
   /**
    * Length units of standard segment element (meters)
    */
@@ -39,5 +42,5 @@ package object model {
   type Endpoint = (Block, Int)
   type Junction = (Endpoint, Endpoint)
   type GameTransition = GameStatus => GameStatus
-  
+
 }
