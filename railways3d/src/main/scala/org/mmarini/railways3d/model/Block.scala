@@ -9,20 +9,19 @@ import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
 
 /**
- * @author us00852
- *
+ * A block contains a set of possible concrete paths, geometry data
  */
-case class Block(name: String, template: BlockTemplate, transform: Transform) {
+case class Block(id: String, template: BlockTemplate, x: Float, y: Float, rotAngle: Float)
 
-}
-
+/** Factory for [[Block]] */
 object Block {
-  def apply(name: String, template: BlockTemplate, x: Float, y: Float, rot: Float): Block = {
-    val transform = new Transform()
-    transform.setTranslation(x, y, 0f)
-    //    transform.setRotation()
-    val q = new Quaternion().fromAngleAxis(rot, new Vector3f(0f, 0f, 1f))
-    transform.setRotation(q)
-    Block(name, template, transform)
-  }
+
+  /** Returns an entry Block */
+  def entry(id: String, x: Float, y: Float, rot: Float): Block = Block(id, Entry, x, y, rot)
+
+  /** Returns an exit Block */
+  def exit(id: String, x: Float, y: Float, rot: Float): Block = Block(id, Exit, x, y, rot)
+
+  /** Returns a platform Block */
+  def platform(id: String, x: Float, y: Float, rot: Float): Block = Block(id, Platform, x, y, rot)
 }
