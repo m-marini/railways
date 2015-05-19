@@ -9,7 +9,7 @@ import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
 
 /**
- * A block contains a set of possible concrete paths, geometry data
+ * A block contains a set of possible concrete paths with geometry data
  */
 case class Block(id: String, template: BlockTemplate, x: Float, y: Float, rotAngle: Float)
 

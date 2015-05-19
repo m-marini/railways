@@ -15,9 +15,16 @@ import scala.math.sin
 import org.mmarini.railways3d.model.Downville
 import org.mmarini.railways3d.model.GameStatus
 import org.mmarini.railways3d.model.Block
+import rx.lang.scala.Observable
 
 /**
+ * A Game handles the events of simulation coming from user or clock ticks
  *
+ * Each event generates a change of rendered model 3d.
+ * The model is kept in this Game
+ *
+ * The Game constructor loads all the jme3 model templates and
+ * initializes the game status
  */
 class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   private val Templates = List(
@@ -30,63 +37,52 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   private val assetManager = app.getAssetManager
 
-  val station = Downville
+  /** station topology */
+  private val station = Downville
 
-  /**
-   * Events Observable
-   */
-  val events = app.timeObservable.map[GameStatus => GameStatus](p => s => s.tick(p._2))
+  /** events observable */
+  private val events = app.timeObservable.map[GameStatus => GameStatus](p => s => s.tick(p._2))
 
-  /**
-   * Game state observable
-   */
+  /** game state observable */
   val state = stateFlow(initialStatus)(events)
 
-  def initialStatus = GameStatus(parameters, Downville, 0f)
+  /** Returns the initial game status */
+  private def initialStatus = GameStatus(parameters, Downville, 0f, Map())
 
-  /**
-   *
-   */
-  private val templates: Map[String, Spatial] =
+  /** jme3d templates */
+  private val jme3dTemplates: Map[String, Spatial] =
     (for (name <- Templates)
       yield (name -> assetManager.loadModel(name))).
       toMap
 
+  /** scene root node */
   private val rootNode = app.getRootNode
 
   loadBackstage
-  wireUp
 
   app.getCamera.getLocation().setX(0f)
   app.getCamera.getLocation().setY(1.7f + 0.5f)
   app.getCamera.getLocation().setZ(2f)
 
-  /**
-   *
-   */
-  private def wireUp {
-    state.subscribe {
-      s => updateModel(s)
+  type BlocksModel3d = Map[String, BlockModel3d]
+
+  /** the observable state flow of BlockModels */
+  private val blockModels: Observable[BlocksModel3d] = stateFlow(initialBlockModel)(
+    state.map(status => model => updateBlockModel(status, model)))
+
+  /** Returns the new model changing the root node of scene */
+  def updateBlockModel(status: GameStatus, model: BlocksModel3d): BlocksModel3d =
+    model.map {
+      case (id, model) =>
+        val blockStatus = status.blocks(id)
+        (id, model(blockStatus)(rootNode))
     }
-  }
 
-  private var models: Map[String, Model3d] = Map()
+  /** Returns the initial block model */
+  private def initialBlockModel: BlocksModel3d = initialStatus.blocks.map(
+    ???)
 
-  /**
-   *
-   */
-  private def updateModel(status: GameStatus) {
-    val blockModels = (for (b <- status.topology.blocks) yield {
-      (b.id -> models(b.id)(ModelStatus(b)))
-    }).toMap
-
-    models = blockModels
-
-  }
-
-  /**
-   *
-   */
+  /** Loads backstage of scene */
   private def loadBackstage {
     val name = "sky"
     val west = assetManager.loadTexture(s"Textures/sky/${name}_west.png")
