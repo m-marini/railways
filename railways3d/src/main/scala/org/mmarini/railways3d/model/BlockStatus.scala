@@ -1,9 +1,18 @@
 package org.mmarini.railways3d.model
 
 /**
- * A status of block contains the identifier, block topology and the current status
+ * A block topology with the current status
  */
 trait BlockStatus {
-  def id: String
+  /** Returns the block topology */
   def block: Block
 }
+
+/** A [[BlockStatus]] of an entry [[Block]] */
+case class EntryStatus(block: Block) extends BlockStatus
+
+/** A [[BlockStatus]] of an exit [[Block]] */
+case class ExitStatus(block: Block, busy: Boolean) extends BlockStatus
+
+/** A [[BlockStatus]] of an exit [[Block]] */
+case class PlatformStatus(block: Block, busy: Boolean) extends BlockStatus

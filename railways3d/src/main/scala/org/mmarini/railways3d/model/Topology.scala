@@ -12,7 +12,7 @@ trait Topology {
   def junctions: Set[Junction]
 
   /** Returns the blocks of the topology */
-  val blocks: Set[Block] = junctions.flatMap {
+  lazy val blocks: Set[Block] = junctions.flatMap {
     case (a, b) => Set(a.block, b.block)
   }
 }
@@ -28,5 +28,14 @@ case object Downville extends Topology {
   val junctions = Set(
     (Endpoint(entry, 0), Endpoint(platform, 0)),
     (Endpoint(exit, 0), Endpoint(platform, 1)))
+}
 
-} 
+/** A factory of [[Topology]] */
+object Topology {
+  private val topologies = Map(
+    "Downville" -> Downville)
+
+  /** Returns the topology of a named station */
+  def apply(id: String): Topology = topologies.getOrElse(id, Downville)
+}
+

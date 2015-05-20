@@ -4,7 +4,7 @@
 package org.mmarini.railways3d.model
 
 /**
- * A template for block producing routes depending on status of block
+ * Produces routes depending on status of block
  */
 trait BlockTemplate {
 
@@ -12,19 +12,19 @@ trait BlockTemplate {
   def routes(s: RoutingStatus): IndexedSeq[Route]
 }
 
-/** The incoming trains arrive from this BlockTemplate */
+/** The incoming trains come in this BlockTemplate */
 case object Entry extends BlockTemplate {
   /** Entry has no routing */
   def routes(s: RoutingStatus) = IndexedSeq()
 }
 
-/** The exiting trains go to this BlockTemplate */
+/** The exiting trains go out this BlockTemplate */
 case object Exit extends BlockTemplate {
   /** Exit has no routing  */
   def routes(s: RoutingStatus) = IndexedSeq()
 }
 
-/** The arriving trains stop at this BlockTemplate to wait passengers boarding */
+/** The arriving trains stop at this BlockTemplate to wait for passengers boarding */
 case object Platform extends BlockTemplate {
 
   val Length: Float = SegmentLength * 11

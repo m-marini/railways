@@ -27,7 +27,6 @@ object Main extends SimpleApplication with LazyLogging {
   def simpleInitApp: Unit = {
     setDisplayStatView(false)
     //    setDisplayFps(false)
-    setShowSettings(false)
     niftyDisplay = Some(new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort))
 
     // Read your XML and initialize your custom ScreenController
@@ -48,7 +47,6 @@ object Main extends SimpleApplication with LazyLogging {
 
     import org.mmarini.railways3d.model._
 
-//    cam.setAxes(new Quaternion().fromAngleAxis(-Pif / 2, new Vector3f(0f, 1f, 0f)))
   }
 
   /**
@@ -138,7 +136,7 @@ object Main extends SimpleApplication with LazyLogging {
    *
    */
   def main(args: Array[String]): Unit = {
-    Main.setShowSettings(false)
+//    Main.setShowSettings(false)
     Main.start()
   }
 }
