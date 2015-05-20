@@ -20,11 +20,10 @@ object Main extends SimpleApplication with LazyLogging {
 
   private var niftyDisplay: Option[NiftyJmeDisplay] = None
 
-  /**
-   *
-   */
-  @Override
-  def simpleInitApp: Unit = {
+  val _time = Subject[(SimpleApplication, Float)]()
+
+  /** */
+  override def simpleInitApp: Unit = {
     setDisplayStatView(false)
     //    setDisplayFps(false)
     niftyDisplay = Some(new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort))
@@ -44,14 +43,9 @@ object Main extends SimpleApplication with LazyLogging {
 
     // disable the fly cam
     flyCam.setDragToRotate(true)
-
-    import org.mmarini.railways3d.model._
-
   }
 
-  /**
-   *
-   */
+  /** */
   private def wireUp {
     for {
       start <- controller[StartController]("start")
@@ -70,17 +64,17 @@ object Main extends SimpleApplication with LazyLogging {
         nifty.foreach(_.gotoScreen("start"))
       })
 
-      // Bind option button to options screen 
+      // Bind option button to options screen
       start.selection.
         filter(_ == "optionsButton").
         subscribe(_ => for (n <- nifty) n.gotoScreen("opts-screen"))
 
-      // Bind start button to game screen 
+      // Bind start button to game screen
       start.selection.
         filter(_ == "startButton").
         subscribe(_ => for (n <- nifty) n.gotoScreen("game-screen"))
 
-      // Bind quit button to game exit 
+      // Bind quit button to game exit
       start.selection.
         filter(_ == "quitButton").
         subscribe(_ => stop)
@@ -94,49 +88,27 @@ object Main extends SimpleApplication with LazyLogging {
     }
   }
 
-  val _time = Subject[(SimpleApplication, Float)]()
-
-  /**
-   *
-   */
-  def gameStarter(parms: Observable[GameParameters], events: Observable[GameStatus => GameStatus]) =
-    ???
-
-  /**
-   *
-   */
+  /** */
   def timeObservable: Observable[(SimpleApplication, Float)] = _time
 
-  /**
-   *
-   */
+  /** */
   override def simpleUpdate(tpf: Float) {
-    _time.onNext(this, tpf)
+    _time.onNext((this, tpf))
   }
 
-  /**
-   *
-   */
+  /** */
   private def nifty = niftyDisplay.map(n => n.getNifty())
 
-  /**
-   *
-   */
-  private def screen(id: String) = {
-    nifty.map(n => n.getScreen(id))
-  }
+  /** */
+  private def screen(id: String) = nifty.map(n => n.getScreen(id))
 
-  /**
-   *
-   */
+  /** */
   private def controller[T](id: String) =
     screen(id).map(n => n.getScreenController().asInstanceOf[T])
 
-  /**
-   *
-   */
+  /** */
   def main(args: Array[String]): Unit = {
-//    Main.setShowSettings(false)
+    //    Main.setShowSettings(false)
     Main.start()
   }
 }

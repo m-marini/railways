@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package org.mmarini.railways3d
 
 import org.mmarini.railways3d.model.GameParameters
@@ -30,14 +33,15 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   loadBackstage
 
-  app.getCamera.getLocation().setX(0f)
-  app.getCamera.getLocation().setY(1.7f + 0.5f)
-  app.getCamera.getLocation().setZ(10f)
-  //    app.getCamera.setAxes(new Quaternion().fromAngleAxis(-Pif / 2, new Vector3f(0f, 1f, 0f)))
+  try {
+    app.getCamera.getLocation().setX(200f)
+    app.getCamera.getLocation().setY(1.7f + 0.5f)
+    app.getCamera.getLocation().setZ(10f)
+    //    app.getCamera.setAxes(new Quaternion().fromAngleAxis(-Pif / 2, new Vector3f(0f, 1f, 0f)))
+  } catch { case e: Throwable => logger.error(e.getMessage, e) }
 
   /** Returns the initial game status */
   private val initialStatus = GameStatus(parameters)
-  logger.debug(s"initialStatus ${initialStatus.blocks}")
 
   /** Returns the factory of spatial */
   private val factory = BlockModel3d.factory(
@@ -47,23 +51,13 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   /** Returns the initial block model */
   private val initialBlocksModel: Map[String, BlockModel3d] =
     initialStatus.blocks.map {
-      case (id, status) => {
-        logger.debug(s"Mapping $status")
-        (id -> {
-          val t = Try { BlockModel3d(status, app, factory) }
-          t.failed.foreach(ex => logger.error(ex.getMessage(), ex))
-          t
-        })
-      }
-    }.
-      filter(_._2.isSuccess).
-      map {
-        case (k, t) => (k -> t.get)
-      }
-
+      case (id, status) =>
+        (id -> BlockModel3d(status, app, factory))
+    }
 
   /** events observable */
-  private val events = app.timeObservable.map[GameStatus => GameStatus](p => s => s.tick(p._2))
+  private val events = app.timeObservable.map[GameStatus => GameStatus](
+    p => s => s.tick(p._2))
 
   /** game state observable */
   private val state = stateFlow(initialStatus)(events)
@@ -72,6 +66,8 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   private val blockModels: Observable[Map[String, BlockModel3d]] = stateFlow(initialBlocksModel)(
     state.map(status => model =>
       updateBlockModel(status, model)))
+
+  blockModels.subscribe
 
   /** Returns the new model changing the root node of scene */
   def updateBlockModel(status: GameStatus, model: Map[String, BlockModel3d]): Map[String, BlockModel3d] =
@@ -83,27 +79,30 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   /** Loads backstage of scene */
   private def loadBackstage {
-    val sky = Try {
+    // Load sky
+    val rootNode = app.getRootNode
+    try {
       val assetManager = app.getAssetManager
       val imgs =
         for (s <- IndexedSeq("east", "west", "north", "south", "up", "down"))
           yield assetManager.loadTexture(s"Textures/sky/ref-sky_$s.png")
-      SkyFactory.createSky(assetManager, imgs(0), imgs(1), imgs(2), imgs(3), imgs(4), imgs(5))
-    }
-    sky.failed.foreach(ex => logger.error(ex.getMessage(), ex))
+      val sky = SkyFactory.createSky(assetManager, imgs(0), imgs(1), imgs(2), imgs(3), imgs(4), imgs(5))
+      rootNode.attachChild(sky)
+    } catch { case e: Throwable => logger.error(e.getMessage, e) }
 
-    val rootNode = app.getRootNode
-    sky.foreach(rootNode.attachChild)
+    // Create ambient light
+    try {
+      val ambLight = new AmbientLight
+      ambLight.setColor(ColorRGBA.White.mult(1.3f))
+      rootNode.addLight(ambLight)
+    } catch { case e: Throwable => logger.error(e.getMessage, e) }
 
-    val ambLight = new AmbientLight
-    ambLight.setColor(ColorRGBA.White.mult(1.3f))
-    rootNode.addLight(ambLight)
-
-    val sunLight = new DirectionalLight
-    sunLight.setColor(ColorRGBA.White.mult(1.3f));
-    sunLight.setDirection(new Vector3f(-.5f, -.5f, -.5f).normalizeLocal())
-    rootNode.addLight(sunLight)
+    // Create sun light
+    try {
+      val sunLight = new DirectionalLight
+      sunLight.setColor(ColorRGBA.White.mult(1.3f));
+      sunLight.setDirection(new Vector3f(-.5f, -.5f, -.5f).normalizeLocal())
+      rootNode.addLight(sunLight)
+    } catch { case e: Throwable => logger.error(e.getMessage, e) }
   }
-
-  /** Returns the texture load */
 }

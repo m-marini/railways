@@ -3,15 +3,27 @@
  */
 package org.mmarini.railways3d.model
 
+import com.typesafe.scalalogging.LazyLogging
+import scala.util.Random
+
 /**
  * A set of game parameter, station [[Topology]], elapsed time and set of named [[BlockStatus]]
  *
  * Generates next status by handling the incoming events
  */
-case class GameStatus(time: Float, blocks: Map[String, BlockStatus]) {
+case class GameStatus(time: Float, blocks: Map[String, BlockStatus]) extends LazyLogging {
 
   /** Generates the next status simulating a time elapsing */
-  def tick(time: Float): GameStatus = GameStatus(this.time + time, blocks)
+  def tick(time: Float): GameStatus = {
+    val t = this.time + time
+    val plat = blocks("platform").asInstanceOf[PlatformStatus]
+    val exit = blocks("exit").asInstanceOf[ExitStatus]
+
+    val np = if (Random.nextDouble < time / 0.5) PlatformStatus(plat.block, !plat.busy) else plat
+    val ne = if (Random.nextDouble < time / 0.5) ExitStatus(exit.block, !exit.busy) else exit
+    val nb = blocks + (np.block.id -> np) + (ne.block.id -> ne)
+    GameStatus(t, nb)
+  }
 
 }
 

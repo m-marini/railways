@@ -12,10 +12,10 @@ import scala.math.Pi
 import com.jme3.math.Vector2f
 
 package object model {
-  
+
   val Pif = Pi.toFloat
   val Pi2f = (2 * Pi).toFloat
-  
+
   val RightAngle = (Pi / 2).toFloat
   val StraightAngle = Pif
   val FullAngle = Pi2f
@@ -29,7 +29,7 @@ package object model {
   /** Track width */
   val TrackWidth = 1.435f
 
-  // Segment * (1-cos(curve))/sin(curve) 
+  /** Segment * (1-cos(curve))/sin(curve) */
   val TrackGap = 4.608f
 
   /**Length units of standard segment element (meters) */

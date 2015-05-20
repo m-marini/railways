@@ -8,7 +8,14 @@ import com.jme3.math.Vector2f
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
 
-/** A template block with geometry data */
+/**
+ * A template block with geometry data
+ *
+ * id the block identifier
+ * template the block template
+ * x,y the translation vector of block
+ * rotAngle compass rotation angle
+ */
 case class Block(id: String, template: BlockTemplate, x: Float, y: Float, rotAngle: Float)
 
 /** Factory for [[Block]] */

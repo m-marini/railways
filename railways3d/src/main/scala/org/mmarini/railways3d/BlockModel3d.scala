@@ -38,25 +38,31 @@ case class BlockModel3d(spatial: Spatial, factory: (BlockStatus => Spatial)) ext
   def apply(block: BlockStatus)(app: SimpleApplication): BlockModel3d = {
     val ns = factory(block)
     if (spatial != ns) {
-      logger.debug(s"Detaching $spatial")
-      app.getRootNode.detachChild(spatial)
-      logger.debug(s"Attaching $block")
-      app.getRootNode.attachChild(ns)
+      try {
+        app.getRootNode.detachChild(spatial)
+        app.getRootNode.attachChild(ns)
+      } catch { case e: Throwable => logger.error(e.getMessage(), e) }
       BlockModel3d(ns, factory)
-    } else
+    } else {
       this
+    }
   }
 }
 
 /** A factory of [[BlockModel3d]] */
 object BlockModel3d extends LazyLogging {
 
+  private val RedSemModel = "Textures/blocks/red-sem.j3o"
+  private val GreenSemModel = "Textures/blocks/green-sem.j3o"
+  private val RedPlatModel = "Textures/blocks/red-plat.j3o"
+  private val GreenPlatModel = "Textures/blocks/green-plat.j3o"
+
   /** Returns the [[BlockModel3d]] for the specific block */
   def apply(status: BlockStatus, app: SimpleApplication, factory: (BlockStatus) => Spatial): BlockModel3d = {
     val spatial = factory(status)
-    logger.debug(s"Attaching $status")
-    app.getRootNode.attachChild(spatial)
-    logger.debug(s"Attached $status")
+    try {
+      app.getRootNode.attachChild(spatial)
+    } catch { case e: Throwable => logger.error(e.getMessage(), e) }
     BlockModel3d(spatial, factory)
   }
 
@@ -64,41 +70,35 @@ object BlockModel3d extends LazyLogging {
 
   /** Returns all the spatial names of a block template */
   private val statusKeys: Map[BlockTemplate, Set[String]] = Map(
-    Entry -> Set(
-      "Models/blocks/entry.j3o"),
+    Entry -> Set(RedSemModel),
     Exit -> Set(
-      "Models/blocks/green_exit.j3o",
-      "Models/blocks/green_exit.j3o"),
+      RedSemModel,
+      GreenSemModel),
     Platform -> Set(
-      "Models/blocks/green_plat.j3o",
-      "Models/blocks/green_plat.j3o"))
+      RedPlatModel,
+      GreenPlatModel))
 
   /** Returns the quaternion of rotation round Y axis */
   private def rotation(angle: Float) =
-    new Quaternion().fromAngleAxis(angle, new Vector3f(0f, 1f, 0f))
+    new Quaternion().fromAngleAxis(angle, new Vector3f(0f, -1f, 0f))
 
   /** Loads the all the spatial of blocks */
-  private def loadCache(assetManager: AssetManager, blocks: Set[Block]): Map[BlockModelId, Spatial] =
-    (for {
+  private def loadCache(assetManager: AssetManager, blocks: Set[Block]): Map[BlockModelId, Spatial] = {
+    val cacheTry = for {
       block <- blocks
       status <- statusKeys(block.template)
-    } yield {
-      val spat = Try {
-        val spat = assetManager.loadModel(status)
-        spat.setLocalRotation(rotation(block.rotAngle))
-        spat.setLocalTranslation(new Vector3f(3f, 0f, 0f))
-        //        spat.setLocalTranslation(new Vector3f(block.x, 0f, block.y))
-        spat
-      }
-      spat.failed.foreach(ex =>
-        logger.error(ex.getMessage, ex))
-      (block.id, status) -> spat
-    }).
+    } yield (block.id, status) -> Try {
+      val spat = assetManager.loadModel(status)
+      spat.setLocalRotation(rotation(block.rotAngle))
+      spat.setLocalTranslation(new Vector3f(block.x, 0f, block.y))
+      spat
+    }
+    cacheTry.foreach { case (_, s) => s.failed.foreach(ex => logger.error(ex.getMessage, ex)) }
+    cacheTry.
       filter(_._2.isSuccess).
-      map {
-        case (k, v) => k -> v.get
-      }.
+      map { case (id, suc) => id -> suc.get }.
       toMap
+  }
 
   /** Returns a factory function that builds Spatial for the BlockStatus */
   def factory(assetManager: AssetManager, blocks: Set[Block]): (BlockStatus) => Spatial = {
@@ -111,10 +111,10 @@ object BlockModel3d extends LazyLogging {
 
   /** Returns the status key of a block */
   private def toStatusKey(status: BlockStatus): String = status match {
-    case EntryStatus(_) => "Models/blocks/entry.j3o"
-    case ExitStatus(_, _) => "Models/blocks/green_exit.j3o"
-    //    case ExitStatus(_, true) => "Models/blocks/red_exit.j3o"
-    case PlatformStatus(_, _) => "Models/blocks/green_plat.j3o"
-    //    case PlatformStatus(_, true) => "Models/blocks/red_exit.j3o"
+    case EntryStatus(_) => RedSemModel
+    case ExitStatus(_, false) => GreenSemModel
+    case ExitStatus(_, true) => RedSemModel
+    case PlatformStatus(_, false) => GreenPlatModel
+    case PlatformStatus(_, true) => RedPlatModel
   }
 }

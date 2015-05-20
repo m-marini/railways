@@ -15,13 +15,13 @@ trait BlockTemplate {
 /** The incoming trains come in this BlockTemplate */
 case object Entry extends BlockTemplate {
   /** Entry has no routing */
-  def routes(s: RoutingStatus) = IndexedSeq()
+  def routes(s: RoutingStatus): IndexedSeq[Route] = IndexedSeq()
 }
 
 /** The exiting trains go out this BlockTemplate */
 case object Exit extends BlockTemplate {
   /** Exit has no routing  */
-  def routes(s: RoutingStatus) = IndexedSeq()
+  def routes(s: RoutingStatus): IndexedSeq[Route] = IndexedSeq()
 }
 
 /** The arriving trains stop at this BlockTemplate to wait for passengers boarding */
@@ -32,5 +32,5 @@ case object Platform extends BlockTemplate {
   private val _paths = IndexedSeq(IndexedSeq(LinearTrack))
 
   /** Platform has only a single routing */
-  def routes(s: RoutingStatus) = IndexedSeq()
-} 
+  override def routes(s: RoutingStatus): IndexedSeq[Route] = IndexedSeq()
+}

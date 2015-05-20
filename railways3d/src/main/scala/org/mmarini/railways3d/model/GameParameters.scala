@@ -13,4 +13,3 @@ case class GameParameters(
   autoLock: Boolean = true,
   mute: Boolean = false,
   volume: Float = 0.5f)
-  
