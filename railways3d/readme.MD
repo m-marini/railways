@@ -76,4 +76,28 @@ topologia, creare lo stato iniziale del gioco e eseguire la simulazione.
 Lo stato del gioco cambia durante il tempo e quindi è un'osservabile.
 La topologia della stazione è contenuta nello stato del gioco.
 
+## Gestione della posizione della camera
+
+E' possibile selezionare varie viste
+  
+  * Interno treno (todo)
+  * Esterno treno (todo)
+  * Posizione attuale di un treno (todo)
+  * Posizione di camere predefinite (binari, scambi, altro) (todo)
+  * Viste legate al mouse o al touch (todo)
+
+Le viste legate al mouse o al touch sono attive solo nel caso la camera non sia legata ad un treno.
+
+## Uso del mouse
+
+Tasto dx del mouse su un punto della vista si indirizza la camera nel punto determinato.
+Tasto dx del mouse su un treno si seleziona la vista esterna dal treno.
+
+Tasto sx del mouse su un treno si cambia lo stato del treno (start/stop).
+Tasto sx + ctrl del mouse su un treno si attiva automaticamente il percorso verso una direzione selezionabile con pop up
+Tasto sx del mouse su un semaforo si libero o blocca un semaforo
+Tasto sx del mouse su un deviatore si cambia lo stato del deviatore
+
+Tasto centrale del mouse o sx + shift su un treno si cambia la direzione del treno (reverse).
+Tasto centrale del mouse o sx + shift su un binario si attivano/disattivano i semafori del percorso.
 

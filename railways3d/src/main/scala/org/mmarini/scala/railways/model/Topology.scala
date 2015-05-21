@@ -25,9 +25,9 @@ case object TestStation extends Topology {
   private val exit = Block.exit("exit", 0f, 385f, StraightAngle)
   private val platform = Block.platform("platform", 0f, 0f, StraightAngle)
 
-  val junctions = Set(
-    (Endpoint(entry, 0), Endpoint(platform, 0)),
-    (Endpoint(exit, 0), Endpoint(platform, 1)))
+  val junctions = Set[Junction]( //    (Endpoint(entry, 0), Endpoint(platform, 0)),
+  //    (Endpoint(exit, 0), Endpoint(platform, 1)))
+  )
 }
 
 case object Downville extends Topology {
@@ -42,9 +42,9 @@ case object Downville extends Topology {
 
 /** A factory of [[Topology]] */
 object Topology {
-  private val topologies = Map[String, Topology]()
+  private val topologies = Map[String, Topology]().withDefaultValue(Downville)
 
   /** Returns the topology of a named station */
-  def apply(id: String): Topology = topologies.getOrElse(id, Downville)
+  def apply(id: String): Topology = topologies(id)
 }
 

@@ -22,6 +22,10 @@ libraryDependencies += "com.jme3" % "jme3-desktop" % "3.0.10"
 
 libraryDependencies += "com.jme3" % "jme3-lwjgl" % "3.0.10"
 
+libraryDependencies += "com.jme3" % "jme3-terrain" % "3.0.10"
+
+libraryDependencies += "com.jme3" % "jme3-blender" % "3.0.10"
+
 libraryDependencies += "com.jme3" % "jme3-niftygui" % "3.0.10"
 
 libraryDependencies += "org.bushe" % "eventbus" % "1.4"
