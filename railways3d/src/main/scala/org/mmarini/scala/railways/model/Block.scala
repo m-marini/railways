@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.mmarini.railways3d.model
+package org.mmarini.scala.railways.model
 
 import com.jme3.math.Transform
 import com.jme3.math.Vector2f

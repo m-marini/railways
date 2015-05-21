@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.mmarini.railways3d.model
+package org.mmarini.scala.railways.model
 
 /**
  * Produces routes depending on status of block

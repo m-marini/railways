@@ -1,4 +1,7 @@
-package org.mmarini.railways3d.model
+/**
+ *
+ */
+package org.mmarini.scala.railways.model
 
 import org.scalatest.PropSpec
 import org.scalatest.Matchers

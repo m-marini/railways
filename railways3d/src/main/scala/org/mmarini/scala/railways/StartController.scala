@@ -1,22 +1,17 @@
 /**
  *
  */
-package org.mmarini.railways3d
+package org.mmarini.scala.railways
+
+import org.mmarini.scala.railways.model.GameParameters
 
 import com.jme3.app.state.AbstractAppState
-import de.lessvoid.nifty.screen.ScreenController
-import de.lessvoid.nifty.Nifty
-import de.lessvoid.nifty.screen.Screen
-import de.lessvoid.nifty.elements.render.TextRenderer
-import org.mmarini.railways3d.model.GameParameters
-import scala.collection.parallel.mutable.ParMap
-import org.mmarini.railways3d.model.GameParameters
-import de.lessvoid.nifty.controls.ButtonClickedEvent
 import com.typesafe.scalalogging.LazyLogging
+
+import de.lessvoid.nifty.elements.render.TextRenderer
 import rx.lang.scala.Observable
-import rx.lang.scala.Subject
 import rx.lang.scala.Observer
-import org.mmarini.railways3d.model.GameParameters
+import rx.lang.scala.Subject
 
 /**
  * @author us00852

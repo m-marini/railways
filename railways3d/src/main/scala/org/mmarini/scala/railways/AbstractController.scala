@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.mmarini.railways3d
+package org.mmarini.scala.railways
 
 import com.jme3.app.state.AbstractAppState
 import de.lessvoid.nifty.screen.ScreenController
@@ -10,7 +10,7 @@ import de.lessvoid.nifty.screen.Screen
 import de.lessvoid.nifty.controls.DropDown
 import de.lessvoid.nifty.controls.CheckBox
 import de.lessvoid.nifty.controls.Slider
-import org.mmarini.railways3d.model.GameParameters
+import org.mmarini.scala.railways.model.GameParameters
 
 /**
  * @author us00852

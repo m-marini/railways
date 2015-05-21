@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.mmarini.railways3d
+package org.mmarini.scala.railways
 
 import de.lessvoid.nifty.Nifty
 import de.lessvoid.nifty.screen.Screen

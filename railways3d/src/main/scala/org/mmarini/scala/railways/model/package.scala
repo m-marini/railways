@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.mmarini.railways3d
+package org.mmarini.scala.railways
 
 /**
  * @author us00852
@@ -11,6 +11,7 @@ package org.mmarini.railways3d
 import scala.math.Pi
 import com.jme3.math.Vector2f
 
+/** */
 package object model {
 
   val Pif = Pi.toFloat

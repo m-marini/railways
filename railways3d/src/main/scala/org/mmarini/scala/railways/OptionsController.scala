@@ -1,22 +1,20 @@
 /**
  *
  */
-package org.mmarini.railways3d
+package org.mmarini.scala.railways
+
+import org.mmarini.scala.railways.model.GameParameters
 
 import com.jme3.app.state.AbstractAppState
-import de.lessvoid.nifty.screen.ScreenController
-import de.lessvoid.nifty.Nifty
-import de.lessvoid.nifty.screen.Screen
-import de.lessvoid.nifty.controls.DropDown
-import de.lessvoid.nifty.controls.CheckBox
-import de.lessvoid.nifty.controls.Slider
-import org.mmarini.railways3d.model.GameParameters
 import com.typesafe.scalalogging.LazyLogging
+
+import de.lessvoid.nifty.Nifty
+import de.lessvoid.nifty.controls.CheckBox
+import de.lessvoid.nifty.controls._
+import de.lessvoid.nifty.controls.Slider
+import de.lessvoid.nifty.screen.Screen
 import rx.lang.scala.Observable
-import rx.lang.scala.Subscription
 import rx.lang.scala.Subject
-import org.mmarini.railways3d.model.GameParameters
-import org.mmarini.railways3d.model.GameParameters
 
 /**
  * @author us00852

@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.mmarini.railways3d.model
+package org.mmarini.scala.railways.model
 
 import com.typesafe.scalalogging.LazyLogging
 import scala.util.Random
@@ -19,8 +19,8 @@ case class GameStatus(time: Float, blocks: Map[String, BlockStatus]) extends Laz
     val plat = blocks("platform").asInstanceOf[PlatformStatus]
     val exit = blocks("exit").asInstanceOf[ExitStatus]
 
-    val np = if (Random.nextDouble < time / 0.5) PlatformStatus(plat.block, !plat.busy) else plat
-    val ne = if (Random.nextDouble < time / 0.5) ExitStatus(exit.block, !exit.busy) else exit
+    val np = if (Random.nextDouble < time / 2) PlatformStatus(plat.block, !plat.busy) else plat
+    val ne = if (Random.nextDouble < time / 1) ExitStatus(exit.block, !exit.busy) else exit
     val nb = blocks + (np.block.id -> np) + (ne.block.id -> ne)
     GameStatus(t, nb)
   }

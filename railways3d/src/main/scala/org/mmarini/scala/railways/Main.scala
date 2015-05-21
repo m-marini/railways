@@ -1,17 +1,14 @@
 /**
  *
  */
-package org.mmarini.railways3d
+package org.mmarini.scala.railways
 
-import org.mmarini.railways3d.model.GameParameters
-import org.mmarini.railways3d.model.GameStatus
 import com.jme3.app.SimpleApplication
 import com.jme3.niftygui.NiftyJmeDisplay
 import com.typesafe.scalalogging.LazyLogging
+
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
-import com.jme3.math.Quaternion
-import com.jme3.math.Vector3f
 
 /**
  *

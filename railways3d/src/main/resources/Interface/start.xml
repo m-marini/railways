@@ -15,9 +15,9 @@
 		<attributes filename="Interface/panel.png" height="80"
 			width="300" imageMode="resize:13,3,13,13,13,3,13,3,13,3,13,13" />
 	</style>
-	<screen id="start" controller="org.mmarini.railways3d.StartController">
+	<screen id="start" controller="org.mmarini.scala.railways.StartController">
 		<layer backgroundColor="#000f" childLayout="center">
-			<image filename="Interface/Stazione-ferroviaria-cinese1.jpg"
+			<image filename="Interface/station1.jpg"
 				width="100%" height="100%" />
 		</layer>
 		<layer backgroundColor="#fffc" childLayout="center">

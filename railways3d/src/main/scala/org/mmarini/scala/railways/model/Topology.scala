@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.mmarini.railways3d.model
+package org.mmarini.scala.railways.model
 
 /**
  * A set junctions and related blocks that sets up a station

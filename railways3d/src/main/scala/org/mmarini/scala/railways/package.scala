@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.mmarini
+package org.mmarini.scala
 
 /**
  * @author us00852
@@ -13,7 +13,8 @@ import rx.lang.scala.Subscription
 import rx.lang.scala.Observer
 import rx.lang.scala.subscriptions.CompositeSubscription
 
-package object railways3d {
+/** */
+package object railways {
 
   /**
    *

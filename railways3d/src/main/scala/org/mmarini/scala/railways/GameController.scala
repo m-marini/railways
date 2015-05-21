@@ -1,19 +1,14 @@
 /**
  *
  */
-package org.mmarini.railways3d
+package org.mmarini.scala.railways
 
-import org.mmarini.railways3d.model.GameParameters
-import com.jme3.app.SimpleApplication
+import org.mmarini.scala.railways.model.GameParameters
+
 import com.jme3.app.state.AbstractAppState
-import com.jme3.material.Material
-import com.jme3.math.ColorRGBA
-import com.jme3.util.SkyFactory
 import com.typesafe.scalalogging.LazyLogging
+
 import rx.lang.scala.Observer
-import com.jme3.light.AmbientLight
-import com.jme3.light.DirectionalLight
-import com.jme3.math.Vector3f
 
 /**
  * Controls the game screen

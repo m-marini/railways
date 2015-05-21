@@ -5,7 +5,7 @@
 	<useStyles filename="nifty-default-styles.xml" />
 	<useControls filename="nifty-default-controls.xml" />
 
-	<screen id="game-screen" controller="org.mmarini.railways3d.GameController">
+	<screen id="game-screen" controller="org.mmarini.scala.railways.GameController">
 		<layer childLayout="vertical">
 			<panel width="200" height="200" align="right" childLayout="center"
 				backgroundColor="#0008" padding="10px">
