@@ -4,7 +4,6 @@
 package org.mmarini.scala.railways
 
 import scala.util.Try
-
 import org.mmarini.scala.railways.model.BlockStatus
 import org.mmarini.scala.railways.model.BlockTemplate
 import org.mmarini.scala.railways.model.Entry
@@ -15,7 +14,6 @@ import org.mmarini.scala.railways.model.GameParameters
 import org.mmarini.scala.railways.model.GameStatus
 import org.mmarini.scala.railways.model.Platform
 import org.mmarini.scala.railways.model.PlatformStatus
-
 import com.jme3.light.AmbientLight
 import com.jme3.light.DirectionalLight
 import com.jme3.material.Material
@@ -28,8 +26,9 @@ import com.jme3.terrain.heightmap.ImageBasedHeightMap
 import com.jme3.texture.Texture.WrapMode
 import com.jme3.util.SkyFactory
 import com.typesafe.scalalogging.LazyLogging
-
 import rx.lang.scala.Observer
+import com.jme3.collision.CollisionResult
+import rx.lang.scala.Subscription
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -57,7 +56,9 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
       GreenPlatModel))
 
   loadBackstage
-  loadTerrain
+
+  val terrain = loadTerrain
+  terrain.failed.foreach(ex => logger.error(ex.getMessage(), ex))
 
   try {
     app.getCamera.getLocation().set(0f, 1.7f + 0.5f, 10f)
@@ -70,7 +71,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   private val blocks = initialStatus.blocks.values.map(_.block).toSet
 
   /** Returns the [[BlockStatus]] observers that change the scene */
-  private val blocksObservers = createBlockObservers
+  private val blocksObservers = createBlocksObserver
 
   /** events observable */
   private val events = app.timeObservable.map[GameStatus => GameStatus](
@@ -79,7 +80,29 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   /** game state observable */
   private val state = stateFlow(initialStatus)(events)
 
-  state.subscribe(createBlockObservers)
+  /** Subscribe block observer */
+  val blockUnsub = state.subscribe(createBlocksObserver)
+
+  /** Change view to observable */
+  private val changeViewTo = terrain.map(
+    terrain =>
+      app.pickCollision(terrain)(
+        app.pickRay(
+          app.getInputManager.createActionMapping("changeView").
+            filter(_.keyPressed))))
+
+  /** Subscribe changeView observer */
+  private val uu = changeViewTo.map(_.subscribe(n => logger.debug(s"change view to $n")))
+
+  //------------------------------------------------------
+  // Functions
+  //------------------------------------------------------
+
+  /** Unsubscribes all the observers when game ends */
+  private def onEnd {
+    blockUnsub.unsubscribe
+    uu.foreach(_.unsubscribe)
+  }
 
   /** Loads backstage of scene */
   private def loadBackstage {
@@ -145,7 +168,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   }
 
   /** Returns a factory function that builds Spatial for the BlockStatus */
-  def createBlockObservers: Observer[GameStatus] = {
+  def createBlocksObserver: Observer[GameStatus] = {
 
     // Create observer
     val cache = loadBlockModel.withDefaultValue(Set())
@@ -178,26 +201,24 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   }
 
   /** Loads terrains */
-  private def loadTerrain {
+  private def loadTerrain = Try {
     val assetManager = app.getAssetManager
 
-    try {
+    val PatchSize = 65
+    val QuadSize = 513
+    val terrain = new TerrainQuad("my terrain", PatchSize, QuadSize, loadHightMap.get)
 
-      val PatchSize = 65
-      val QuadSize = 513
-      val terrain = new TerrainQuad("my terrain", PatchSize, QuadSize, loadHightMap.get)
+    /** 4. We give the terrain its material, position & scale it, and attach it. */
+    terrain.setMaterial(loadTerrainMaterial.get)
+    //      terrain.setLocalTranslation(0f, 0f, 0f)
+    terrain.setLocalScale(1f, 1f, 1f)
+    app.getRootNode.attachChild(terrain)
 
-      /** 4. We give the terrain its material, position & scale it, and attach it. */
-      terrain.setMaterial(loadTerrainMaterial.get)
-      //      terrain.setLocalTranslation(0f, 0f, 0f)
-      terrain.setLocalScale(1f, 1f, 1f)
-      app.getRootNode.attachChild(terrain)
+    /** 5. The LOD (level of detail) depends on were the camera is: */
+    val control = new TerrainLodControl(terrain, app.getCamera)
+    terrain.addControl(control)
 
-      /** 5. The LOD (level of detail) depends on were the camera is: */
-      val control = new TerrainLodControl(terrain, app.getCamera)
-      terrain.addControl(control)
-
-    } catch { case e: Throwable => logger.error(e.getMessage, e) }
+    terrain
   }
 
   /** Loads the height map */

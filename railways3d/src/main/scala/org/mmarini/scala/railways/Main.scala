@@ -6,9 +6,14 @@ package org.mmarini.scala.railways
 import com.jme3.app.SimpleApplication
 import com.jme3.niftygui.NiftyJmeDisplay
 import com.typesafe.scalalogging.LazyLogging
-
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
+import com.jme3.input.event.MouseButtonEvent
+import com.jme3.input.controls.MouseButtonTrigger
+import com.jme3.input.MouseInput
+import com.jme3.input.controls.MouseAxisTrigger
+import org.mmarini.scala.jmonkey.ApplicationOps
+import com.jme3.input.InputManager
 
 /**
  *
@@ -38,8 +43,14 @@ object Main extends SimpleApplication with LazyLogging {
     }
     wireUp
 
+    // Add pick mapping
+    inputManager.addMapping("changeState", new MouseButtonTrigger(MouseInput.BUTTON_LEFT))
+    inputManager.addMapping("changeView", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT))
+    inputManager.addMapping("additionalChangeState", new MouseButtonTrigger(MouseInput.BUTTON_MIDDLE))
+    inputManager.addMapping("zoomSlider", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false))
+
     // disable the fly cam
-    flyCam.setDragToRotate(true)
+    //    flyCam.setDragToRotate(true)
   }
 
   /** */
@@ -81,7 +92,6 @@ object Main extends SimpleApplication with LazyLogging {
         filter(_ == "startButton"), gpo).map(t => (this, t._2))
 
       gameStart.subscribe(game.gameStarterObserver)
-
     }
   }
 
