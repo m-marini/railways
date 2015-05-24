@@ -66,7 +66,6 @@ class InputManagerOps(val inputManager: InputManager) {
 }
 
 case class RayMapping(ray: Ray)
-case class CollisionMapping(collision: Option[CollisionResult])
 
 /** Adds functionalities to the jme3 application */
 class ApplicationOps(val app: Application) {
@@ -82,11 +81,15 @@ class ApplicationOps(val app: Application) {
     })
 
   /** Returns the observable of pick object */
-  def pickCollision(shootables: Node)(o: Observable[RayMapping]): Observable[CollisionMapping] =
-    o.map(n => {
+  def pickCollision(shootables: Node)(o: Observable[RayMapping]): Observable[CollisionResult] = {
+    val collisions = o.map(rayMapping => {
       val results = new CollisionResults()
-      shootables.collideWith(n.ray, results)
-      CollisionMapping(if (results.size > 0) Some(results.getClosestCollision) else None)
+      shootables.collideWith(rayMapping.ray, results)
+      results
     })
+    val nonEmptyCollisions = collisions.filter(_.size() > 0)
+    nonEmptyCollisions.map(_.getClosestCollision())
+  }
 }
+
 

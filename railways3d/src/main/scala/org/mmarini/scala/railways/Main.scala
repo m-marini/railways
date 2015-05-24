@@ -41,16 +41,9 @@ object Main extends SimpleApplication with LazyLogging {
     for (nd <- niftyDisplay) {
       guiViewPort.addProcessor(nd)
     }
+
+    flyCam.setDragToRotate(true)
     wireUp
-
-    // Add pick mapping
-    inputManager.addMapping("changeState", new MouseButtonTrigger(MouseInput.BUTTON_LEFT))
-    inputManager.addMapping("changeView", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT))
-    inputManager.addMapping("additionalChangeState", new MouseButtonTrigger(MouseInput.BUTTON_MIDDLE))
-    inputManager.addMapping("zoomSlider", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false))
-
-    // disable the fly cam
-    //    flyCam.setDragToRotate(true)
   }
 
   /** */
