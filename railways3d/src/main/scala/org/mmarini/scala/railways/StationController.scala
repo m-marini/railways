@@ -78,13 +78,13 @@ class StationController(
       RedPlatModel,
       GreenPlatModel))
 
+  private val blocks = initialStatus.blocks.values.map(_.block).toSet
+
   /** Returns the [[BlockStatus]] observers that change the scene */
   private val blocksObservers = createBlocksObserver
 
   /** Returns the subscription that manages the station 3d model changes */
   def subscribe: Subscription = status.subscribe(blocksObservers)
-
-  private val blocks = initialStatus.blocks.values.map(_.block).toSet
 
   /** Load 3d model of blocks */
   private def loadBlockModel: Map[String, Map[String, Spatial]] = {

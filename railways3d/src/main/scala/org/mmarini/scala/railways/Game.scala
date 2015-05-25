@@ -78,16 +78,20 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   /** Picking ray observable */
   private val rays =
     for { terrain <- terrainTry } yield {
-      val actions = app.getInputManager.createActionMapping("changeView").filter(_.keyPressed)
+      val actions = app.getInputManager.
+        createActionMapping("changeView").
+        doOnNext(x => logger.debug(s"action=$x")).
+        filter(_.keyPressed).
+        doOnNext(x => logger.debug(s"filtered action=$x"))
       val rays = app.pickRay(actions)
-      rays
+      rays.doOnNext(x => logger.debug(s"ray=$x"))
     }
 
   /** */
   private val pickingScene = for {
     terrain <- terrainTry
     obs <- rays
-  } yield app.pickCollision(terrain)(obs)
+  } yield app.pickCollision(terrain)(obs).doOnNext(x => logger.debug(s"collision=$x"))
 
   /** Subscribe changeView observer */
   private val cameraController =
@@ -100,6 +104,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   attachMapping
 
   setCameraController
+  logger.debug("Completed")
 
   //------------------------------------------------------
   // Functions
@@ -122,11 +127,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
     for {
       ctrl <- cameraController
-      motionEvent <- ctrl.cameraController
-    } {
-      motionEvent.getSpatial().asInstanceOf[CameraNode].setEnabled(true)
-      app.getRootNode.attachChild(motionEvent.getSpatial())
-    }
+    } ctrl.register(app.getRootNode)
   }
 
   /** Unsubscribes all the observers when game ends */

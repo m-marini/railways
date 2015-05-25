@@ -5,15 +5,10 @@ package org.mmarini.scala.railways
 
 import com.jme3.app.SimpleApplication
 import com.jme3.niftygui.NiftyJmeDisplay
+import com.jme3.system.AppSettings
 import com.typesafe.scalalogging.LazyLogging
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
-import com.jme3.input.event.MouseButtonEvent
-import com.jme3.input.controls.MouseButtonTrigger
-import com.jme3.input.MouseInput
-import com.jme3.input.controls.MouseAxisTrigger
-import org.mmarini.scala.jmonkey.ApplicationOps
-import com.jme3.input.InputManager
 
 /**
  *
@@ -32,9 +27,13 @@ object Main extends SimpleApplication with LazyLogging {
 
     // Read your XML and initialize your custom ScreenController
     for (n <- nifty) {
-      n.fromXml("Interface/start.xml", "start")
-      n.addXml("Interface/opts.xml")
-      n.addXml("Interface/game.xml")
+      try {
+        n.fromXml("Interface/start.xml", "start")
+        n.addXml("Interface/opts.xml")
+        n.addXml("Interface/game.xml")
+      } catch {
+        case ex: Exception => logger.error(ex.getMessage, ex)
+      }
     }
 
     // attach the Nifty display to the gui view port as a processor
@@ -108,7 +107,12 @@ object Main extends SimpleApplication with LazyLogging {
 
   /** */
   def main(args: Array[String]): Unit = {
-    //    Main.setShowSettings(false)
+    val Width = 1024
+    val Height = 768
+    val s = new AppSettings(true)
+    s.setResolution(Width, Height)
+    Main.setSettings(s)
+    Main.setShowSettings(false)
     Main.start()
   }
 }
