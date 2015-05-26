@@ -95,9 +95,9 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   /** Subscribe changeView observer */
   private val cameraController =
-    pickingScene.map(new CameraController(app.getCamera, _))
+    pickingScene.map(new CameraController(app.getCamera, _, app.getAssetManager, app.getRootNode))
 
-  private val cameraSubscription = cameraController.flatMap(_.subscribe)
+  private val cameraSubscription = cameraController.map(_.subscribe)
 
   loadBackstage
   terrainTry.foreach(app.getRootNode.attachChild)
@@ -127,7 +127,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
     for {
       ctrl <- cameraController
-    } ctrl.register(app.getRootNode)
+    } ctrl.register
   }
 
   /** Unsubscribes all the observers when game ends */

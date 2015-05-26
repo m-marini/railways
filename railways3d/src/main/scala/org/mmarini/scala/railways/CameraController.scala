@@ -48,64 +48,69 @@ import com.jme3.renderer.Camera
 import com.jme3.math.Vector2f
 import com.jme3.scene.Node
 import com.fasterxml.jackson.databind.util.RootNameLookup
+import com.jme3.asset.AssetManager
+import com.jme3.scene.control.CameraControl
+import org.mmarini.scala.railways.model._
 
 /**
- * Handles the events of simulation coming from user or clock ticks
- *
- * Each event generates a change of rendered model 3d.
- * The model is kept in this Game
- *
- * This Game constructor initializes the game status
+ * Handles the movement of the camera to the target viewpoint
  */
-class CameraController(camera: Camera, collisions: Observable[CollisionResult]) extends LazyLogging {
+class CameraController(camera: Camera, collisions: Observable[CollisionResult], assetManager: AssetManager, node: Node) extends LazyLogging {
 
-  val camNode = new CameraNode("Motion cam", camera)
-  camNode.setControlDir(ControlDirection.SpatialToCamera)
+  // Creates the path
+  private val path = new MotionPath
+  path.setCycle(true)
+
+  // Create the camera node
+  private val camNode = new CameraNode("Motion cam", camera)
+
+  // Creates the camera controller
+  private val cameraController = new MotionEvent(camNode, path, 3f)
+
+  // Creates the obsevable
+  private val changeViewObservable: Observable[Vector3f] = createChangeView
+
+  /*
+   * Creates the observer of change view point.
+   * Sets the motion path of camera to go to the view point and activate the animation of camera
+   */
+  private val cameraObserver: Observer[Vector3f] =
+    Observer((target: Vector3f) => {
+      try {
+        logger.debug(s"target at $target")
+        if (path.getNbWayPoints() >= 3) {
+          path.removeWayPoint(0)
+        }
+        path.addWayPoint(target)
+        path.enableDebugShape(assetManager, node)
+        path.setCurveTension(1f)
+        //        cameraController.setLookAt(target, Vector3f.UNIT_Y)
+        cameraController.setRotation(new Quaternion().fromAngleAxis(RightAngle, Vector3f.UNIT_Y))
+        cameraController.setDirectionType(MotionEvent.Direction.Path)
+        cameraController.setCurrentWayPoint(path.getNbWayPoints() - 2)
+        cameraController.play()
+      } catch {
+        case e: Exception => logger.error(e.getMessage, e)
+      }
+    })
+
+  /** creates the subscription that manages the camera */
+  def subscribe(): Subscription =
+    changeViewObservable.subscribe(cameraObserver)
+
+  /** Registers the components thats handles the camera motion to the specified node*/
+  def register {
+    path.setCycle(false)
+    path.addWayPoint(new Vector3f)
+
+    node.attachChild(camNode)
+    camNode.setControlDir(ControlDirection.SpatialToCamera)
     camNode.setLocalTranslation(0, 2, 0)
     camNode.setEnabled(true)
 
-  /** Returns the camera controller */
-  val cameraController: Try[MotionEvent] = createCameraController
-
-  private val changeViewObservable: Observable[Vector3f] = createChangeView
-
-  private val cameraObserver: Try[Observer[Vector3f]] = createObserver
-
-  /** creates the subscription that manages the camera */
-  def subscribe(): Try[Subscription] =
-    for {
-      observer <- cameraObserver
-    } yield {
-      changeViewObservable.subscribe(observer)
-    }
-
-  /** */
-  def register(rootNode: Node) {
-    rootNode.attachChild(camNode)
-    //      motionEvent.getSpatial().asInstanceOf[CameraNode].setEnabled(true)
-
-    //
-    //      rootNode.attachChild(camNode)
-    //    path.enableDebugShape(assetManager, rootNode)
-    //
-
-  }
-
-  /** Creates camera controller */
-  private def createCameraController: Try[MotionEvent] = {
-    val ctrl = Try {
-      val path = new MotionPath
-      path.setCycle(true)
-
-      val cameraController = new MotionEvent(camNode, path, 10f)
-      cameraController.setLoopMode(LoopMode.DontLoop)
-      cameraController.setDirectionType(MotionEvent.Direction.Path)
-      cameraController.setLookAt(new Vector3f, Vector3f.UNIT_Y)
-
-      cameraController
-    }
-    ctrl.failed.foreach(e => logger.error(e.getMessage, e))
-    ctrl
+    cameraController.setLoopMode(LoopMode.DontLoop)
+    cameraController.setLookAt(new Vector3f, Vector3f.UNIT_Y)
+    //    cameraController.play()
   }
 
   /**
@@ -113,20 +118,6 @@ class CameraController(camera: Camera, collisions: Observable[CollisionResult]) 
    * Sets the motion path of camera to go to the view point and activate the animation of camera
    */
   private def createChangeView: Observable[Vector3f] =
-    collisions.map(_.getContactPoint).doOnNext(x => logger.debug(s"camera vector=$x"))
+    collisions.map(_.getContactPoint.clone().setY(2f)).doOnNext(x => logger.debug(s"camera vector=$x"))
 
-  /** Moves camera to a target point */
-
-  /**
-   * Creates the observer of change view point.
-   * Sets the motion path of camera to go to the view point and activate the animation of camera
-   */
-  private def createObserver: Try[Observer[Vector3f]] =
-    for {
-      controller <- cameraController
-    } yield {
-      Observer((target: Vector3f) => {
-        logger.debug(s"target at $target")
-      })
-    }
 }
