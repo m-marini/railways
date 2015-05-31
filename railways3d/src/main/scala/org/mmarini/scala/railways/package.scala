@@ -27,12 +27,16 @@ import com.jme3.collision.CollisionResult
 import com.jme3.input.InputManager
 import org.mmarini.scala.jmonkey.ApplicationOps
 import org.mmarini.scala.jmonkey.InputManagerOps
+import de.lessvoid.nifty.controls.ListBoxSelectionChangedEvent
+import org.mmarini.scala.jmonkey.ListBoxSelectionObservable
 
 /** */
 package object railways {
 
   implicit def appToAppOps(app: Application): ApplicationOps = new ApplicationOps(app)
   implicit def inpManagerToinpManagerOps(app: InputManager): InputManagerOps = new InputManagerOps(app)
+  implicit def toListBoxSelectionObservable[T](obs: Observable[ListBoxSelectionChangedEvent[T]]): ListBoxSelectionObservable[T] =
+    new ListBoxSelectionObservable(obs)
 
   /**
    *

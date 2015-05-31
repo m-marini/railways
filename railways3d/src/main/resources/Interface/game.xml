@@ -9,12 +9,14 @@
 		<layer childLayout="vertical">
 			<panel width="200" height="200" align="right" childLayout="center"
 				backgroundColor="#0008" padding="10px">
-				<control id="trainList" name="listBox" vertical="optional"
-					horizontal="optional" displayItems="8" selection="Multiple" />
+				<control id="cameras" name="listBox" vertical="optional"
+					horizontal="optional" displayItems="8" />
 			</panel>
 			<panel width="200" height="100" align="right" childLayout="center"
 				backgroundColor="#0008">
-				<control id="doButton" name="button" label="Do something!" />
+				<control id="doButton" name="button" label="Do something!">
+					<interact onClick="cameraSelected()" />
+				</control>
 			</panel>
 		</layer>
 	</screen>

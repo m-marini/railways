@@ -17,31 +17,22 @@
 	</style>
 	<screen id="start" controller="org.mmarini.scala.railways.StartController">
 		<layer backgroundColor="#000f" childLayout="center">
-			<image filename="Interface/station1.jpg"
-				width="100%" height="100%" />
+			<image filename="Interface/station1.jpg" width="100%" height="100%" />
 		</layer>
 		<layer backgroundColor="#fffc" childLayout="center">
 			<panel height="80%" width="80%" childLayout="horizontal">
 				<panel height="100%" width="25%" childLayout="vertical">
 					<panel height="25%" width="*" childLayout="center">
-						<control name="button" label="Start" id="startButton">
-							<interact onClick="select(startButton)" />
-						</control>
+						<control name="button" label="Start" id="startButton" />
 					</panel>
 					<panel height="25%" width="*" childLayout="center">
-						<control id="optionsButton" name="button" label="Options">
-							<interact onClick="select(optionsButton)" />
-						</control>
+						<control id="optionsButton" name="button" label="Options" />
 					</panel>
 					<panel height="25%" width="*" childLayout="center">
-						<control name="button" label="Hall Of Fame" id="hallOfFameButton">
-							<interact onClick="select(hallOfFameButton)" />
-						</control>
+						<control name="button" label="Hall Of Fame" id="hallOfFameButton" />
 					</panel>
 					<panel height="25%" width="*" childLayout="center">
-						<control name="button" label="Quit" id="quitButton">
-							<interact onClick="select(quitButton)" />
-						</control>
+						<control name="button" label="Quit" id="quitButton" />
 					</panel>
 				</panel>
 				<panel width="75%" height="*" childLayout="vertical">

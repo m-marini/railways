@@ -3,6 +3,9 @@
  */
 package org.mmarini.scala.railways.model
 
+import com.jme3.math.Vector3f
+import com.jme3.math.Quaternion
+
 /**
  * A set junctions and related blocks that sets up a station
  */
@@ -15,6 +18,9 @@ trait Topology {
   lazy val blocks: Set[Block] = junctions.flatMap {
     case (a, b) => Set(a.block, b.block)
   }
+
+  /** Returns the viewpoints */
+  def viewpoints: Set[CameraViewpoint]
 }
 
 /**
@@ -28,6 +34,9 @@ case object TestStation extends Topology {
   val junctions = Set[Junction]( //    (Endpoint(entry, 0), Endpoint(platform, 0)),
   //    (Endpoint(exit, 0), Endpoint(platform, 1)))
   )
+
+  /** Returns the viewpoints */
+  val viewpoints = Set[CameraViewpoint]()
 }
 
 case object Downville extends Topology {
@@ -38,6 +47,10 @@ case object Downville extends Topology {
   val junctions = Set(
     (Endpoint(entry, 0), Endpoint(platform, 0)),
     (Endpoint(exit, 0), Endpoint(platform, 1)))
+
+  val viewpoints = Set[CameraViewpoint](
+    CameraViewpoint("east-tracks", new Vector3f(-Platform.Length / 2 - 10, 3f, 0f), new Quaternion().fromAngleAxis(RightAngle, Vector3f.UNIT_Y)),
+    CameraViewpoint("west-tracks", new Vector3f(Platform.Length / 2 + 10f, 3f, 0f), new Quaternion().fromAngleAxis(-RightAngle, Vector3f.UNIT_Y)))
 }
 
 /** A factory of [[Topology]] */
@@ -46,5 +59,6 @@ object Topology {
 
   /** Returns the topology of a named station */
   def apply(id: String): Topology = topologies(id)
+
 }
 

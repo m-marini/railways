@@ -57,9 +57,8 @@ import com.jme3.scene.Node
  *
  * This Game constructor initializes the game status
  */
-class StationController(
-  status: Observable[GameStatus],
-  initialStatus: GameStatus,
+class StationRenderer(
+  blocks: Set[Block],
   assetManager: AssetManager,
   rootNode: Node) extends LazyLogging {
 
@@ -68,7 +67,7 @@ class StationController(
   private val RedPlatModel = "Textures/blocks/red-plat.j3o"
   private val GreenPlatModel = "Textures/blocks/green-plat.j3o"
 
-  /** Returns all the spatial names of a block template */
+  // Creates all the spatial names of a block template
   private val StatusKeys: Map[BlockTemplate, Set[String]] = Map(
     Entry -> Set(RedSemModel),
     Exit -> Set(
@@ -78,13 +77,8 @@ class StationController(
       RedPlatModel,
       GreenPlatModel))
 
-  private val blocks = initialStatus.blocks.values.map(_.block).toSet
-
-  /** Returns the [[BlockStatus]] observers that change the scene */
-  private val blocksObservers = createBlocksObserver
-
-  /** Returns the subscription that manages the station 3d model changes */
-  def subscribe: Subscription = status.subscribe(blocksObservers)
+  // Creates cache
+  val cache = loadBlockModel.withDefaultValue(Set())
 
   /** Load 3d model of blocks */
   private def loadBlockModel: Map[String, Map[String, Spatial]] = {
@@ -109,27 +103,23 @@ class StationController(
     assets.toMap
   }
 
-  /** Returns a factory function that builds Spatial for the BlockStatus */
-  private def createBlocksObserver: Observer[GameStatus] = {
+  /** Changes the view od station */
+  def change(status: GameStatus) {
+    for { blockStatus <- status.blocks.values } {
 
-    // Create observer
-    val cache = loadBlockModel.withDefaultValue(Set())
+      val key = statusKey(blockStatus)
+      cache(blockStatus.block.id).foreach(changeSpatials)
 
-    Observer((status: GameStatus) =>
-      for { blockStatus <- status.blocks.values } {
-        val key = statusKey(blockStatus)
-        cache(blockStatus.block.id).foreach(changeSpatials)
-
-        def changeSpatials(block: (String, Spatial)) = block match {
-          case (k, spatial) if (k == key && !Option(spatial.getUserData[String]("attached")).contains(true)) =>
-            rootNode.attachChild(spatial)
-            spatial.setUserData("attached", true)
-          case (k, spatial) if (k != key && Option(spatial.getUserData[String]("attached")).contains(true)) =>
-            rootNode.detachChild(spatial)
-            spatial.setUserData("attached", false)
-          case _ =>
-        }
-      })
+      def changeSpatials(block: (String, Spatial)) = block match {
+        case (k, spatial) if (k == key && !Option(spatial.getUserData[String]("attached")).contains(true)) =>
+          rootNode.attachChild(spatial)
+          spatial.setUserData("attached", true)
+        case (k, spatial) if (k != key && Option(spatial.getUserData[String]("attached")).contains(true)) =>
+          rootNode.detachChild(spatial)
+          spatial.setUserData("attached", false)
+        case _ =>
+      }
+    }
   }
 
   /** Returns the status key of a block */

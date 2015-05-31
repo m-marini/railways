@@ -11,7 +11,7 @@ import scala.util.Random
  *
  * Generates next status by handling the incoming events
  */
-case class GameStatus(time: Float, blocks: Map[String, BlockStatus]) extends LazyLogging {
+case class GameStatus(time: Float, topology: Topology, blocks: Map[String, BlockStatus]) extends LazyLogging {
 
   /** Generates the next status simulating a time elapsing */
   def tick(time: Float): GameStatus = {
@@ -22,7 +22,7 @@ case class GameStatus(time: Float, blocks: Map[String, BlockStatus]) extends Laz
     val np = if (Random.nextDouble < time / 2) PlatformStatus(plat.block, !plat.busy) else plat
     val ne = if (Random.nextDouble < time / 1) ExitStatus(exit.block, !exit.busy) else exit
     val nb = blocks + (np.block.id -> np) + (ne.block.id -> ne)
-    GameStatus(t, nb)
+    GameStatus(t, topology, nb)
   }
 
 }
@@ -31,12 +31,12 @@ case class GameStatus(time: Float, blocks: Map[String, BlockStatus]) extends Laz
 object GameStatus {
   /** Create the initial game status */
   def apply(parms: GameParameters): GameStatus = {
-    val states = Topology(parms.stationName).
-      blocks.
+    val t = Topology(parms.stationName)
+    val states = t.blocks.
       map(
         b => (b.id -> initialStatus(b))).
         toMap
-    GameStatus(0f, states)
+    GameStatus(0f, t, states)
   }
 
   /** Returns the initial state of Block */

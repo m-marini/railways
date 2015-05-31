@@ -21,7 +21,7 @@ import scala.util.Random
 object TerrainBuilder extends LazyLogging {
 
   /** Loads terrains */
-  def apply(assetManager: AssetManager, camera: Camera): Try[Node] = {
+  def build(assetManager: AssetManager, camera: Camera): Try[Node] = {
     val ty = for {
       mat <- loadTerrainMaterial(assetManager)
       map <- loadHightMap

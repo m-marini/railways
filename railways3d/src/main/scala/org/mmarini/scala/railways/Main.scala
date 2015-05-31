@@ -9,6 +9,12 @@ import com.jme3.system.AppSettings
 import com.typesafe.scalalogging.LazyLogging
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
+import com.jme3.input.controls.MouseButtonTrigger
+import com.jme3.input.controls.KeyTrigger
+import com.jme3.input.KeyInput
+import com.jme3.input.controls.MouseAxisTrigger
+import com.jme3.input.MouseInput
+import org.mmarini.scala.jmonkey.ActionMapping
 
 /**
  *
@@ -18,6 +24,8 @@ object Main extends SimpleApplication with LazyLogging {
   private var niftyDisplay: Option[NiftyJmeDisplay] = None
 
   val _time = Subject[(SimpleApplication, Float)]()
+
+  var actions: Map[String, Observable[ActionMapping]] = Map()
 
   /** */
   override def simpleInitApp: Unit = {
@@ -42,7 +50,15 @@ object Main extends SimpleApplication with LazyLogging {
     }
 
     flyCam.setDragToRotate(true)
+
+    actions = (for (k <- Set("changeState", "changeView", "additionalChangeState", "zoomSlider")) yield {
+      val obs = inputManager.createActionMapping(k)
+      (k -> obs)
+    }).toMap
+
     wireUp
+
+    attachMapping
   }
 
   /** */
@@ -53,38 +69,33 @@ object Main extends SimpleApplication with LazyLogging {
       game <- controller[GameController]("game-screen")
     } {
 
-      // GameParameter observable
-      val gpo = stateFlow(opts.parameters)(opts.confirmed.map(_ => _ => opts.parameters))
-
-      // Bind gpo to start controller observer
-      gpo.subscribe(start.gameParameterObserver)
-
-      // Bind gpo to start screen
-      gpo.subscribe(_ => {
-        nifty.foreach(_.gotoScreen("start"))
+      // start screen selection
+      start.selection.subscribe(_ match {
+        case "optionsButton" => nifty.foreach(_.gotoScreen("opts-screen"))
+        case "startButton" => nifty.foreach(_.gotoScreen("game-screen"))
+        case "quitButton" => stop
       })
 
-      // Bind option button to options screen
-      start.selection.
-        filter(_ == "optionsButton").
-        subscribe(_ => for (n <- nifty) n.gotoScreen("opts-screen"))
+      // Option selection
+      opts.confirmed.subscribe(_ => {
+        nifty.foreach(_.gotoScreen("start"))
+        start.show(opts.parameters)
+      })
 
-      // Bind start button to game screen
-      start.selection.
-        filter(_ == "startButton").
-        subscribe(_ => for (n <- nifty) n.gotoScreen("game-screen"))
-
-      // Bind quit button to game exit
-      start.selection.
-        filter(_ == "quitButton").
-        subscribe(_ => stop)
-
-      // Bind gpo to triggered start
-      val gameStart = trigger(start.selection.
-        filter(_ == "startButton"), gpo).map(t => (this, t._2))
-
-      gameStart.subscribe(game.gameStarterObserver)
+      // game controller behaviour
+      game.screenObservable.subscribe(_ match {
+        case "start" => new Game(this, opts.parameters)
+      })
     }
+  }
+
+  /** Attaches mapping */
+  private def attachMapping {
+    inputManager.addMapping("changeState", new MouseButtonTrigger(MouseInput.BUTTON_LEFT))
+    inputManager.addMapping("changeView", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT))
+    inputManager.addMapping("changeView", new KeyTrigger(KeyInput.KEY_G))
+    inputManager.addMapping("additionalChangeState", new MouseButtonTrigger(MouseInput.BUTTON_MIDDLE))
+    inputManager.addMapping("zoomSlider", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false))
   }
 
   /** */
@@ -102,8 +113,8 @@ object Main extends SimpleApplication with LazyLogging {
   private def screen(id: String) = nifty.map(n => n.getScreen(id))
 
   /** */
-  private def controller[T](id: String) =
-    screen(id).map(n => n.getScreenController().asInstanceOf[T])
+  def controller[T](id: String): Option[T] =
+    screen(id).flatMap(n => Some(n.getScreenController().asInstanceOf[T]))
 
   /** */
   def main(args: Array[String]): Unit = {

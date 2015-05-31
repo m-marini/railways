@@ -53,87 +53,101 @@ import com.jme3.input.KeyInput
  * The model is kept in this Game
  *
  * This Game constructor initializes the game status
+ * loads the station 3d models
+ * wires the observable for camera viewpoint selections, time ticks and input actions
  */
 class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
-
-  /** Returns the initial game status */
+  // Creates the initial game status
   private val initialStatus = GameStatus(parameters)
 
-  private val blocks = initialStatus.blocks.values.map(_.block).toSet
-
-  /** events observable */
+  // Creates the event observable
   private val events = app.timeObservable.map[GameStatus => GameStatus](
     p => s => s.tick(p._2))
 
-  /** game state observable */
+  // Creates the state observable
   private val state = stateFlow(initialStatus)(events)
 
-  val stationController = new StationController(state, initialStatus, app.getAssetManager, app.getRootNode)
+  // Create the station renderer
+  private val stationRend = new StationRenderer(
+    initialStatus.blocks.values.map(_.block).toSet,
+    app.getAssetManager,
+    app.getRootNode)
 
-  /** Subscribe block observer */
-  val blockUnsub = stationController.subscribe
+  // Creates the viewpoint map
+  private val viewpointMap = initialStatus.topology.viewpoints.map(v => (v.id, v)).toMap
 
-  private val terrainTry = TerrainBuilder(app.getAssetManager, app.getCamera)
+  // Creates the camera controller
+  private val cameraController = new CameraController(app.getCamera, app.getAssetManager, app.getRootNode)
 
-  /** Picking ray observable */
-  private val rays =
-    for { terrain <- terrainTry } yield {
-      val actions = app.getInputManager.
-        createActionMapping("changeView").
-        doOnNext(x => logger.debug(s"action=$x")).
-        filter(_.keyPressed).
-        doOnNext(x => logger.debug(s"filtered action=$x"))
-      val rays = app.pickRay(actions)
-      rays.doOnNext(x => logger.debug(s"ray=$x"))
+  loadViewpoints
+  loadBackstage
+
+  // Creates the terrain builder
+  private val terrainTry = TerrainBuilder.build(app.getAssetManager, app.getCamera)
+
+  terrainTry.foreach(app.getRootNode.attachChild)
+
+  // Subscribes for status change
+  private val subStatus = state.subscribe(status => {
+    stationRend.change(status)
+  })
+
+  // Subscribes for camera change
+  private val subCameraChange =
+    for { gameScreen <- app.controller[GameController]("game-screen") } yield {
+      gameScreen.cameraSelected.subscribe(_ match {
+        case Some(id) =>
+          val vp = viewpointMap(id)
+          cameraController.change(vp)
+        case _ =>
+      })
     }
 
-  /** */
-  private val pickingScene = for {
-    terrain <- terrainTry
-    obs <- rays
-  } yield app.pickCollision(terrain)(obs).doOnNext(x => logger.debug(s"collision=$x"))
-
-  /** Subscribe changeView observer */
-  private val cameraController =
-    pickingScene.map(new CameraController(app.getCamera, _, app.getAssetManager, app.getRootNode))
-
-  private val cameraSubscription = cameraController.map(_.subscribe)
-
-  loadBackstage
-  terrainTry.foreach(app.getRootNode.attachChild)
-  attachMapping
-
-  setCameraController
   logger.debug("Completed")
+
+  //
+  //  /** Picking ray observable */
+  //  private val rays =
+  //    for { terrain <- terrainTry } yield {
+  //      val actions = app.getInputManager.
+  //        createActionMapping("changeView").
+  //        doOnNext(x => logger.debug(s"action=$x")).
+  //        filter(_.keyPressed).
+  //        doOnNext(x => logger.debug(s"filtered action=$x"))
+  //      val rays = app.pickRay(actions)
+  //      rays.doOnNext(x => logger.debug(s"ray=$x"))
+  //    }
+  //
+  //  /** */
+  //  private val pickingScene = for {
+  //    terrain <- terrainTry
+  //    obs <- rays
+  //  } yield app.pickCollision(terrain)(obs).doOnNext(x => logger.debug(s"collision=$x"))
+  //
+  //  /** Subscribe changeView observer */
+  //  private val cameraController =
+  //    pickingScene.map(new CameraController(app.getCamera, _, app.getAssetManager, app.getRootNode))
+  //
+  //  private val cameraSubscription = cameraController.map(_.subscribe)
+  //
+  //  terrainTry.foreach(app.getRootNode.attachChild)
+  //
+  //  setCameraController
 
   //------------------------------------------------------
   // Functions
   //------------------------------------------------------
 
-  /** Attaches mapping */
-  private def attachMapping {
-    val inputManager = app.getInputManager
-    inputManager.addMapping("changeState", new MouseButtonTrigger(MouseInput.BUTTON_LEFT))
-    inputManager.addMapping("changeView", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT))
-    inputManager.addMapping("changeView", new KeyTrigger(KeyInput.KEY_G))
-    inputManager.addMapping("additionalChangeState", new MouseButtonTrigger(MouseInput.BUTTON_MIDDLE))
-    inputManager.addMapping("zoomSlider", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false))
-  }
-
-  /** Sets the camera controllers up */
-  private def setCameraController {
-
-    app.getFlyByCamera().setEnabled(true)
-
-    for {
-      ctrl <- cameraController
-    } ctrl.register
+  /** Loads viewpoints list into hud panel */
+  private def loadViewpoints {
+    app.controller[GameController]("game-screen").foreach(_.show(
+      initialStatus.topology.viewpoints.map(_.id).toList))
   }
 
   /** Unsubscribes all the observers when game ends */
-  private def onEnd {
-    blockUnsub.unsubscribe
-    cameraSubscription.foreach(_.unsubscribe)
+  def onEnd {
+    subStatus.unsubscribe
+    subCameraChange.foreach(_.unsubscribe)
   }
 
   /** Loads backstage of scene */

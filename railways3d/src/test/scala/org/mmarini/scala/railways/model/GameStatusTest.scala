@@ -14,7 +14,7 @@ import org.scalacheck.Gen
 class GameStatusTest extends PropSpec with Matchers with PropertyChecks {
 
   property("The time of next game status after elapsed time should be added by elapsed time") {
-    val s = GameStatus(0f, Map())
+    val s = GameStatus(0f, Downville, Map())
 
     forAll {
       (elapsed: Float) =>
