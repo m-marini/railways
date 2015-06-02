@@ -3,8 +3,8 @@
  */
 package org.mmarini.scala.railways.model
 
-import com.jme3.math.Vector3f
 import com.jme3.math.Quaternion
+import com.jme3.math.Vector3f
 
 /**
  * A set junctions and related blocks that sets up a station
@@ -20,12 +20,8 @@ trait Topology {
   }
 
   /** Returns the viewpoints */
-  def viewpoints: Set[CameraViewpoint]
+  def viewpoints: Seq[CameraViewpoint]
 }
-
-/**
- * The Downville station
- */
 case object TestStation extends Topology {
   private val entry = Block.entry("entry", 0f, 0f, 0f)
   private val exit = Block.exit("exit", 0f, 385f, StraightAngle)
@@ -36,21 +32,7 @@ case object TestStation extends Topology {
   )
 
   /** Returns the viewpoints */
-  val viewpoints = Set[CameraViewpoint]()
-}
-
-case object Downville extends Topology {
-  private val entry = Block.entry("entry", -Platform.Length / 2, 0f, -RightAngle)
-  private val exit = Block.exit("exit", Platform.Length / 2, 0f, RightAngle)
-  private val platform = Block.platform("platform", -Platform.Length / 2, 0f, RightAngle)
-
-  val junctions = Set(
-    (Endpoint(entry, 0), Endpoint(platform, 0)),
-    (Endpoint(exit, 0), Endpoint(platform, 1)))
-
-  val viewpoints = Set[CameraViewpoint](
-    CameraViewpoint("east-tracks", new Vector3f(-Platform.Length / 2 - 10, 3f, 0f), new Quaternion().fromAngleAxis(RightAngle, Vector3f.UNIT_Y)),
-    CameraViewpoint("west-tracks", new Vector3f(Platform.Length / 2 + 10f, 3f, 0f), new Quaternion().fromAngleAxis(-RightAngle, Vector3f.UNIT_Y)))
+  val viewpoints: Seq[CameraViewpoint] = Nil
 }
 
 /** A factory of [[Topology]] */

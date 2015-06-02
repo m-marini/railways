@@ -118,7 +118,7 @@ object Main extends SimpleApplication with LazyLogging {
 
   /** */
   def main(args: Array[String]): Unit = {
-    val Width = 1024
+    val Width = 1200
     val Height = 768
     val s = new AppSettings(true)
     s.setResolution(Width, Height)

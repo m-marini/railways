@@ -4,50 +4,26 @@
 package org.mmarini.scala.railways
 
 import scala.util.Try
+import org.mmarini.scala.railways.model.Block
 import org.mmarini.scala.railways.model.BlockStatus
 import org.mmarini.scala.railways.model.BlockTemplate
+import org.mmarini.scala.railways.model.DeviatorStatus
 import org.mmarini.scala.railways.model.Entry
 import org.mmarini.scala.railways.model.EntryStatus
 import org.mmarini.scala.railways.model.Exit
 import org.mmarini.scala.railways.model.ExitStatus
-import org.mmarini.scala.railways.model.GameParameters
 import org.mmarini.scala.railways.model.GameStatus
+import org.mmarini.scala.railways.model.LeftDeviator
 import org.mmarini.scala.railways.model.Platform
 import org.mmarini.scala.railways.model.PlatformStatus
-import com.jme3.light.AmbientLight
-import com.jme3.light.DirectionalLight
-import com.jme3.material.Material
-import com.jme3.math.ColorRGBA
+import org.mmarini.scala.railways.model.RightDeviator
+import com.jme3.asset.AssetManager
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
-import com.jme3.terrain.geomipmap.TerrainLodControl
-import com.jme3.terrain.geomipmap.TerrainQuad
-import com.jme3.terrain.heightmap.ImageBasedHeightMap
-import com.jme3.texture.Texture.WrapMode
-import com.jme3.util.SkyFactory
-import com.typesafe.scalalogging.LazyLogging
-import rx.lang.scala.Observer
-import com.jme3.collision.CollisionResult
-import rx.lang.scala.Subscription
-import com.jme3.input.controls.MouseAxisTrigger
-import com.jme3.input.controls.MouseButtonTrigger
-import com.jme3.input.MouseInput
-import com.jme3.cinematic.events.MotionEvent
-import com.jme3.animation.LoopMode
-import com.jme3.cinematic.MotionPath
-import com.jme3.scene.CameraNode
-import com.jme3.scene.control.CameraControl.ControlDirection
-import com.jme3.input.ChaseCamera
-import scala.util.Random
-import scala.collection.immutable.Vector
-import rx.lang.scala.Observable
-import com.jme3.scene.Spatial
-import com.jme3.scene.control.CameraControl
-import com.jme3.input.controls.KeyTrigger
-import com.jme3.input.KeyInput
-import org.mmarini.scala.railways.model.Block
-import com.jme3.asset.AssetManager
 import com.jme3.scene.Node
+import com.jme3.scene.Spatial
+import com.typesafe.scalalogging.LazyLogging
+import org.mmarini.scala.railways.model.TrackTemplate
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -62,10 +38,14 @@ class StationRenderer(
   assetManager: AssetManager,
   rootNode: Node) extends LazyLogging {
 
-  private val RedSemModel = "Textures/blocks/red-sem.j3o"
-  private val GreenSemModel = "Textures/blocks/green-sem.j3o"
-  private val RedPlatModel = "Textures/blocks/red-plat.j3o"
-  private val GreenPlatModel = "Textures/blocks/green-plat.j3o"
+  private val RedSemModel = "Textures/blocks/sem-red.j3o"
+  private val GreenSemModel = "Textures/blocks/sem-green.j3o"
+  private val RedPlatModel = "Textures/blocks/plat-red.j3o"
+  private val GreenPlatModel = "Textures/blocks/plat-green.j3o"
+  private val GreenLeftDevModel = "Textures/blocks/dev-left-dir-green.j3o"
+  private val RedLeftDevModel = "Textures/blocks/dev-left-dir-red.j3o"
+  private val GreenRightDevModel = "Textures/blocks/dev-right-dir-green.j3o"
+  private val RedRightDevModel = "Textures/blocks/dev-right-dir-red.j3o"
 
   // Creates all the spatial names of a block template
   private val StatusKeys: Map[BlockTemplate, Set[String]] = Map(
@@ -73,9 +53,18 @@ class StationRenderer(
     Exit -> Set(
       RedSemModel,
       GreenSemModel),
+    TrackTemplate -> Set(
+      RedPlatModel,
+      GreenPlatModel),
     Platform -> Set(
       RedPlatModel,
-      GreenPlatModel))
+      GreenPlatModel),
+    LeftDeviator -> Set(
+      GreenLeftDevModel,
+      RedLeftDevModel),
+    RightDeviator -> Set(
+      GreenRightDevModel,
+      RedRightDevModel))
 
   // Creates cache
   val cache = loadBlockModel.withDefaultValue(Set())
@@ -125,9 +114,9 @@ class StationRenderer(
   /** Returns the status key of a block */
   def statusKey(status: BlockStatus): String = status match {
     case EntryStatus(_) => RedSemModel
-    case ExitStatus(_, false) => GreenSemModel
-    case ExitStatus(_, true) => RedSemModel
-    case PlatformStatus(_, false) => GreenPlatModel
-    case PlatformStatus(_, true) => RedPlatModel
+    case ExitStatus(_, busy) => if (busy) RedSemModel else GreenSemModel
+    case PlatformStatus(_, busy) => if (busy) RedPlatModel else GreenPlatModel
+    case DeviatorStatus(b, false, _) => if (b.template == LeftDeviator) GreenLeftDevModel else GreenRightDevModel
+    case DeviatorStatus(b, true, _) => if (b.template == LeftDeviator) RedLeftDevModel else RedRightDevModel
   }
 }

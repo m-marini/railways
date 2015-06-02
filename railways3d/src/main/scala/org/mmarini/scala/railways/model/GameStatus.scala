@@ -16,13 +16,7 @@ case class GameStatus(time: Float, topology: Topology, blocks: Map[String, Block
   /** Generates the next status simulating a time elapsing */
   def tick(time: Float): GameStatus = {
     val t = this.time + time
-    val plat = blocks("platform").asInstanceOf[PlatformStatus]
-    val exit = blocks("exit").asInstanceOf[ExitStatus]
-
-    val np = if (Random.nextDouble < time / 2) PlatformStatus(plat.block, !plat.busy) else plat
-    val ne = if (Random.nextDouble < time / 1) ExitStatus(exit.block, !exit.busy) else exit
-    val nb = blocks + (np.block.id -> np) + (ne.block.id -> ne)
-    GameStatus(t, topology, nb)
+    GameStatus(t, topology, blocks)
   }
 
 }
@@ -44,5 +38,8 @@ object GameStatus {
     case Entry => EntryStatus(block)
     case Exit => ExitStatus(block, false)
     case Platform => PlatformStatus(block, false)
+    case TrackTemplate => PlatformStatus(block, false)
+    case LeftDeviator => DeviatorStatus(block, false, false)
+    case RightDeviator => DeviatorStatus(block, false, false)
   }
 }

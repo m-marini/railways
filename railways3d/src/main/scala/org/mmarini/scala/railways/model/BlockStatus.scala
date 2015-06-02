@@ -19,3 +19,7 @@ case class ExitStatus(block: Block, busy: Boolean) extends BlockStatus
 
 /** A [[BlockStatus]] of an exit [[Block]] */
 case class PlatformStatus(block: Block, busy: Boolean) extends BlockStatus
+
+/** A [[BlockStatus of deviator */
+case class DeviatorStatus(block: Block, busy: Boolean, deviated: Boolean) extends BlockStatus
+

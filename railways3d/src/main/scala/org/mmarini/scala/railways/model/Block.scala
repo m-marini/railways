@@ -29,4 +29,13 @@ object Block {
 
   /** Returns a platform Block */
   def platform(id: String, x: Float, y: Float, rot: Float): Block = Block(id, Platform, x, y, rot)
+
+  /** Returns a platform Block */
+  def track(id: String, x: Float, y: Float, rot: Float): Block = Block(id, TrackTemplate, x, y, rot)
+
+  /** Returns a platform Block */
+  def leftDeviator(id: String, x: Float, y: Float, rot: Float): Block = Block(id, LeftDeviator, x, y, rot)
+
+  /** */
+  def rightDeviator(id: String, x: Float, y: Float, rot: Float): Block = Block(id, RightDeviator, x, y, rot)
 }
