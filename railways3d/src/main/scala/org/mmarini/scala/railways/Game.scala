@@ -185,8 +185,12 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     try {
       val sunLight = new DirectionalLight
       sunLight.setColor(ColorRGBA.White.mult(1.3f));
-      sunLight.setDirection(new Vector3f(-.5f, -.5f, -.5f).normalizeLocal())
+      sunLight.setDirection(Vector3f.UNIT_XYZ.negate().normalizeLocal())
       rootNode.addLight(sunLight)
+      val sunLight1 = new DirectionalLight
+      sunLight1.setColor(ColorRGBA.White.mult(1.3f));
+      sunLight1.setDirection(new Vector3f(1f, -1f, 1f).normalizeLocal())
+      rootNode.addLight(sunLight1)
     } catch { case e: Throwable => logger.error(e.getMessage, e) }
   }
 }

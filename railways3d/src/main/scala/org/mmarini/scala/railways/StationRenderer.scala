@@ -38,14 +38,14 @@ class StationRenderer(
   assetManager: AssetManager,
   rootNode: Node) extends LazyLogging {
 
-  private val RedSemModel = "Textures/blocks/sem-red.j3o"
-  private val GreenSemModel = "Textures/blocks/sem-green.j3o"
-  private val RedPlatModel = "Textures/blocks/plat-red.j3o"
-  private val GreenPlatModel = "Textures/blocks/plat-green.j3o"
-  private val GreenLeftDevModel = "Textures/blocks/dev-left-dir-green.j3o"
-  private val RedLeftDevModel = "Textures/blocks/dev-left-dir-red.j3o"
-  private val GreenRightDevModel = "Textures/blocks/dev-right-dir-green.j3o"
-  private val RedRightDevModel = "Textures/blocks/dev-right-dir-red.j3o"
+  private val RedSemModel = "Textures/blocks/sem-red.blend"
+  private val GreenSemModel = "Textures/blocks/sem-green.blend"
+  private val RedPlatModel = "Textures/blocks/plat-red.blend"
+  private val GreenPlatModel = "Textures/blocks/plat-green.blend"
+  private val GreenLeftDevModel = "Textures/blocks/dev-left-dir-green.blend"
+  private val RedLeftDevModel = "Textures/blocks/dev-left-dir-red.blend"
+  private val GreenRightDevModel = "Textures/blocks/dev-right-dir-green.blend"
+  private val RedRightDevModel = "Textures/blocks/dev-right-dir-red.blend"
 
   // Creates all the spatial names of a block template
   private val StatusKeys: Map[BlockTemplate, Set[String]] = Map(
@@ -78,7 +78,7 @@ class StationRenderer(
       val spatialTrys =
         for { statKey <- StatusKeys(block.template) } // for each status of block load spatials
           yield Try {
-          val spat = assetManager.loadModel(statKey)
+          val spat = assetManager.loadModel(statKey).clone
           spat.setLocalRotation(new Quaternion().fromAngleAxis(block.rotAngle, new Vector3f(0f, -1f, 0f)))
           spat.setLocalTranslation(new Vector3f(block.x, 0f, block.y))
           (statKey, spat)
@@ -92,7 +92,7 @@ class StationRenderer(
     assets.toMap
   }
 
-  /** Changes the view od station */
+  /** Changes the view of station */
   def change(status: GameStatus) {
     for { blockStatus <- status.blocks.values } {
 
