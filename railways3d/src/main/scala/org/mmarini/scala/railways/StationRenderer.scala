@@ -24,6 +24,7 @@ import com.jme3.scene.Node
 import com.jme3.scene.Spatial
 import com.typesafe.scalalogging.LazyLogging
 import org.mmarini.scala.railways.model.TrackTemplate
+import com.jme3.scene.Geometry
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -40,12 +41,14 @@ class StationRenderer(
 
   private val RedSemModel = "Textures/blocks/sem-red.blend"
   private val GreenSemModel = "Textures/blocks/sem-green.blend"
-  private val RedPlatModel = "Textures/blocks/plat-red.blend"
+
   private val GreenPlatModel = "Textures/blocks/plat-green.blend"
-  private val GreenLeftDevModel = "Textures/blocks/dev-left-dir-green.blend"
-  private val RedLeftDevModel = "Textures/blocks/dev-left-dir-red.blend"
-  private val GreenRightDevModel = "Textures/blocks/dev-right-dir-green.blend"
-  private val RedRightDevModel = "Textures/blocks/dev-right-dir-red.blend"
+
+  private val GreenDirLeftDevModel = "Textures/blocks/dev-left-dir-green.blend"
+  private val GreenDevLeftDevModel = "Textures/blocks/dev-left-dev-green.blend"
+
+  private val GreenDirRightDevModel = "Textures/blocks/dev-right-dir-green.blend"
+  private val GreenDevRightDevModel = "Textures/blocks/dev-right-dev-green.blend"
 
   // Creates all the spatial names of a block template
   private val StatusKeys: Map[BlockTemplate, Set[String]] = Map(
@@ -54,17 +57,15 @@ class StationRenderer(
       RedSemModel,
       GreenSemModel),
     TrackTemplate -> Set(
-      RedPlatModel,
       GreenPlatModel),
     Platform -> Set(
-      RedPlatModel,
       GreenPlatModel),
     LeftDeviator -> Set(
-      GreenLeftDevModel,
-      RedLeftDevModel),
+      GreenDirLeftDevModel,
+      GreenDevLeftDevModel),
     RightDeviator -> Set(
-      GreenRightDevModel,
-      RedRightDevModel))
+      GreenDirRightDevModel,
+      GreenDevRightDevModel))
 
   // Creates cache
   val cache = loadBlockModel.withDefaultValue(Set())
@@ -91,6 +92,29 @@ class StationRenderer(
     }
     assets.toMap
   }
+  import scala.collection.JavaConversions._
+
+  def findByGeo(g: Geometry): Option[String] = {
+    def exists(pred: Spatial => Boolean)(s: Spatial): Boolean =
+      if (pred(s)) {
+        true
+      } else {
+        s match {
+          case n: Node =>
+            n.getChildren.toList.exists(exists(pred))
+          case _ =>
+            false
+        }
+      }
+    val f = for {
+      (n1, m) <- cache
+      (n2, spat) <- m
+      if (exists(_ == g)(spat))
+    } yield {
+      n1
+    }
+    if (f.isEmpty) None else Some(f.head)
+  }
 
   /** Changes the view of station */
   def change(status: GameStatus) {
@@ -115,8 +139,8 @@ class StationRenderer(
   def statusKey(status: BlockStatus): String = status match {
     case EntryStatus(_) => RedSemModel
     case ExitStatus(_, busy) => if (busy) RedSemModel else GreenSemModel
-    case PlatformStatus(_, busy) => if (busy) RedPlatModel else GreenPlatModel
-    case DeviatorStatus(b, false, _) => if (b.template == LeftDeviator) GreenLeftDevModel else GreenRightDevModel
-    case DeviatorStatus(b, true, _) => if (b.template == LeftDeviator) RedLeftDevModel else RedRightDevModel
+    case PlatformStatus(_, _) => GreenPlatModel
+    case DeviatorStatus(b, _, false) => if (b.template == LeftDeviator) GreenDirLeftDevModel else GreenDirRightDevModel
+    case DeviatorStatus(b, _, true) => if (b.template == LeftDeviator) GreenDevLeftDevModel else GreenDevRightDevModel
   }
 }

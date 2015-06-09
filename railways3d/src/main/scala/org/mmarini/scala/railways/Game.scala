@@ -45,6 +45,7 @@ import com.jme3.scene.Spatial
 import com.jme3.scene.control.CameraControl
 import com.jme3.input.controls.KeyTrigger
 import com.jme3.input.KeyInput
+import com.jme3.scene.Geometry
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -64,8 +65,21 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   private val events = app.timeObservable.map[GameStatus => GameStatus](
     p => s => s.tick(p._2))
 
+  private val changeStatus =
+    for { cs <- app.actions.get("changeState") } yield {
+      val pr = app.pickRay(cs.filter(_.keyPressed))
+      app.pickCollision(app.getRootNode)(pr).
+        map(_.getGeometry).
+        map(stationRend.findByGeo).
+        filterNot(_.isEmpty).
+        map(_.get).
+        map[GameStatus => GameStatus](id => s => {
+          s.changeBlockStatus(id)
+        })
+    }
+
   // Creates the state observable
-  private val state = stateFlow(initialStatus)(events)
+  private val state = stateFlow(initialStatus)(changeStatus.map(events.merge).getOrElse(events))
 
   // Create the station renderer
   private val stationRend = new StationRenderer(
@@ -105,25 +119,6 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   logger.debug("Completed")
 
-  //
-  //  /** Picking ray observable */
-  //  private val rays =
-  //    for { terrain <- terrainTry } yield {
-  //      val actions = app.getInputManager.
-  //        createActionMapping("changeView").
-  //        doOnNext(x => logger.debug(s"action=$x")).
-  //        filter(_.keyPressed).
-  //        doOnNext(x => logger.debug(s"filtered action=$x"))
-  //      val rays = app.pickRay(actions)
-  //      rays.doOnNext(x => logger.debug(s"ray=$x"))
-  //    }
-  //
-  //  /** */
-  //  private val pickingScene = for {
-  //    terrain <- terrainTry
-  //    obs <- rays
-  //  } yield app.pickCollision(terrain)(obs).doOnNext(x => logger.debug(s"collision=$x"))
-  //
   //  /** Subscribe changeView observer */
   //  private val cameraController =
   //    pickingScene.map(new CameraController(app.getCamera, _, app.getAssetManager, app.getRootNode))

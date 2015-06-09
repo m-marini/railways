@@ -19,6 +19,19 @@ case class GameStatus(time: Float, topology: Topology, blocks: Map[String, Block
     GameStatus(t, topology, blocks)
   }
 
+  def changeBlockStatus(id: String): GameStatus = {
+    logger.debug(s"change status of $id")
+
+    val newBlocks = blocks.
+      get(id).
+      map(_.changeStatus).
+      map(bs => blocks + (id -> bs)).
+      getOrElse(blocks)
+    logger.debug(s"  $newBlocks")
+
+    GameStatus(time, topology, newBlocks)
+  }
+
 }
 
 /** A factory of [[GameStatus]] */

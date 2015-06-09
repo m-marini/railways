@@ -47,7 +47,7 @@ class OptionsController extends AbstractAppState with AbstractController with La
   private val _confirmed = Subject[String]()
 
   private val DefaultParms = GameParameters(
-    "Delta Crossing",
+    "Downville Station",
     "Facile",
     "Corto (5 min.)",
     FrequenceEnum.valueById(0),
@@ -67,8 +67,8 @@ class OptionsController extends AbstractAppState with AbstractController with La
     for {
       st <- station
       value <- List(
-        "Delta Crossing",
         "Downville Station",
+        "Delta Crossing",
         "Jackville Terminal",
         "Passing Station")
     } st.addItem(value)
