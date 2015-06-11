@@ -24,7 +24,7 @@ class OptionsController extends AbstractAppState with AbstractController with La
 
   val FrequenceEnum = new Enumeration {
     val Easy, Medium, Difficult, Custom = Value
-    val valueById = Map(Easy -> 10, Medium -> 20, Difficult -> 60).map { case (k, v) => (k.id -> v.toFloat / 60) }
+    val valueById = Map(Easy -> 20, Medium -> 50, Difficult -> 100).map { case (k, v) => (k.id -> v.toFloat / 3600f) }
   }
 
   val DurationEnum = new Enumeration {
@@ -112,14 +112,14 @@ class OptionsController extends AbstractAppState with AbstractController with La
       m <- mute
       v <- volume
     } yield GameParameters(
-      s.getSelection,
-      l.getSelection,
-      d.getSelection,
-      FrequenceEnum.valueById(l.getSelectedIndex),
-      DurationEnum.valueById(d.getSelectedIndex),
-      a.isChecked,
-      m.isChecked,
-      v.getValue / 100)
+      stationName = s.getSelection,
+      levelName = l.getSelection,
+      durationName = d.getSelection,
+      trainFrequence = FrequenceEnum.valueById(l.getSelectedIndex),
+      duration = DurationEnum.valueById(d.getSelectedIndex),
+      autoLock = a.isChecked,
+      mute = m.isChecked,
+      volume = v.getValue / 100)
 
   /**
    *

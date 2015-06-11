@@ -5,32 +5,90 @@ package org.mmarini.scala.railways.model
 
 import com.typesafe.scalalogging.LazyLogging
 import scala.util.Random
+import scala.math.E
+import scala.math.exp
+import scala.reflect.api.Position
 
 /**
  * A set of game parameter, station [[Topology]], elapsed time and set of named [[BlockStatus]]
  *
  * Generates next status by handling the incoming events
  */
-case class GameStatus(time: Float, topology: Topology, blocks: Map[String, BlockStatus]) extends LazyLogging {
+case class GameStatus(
+  parameters: GameParameters,
+  time: Float,
+  topology: Topology,
+  random: Random,
+  blocks: Map[String, BlockStatus],
+  trains: Set[Train]) extends LazyLogging {
+
+  /** */
+  def setTime(time: Float): GameStatus =
+    GameStatus(parameters, time, topology, random, blocks, trains)
+
+  /** */
+  def addTime(dt: Float): GameStatus =
+    GameStatus(parameters, time + dt, topology, random, blocks, trains)
+
+  /** */
+  def setBlocks(blocks: Map[String, BlockStatus]): GameStatus =
+    GameStatus(parameters, time, topology, random, blocks, trains)
+
+  /** */
+  def setTrains(trains: Set[Train]): GameStatus =
+    GameStatus(parameters, time, topology, random, blocks, trains)
 
   /** Generates the next status simulating a time elapsing */
   def tick(time: Float): GameStatus = {
     val t = this.time + time
-    GameStatus(t, topology, blocks)
+    val nextTrains = trains.map(_.tick(time, this))
+    val lambda = time * parameters.trainFrequence
+    val newTrains = generateNewTrains(poisson(lambda))
+    addTime(t).setTrains(nextTrains ++ newTrains)
   }
 
-  def changeBlockStatus(id: String): GameStatus = {
-    logger.debug(s"change status of $id")
+  /** Generates a random integer with a Poisson distribution */
+  private def poisson(lambda: Double): Int = {
+    val l = exp(-lambda)
 
-    val newBlocks = blocks.
+    def poissonLoop(k: Int, p: Double): Int = {
+      val p1 = p * random.nextDouble
+      if (p1 <= l) k else poissonLoop(k + 1, p1)
+    }
+    poissonLoop(0, 1)
+  }
+
+  /** Generates a random set of trains */
+  private def generateNewTrains(n: Int): Set[Train] = {
+    (for { i <- 1 to n } yield {
+      val id = random.nextInt.toString
+      val entry = choice(topology.entries)
+      val exit = choice(topology.exits)
+      IncomingTrain(id, entry, exit)
+    }).toSet
+  }
+
+  /** Choices a random element with equal probability distribution */
+  private def choice[T](choices: Set[T]): T = {
+    val idx = random.nextInt(choices.size)
+    choices.toSeq(idx)
+  }
+
+  /** Generates the next status changing the status of a block */
+  def changeBlockStatus(id: String): GameStatus =
+    setBlocks(blocks.
       get(id).
       map(_.changeStatus).
       map(bs => blocks + (id -> bs)).
-      getOrElse(blocks)
-    logger.debug(s"  $newBlocks")
+      getOrElse(blocks))
 
-    GameStatus(time, topology, newBlocks)
-  }
+  /** Generates the next status changing the freedom of a block */
+  def changeBlockFreedom(id: String): GameStatus =
+    setBlocks(blocks.
+      get(id).
+      map(_.changeFreedom).
+      map(bs => blocks + (id -> bs)).
+      getOrElse(blocks))
 
 }
 
@@ -43,16 +101,16 @@ object GameStatus {
       map(
         b => (b.id -> initialStatus(b))).
         toMap
-    GameStatus(0f, t, states)
+    GameStatus(parms, 0f, t, new Random(), states, Set.empty)
   }
 
   /** Returns the initial state of Block */
   private def initialStatus(block: Block): BlockStatus = block.template match {
     case Entry => EntryStatus(block)
-    case Exit => ExitStatus(block, false)
-    case Platform => PlatformStatus(block, false)
-    case TrackTemplate => PlatformStatus(block, false)
-    case LeftDeviator => DeviatorStatus(block, false, false)
-    case RightDeviator => DeviatorStatus(block, false, false)
+    case Exit => BlockStatus.exit(block)
+    case Platform => BlockStatus.platform(block)
+    case TrackTemplate => BlockStatus.platform(block)
+    case LeftHandSwitch => BlockStatus.switch(block)
+    case RightHandSwitch => BlockStatus.switch(block)
   }
 }

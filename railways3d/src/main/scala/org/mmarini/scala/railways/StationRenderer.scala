@@ -4,27 +4,29 @@
 package org.mmarini.scala.railways
 
 import scala.util.Try
+
 import org.mmarini.scala.railways.model.Block
 import org.mmarini.scala.railways.model.BlockStatus
 import org.mmarini.scala.railways.model.BlockTemplate
-import org.mmarini.scala.railways.model.DeviatorStatus
 import org.mmarini.scala.railways.model.Entry
 import org.mmarini.scala.railways.model.EntryStatus
 import org.mmarini.scala.railways.model.Exit
 import org.mmarini.scala.railways.model.ExitStatus
 import org.mmarini.scala.railways.model.GameStatus
-import org.mmarini.scala.railways.model.LeftDeviator
+import org.mmarini.scala.railways.model.LeftHandSwitch
 import org.mmarini.scala.railways.model.Platform
 import org.mmarini.scala.railways.model.PlatformStatus
-import org.mmarini.scala.railways.model.RightDeviator
+import org.mmarini.scala.railways.model.RightHandSwitch
+import org.mmarini.scala.railways.model.SwitchStatus
+import org.mmarini.scala.railways.model.TrackTemplate
+
 import com.jme3.asset.AssetManager
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
+import com.jme3.scene.Geometry
 import com.jme3.scene.Node
 import com.jme3.scene.Spatial
 import com.typesafe.scalalogging.LazyLogging
-import org.mmarini.scala.railways.model.TrackTemplate
-import com.jme3.scene.Geometry
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -39,33 +41,44 @@ class StationRenderer(
   assetManager: AssetManager,
   rootNode: Node) extends LazyLogging {
 
-  private val RedSemModel = "Textures/blocks/sem-red.blend"
-  private val GreenSemModel = "Textures/blocks/sem-green.blend"
+  private val SemRedModel = "Textures/blocks/sem-red.blend"
+  private val SemGreenModel = "Textures/blocks/sem-green.blend"
 
   private val GreenPlatModel = "Textures/blocks/plat-green.blend"
+  private val RedPlatModel = "Textures/blocks/plat-red.blend"
 
-  private val GreenDirLeftDevModel = "Textures/blocks/dev-left-dir-green.blend"
-  private val GreenDevLeftDevModel = "Textures/blocks/dev-left-dev-green.blend"
+  private val SwitchLeftStraightGreenModel = "Textures/blocks/swi-left-str-green.blend"
+  private val SwitchLeftStraightRedModel = "Textures/blocks/swi-left-str-red.blend"
+  private val SwitchLeftDivGreenModel = "Textures/blocks/swi-left-div-green.blend"
+  private val SwitchLeftDivRedModel = "Textures/blocks/swi-left-div-red.blend"
 
-  private val GreenDirRightDevModel = "Textures/blocks/dev-right-dir-green.blend"
-  private val GreenDevRightDevModel = "Textures/blocks/dev-right-dev-green.blend"
+  private val SwitchRightStraightGreenModel = "Textures/blocks/swi-right-str-green.blend"
+  private val SwitchRightStraightRedModel = "Textures/blocks/swi-right-str-red.blend"
+  private val SwitchRightDivGreenModel = "Textures/blocks/swi-right-div-green.blend"
+  private val SwitchRightDivRedModel = "Textures/blocks/swi-right-div-red.blend"
 
   // Creates all the spatial names of a block template
   private val StatusKeys: Map[BlockTemplate, Set[String]] = Map(
-    Entry -> Set(RedSemModel),
+    Entry -> Set(SemRedModel),
     Exit -> Set(
-      RedSemModel,
-      GreenSemModel),
+      SemRedModel,
+      SemGreenModel),
     TrackTemplate -> Set(
+      RedPlatModel,
       GreenPlatModel),
     Platform -> Set(
+      RedPlatModel,
       GreenPlatModel),
-    LeftDeviator -> Set(
-      GreenDirLeftDevModel,
-      GreenDevLeftDevModel),
-    RightDeviator -> Set(
-      GreenDirRightDevModel,
-      GreenDevRightDevModel))
+    LeftHandSwitch -> Set(
+      SwitchLeftStraightRedModel,
+      SwitchLeftStraightGreenModel,
+      SwitchLeftDivRedModel,
+      SwitchLeftDivGreenModel),
+    RightHandSwitch -> Set(
+      SwitchRightStraightGreenModel,
+      SwitchRightDivGreenModel,
+      SwitchRightStraightRedModel,
+      SwitchRightDivRedModel))
 
   // Creates cache
   val cache = loadBlockModel.withDefaultValue(Set())
@@ -137,10 +150,20 @@ class StationRenderer(
 
   /** Returns the status key of a block */
   def statusKey(status: BlockStatus): String = status match {
-    case EntryStatus(_) => RedSemModel
-    case ExitStatus(_, busy) => if (busy) RedSemModel else GreenSemModel
-    case PlatformStatus(_, _) => GreenPlatModel
-    case DeviatorStatus(b, _, false) => if (b.template == LeftDeviator) GreenDirLeftDevModel else GreenDirRightDevModel
-    case DeviatorStatus(b, _, true) => if (b.template == LeftDeviator) GreenDevLeftDevModel else GreenDevRightDevModel
+    case EntryStatus(_) => SemRedModel
+    case s: ExitStatus if (s.free) => SemGreenModel
+    case s: ExitStatus => SemRedModel
+
+    case s: PlatformStatus if (s.free) => GreenPlatModel
+    case s: PlatformStatus => RedPlatModel
+
+    case s: SwitchStatus if (s.block.template == LeftHandSwitch && s.diverging && s.free) => SwitchLeftDivGreenModel
+    case s: SwitchStatus if (s.block.template == LeftHandSwitch && s.diverging && !s.free) => SwitchLeftDivRedModel
+    case s: SwitchStatus if (s.block.template == LeftHandSwitch && !s.diverging && s.free) => SwitchLeftStraightGreenModel
+    case s: SwitchStatus if (s.block.template == LeftHandSwitch && !s.diverging && !s.free) => SwitchLeftStraightRedModel
+    case s: SwitchStatus if (s.diverging && s.free) => SwitchRightDivGreenModel
+    case s: SwitchStatus if (s.diverging && !s.free) => SwitchRightDivRedModel
+    case s: SwitchStatus if (s.free) => SwitchRightStraightGreenModel
+    case s: SwitchStatus => SwitchRightStraightRedModel
   }
 }

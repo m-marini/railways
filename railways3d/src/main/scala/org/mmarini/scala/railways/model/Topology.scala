@@ -22,7 +22,14 @@ trait Topology {
 
   /** Returns the viewpoints */
   def viewpoints: Seq[CameraViewpoint]
+
+  /** Returns the entries */
+  lazy val entries: Set[Block] = blocks.filter(_.template == Entry)
+
+  /** Returns the exit */
+  lazy val exits: Set[Block] = blocks.filter(_.template == Exit)
 }
+
 case object TestStation extends Topology {
 
   //  private val entry = Block.entry("entry", 0f, 0f, 0f)

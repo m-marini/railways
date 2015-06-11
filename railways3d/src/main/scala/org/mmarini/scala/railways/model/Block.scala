@@ -34,8 +34,8 @@ object Block {
   def track(id: String, x: Float, y: Float, rot: Float): Block = Block(id, TrackTemplate, x, y, rot)
 
   /** Returns a platform Block */
-  def leftDeviator(id: String, x: Float, y: Float, rot: Float): Block = Block(id, LeftDeviator, x, y, rot)
+  def leftHandSwitch(id: String, x: Float, y: Float, rot: Float): Block = Block(id, LeftHandSwitch, x, y, rot)
 
   /** */
-  def rightDeviator(id: String, x: Float, y: Float, rot: Float): Block = Block(id, RightDeviator, x, y, rot)
+  def rightHandSwitch(id: String, x: Float, y: Float, rot: Float): Block = Block(id, RightHandSwitch, x, y, rot)
 }

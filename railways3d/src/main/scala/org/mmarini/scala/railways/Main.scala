@@ -92,9 +92,9 @@ object Main extends SimpleApplication with LazyLogging {
   /** Attaches mapping */
   private def attachMapping {
     inputManager.addMapping("changeState", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT))
-    inputManager.addMapping("changeView", new MouseButtonTrigger(MouseInput.BUTTON_LEFT))
+    inputManager.addMapping("additionalChangeState", new MouseButtonTrigger(MouseInput.BUTTON_LEFT))
+    inputManager.addMapping("changeView", new MouseButtonTrigger(MouseInput.BUTTON_MIDDLE))
     inputManager.addMapping("changeView", new KeyTrigger(KeyInput.KEY_G))
-    inputManager.addMapping("additionalChangeState", new MouseButtonTrigger(MouseInput.BUTTON_MIDDLE))
     inputManager.addMapping("zoomSlider", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false))
   }
 

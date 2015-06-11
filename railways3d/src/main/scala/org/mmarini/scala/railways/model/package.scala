@@ -36,6 +36,12 @@ package object model {
   /**Length units of standard segment element (meters) */
   val SegmentLength = 35f
 
+  /** Radius of curve */
+  val CurveRadius = 67.615f
+
+  /** Curve angle */
+  val CurveAngle = RightAngle / 3f;
+
   type Route = IndexedSeq[Track]
 
   case class Endpoint(block: Block, index: Int)

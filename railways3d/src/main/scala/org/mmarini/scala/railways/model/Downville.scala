@@ -14,7 +14,7 @@ case object Downville extends Topology {
   private val platform1 = Block.platform("platform1", -SegmentLength * 11 / 2, 0f, RightAngle)
   private val platform2 = Block.platform("platform2", -SegmentLength * 11 / 2, TrackGap, RightAngle)
 
-  private val entryDev = Block.rightDeviator("entry-dev",
+  private val entryDev = Block.rightHandSwitch("entry-switch",
     -SegmentLength * 11 / 2 - SegmentLength,
     0f,
     RightAngle)
@@ -24,7 +24,7 @@ case object Downville extends Topology {
     0f,
     -RightAngle)
 
-  private val exitDev = Block.leftDeviator("exit-dev",
+  private val exitDev = Block.leftHandSwitch("exit-switch",
     SegmentLength * 11 / 2 + SegmentLength,
     0f,
     -RightAngle)
@@ -57,10 +57,10 @@ case object Downville extends Topology {
     CameraViewpoint("entry2",
       new Vector3f(-SegmentLength * 11 / 2 + 10 - SegmentLength * 12, 4.3f, 0),
       new Quaternion().fromAngleAxis(-RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
-    CameraViewpoint("east-dev1",
+    CameraViewpoint("east-switch1",
       new Vector3f(-SegmentLength * 11 / 2 - SegmentLength - 10, 4.3f, TrackGap / 2),
       new Quaternion().fromAngleAxis(RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
-    CameraViewpoint("east-dev2",
+    CameraViewpoint("east-switch2",
       new Vector3f(-SegmentLength * 11 / 2 + 10, 4.3f, TrackGap / 2),
       new Quaternion().fromAngleAxis(-RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
     CameraViewpoint("east-platforms",
@@ -69,10 +69,10 @@ case object Downville extends Topology {
     CameraViewpoint("west-platforms",
       new Vector3f(SegmentLength * 11 / 2 + 10f, 4.3f, TrackGap / 2),
       new Quaternion().fromAngleAxis(-RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
-    CameraViewpoint("west-dev2",
+    CameraViewpoint("west-switch2",
       new Vector3f(SegmentLength * 11 / 2 - 10f, 4.3f, TrackGap / 2),
       new Quaternion().fromAngleAxis(RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
-    CameraViewpoint("west-dev1",
+    CameraViewpoint("west-switch1",
       new Vector3f(SegmentLength * 11 / 2 + SegmentLength + 10f, 4.3f, TrackGap / 2),
       new Quaternion().fromAngleAxis(-RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
     CameraViewpoint("exit2",

@@ -3,8 +3,13 @@
  */
 package org.mmarini.scala.railways.model
 
+import com.jme3.math.Vector2f
+
 /**
- * @author us00852
+ * Describes a curve part of trajectory
+ *
+ * @constructor create the curve specifying the center,
+ *             the radius, the starting angle and the ending angle
  *
  */
-class CurveTrack extends Track
+case class CurveTrack(center: Vector2f, radius: Float, begin: Float, end: Float) extends Track

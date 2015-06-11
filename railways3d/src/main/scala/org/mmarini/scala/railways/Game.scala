@@ -62,7 +62,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   private val initialStatus = GameStatus(parameters)
 
   // Creates the event observable
-  private val events = app.timeObservable.map[GameStatus => GameStatus](
+  private val timeEvents = app.timeObservable.map[GameStatus => GameStatus](
     p => s => s.tick(p._2))
 
   private val changeStatus =
@@ -78,8 +78,23 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
         })
     }
 
+  private val changeFreedom =
+    for { cs <- app.actions.get("additionalChangeState") } yield {
+      val pr = app.pickRay(cs.filter(_.keyPressed))
+      app.pickCollision(app.getRootNode)(pr).
+        map(_.getGeometry).
+        map(stationRend.findByGeo).
+        filterNot(_.isEmpty).
+        map(_.get).
+        map[GameStatus => GameStatus](id => s => {
+          s.changeBlockFreedom(id)
+        })
+    }
+
+  val events = (timeEvents :: changeStatus.toList ::: changeFreedom.toList).reduce((a, b) => a.merge(b))
+
   // Creates the state observable
-  private val state = stateFlow(initialStatus)(changeStatus.map(events.merge).getOrElse(events))
+  private val state = stateFlow(initialStatus)(events)
 
   // Create the station renderer
   private val stationRend = new StationRenderer(
