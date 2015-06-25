@@ -27,6 +27,7 @@ import com.jme3.scene.Geometry
 import com.jme3.scene.Node
 import com.jme3.scene.Spatial
 import com.typesafe.scalalogging.LazyLogging
+import scala.collection.JavaConversions._
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -93,7 +94,7 @@ class StationRenderer(
         for { statKey <- StatusKeys(block.template) } // for each status of block load spatials
           yield Try {
           val spat = assetManager.loadModel(statKey).clone
-          spat.setLocalRotation(new Quaternion().fromAngleAxis(block.rotAngle, new Vector3f(0f, -1f, 0f)))
+          spat.setLocalRotation(new Quaternion().fromAngleAxis(block.orientation , new Vector3f(0f, -1f, 0f)))
           spat.setLocalTranslation(new Vector3f(block.x, 0f, block.y))
           (statKey, spat)
         }
@@ -105,8 +106,8 @@ class StationRenderer(
     }
     assets.toMap
   }
-  import scala.collection.JavaConversions._
 
+  /** Finds geometry block name by geometry */
   def findByGeo(g: Geometry): Option[String] = {
     def exists(pred: Spatial => Boolean)(s: Spatial): Boolean =
       if (pred(s)) {
@@ -131,6 +132,7 @@ class StationRenderer(
 
   /** Changes the view of station */
   def change(status: GameStatus) {
+    // Render each block
     for { blockStatus <- status.blocks.values } {
 
       val key = statusKey(blockStatus)
@@ -146,6 +148,7 @@ class StationRenderer(
         case _ =>
       }
     }
+    // Render each train
   }
 
   /** Returns the status key of a block */

@@ -22,29 +22,32 @@ case class GameStatus(
   blocks: Map[String, BlockStatus],
   trains: Set[Train]) extends LazyLogging {
 
-  /** */
+  /** Creates a new status with a new time value */
   def setTime(time: Float): GameStatus =
     GameStatus(parameters, time, topology, random, blocks, trains)
 
-  /** */
+  /** Creates a new status with time changed by a value */
   def addTime(dt: Float): GameStatus =
     GameStatus(parameters, time + dt, topology, random, blocks, trains)
 
-  /** */
+  /** Creates a new status with a new block map */
   def setBlocks(blocks: Map[String, BlockStatus]): GameStatus =
     GameStatus(parameters, time, topology, random, blocks, trains)
 
-  /** */
+  /** Creates a new status with a new train set */
   def setTrains(trains: Set[Train]): GameStatus =
     GameStatus(parameters, time, topology, random, blocks, trains)
 
   /** Generates the next status simulating a time elapsing */
   def tick(time: Float): GameStatus = {
     val t = this.time + time
-    val nextTrains = trains.map(_.tick(time, this))
-    val lambda = time * parameters.trainFrequence
-    val newTrains = generateNewTrains(poisson(lambda))
-    addTime(t).setTrains(nextTrains ++ newTrains)
+    val newTrains = trains.map(_.tick(time, this))
+
+    //    val nextTrains = trains.map(_.tick(time, this))
+    //    val lambda = time * parameters.trainFrequence
+    //    val newTrains = generateNewTrains(poisson(lambda))
+    //    addTime(t).setTrains(nextTrains ++ newTrains)
+    setTrains(newTrains).addTime(t)
   }
 
   /** Generates a random integer with a Poisson distribution */
@@ -101,7 +104,8 @@ object GameStatus {
       map(
         b => (b.id -> initialStatus(b))).
         toMap
-    GameStatus(parms, 0f, t, new Random(), states, Set.empty)
+    val train = ATrain("Test")
+    GameStatus(parms, 0f, t, new Random(), states, Set(train))
   }
 
   /** Returns the initial state of Block */

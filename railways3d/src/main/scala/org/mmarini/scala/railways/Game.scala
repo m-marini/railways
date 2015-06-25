@@ -116,8 +116,19 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   terrainTry.foreach(app.getRootNode.attachChild)
 
+  // Creates train renderer transitions
+  private val trainRendTransitions = state.map((status: GameStatus) => {
+    (renderer: TrainRenderer) =>
+      {
+        renderer.render(status.trains)
+      }
+  })
+
+  // Creates the train renderer and subscribe to it
+  private val trainRendSub = stateFlow(TrainRenderer(app.getRootNode(), app.getAssetManager()))(trainRendTransitions).subscribe
+
   // Subscribes for status change
-  private val subStatus = state.subscribe(status => {
+  private val statusSub = state.subscribe(status => {
     stationRend.change(status)
   })
 
@@ -156,8 +167,9 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   /** Unsubscribes all the observers when game ends */
   def onEnd {
-    subStatus.unsubscribe
+    statusSub.unsubscribe
     subCameraChange.foreach(_.unsubscribe)
+    trainRendSub.unsubscribe
   }
 
   /** Loads backstage of scene */

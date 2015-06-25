@@ -14,28 +14,28 @@ import com.jme3.math.Vector3f
  * id the block identifier
  * template the block template
  * x,y the translation vector of block
- * rotAngle compass rotation angle
+ * orientation compass rotation angle
  */
-case class Block(id: String, template: BlockTemplate, x: Float, y: Float, rotAngle: Float)
+case class Block(id: String, template: BlockTemplate, x: Float, y: Float, orientation: Float)
 
 /** Factory for [[Block]] */
 object Block {
 
   /** Returns an entry Block */
-  def entry(id: String, x: Float, y: Float, rot: Float): Block = Block(id, Entry, x, y, rot)
+  def entry(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, Entry, x, y, orientation)
 
   /** Returns an exit Block */
-  def exit(id: String, x: Float, y: Float, rot: Float): Block = Block(id, Exit, x, y, rot)
+  def exit(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, Exit, x, y, orientation)
 
   /** Returns a platform Block */
-  def platform(id: String, x: Float, y: Float, rot: Float): Block = Block(id, Platform, x, y, rot)
+  def platform(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, Platform, x, y, orientation)
 
   /** Returns a platform Block */
-  def track(id: String, x: Float, y: Float, rot: Float): Block = Block(id, TrackTemplate, x, y, rot)
+  def track(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, TrackTemplate, x, y, orientation)
 
   /** Returns a platform Block */
-  def leftHandSwitch(id: String, x: Float, y: Float, rot: Float): Block = Block(id, LeftHandSwitch, x, y, rot)
+  def leftHandSwitch(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, LeftHandSwitch, x, y, orientation)
 
   /** */
-  def rightHandSwitch(id: String, x: Float, y: Float, rot: Float): Block = Block(id, RightHandSwitch, x, y, rot)
+  def rightHandSwitch(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, RightHandSwitch, x, y, orientation)
 }
