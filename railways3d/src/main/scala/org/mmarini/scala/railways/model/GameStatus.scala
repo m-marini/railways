@@ -107,21 +107,23 @@ object GameStatus {
         b => (b.id -> initialStatus(b))).
         toMap
 
-    val atrain = MovingTrain("Test", createRoute, 35f, 40f / 3.6f)
+    val atrain = MovingTrain("Test", createRoute, SegmentLength * 1, 140f / 3.6f)
 
     GameStatus(parms, 0f, t, new Random(), states, Set(atrain))
   }
 
   private def createRoute = {
-    val from = new Vector2f(-SegmentLength * 11 / 2 - SegmentLength * 12, 0)
-    val to = from.add(new Vector2f(SegmentLength * 11, 0))
-    val plat = to.add(new Vector2f(SegmentLength, TrackGap))
-    val platEnd = plat.add(new Vector2f(SegmentLength * 11, 0))
+    val entry = new Vector2f(-SegmentLength * 17.5f, 0)
+    val a = entry.add(new Vector2f(SegmentLength * 11, 0))
+    val b = a.add(new Vector2f(SegmentLength, TrackGap))
+    val c = b.add(new Vector2f(SegmentLength * 11, 0))
+    val center1 = a.add(new Vector2f(0f, CurveRadius))
+    val center2 = b.add(new Vector2f(0f, -CurveRadius))
 
-    val track1 = LinearTrack(from, to)
-    val track2 = RightCurveTrack(to.add(new Vector2f(0f, CurveRadius)), CurveRadius, StraightAngle, CurveLength)
-    val track3 = LeftCurveTrack(plat.add(new Vector2f(0f, -CurveRadius)), CurveRadius,  - CurveAngle, CurveLength)
-    val track4 = LinearTrack(plat, platEnd)
+    val track1 = LinearTrack(entry, a)
+    val track2 = LeftCurveTrack(center1, CurveRadius, StraightAngle, CurveLength / 2)
+    val track3 = RightCurveTrack(center2, CurveRadius, -CurveAngle / 2, CurveLength / 2)
+    val track4 = LinearTrack(b, c)
 
     TrainRoute(IndexedSeq(track1, track2, track3, track4))
   }

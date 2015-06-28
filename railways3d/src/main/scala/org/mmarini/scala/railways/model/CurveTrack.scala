@@ -22,7 +22,7 @@ abstract class CurveTrack(center: Vector2f, radius: Float, begin: Float, length:
   def locationAt(distance: Float): Option[Vector2f] =
     if (distance >= 0 && distance <= length) {
       val alpha = begin + angle(distance)
-      Some(new Vector2f(-radius * sin(alpha).toFloat, radius * cos(alpha).toFloat).add(center))
+      Some(new Vector2f(radius * sin(alpha).toFloat, radius * cos(alpha).toFloat).add(center))
     } else {
       None
     }
