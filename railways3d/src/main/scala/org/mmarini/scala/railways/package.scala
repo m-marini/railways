@@ -33,6 +33,8 @@ import org.mmarini.scala.jmonkey.ListBoxSelectionObservable
 /** */
 package object railways {
 
+  val OrientationAxis = Vector3f.UNIT_Y
+
   implicit def appToAppOps(app: Application): ApplicationOps = new ApplicationOps(app)
   implicit def inpManagerToinpManagerOps(app: InputManager): InputManagerOps = new InputManagerOps(app)
   implicit def toListBoxSelectionObservable[T](obs: Observable[ListBoxSelectionChangedEvent[T]]): ListBoxSelectionObservable[T] =

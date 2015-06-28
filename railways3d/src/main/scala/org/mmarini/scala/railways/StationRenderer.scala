@@ -94,8 +94,8 @@ class StationRenderer(
         for { statKey <- StatusKeys(block.template) } // for each status of block load spatials
           yield Try {
           val spat = assetManager.loadModel(statKey).clone
-          spat.setLocalRotation(new Quaternion().fromAngleAxis(block.orientation , new Vector3f(0f, -1f, 0f)))
-          spat.setLocalTranslation(new Vector3f(block.x, 0f, block.y))
+          spat.setLocalRotation(new Quaternion().fromAngleAxis(block.orientation, OrientationAxis))
+          spat.setLocalTranslation(new Vector3f(-block.x, 0f, block.y))
           (statKey, spat)
         }
       // Dump loading errors

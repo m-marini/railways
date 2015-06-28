@@ -4,9 +4,8 @@ import scala.concurrent.duration._
 import rx.lang.scala.Subject
 
 object Test {
-val a=Seq("a","b","c")                            //> a  : Seq[String] = List(a, b, c)
-a(0)                                              //> res0: String = a
-if (a.isDefinedAt(11)) a(11) else "aaa"           //> res1: String = aaa
+  val a = Seq(1, 2, 3)                            //> a  : Seq[Int] = List(1, 2, 3)
 
-
+  a.foldLeft("")((s, t) => s + t)                 //> res0: String = 123
+  a.foldRight("")((t, s) => s + t)                //> res1: String = 321
 }

@@ -90,26 +90,27 @@ case object LeftHandSwitch extends BlockTemplate with TrajectorySupport {
   /** Returns the number of junctions */
   val junctonCount = 3
 
-  /** Creates the configurations of switch */
-  private def createConf = {
-    val straightTrack = IndexedSeq(LinearTrack(new Vector2f, new Vector2f(0f, SegmentLength)))
+//  /** Creates the configurations of switch */
+//  private def createConf = {
+//    val straightTrack = IndexedSeq(LinearTrack(new Vector2f, new Vector2f(0f, SegmentLength)))
+//
+//    val divTrack = IndexedSeq(RightCurveTrack(new Vector2f(-CurveRadius, 0f), CurveRadius, RightAngle, RightAngle - CurveAngle))
+//
+//    val straightConf = IndexedSeq(
+//      Option(Trajectory(straightTrack, false)),
+//      Option(Trajectory(straightTrack, true)),
+//      None)
+//
+//    val divConf = IndexedSeq(
+//      Option(Trajectory(divTrack, false)),
+//      None,
+//      Option(Trajectory(divTrack, true)))
+//
+//    IndexedSeq(straightConf, divConf)
+//  }
 
-    val divTrack = IndexedSeq(CurveTrack(new Vector2f(-CurveRadius, 0f), CurveRadius, RightAngle, RightAngle - CurveAngle))
-
-    val straightConf = IndexedSeq(
-      Option(Trajectory(straightTrack, false)),
-      Option(Trajectory(straightTrack, true)),
-      None)
-
-    val divConf = IndexedSeq(
-      Option(Trajectory(divTrack, false)),
-      None,
-      Option(Trajectory(divTrack, true)))
-
-    IndexedSeq(straightConf, divConf)
-  }
-
-  protected val trajectories = createConf
+  protected val trajectories = Seq.empty[Seq[Option[Trajectory]]]
+//  protected val trajectories = createConf
 }
 
 /** */
@@ -117,23 +118,24 @@ case object RightHandSwitch extends BlockTemplate with TrajectorySupport {
   /** Returns the number of junctions */
   val junctonCount = 3
 
-  /** Creates the configurations of switch */
-  private def createConf = {
-    val straightTrack = IndexedSeq(LinearTrack(new Vector2f, new Vector2f(0f, SegmentLength)))
+//  /** Creates the configurations of switch */
+//  private def createConf = {
+//    val straightTrack = IndexedSeq(LinearTrack(new Vector2f, new Vector2f(0f, SegmentLength)))
+//
+//    val divTrack = IndexedSeq(RightCurveTrack(new Vector2f(CurveRadius, 0f), CurveRadius, -RightAngle, -RightAngle + CurveAngle))
+//
+//    val straightConf = IndexedSeq(
+//      Option(Trajectory(straightTrack, false)),
+//      Option(Trajectory(straightTrack, true)),
+//      None)
+//    val divConf = IndexedSeq(
+//      Option(Trajectory(divTrack, false)),
+//      None,
+//      Option(Trajectory(divTrack, true)))
+//
+//    IndexedSeq(straightConf, divConf)
+//  }
 
-    val divTrack = IndexedSeq(CurveTrack(new Vector2f(CurveRadius, 0f), CurveRadius, -RightAngle, -RightAngle + CurveAngle))
-
-    val straightConf = IndexedSeq(
-      Option(Trajectory(straightTrack, false)),
-      Option(Trajectory(straightTrack, true)),
-      None)
-    val divConf = IndexedSeq(
-      Option(Trajectory(divTrack, false)),
-      None,
-      Option(Trajectory(divTrack, true)))
-
-    IndexedSeq(straightConf, divConf)
-  }
-
-  protected val trajectories = createConf
+//  protected val trajectories = createConf
+  protected val trajectories = Seq.empty[Seq[Option[Trajectory]]]
 }

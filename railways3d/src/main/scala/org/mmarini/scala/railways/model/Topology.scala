@@ -34,9 +34,9 @@ case object TestStation extends Topology {
 
   //  private val entry = Block.entry("entry", 0f, 0f, 0f)
   //  private val exit = Block.exit("exit", 0f, 385f, StraightAngle)
-  private val platform1 = Block.platform("platform1", +SegmentLength * 11 / 2, 0f, -RightAngle)
-  private val platform2 = Block.platform("platform2", +SegmentLength * 11 / 2, 4, -RightAngle)
-  private val platform3 = Block.platform("platform3", +SegmentLength * 11 / 2, -4, -RightAngle)
+  private val platform1 = Block.platform("platform1", +SegmentLength * 11f / 2, 0f, -RightAngle)
+  private val platform2 = Block.platform("platform2", +SegmentLength * 11f / 2, 4f, -RightAngle)
+  private val platform3 = Block.platform("platform3", +SegmentLength * 11f / 2, -4f, -RightAngle)
 
   val junctions = Set[Junction](
     (Endpoint(platform1, 0), Endpoint(platform2, 0)),

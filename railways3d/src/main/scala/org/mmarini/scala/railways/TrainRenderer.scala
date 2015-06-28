@@ -16,23 +16,23 @@ import com.jme3.math.Quaternion
  *
  */
 class TrainRenderer(trainCache: Map[String, Spatial], target: Node, assetManager: AssetManager) extends LazyLogging {
-  private val TrainModel = "Textures/veichles/coach.blend"
+  private val TrainModel = "Textures/veichles/head.blend"
 
   /** Renders the trains */
   def render(trains: Set[Train]): TrainRenderer = {
     val nextCache =
       (for {
         train <- trains
-        veichle <- train.veichles
+        veichle <- train.vehicles
       } yield {
         val spatial = trainCache.get(train.id)
         spatial.foreach(spatial => {
           val pos = new Vector3f(
-            veichle.location.x,
+            -veichle.location.x,
             0,
             veichle.location.y)
           spatial.setLocalTranslation(pos)
-          spatial.setLocalRotation(new Quaternion().fromAngleNormalAxis(veichle.orientation, Vector3f.UNIT_Y))
+          spatial.setLocalRotation(new Quaternion().fromAngleNormalAxis(veichle.orientation, OrientationAxis))
         })
         (train.id, spatial.orElse({
           createSpatial(train)
@@ -52,7 +52,7 @@ class TrainRenderer(trainCache: Map[String, Spatial], target: Node, assetManager
   private def createSpatial(train: Train): Option[Spatial] = {
     val result = for {
       spatial <- Option(assetManager.loadModel(TrainModel)).map(_.clone)
-      veichle <- train.veichles
+      veichle <- train.vehicles
     } yield {
       logger.debug(s"create ${spatial}")
       spatial.setLocalTranslation(new Vector3f(

@@ -15,8 +15,8 @@ trait Train {
   /** Computes the next status after an elapsed time tick */
   def tick(time: Float, gameStatus: GameStatus): Train
 
-  /** Return the train veichle compositions */
-  def veichles: Option[Veichle]
+  /** Return the train vehicle compositions */
+  def vehicles: Option[Vehicle]
 
 }
 
@@ -28,17 +28,20 @@ case class IncomingTrain(id: String, entry: Block, destination: Block) extends T
     this
   }
 
-  val veichles: Option[Veichle] = None
+  val vehicles: Option[Vehicle] = None
 }
 
-case class ATrain(id: String, veichles: Option[Veichle]) extends Train {
-  private val Speed = new Vector2f(10f, 0)
+/** */
+case class MovingTrain(id: String, route: TrainRoute, location: Float, speed: Float) extends Train {
+
+  /** Computes the next status after an elapsed time tick */
+  def tick(time: Float, gameStatus: GameStatus): Train =
+    setLocation(location + speed * time)
 
   /** */
-  def tick(time: Float, gameStatus: GameStatus): Train =
-    ATrain(id, veichles.map(_.moveBy(Speed.mult(time))))
-}
+  private def setLocation(location: Float) =
+    MovingTrain(id, route, location, speed)
 
-object ATrain {
-  def apply(id: String): ATrain = ATrain(id, Some(Coach(new Vector2f, RightAngle)))
+  /** Return the train vehicle compositions */
+  val vehicles: Option[Vehicle] = Coach(route, location)
 }

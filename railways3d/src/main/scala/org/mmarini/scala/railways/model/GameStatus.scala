@@ -8,6 +8,8 @@ import scala.util.Random
 import scala.math.E
 import scala.math.exp
 import scala.reflect.api.Position
+import com.jme3.math.Vector3f
+import com.jme3.math.Vector2f
 
 /**
  * A set of game parameter, station [[Topology]], elapsed time and set of named [[BlockStatus]]
@@ -104,8 +106,24 @@ object GameStatus {
       map(
         b => (b.id -> initialStatus(b))).
         toMap
-    val train = ATrain("Test")
-    GameStatus(parms, 0f, t, new Random(), states, Set(train))
+
+    val atrain = MovingTrain("Test", createRoute, 35f, 40f / 3.6f)
+
+    GameStatus(parms, 0f, t, new Random(), states, Set(atrain))
+  }
+
+  private def createRoute = {
+    val from = new Vector2f(-SegmentLength * 11 / 2 - SegmentLength * 12, 0)
+    val to = from.add(new Vector2f(SegmentLength * 11, 0))
+    val plat = to.add(new Vector2f(SegmentLength, TrackGap))
+    val platEnd = plat.add(new Vector2f(SegmentLength * 11, 0))
+
+    val track1 = LinearTrack(from, to)
+    val track2 = RightCurveTrack(to.add(new Vector2f(0f, CurveRadius)), CurveRadius, StraightAngle, CurveLength)
+    val track3 = LeftCurveTrack(plat.add(new Vector2f(0f, -CurveRadius)), CurveRadius,  - CurveAngle, CurveLength)
+    val track4 = LinearTrack(plat, platEnd)
+
+    TrainRoute(IndexedSeq(track1, track2, track3, track4))
   }
 
   /** Returns the initial state of Block */

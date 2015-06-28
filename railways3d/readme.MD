@@ -4,6 +4,14 @@
 La stazione è l'insieme di elementi e relazioni che compongono la topologia della stazione.
 La stazione è invariante nel tempo.
 
+# Coordinate
+
+Le coordinate piane x-y sono organizzate in modo che l'asse x vada in direzione ovest-est e l'asse y 
+in direzione sud-nord.
+
+Nello spazio tridimensionale invece l'asse y rappresenta l'altitudine, l'asse x la direzione est-ovest 
+e l'asse z la direzione sud-nord.  
+
 ## Modello a grafo
 Possiamo rappresentare la stazione come un grafo dove i nodi sono punti nello spazio e gli archi sono gli elementi di congiunzione dei punti.
 

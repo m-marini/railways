@@ -42,6 +42,10 @@ package object model {
   /** Curve angle */
   val CurveAngle = RightAngle / 3f;
 
+  val CurveLength = CurveAngle * CurveRadius
+
+  val AxisDistance = 3.970f
+
   type Route = IndexedSeq[Track]
 
   case class Endpoint(block: Block, index: Int)
