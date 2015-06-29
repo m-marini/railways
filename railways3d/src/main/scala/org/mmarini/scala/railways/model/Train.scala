@@ -16,7 +16,7 @@ trait Train {
   def tick(time: Float, gameStatus: GameStatus): Train
 
   /** Return the train vehicle compositions */
-  def vehicles: Option[Vehicle]
+  def vehicles: Set[Vehicle]
 
 }
 
@@ -28,11 +28,11 @@ case class IncomingTrain(id: String, entry: Block, destination: Block) extends T
     this
   }
 
-  val vehicles: Option[Vehicle] = None
+  val vehicles: Set[Vehicle] = Set.empty
 }
 
 /** */
-case class MovingTrain(id: String, route: TrainRoute, location: Float, speed: Float) extends Train {
+case class MovingTrain(id: String, size: Int, route: TrainRoute, location: Float, speed: Float) extends Train {
 
   /** Computes the next status after an elapsed time tick */
   def tick(time: Float, gameStatus: GameStatus): Train =
@@ -40,8 +40,16 @@ case class MovingTrain(id: String, route: TrainRoute, location: Float, speed: Fl
 
   /** */
   private def setLocation(location: Float) =
-    MovingTrain(id, route, location, speed)
+    MovingTrain(id, size, route, location, speed)
 
   /** Return the train vehicle compositions */
-  val vehicles: Option[Vehicle] = Coach(route, location)
+  val vehicles: Set[Vehicle] = {
+    val head = Head(s"$id.head", route, location)
+    val mid = for {
+      i <- 1 to size - 2
+      coach <- Coach(s"$id.coach.$i", route, location - i * CoachLength)
+    } yield coach
+    val tail = Tail(s"$id.tail", route, location - (size - 1) * CoachLength)
+    (head.toSet) ++ mid ++ (tail.toSet)
+  }
 }

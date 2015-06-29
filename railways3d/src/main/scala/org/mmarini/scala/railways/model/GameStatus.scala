@@ -24,6 +24,12 @@ case class GameStatus(
   blocks: Map[String, BlockStatus],
   trains: Set[Train]) extends LazyLogging {
 
+  def vehicles: Set[Vehicle] =
+    for {
+      train <- trains
+      vehicle <- train.vehicles
+    } yield vehicle
+
   /** Creates a new status with a new time value */
   def setTime(time: Float): GameStatus =
     GameStatus(parameters, time, topology, random, blocks, trains)
@@ -107,7 +113,7 @@ object GameStatus {
         b => (b.id -> initialStatus(b))).
         toMap
 
-    val atrain = MovingTrain("Test", createRoute, SegmentLength * 1, 140f / 3.6f)
+    val atrain = MovingTrain("Test", 10, createRoute, 0f, 140f / 3.6f)
 
     GameStatus(parms, 0f, t, new Random(), states, Set(atrain))
   }

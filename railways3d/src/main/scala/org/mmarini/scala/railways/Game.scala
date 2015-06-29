@@ -120,7 +120,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   private val trainRendTransitions = state.map((status: GameStatus) => {
     (renderer: TrainRenderer) =>
       {
-        renderer.render(status.trains)
+        renderer.render(status.vehicles)
       }
   })
 
