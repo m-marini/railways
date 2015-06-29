@@ -30,6 +30,9 @@ case object Downville extends Topology {
     (Endpoint(exit, 0), Endpoint(entry, 0)))
 
   val viewpoints = Seq[CameraViewpoint](
+    CameraViewpoint("landscape",
+      new Vector3f(0, 100f, 0f),
+      new Quaternion().fromAngleAxis(RightAngle, Vector3f.UNIT_Y).multLocal(RightAngle / 2)),
     CameraViewpoint("entry1",
       new Vector3f(SegmentLength * 17.5f - 10, 5f, 0),
       new Quaternion().fromAngleAxis(RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
