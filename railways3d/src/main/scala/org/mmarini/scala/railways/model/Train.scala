@@ -36,6 +36,8 @@ trait Train {
 /** */
 case class MovingTrain(id: String, size: Int, route: TrainRoute, location: Float, speed: Float) extends Train {
 
+  private val Timeout = 2 * 60f
+
   /** Computes the next status after an elapsed time tick */
   def tick(time: Float, gameStatus: GameStatus): Option[Train] = {
     val newSpeed = speed
@@ -43,6 +45,7 @@ case class MovingTrain(id: String, size: Int, route: TrainRoute, location: Float
     if (newLocation >= route.length) {
       route.last match {
         case _: ExitStatus => None
+        case _: PlatformStatus => Some(WaitForPassengerTrain(id, size, route, route.length, Timeout))
         case _ => Some(WaitForRouteTrain(id, size, route, route.length))
       }
     } else {
@@ -57,3 +60,18 @@ case class WaitForRouteTrain(id: String, size: Int, route: TrainRoute, location:
   def tick(time: Float, gameStatus: GameStatus): Option[Train] = Some(this)
 }
 
+/** */
+case class WaitForPassengerTrain(id: String, size: Int, route: TrainRoute, location: Float, timeout: Float) extends Train {
+  /** Computes the next status after an elapsed time tick */
+  def tick(time: Float, gameStatus: GameStatus): Option[Train] =
+    if (timeout - time > 0)
+      Some(WaitForPassengerTrain(id, size, route, location, timeout - time))
+    else
+      Some(StopTrain(id, size, route, location))
+}
+
+/** */
+case class StopTrain(id: String, size: Int, route: TrainRoute, location: Float) extends Train {
+  /** Computes the next status after an elapsed time tick */
+  def tick(time: Float, gameStatus: GameStatus): Option[Train] = Some(this)
+}
