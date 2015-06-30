@@ -35,4 +35,7 @@ case class TrainRoute(tracks: IndexedSeq[Track]) {
       (track, dist) <- trackLocationAt(distance)
       loc <- track.locationAt(dist)
     } yield loc
+
+  /** Returns the last track */
+  def last: Track = tracks.last
 }

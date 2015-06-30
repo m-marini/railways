@@ -13,34 +13,13 @@ trait Train {
   def id: String
 
   /** Computes the next status after an elapsed time tick */
-  def tick(time: Float, gameStatus: GameStatus): Train
+  def tick(time: Float, gameStatus: GameStatus): Option[Train]
 
-  /** Return the train vehicle compositions */
-  def vehicles: Set[Vehicle]
+  def route: TrainRoute
 
-}
+  def location: Float
 
-/** */
-case class IncomingTrain(id: String, entry: Block, destination: Block) extends Train {
-
-  /** */
-  def tick(time: Float, gameStatus: GameStatus): Train = {
-    this
-  }
-
-  val vehicles: Set[Vehicle] = Set.empty
-}
-
-/** */
-case class MovingTrain(id: String, size: Int, route: TrainRoute, location: Float, speed: Float) extends Train {
-
-  /** Computes the next status after an elapsed time tick */
-  def tick(time: Float, gameStatus: GameStatus): Train =
-    setLocation(location + speed * time)
-
-  /** */
-  private def setLocation(location: Float) =
-    MovingTrain(id, size, route, location, speed)
+  def size: Int
 
   /** Return the train vehicle compositions */
   val vehicles: Set[Vehicle] = {
@@ -53,3 +32,28 @@ case class MovingTrain(id: String, size: Int, route: TrainRoute, location: Float
     (head.toSet) ++ mid ++ (tail.toSet)
   }
 }
+
+/** */
+case class MovingTrain(id: String, size: Int, route: TrainRoute, location: Float, speed: Float) extends Train {
+
+  /** Computes the next status after an elapsed time tick */
+  def tick(time: Float, gameStatus: GameStatus): Option[Train] = {
+    val newSpeed = speed
+    val newLocation = location + newSpeed * time
+    if (newLocation >= route.length) {
+      route.last match {
+        case _: ExitStatus => None
+        case _ => Some(WaitForRouteTrain(id, size, route, route.length))
+      }
+    } else {
+      Some(MovingTrain(id, size, route, newLocation, newSpeed))
+    }
+  }
+}
+
+/** */
+case class WaitForRouteTrain(id: String, size: Int, route: TrainRoute, location: Float) extends Train {
+  /** Computes the next status after an elapsed time tick */
+  def tick(time: Float, gameStatus: GameStatus): Option[Train] = Some(this)
+}
+

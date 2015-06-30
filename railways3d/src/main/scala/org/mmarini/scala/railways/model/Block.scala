@@ -31,7 +31,7 @@ object Block {
   def platform(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, Platform, x, y, orientation)
 
   /** Returns a platform Block */
-  def track(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, TrackTemplate, x, y, orientation)
+  def segment(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, Segment, x, y, orientation)
 
   /** Returns a platform Block */
   def leftHandSwitch(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, LeftHandSwitch, x, y, orientation)

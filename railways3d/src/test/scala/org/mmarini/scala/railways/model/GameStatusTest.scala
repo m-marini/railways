@@ -15,7 +15,7 @@ import scala.util.Random
 class GameStatusTest extends PropSpec with Matchers with PropertyChecks {
 
   property("The time of next game status after elapsed time should be added by elapsed time") {
-    val s = GameStatus(GameParameters(), 0f, Downville, new Random(), Map.empty, Set.empty)
+    val s = GameStatus(GameParameters(), 0f, StationStatus(Downville, Map.empty), new Random(), Set.empty)
 
     forAll {
       (elapsed: Float) =>

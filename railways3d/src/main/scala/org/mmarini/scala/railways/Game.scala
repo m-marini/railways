@@ -98,12 +98,12 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   // Create the station renderer
   private val stationRend = new StationRenderer(
-    initialStatus.blocks.values.map(_.block).toSet,
+    initialStatus.stationStatus.blocks.values.map(_.block).toSet,
     app.getAssetManager,
     app.getRootNode)
 
   // Creates the viewpoint map
-  private val viewpointMap = initialStatus.topology.viewpoints.map(v => (v.id, v)).toMap
+  private val viewpointMap = initialStatus.stationStatus.topology.viewpoints.map(v => (v.id, v)).toMap
 
   // Creates the camera controller
   private val cameraController = new CameraController(app.getCamera, app.getAssetManager, app.getRootNode)
@@ -129,7 +129,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   // Subscribes for status change
   private val statusSub = state.subscribe(status => {
-    stationRend.change(status)
+    stationRend.change(status.stationStatus)
   })
 
   // Subscribes for camera change
@@ -162,7 +162,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   /** Loads viewpoints list into hud panel */
   private def loadViewpoints {
     app.controller[GameController]("game-screen").foreach(_.show(
-      initialStatus.topology.viewpoints.map(_.id).toList))
+      initialStatus.stationStatus.topology.viewpoints.map(_.id).toList))
   }
 
   /** Unsubscribes all the observers when game ends */

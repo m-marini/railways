@@ -4,7 +4,6 @@
 package org.mmarini.scala.railways
 
 import scala.util.Try
-
 import org.mmarini.scala.railways.model.Block
 import org.mmarini.scala.railways.model.BlockStatus
 import org.mmarini.scala.railways.model.BlockTemplate
@@ -18,8 +17,6 @@ import org.mmarini.scala.railways.model.Platform
 import org.mmarini.scala.railways.model.PlatformStatus
 import org.mmarini.scala.railways.model.RightHandSwitch
 import org.mmarini.scala.railways.model.SwitchStatus
-import org.mmarini.scala.railways.model.TrackTemplate
-
 import com.jme3.asset.AssetManager
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
@@ -28,6 +25,9 @@ import com.jme3.scene.Node
 import com.jme3.scene.Spatial
 import com.typesafe.scalalogging.LazyLogging
 import scala.collection.JavaConversions._
+import org.mmarini.scala.railways.model.StationStatus
+import org.mmarini.scala.railways.model.Segment
+import org.mmarini.scala.railways.model.SegmentStatus
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -64,7 +64,7 @@ class StationRenderer(
     Exit -> Set(
       SemRedModel,
       SemGreenModel),
-    TrackTemplate -> Set(
+    Segment -> Set(
       RedPlatModel,
       GreenPlatModel),
     Platform -> Set(
@@ -131,7 +131,7 @@ class StationRenderer(
   }
 
   /** Changes the view of station */
-  def change(status: GameStatus) {
+  def change(status: StationStatus) {
     // Render each block
     for { blockStatus <- status.blocks.values } {
 
@@ -159,6 +159,9 @@ class StationRenderer(
 
     case s: PlatformStatus if (s.free) => GreenPlatModel
     case s: PlatformStatus => RedPlatModel
+
+    case s: SegmentStatus if (s.free) => GreenPlatModel
+    case s: SegmentStatus => RedPlatModel
 
     case s: SwitchStatus if (s.block.template == LeftHandSwitch && s.diverging && s.free) => SwitchLeftDivGreenModel
     case s: SwitchStatus if (s.block.template == LeftHandSwitch && s.diverging && !s.free) => SwitchLeftDivRedModel

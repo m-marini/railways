@@ -11,7 +11,7 @@ import scala.math.cos
  * Describes a curve part of trajectory
  *
  * @constructor create the curve specifying the center,
- *             the radius, the starting angle and the ending angle
+ *             the radius, the starting angle and the length of track
  *
  */
 
@@ -19,6 +19,7 @@ abstract class CurveTrack(center: Vector2f, radius: Float, begin: Float, length:
   assert(radius >= 0f)
   assert(length >= 0f)
 
+  /** Returns the point at a given distance from the begin */
   def locationAt(distance: Float): Option[Vector2f] =
     if (distance >= 0 && distance <= length) {
       val alpha = begin + angle(distance)
@@ -27,17 +28,29 @@ abstract class CurveTrack(center: Vector2f, radius: Float, begin: Float, length:
       None
     }
 
-  /** */
+  /** Computes the angle from the begin at a given distance */
   def angle(distance: Float): Float
 
 }
 
+/** Describes a right curve */
 case class RightCurveTrack(center: Vector2f, radius: Float, begin: Float, length: Float)
   extends CurveTrack(center, radius, begin, length) {
+
+  /** Computes the angle >= 0 from the begin at a given distance */
   def angle(distance: Float): Float = distance / radius
+
+  /** Returns the reverse track of this */
+  override lazy val reverse = LeftCurveTrack(center, radius, begin + angle(length), length)
 }
 
+/** Describes a leftcurve */
 case class LeftCurveTrack(center: Vector2f, radius: Float, begin: Float, length: Float)
   extends CurveTrack(center, radius, begin, length) {
+
+  /** Computes the angle <= 0 from the begin at a given distance */
   def angle(distance: Float): Float = -distance / radius
+
+  /** Returns the reverse track of this */
+  override lazy val reverse = RightCurveTrack(center, radius, begin + angle(length), length)
 }

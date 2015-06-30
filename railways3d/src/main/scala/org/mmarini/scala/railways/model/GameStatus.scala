@@ -19,9 +19,8 @@ import com.jme3.math.Vector2f
 case class GameStatus(
   parameters: GameParameters,
   time: Float,
-  topology: Topology,
+  stationStatus: StationStatus,
   random: Random,
-  blocks: Map[String, BlockStatus],
   trains: Set[Train]) extends LazyLogging {
 
   def vehicles: Set[Vehicle] =
@@ -32,30 +31,35 @@ case class GameStatus(
 
   /** Creates a new status with a new time value */
   def setTime(time: Float): GameStatus =
-    GameStatus(parameters, time, topology, random, blocks, trains)
+    GameStatus(parameters, time, stationStatus, random, trains)
 
   /** Creates a new status with time changed by a value */
   def addTime(dt: Float): GameStatus =
-    GameStatus(parameters, time + dt, topology, random, blocks, trains)
+    GameStatus(parameters, time + dt, stationStatus, random, trains)
 
   /** Creates a new status with a new block map */
-  def setBlocks(blocks: Map[String, BlockStatus]): GameStatus =
-    GameStatus(parameters, time, topology, random, blocks, trains)
+  def setStationStatus(stationStatus: StationStatus): GameStatus =
+    GameStatus(parameters, time, stationStatus, random, trains)
 
   /** Creates a new status with a new train set */
   def setTrains(trains: Set[Train]): GameStatus =
-    GameStatus(parameters, time, topology, random, blocks, trains)
+    GameStatus(parameters, time, stationStatus, random, trains)
 
   /** Generates the next status simulating a time elapsing */
   def tick(time: Float): GameStatus = {
-    val t = this.time + time
-    val newTrains = trains.map(_.tick(time, this))
+    // Generates status changes for each train e returns the final status
+    val newStatus = trains.foldLeft(this)((status, train) => {
+      // Processes single train
+      val newTrain = train.tick(time, status)
+      // Rebuilds the status for train change
+      val newStatus = status.setTrains((trains - train) ++ newTrain.toSet)
+      newStatus
+    })
 
-    //    val nextTrains = trains.map(_.tick(time, this))
-    //    val lambda = time * parameters.trainFrequence
-    //    val newTrains = generateNewTrains(poisson(lambda))
-    //    addTime(t).setTrains(nextTrains ++ newTrains)
-    setTrains(newTrains).addTime(t)
+    // TODO generare nuovi treni 
+    val newTrainStatus = newStatus
+
+    newTrainStatus.addTime(time)
   }
 
   /** Generates a random integer with a Poisson distribution */
@@ -69,16 +73,6 @@ case class GameStatus(
     poissonLoop(0, 1)
   }
 
-  /** Generates a random set of trains */
-  private def generateNewTrains(n: Int): Set[Train] = {
-    (for { i <- 1 to n } yield {
-      val id = random.nextInt.toString
-      val entry = choice(topology.entries)
-      val exit = choice(topology.exits)
-      IncomingTrain(id, entry, exit)
-    }).toSet
-  }
-
   /** Choices a random element with equal probability distribution */
   private def choice[T](choices: Set[T]): T = {
     val idx = random.nextInt(choices.size)
@@ -87,19 +81,11 @@ case class GameStatus(
 
   /** Generates the next status changing the status of a block */
   def changeBlockStatus(id: String): GameStatus =
-    setBlocks(blocks.
-      get(id).
-      map(_.changeStatus).
-      map(bs => blocks + (id -> bs)).
-      getOrElse(blocks))
+    setStationStatus(stationStatus.changeBlockStatus(id))
 
   /** Generates the next status changing the freedom of a block */
   def changeBlockFreedom(id: String): GameStatus =
-    setBlocks(blocks.
-      get(id).
-      map(_.changeFreedom).
-      map(bs => blocks + (id -> bs)).
-      getOrElse(blocks))
+    setStationStatus(stationStatus.changeBlockFreedom(id))
 
 }
 
@@ -115,7 +101,7 @@ object GameStatus {
 
     val atrain = MovingTrain("Test", 10, createRoute, 0f, 140f / 3.6f)
 
-    GameStatus(parms, 0f, t, new Random(), states, Set(atrain))
+    GameStatus(parms, 0f, StationStatus(t, states), new Random(), Set(atrain))
   }
 
   private def createRoute = {
@@ -126,10 +112,10 @@ object GameStatus {
     val center1 = a.add(new Vector2f(0f, CurveRadius))
     val center2 = b.add(new Vector2f(0f, -CurveRadius))
 
-    val track1 = LinearTrack(entry, a)
+    val track1 = SegmentTrack(entry, a)
     val track2 = LeftCurveTrack(center1, CurveRadius, StraightAngle, CurveLength / 2)
     val track3 = RightCurveTrack(center2, CurveRadius, -CurveAngle / 2, CurveLength / 2)
-    val track4 = LinearTrack(b, c)
+    val track4 = PlatformTrack(b, c)
 
     TrainRoute(IndexedSeq(track1, track2, track3, track4))
   }
@@ -139,7 +125,7 @@ object GameStatus {
     case Entry => EntryStatus(block)
     case Exit => BlockStatus.exit(block)
     case Platform => BlockStatus.platform(block)
-    case TrackTemplate => BlockStatus.platform(block)
+    case Segment => BlockStatus.segment(block)
     case LeftHandSwitch => BlockStatus.switch(block)
     case RightHandSwitch => BlockStatus.switch(block)
   }

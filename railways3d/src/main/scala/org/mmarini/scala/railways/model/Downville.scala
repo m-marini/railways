@@ -20,8 +20,8 @@ case object Downville extends Topology {
   private val entry = Block.entry("entry", -SegmentLength * 17.5f, 0, -RightAngle)
   private val exit = Block.exit("exit", SegmentLength * 17.5f, 0, RightAngle)
 
-  private val entryTrack = Block.track("entry-track", -SegmentLength * 17.5f, 0, RightAngle)
-  private val exitTrack = Block.track("exit-track", SegmentLength * 17.5f, 0, -RightAngle)
+  private val entryTrack = Block.segment("entry-track", -SegmentLength * 17.5f, 0, RightAngle)
+  private val exitTrack = Block.segment("exit-track", SegmentLength * 17.5f, 0, -RightAngle)
 
   val junctions = Set(
     (Endpoint(platform1, 0), Endpoint(platform2, 0)),
