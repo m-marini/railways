@@ -4,8 +4,19 @@ import scala.concurrent.duration._
 import rx.lang.scala.Subject
 
 object Test {
-  val a = Seq(1, 2, 3)                            //> a  : Seq[Int] = List(1, 2, 3)
 
-  a.foldLeft("")((s, t) => s + t)                 //> res0: String = 123
-  a.foldRight("")((t, s) => s + t)                //> res1: String = 321
+  abstract class Autoref(id: String) {
+    def other: Autoref
+    override def toString: String = id
+  }
+
+  case class MyNode(id: String) extends Autoref(id) {
+   lazy val other = new Autoref(s"other of $id") {
+      def other = MyNode.this
+    }
+  }
+
+  val a = MyNode("A")                             //> a  : Test.MyNode = A
+  a.other                                         //> res0: Test.Autoref{def other: Test.MyNode} = other of A
+  a.other.other                                   //> res1: Test.MyNode = A
 }

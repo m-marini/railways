@@ -30,5 +30,7 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
     StationStatus(topology, blocks)
 
   /** Finds the path with a given track */
-  def findPath(track: Track): IndexedSeq[Track] = ???
+  def findPath(from: Track): IndexedSeq[Track] = {
+    ???
+  }
 }

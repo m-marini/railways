@@ -36,6 +36,8 @@ trait Train {
     val tail = Tail(s"$id.tail", route, location - (size - 1) * CoachLength)
     (head.toSet) ++ mid ++ (tail.toSet)
   }
+
+  lazy val transitTracks: Seq[Track] = route.pathTracks(location - size * CoachLength, location)
 }
 
 /** This MovingTrain computes the next state of this moving train */

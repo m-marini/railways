@@ -98,8 +98,6 @@ Es. Il treno 1 si sposta occupando la tratta A e liberando la tratta B.
 	Si deveno ridurre i percorsi dei treni che incrociano la tratta A e allungare i percorsi dei treni che incrocano la tratta B.
 
 
-
-    
 ### Aggiornamento dello stato dei blocchi
 
 Per ogni treno si estraggono le tratte occupate dalla coda del treno alla testa del treno.

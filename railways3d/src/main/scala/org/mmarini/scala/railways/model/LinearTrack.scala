@@ -31,16 +31,14 @@ trait LinearTrack extends Track {
 }
 
 case class SegmentTrack(begin: Vector2f, end: Vector2f) extends LinearTrack {
-
-  /** Returns the reverse track of this */
-  override lazy val reverse = SegmentTrack(end, begin)
+  override def reverse: Track = new SegmentTrack(end, begin)
 }
 
 /** */
 case class PlatformTrack(begin: Vector2f, end: Vector2f) extends LinearTrack {
 
   /** Returns the reverse track of this */
-  override lazy val reverse = PlatformTrack(end, begin)
+  override def reverse :Track = new PlatformTrack(end, begin)
 }
 
 case object EntryTrack extends Track {
