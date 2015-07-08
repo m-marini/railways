@@ -15,3 +15,7 @@
 /bin
 /bin
 /.scalastyle
+/.cache-main
+/.cache-tests
+/analysis.MD~
+/.tmpBin

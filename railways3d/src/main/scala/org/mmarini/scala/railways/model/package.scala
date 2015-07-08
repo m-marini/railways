@@ -13,6 +13,7 @@ import com.jme3.math.Vector2f
 
 /** */
 package object model {
+  val BoardingTime = 2f
 
   val Pif = Pi.toFloat
   val Pi2f = (2 * Pi).toFloat
@@ -43,6 +44,18 @@ package object model {
   val CurveAngle = RightAngle / 3f;
 
   val CurveLength = CurveAngle * CurveRadius
+
+  /** Maximum speed */
+  val MaxSpeed = 140f / 3.6f
+
+  /** Minimum speed */
+  val MinSpeed = 0.5f
+
+  /** Max deceleration */
+  val MaxDeceleration = 1.929f
+
+  /** Max acceleration */
+  val MaxAcceleration = 0.623053f
 
   val AxisDistance = 3.970f
 

@@ -3,13 +3,12 @@
  */
 package org.mmarini.scala.railways.model
 
-import com.typesafe.scalalogging.LazyLogging
-import scala.util.Random
-import scala.math.E
+import scala.IndexedSeq
 import scala.math.exp
-import scala.reflect.api.Position
-import com.jme3.math.Vector3f
+import scala.util.Random
+
 import com.jme3.math.Vector2f
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * A set of game parameter, station [[Topology]], elapsed time and set of named [[BlockStatus]]
@@ -50,16 +49,23 @@ case class GameStatus(
     // Generates status changes for each train e returns the final status
     val newStatus = trains.foldLeft(this)((status, train) => {
       // Processes single train
-      val newTrain = train.tick(time, status)
-      // Rebuilds the status for train change
-      val newStatus = status.setTrains((trains - train) ++ newTrain.toSet)
-      newStatus
+      train.tick(time, status)
     })
 
     // TODO generare nuovi treni 
     val newTrainStatus = newStatus
 
     newTrainStatus.addTime(time)
+  }
+
+  /** Removes a train from the train list */
+  def removeTrain(train: Train): GameStatus = setTrains(trains - train)
+
+  /** Put a new train status */
+  def putTrain(train: Train): GameStatus = {
+    val prevTrain = trains.find(_.id == train.id)
+    val newTrains = trains -- prevTrain.toSet + train
+    setTrains(newTrains)
   }
 
   /** Generates a random integer with a Poisson distribution */
@@ -99,7 +105,7 @@ object GameStatus {
         b => (b.id -> initialStatus(b))).
         toMap
 
-    val atrain = MovingTrain("Test", 10, createRoute, 0f, 140f / 3.6f)
+    val atrain = MovingTrain("Test", 10, createRoute, 0f, 0f / 3.6f)
 
     GameStatus(parms, 0f, StationStatus(t, states), new Random(), Set(atrain))
   }
@@ -112,6 +118,7 @@ object GameStatus {
     val center1 = a.add(new Vector2f(0f, CurveRadius))
     val center2 = b.add(new Vector2f(0f, -CurveRadius))
 
+    val track0 = EntryTrack
     val track1 = SegmentTrack(entry, a)
     val track2 = LeftCurveTrack(center1, CurveRadius, StraightAngle, CurveLength / 2)
     val track3 = RightCurveTrack(center2, CurveRadius, -CurveAngle / 2, CurveLength / 2)
