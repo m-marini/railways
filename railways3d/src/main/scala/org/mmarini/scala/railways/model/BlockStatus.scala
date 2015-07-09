@@ -13,6 +13,15 @@ trait BlockStatus {
   def changeStatus: BlockStatus = this
 
   def changeFreedom: BlockStatus = this
+
+  /** Returns the current tracks group for a given track */
+  def trackGroupFor(track: Track): Set[Track] = ???
+
+  /**
+   * Creates a new block status applying a set of busy track.
+   * The new status has to reflect the properties of blocked junctions on the given busy tracks
+   */
+  def apply(busyTracks: Set[Track]): BlockStatus = ???
 }
 
 /** A [[BlockStatus]] of an entry [[Block]] */

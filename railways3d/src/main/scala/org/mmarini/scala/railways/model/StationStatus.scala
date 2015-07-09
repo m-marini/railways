@@ -29,8 +29,36 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
   def setBlocks(blocks: Map[String, BlockStatus]): StationStatus =
     StationStatus(topology, blocks)
 
-  /** Finds the path with a given track */
-  def findPath(from: Track): IndexedSeq[Track] = {
+  /**
+   * Finds the path for a given train
+   * The train may not be in this station status
+   */
+  def findRoute(train: Train): (TrainRoute, Float) = {
+    val Some((track, loc)) = train.trackTailLocation
+    // Finds block and junction containing the track of train tail
+    val (block, startJunction): (BlockStatus, Int) = ??? // blocks.find ... !block.junction.isEmpty
+
+    // Finds track sequence starting at block, startJunction for train (track allocated by the train) 
+    val trackList: IndexedSeq[Track] = ???
+
     ???
   }
+
+  /** Creates the status of station from current status applying the set of busy tracks */
+  def apply(busyTracks: Set[Track]): StationStatus =
+    StationStatus(
+      topology,
+      blocks.map {
+        case (id, block) => (id, block(busyTracks))
+      })
+
+  /** Extracts all busy tracks by train given the association of allocated track and train */
+  def extractBusyTrack(trainTracks: Set[(Track, Train)]): Set[(Track, Train)] =
+    for {
+      (track, train) <- trainTracks
+      blockStatus <- blocks.values
+      groupTrack <- blockStatus.trackGroupFor(track)
+    } yield {
+      (groupTrack, train)
+    }
 }

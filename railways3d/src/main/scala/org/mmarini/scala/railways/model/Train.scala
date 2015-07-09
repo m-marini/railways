@@ -37,11 +37,31 @@ trait Train {
     (head.toSet) ++ mid ++ (tail.toSet)
   }
 
-  lazy val transitTracks: Seq[Track] = route.pathTracks(location - size * CoachLength, location)
+  /** Extracts the transit tracks */
+  lazy val transitTracks: Seq[Track] = route.pathTracks(location - length, location)
+
+  /** Creates the new train status apply a new route */
+  def apply(route: TrainRoute, location: Float): Train
+
+  /** Computes the track location of tail */
+  def trackTailLocation: Option[(Track, Float)] =
+    route.trackLocationAt(location - length)
+
+  /** Returns train length */
+  val length = size * CoachLength
+
 }
 
 /** This MovingTrain computes the next state of this moving train */
-case class MovingTrain(id: String, size: Int, route: TrainRoute, location: Float, speed: Float) extends Train with LazyLogging {
+case class MovingTrain(
+    id: String,
+    size: Int,
+    route: TrainRoute,
+    location: Float,
+    speed: Float) extends Train with LazyLogging {
+
+  /** Creates the new train status apply a new route */
+  override def apply(route: TrainRoute, location: Float): Train = MovingTrain(id, size, route, location, speed)
 
   /** Computes the next status after an elapsed time tick */
   override def tick(time: Float, gameStatus: GameStatus): GameStatus = {
@@ -71,7 +91,15 @@ case class MovingTrain(id: String, size: Int, route: TrainRoute, location: Float
 }
 
 /** This BrakingTrain computes the next state of this braking train */
-case class BrakingTrain(id: String, size: Int, route: TrainRoute, location: Float, speed: Float) extends Train with LazyLogging {
+case class BrakingTrain(
+    id: String,
+    size: Int,
+    route: TrainRoute,
+    location: Float,
+    speed: Float) extends Train with LazyLogging {
+
+  /** Creates the new train status apply a new route */
+  override def apply(route: TrainRoute, location: Float): Train = BrakingTrain(id, size, route, location, speed)
 
   /** Computes the next status after an elapsed time tick */
   override def tick(time: Float, gameStatus: GameStatus): GameStatus = {
@@ -93,13 +121,30 @@ case class BrakingTrain(id: String, size: Int, route: TrainRoute, location: Floa
 }
 
 /** This WaitForRouteTrain computes the next state of this train that is waiting for route availability */
-case class WaitForRouteTrain(id: String, size: Int, route: TrainRoute, location: Float) extends Train with LazyLogging {
+case class WaitForRouteTrain(
+    id: String,
+    size: Int,
+    route: TrainRoute,
+    location: Float) extends Train with LazyLogging {
+
+  /** Creates the new train status apply a new route */
+  override def apply(route: TrainRoute, location: Float): Train = WaitForRouteTrain(id, size, route, location)
+
   /** Computes the next status after an elapsed time tick */
   def tick(time: Float, gameStatus: GameStatus): GameStatus = gameStatus
 }
 
 /** This WaitForPassengerTrain computes the next state of this train that is waiting for passenger boarding */
-case class WaitForPassengerTrain(id: String, size: Int, route: TrainRoute, location: Float, timeout: Float) extends Train with LazyLogging {
+case class WaitForPassengerTrain(
+    id: String,
+    size: Int,
+    route: TrainRoute,
+    location: Float,
+    timeout: Float) extends Train with LazyLogging {
+
+  /** Creates the new train status apply a new route */
+  override def apply(route: TrainRoute, location: Float): Train = WaitForPassengerTrain(id, size, route, location, timeout)
+
   /** Computes the next status after an elapsed time tick */
   override def tick(time: Float, gameStatus: GameStatus): GameStatus =
     if (timeout - time > 0) {
@@ -111,7 +156,15 @@ case class WaitForPassengerTrain(id: String, size: Int, route: TrainRoute, locat
 }
 
 /** This StoppedTrain computes the next state of this stopped train */
-case class StoppedTrain(id: String, size: Int, route: TrainRoute, location: Float) extends Train {
+case class StoppedTrain(
+    id: String,
+    size: Int,
+    route: TrainRoute,
+    location: Float) extends Train {
+
+  /** Creates the new train status apply a new route */
+  override def apply(route: TrainRoute, location: Float): Train = StoppedTrain(id, size, route, location)
+
   /** Computes the next status after an elapsed time tick */
   override def tick(time: Float, gameStatus: GameStatus): GameStatus = gameStatus
 }

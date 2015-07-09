@@ -24,7 +24,7 @@ case class TrainRoute(tracks: IndexedSeq[Track]) {
   val length: Float = tracks.map(_.length).sum
 
   /** Returns the track and the distance from begin of a point in the route at a given distance of the start route */
-  private def trackLocationAt(distance: Float): Option[(Track, Float)] =
+  def trackLocationAt(distance: Float): Option[(Track, Float)] =
     mapper.find {
       case (len, track) => distance >= len && distance <= len + track.length
     }.map {
@@ -46,4 +46,13 @@ case class TrainRoute(tracks: IndexedSeq[Track]) {
     mapper.filter {
       case (x, track) => x + track.length >= start && x <= end
     }.map { case (_, t) => t }
+
+  //  /** Returns the route starting from a specific point dropping the initial tracks and the new distance */
+  //  def subRoute(distance: Float): (TrainRoute, Float) = {
+  //    val subRoute = TrainRoute(pathTracks(distance, length).toIndexedSeq)
+  //    // length - distance = newLenght - newDistance
+  //    // => new Distance = distance + newLength - length
+  //    (subRoute, distance + subRoute.length - length)
+  //  }
+
 }

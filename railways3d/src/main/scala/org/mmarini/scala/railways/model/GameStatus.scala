@@ -16,11 +16,11 @@ import com.typesafe.scalalogging.LazyLogging
  * Generates next status by handling the incoming events
  */
 case class GameStatus(
-  parameters: GameParameters,
-  time: Float,
-  stationStatus: StationStatus,
-  random: Random,
-  trains: Set[Train]) extends LazyLogging {
+    parameters: GameParameters,
+    time: Float,
+    stationStatus: StationStatus,
+    random: Random,
+    trains: Set[Train]) extends LazyLogging {
 
   def vehicles: Set[Vehicle] =
     for {
@@ -63,9 +63,32 @@ case class GameStatus(
 
   /** Put a new train status */
   def putTrain(train: Train): GameStatus = {
-    val prevTrain = trains.find(_.id == train.id)
-    val newTrains = trains -- prevTrain.toSet + train
-    setTrains(newTrains)
+    val otherTrains = trains.filterNot(_.id == train.id)
+    val tempTrainSet = otherTrains + train
+
+    // Extracts the track occupied by trains
+    //    val trainTracks: Map[Track, Train] = tempTrainSet.
+    val trainTracks = for {
+      train <- tempTrainSet
+      track <- train.transitTracks
+    } yield (track -> train)
+
+    // Extract the busy track (by mutex block tracks) 
+    val busyTracks = stationStatus.extractBusyTrack(trainTracks)
+
+    // Update the station status with new busyTrack
+    val newStationStatus = stationStatus.apply(
+      busyTracks.map {
+        case (track, _) => track
+      })
+
+    // Computes the new routes for all new train state
+    val newTrainSet = for { train <- tempTrainSet } yield {
+      val (newRoute, newLocation) = newStationStatus.findRoute(train);
+      train(newRoute, newLocation)
+    }
+
+    setTrains(tempTrainSet).setStationStatus(newStationStatus)
   }
 
   /** Generates a random integer with a Poisson distribution */
