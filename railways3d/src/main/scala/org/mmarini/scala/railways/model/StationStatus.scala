@@ -34,15 +34,31 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
    * The train may not be in this station status
    */
   def findRoute(train: Train): (TrainRoute, Float) = {
-    val Some((track, loc)) = train.trackTailLocation
+    val Some((tailTrack, loc)) = train.trackTailLocation
     // Finds block and junction containing the track of train tail
-    val (block, startJunction): (BlockStatus, Int) = ??? // blocks.find ... !block.junction.isEmpty
+    val Some(block) = findBlock(tailTrack)
+    val (start, end) = block.junctionsForTrack(tailTrack)
 
-    // Finds track sequence starting at block, startJunction for train (track allocated by the train) 
-    val trackList: IndexedSeq[Track] = ???
+    // Finds track sequence starting at block, startJunction for train (track allocated by the train)
+    // TODO
+    val routeJunctions: IndexedSeq[(Block, Option[Int], Option[Int])] = ???
 
-    ???
+    // takes until junction route available for current train
+    // TODO
+    val freeRouteJunctions: IndexedSeq[(Block, Option[Int], Option[Int])] = ???
+
+    // map to track list
+    val trackList: IndexedSeq[Track] = freeRouteJunctions.flatMap {
+      // TODO
+      case (bloc, start, end) => ???
+    }
+    // drop head until track of tail train
+    (TrainRoute(trackList.dropWhile { _ != tailTrack }), loc)
   }
+
+  /** */
+  private def findBlock(track: Track): Option[BlockStatus] =
+    blocks.values.find(!_.junctionsForTrack(track)._1.isEmpty)
 
   /** Creates the status of station from current status applying the set of busy tracks */
   def apply(busyTracks: Set[Track]): StationStatus =

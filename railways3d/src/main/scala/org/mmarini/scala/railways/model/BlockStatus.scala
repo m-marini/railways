@@ -21,7 +21,13 @@ trait BlockStatus {
    * Creates a new block status applying a set of busy track.
    * The new status has to reflect the properties of blocked junctions on the given busy tracks
    */
-  def apply(busyTracks: Set[Track]): BlockStatus = ???
+  def apply(busyTracks: Set[Track]): BlockStatus = ??? // TODO
+
+  /** Returns the start junction containing a track */
+  def junctionsForTrack(track: Track): (Option[Int], Option[Int]) = ??? // TODO
+
+  /** Returns the track list for a junction */
+  def tracksForJunction(junction: Int): IndexedSeq[Track] = ??? // TODO
 }
 
 /** A [[BlockStatus]] of an entry [[Block]] */
