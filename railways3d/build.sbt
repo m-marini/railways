@@ -40,6 +40,9 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % Test
 
 libraryDependencies += "org.scalamock" %% "scalamock-core" % "3.1.2" % Test
 
+libraryDependencies += "org.mockito" % "mockito-core" % "1.9.5"
+
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.11.6" % Test
+
 
 lazy val root = project in file(".")
