@@ -3,7 +3,9 @@
  */
 package org.mmarini.scala.railways
 
+import scala.collection.JavaConversions._
 import scala.util.Try
+
 import org.mmarini.scala.railways.model.Block
 import org.mmarini.scala.railways.model.BlockStatus
 import org.mmarini.scala.railways.model.BlockTemplate
@@ -11,12 +13,15 @@ import org.mmarini.scala.railways.model.Entry
 import org.mmarini.scala.railways.model.EntryStatus
 import org.mmarini.scala.railways.model.Exit
 import org.mmarini.scala.railways.model.ExitStatus
-import org.mmarini.scala.railways.model.GameStatus
-import org.mmarini.scala.railways.model.LeftHandSwitch
-import org.mmarini.scala.railways.model.Platform
+import org.mmarini.scala.railways.model.LeftHandSwitchTemplate
+import org.mmarini.scala.railways.model.PlatformTemplate
 import org.mmarini.scala.railways.model.PlatformStatus
 import org.mmarini.scala.railways.model.RightHandSwitch
+import org.mmarini.scala.railways.model.SegmentStatus
+import org.mmarini.scala.railways.model.SegmentTemplate
+import org.mmarini.scala.railways.model.StationStatus
 import org.mmarini.scala.railways.model.SwitchStatus
+
 import com.jme3.asset.AssetManager
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
@@ -24,10 +29,6 @@ import com.jme3.scene.Geometry
 import com.jme3.scene.Node
 import com.jme3.scene.Spatial
 import com.typesafe.scalalogging.LazyLogging
-import scala.collection.JavaConversions._
-import org.mmarini.scala.railways.model.StationStatus
-import org.mmarini.scala.railways.model.Segment
-import org.mmarini.scala.railways.model.SegmentStatus
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -64,13 +65,13 @@ class StationRenderer(
     Exit -> Set(
       SemRedModel,
       SemGreenModel),
-    Segment -> Set(
+    SegmentTemplate -> Set(
       RedPlatModel,
       GreenPlatModel),
-    Platform -> Set(
+    PlatformTemplate -> Set(
       RedPlatModel,
       GreenPlatModel),
-    LeftHandSwitch -> Set(
+    LeftHandSwitchTemplate -> Set(
       SwitchLeftStraightRedModel,
       SwitchLeftStraightGreenModel,
       SwitchLeftDivRedModel,
@@ -163,10 +164,10 @@ class StationRenderer(
     case s: SegmentStatus if (s.free) => GreenPlatModel
     case s: SegmentStatus => RedPlatModel
 
-    case s: SwitchStatus if (s.block.template == LeftHandSwitch && s.diverging && s.free) => SwitchLeftDivGreenModel
-    case s: SwitchStatus if (s.block.template == LeftHandSwitch && s.diverging && !s.free) => SwitchLeftDivRedModel
-    case s: SwitchStatus if (s.block.template == LeftHandSwitch && !s.diverging && s.free) => SwitchLeftStraightGreenModel
-    case s: SwitchStatus if (s.block.template == LeftHandSwitch && !s.diverging && !s.free) => SwitchLeftStraightRedModel
+    case s: SwitchStatus if (s.block.template == LeftHandSwitchTemplate && s.diverging && s.free) => SwitchLeftDivGreenModel
+    case s: SwitchStatus if (s.block.template == LeftHandSwitchTemplate && s.diverging && !s.free) => SwitchLeftDivRedModel
+    case s: SwitchStatus if (s.block.template == LeftHandSwitchTemplate && !s.diverging && s.free) => SwitchLeftStraightGreenModel
+    case s: SwitchStatus if (s.block.template == LeftHandSwitchTemplate && !s.diverging && !s.free) => SwitchLeftStraightRedModel
     case s: SwitchStatus if (s.diverging && s.free) => SwitchRightDivGreenModel
     case s: SwitchStatus if (s.diverging && !s.free) => SwitchRightDivRedModel
     case s: SwitchStatus if (s.free) => SwitchRightStraightGreenModel

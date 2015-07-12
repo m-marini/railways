@@ -16,7 +16,4 @@ trait Track {
 
   /** Returns the point of this track at a give distance from the begin */
   def locationAt(distance: Float): Option[Vector2f]
-
-  /** Returns the reverse track of this track */
-  def reverse: Track
 }

@@ -156,9 +156,9 @@ object GameStatus {
   private def initialStatus(block: Block): BlockStatus = block.template match {
     case Entry => EntryStatus(block)
     case Exit => BlockStatus.exit(block)
-    case Platform => BlockStatus.platform(block)
-    case Segment => BlockStatus.segment(block)
-    case LeftHandSwitch => BlockStatus.switch(block)
+    case PlatformTemplate => BlockStatus.platform(block)
+    case SegmentTemplate => BlockStatus.segment(block)
+    case LeftHandSwitchTemplate => BlockStatus.switch(block)
     case RightHandSwitch => BlockStatus.switch(block)
   }
 }

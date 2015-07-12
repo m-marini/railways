@@ -13,7 +13,6 @@ import com.jme3.math.Vector3f
  *
  */
 case class PlatformTrack(begin: Vector2f, end: Vector2f) extends LinearTrack {
-
-  /** Returns the reverse track of this */
-  override def reverse :Track = new PlatformTrack(end, begin)
+  /** Return the backward track of this track */
+  def backward: PlatformTrack = PlatformTrack(end, begin)
 }

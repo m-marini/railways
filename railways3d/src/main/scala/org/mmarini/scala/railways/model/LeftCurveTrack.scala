@@ -15,11 +15,11 @@ import scala.math.cos
  *
  */
 case class LeftCurveTrack(center: Vector2f, radius: Float, begin: Float, length: Float)
-  extends CurveTrack(center, radius, begin, length) {
+    extends CurveTrack(center, radius, begin, length) {
 
   /** Computes the angle <= 0 from the begin at a given distance */
   def angle(distance: Float): Float = -distance / radius
 
-  /** Returns the reverse track of this */
-  override lazy val reverse = RightCurveTrack(center, radius, begin + angle(length), length)
+  /** Returns the backward track of this */
+  def backward: RightCurveTrack = RightCurveTrack(center, radius, begin + angle(length), length)
 }

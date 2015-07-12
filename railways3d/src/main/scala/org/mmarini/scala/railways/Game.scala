@@ -12,7 +12,7 @@ import org.mmarini.scala.railways.model.Exit
 import org.mmarini.scala.railways.model.ExitStatus
 import org.mmarini.scala.railways.model.GameParameters
 import org.mmarini.scala.railways.model.GameStatus
-import org.mmarini.scala.railways.model.Platform
+import org.mmarini.scala.railways.model.PlatformTemplate
 import org.mmarini.scala.railways.model.PlatformStatus
 import com.jme3.light.AmbientLight
 import com.jme3.light.DirectionalLight

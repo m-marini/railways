@@ -8,6 +8,10 @@ import com.jme3.math.Vector2f
 
 /** The exiting trains go out this BlockTemplate */
 case object Exit extends BlockTemplate {
-  /** Returns 1 */
-  override val junctionCount = 1;
+
+  /** Returns track group for the only configuration */
+  override def trackGroups(config: Int): Set[Track] = Set.empty
+
+  /** Returns junction routes */
+  def junctionRoute(config: Int)(junction: Int): Option[(Int, IndexedSeq[Track])] = None
 }

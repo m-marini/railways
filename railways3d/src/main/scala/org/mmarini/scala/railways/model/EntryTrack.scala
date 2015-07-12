@@ -18,7 +18,4 @@ case object EntryTrack extends Track {
 
   /** */
   override def locationAt(distance: Float): Option[Vector2f] = None
-
-  /** */
-  override def reverse: Track = this
 }

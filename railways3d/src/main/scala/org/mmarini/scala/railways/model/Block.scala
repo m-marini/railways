@@ -10,7 +10,7 @@ import com.jme3.math.Vector3f
 
 /**
  * A block of station with geometry
- * This block creates the geometry to be rendered and the routeing depending of state and junctions
+ * This block creates the geometry to be rendered and the routing depending of state and junctions
  *
  * id the block identifier
  * template the block template
@@ -18,6 +18,10 @@ import com.jme3.math.Vector3f
  * orientation compass rotation angle
  */
 case class Block(id: String, template: BlockTemplate, x: Float, y: Float, orientation: Float) {
+  /**  */
+  def trackGroupFor(track: Track, status: Any): Set[Track] = {
+    ???
+  }
 }
 
 /** Factory for [[Block]] */
@@ -30,14 +34,15 @@ object Block {
   def exit(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, Exit, x, y, orientation)
 
   /** Returns a platform Block */
-  def platform(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, Platform, x, y, orientation)
+  def platform(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, PlatformTemplate, x, y, orientation)
 
   /** Returns a platform Block */
-  def segment(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, Segment, x, y, orientation)
+  def segment(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, SegmentTemplate, x, y, orientation)
 
   /** Returns a platform Block */
-  def leftHandSwitch(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, LeftHandSwitch, x, y, orientation)
+  def leftHandSwitch(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, LeftHandSwitchTemplate, x, y, orientation)
 
   /** */
   def rightHandSwitch(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, RightHandSwitch, x, y, orientation)
+
 }
