@@ -47,10 +47,12 @@ case class GameStatus(
   /** Generates the next status simulating a time elapsing */
   def tick(time: Float): GameStatus = {
     // Generates status changes for each train e returns the final status
-    val newStatus = trains.foldLeft(this)((status, train) => {
+    val newStatus = trains.foldLeft(this)((status, train) =>
       // Processes single train
-      train.tick(time, status)
-    })
+      train.tick(time, status) match {
+        case Some(train) => status.putTrain(train)
+        case _ => status.removeTrain(train)
+      })
 
     // TODO generare nuovi treni 
     val newTrainStatus = newStatus
@@ -62,7 +64,7 @@ case class GameStatus(
   def removeTrain(train: Train): GameStatus = setTrains(trains - train)
 
   /** Put a new train status */
-  def putTrain(train: Train): GameStatus = {
+  private def putTrain(train: Train): GameStatus = {
     val otherTrains = trains.filterNot(_.id == train.id)
     val tempTrainSet = otherTrains + train
 

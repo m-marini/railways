@@ -32,24 +32,3 @@ abstract class CurveTrack(center: Vector2f, radius: Float, begin: Float, length:
   def angle(distance: Float): Float
 
 }
-/** Describes a right curve */
-case class RightCurveTrack(center: Vector2f, radius: Float, begin: Float, length: Float)
-  extends CurveTrack(center, radius, begin, length) {
-
-  /** Computes the angle >= 0 from the begin at a given distance */
-  def angle(distance: Float): Float = distance / radius
-
-  /** Returns the reverse track of this */
-  override val reverse = new LeftCurveTrack(center, radius, begin + angle(length), length)
-}
-
-/** Describes a leftcurve */
-case class LeftCurveTrack(center: Vector2f, radius: Float, begin: Float, length: Float)
-  extends CurveTrack(center, radius, begin, length) {
-
-  /** Computes the angle <= 0 from the begin at a given distance */
-  def angle(distance: Float): Float = -distance / radius
-
-  /** Returns the reverse track of this */
-  override lazy val reverse = RightCurveTrack(center, radius, begin + angle(length), length)
-}

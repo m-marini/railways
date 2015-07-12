@@ -29,25 +29,3 @@ trait LinearTrack extends Track {
       None
     }
 }
-
-case class SegmentTrack(begin: Vector2f, end: Vector2f) extends LinearTrack {
-  override def reverse: Track = new SegmentTrack(end, begin)
-}
-
-/** */
-case class PlatformTrack(begin: Vector2f, end: Vector2f) extends LinearTrack {
-
-  /** Returns the reverse track of this */
-  override def reverse :Track = new PlatformTrack(end, begin)
-}
-
-case object EntryTrack extends Track {
-  /** */
-  override val length = Float.MaxValue
-
-  /** */
-  override def locationAt(distance: Float): Option[Vector2f] = None
-
-  /** */
-  override def reverse: Track = this
-}
