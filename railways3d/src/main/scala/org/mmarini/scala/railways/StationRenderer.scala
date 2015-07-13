@@ -3,25 +3,17 @@
  */
 package org.mmarini.scala.railways
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConversions.asScalaBuffer
 import scala.util.Try
-
 import org.mmarini.scala.railways.model.Block
 import org.mmarini.scala.railways.model.BlockStatus
-import org.mmarini.scala.railways.model.BlockTemplate
-import org.mmarini.scala.railways.model.Entry
 import org.mmarini.scala.railways.model.EntryStatus
-import org.mmarini.scala.railways.model.Exit
 import org.mmarini.scala.railways.model.ExitStatus
-import org.mmarini.scala.railways.model.LeftHandSwitchTemplate
-import org.mmarini.scala.railways.model.PlatformTemplate
+import org.mmarini.scala.railways.model.LeftHandSwitchBlock
 import org.mmarini.scala.railways.model.PlatformStatus
-import org.mmarini.scala.railways.model.RightHandSwitch
 import org.mmarini.scala.railways.model.SegmentStatus
-import org.mmarini.scala.railways.model.SegmentTemplate
 import org.mmarini.scala.railways.model.StationStatus
 import org.mmarini.scala.railways.model.SwitchStatus
-
 import com.jme3.asset.AssetManager
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
@@ -29,6 +21,11 @@ import com.jme3.scene.Geometry
 import com.jme3.scene.Node
 import com.jme3.scene.Spatial
 import com.typesafe.scalalogging.LazyLogging
+import org.mmarini.scala.railways.model.EntryBlock
+import org.mmarini.scala.railways.model.ExitBlock
+import org.mmarini.scala.railways.model.PlatformBlock
+import org.mmarini.scala.railways.model.SegmentBlock
+import org.mmarini.scala.railways.model.RightHandSwitchBlock
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -39,9 +36,9 @@ import com.typesafe.scalalogging.LazyLogging
  * This Game constructor initializes the game status
  */
 class StationRenderer(
-  blocks: Set[Block],
-  assetManager: AssetManager,
-  rootNode: Node) extends LazyLogging {
+    blocks: Set[Block],
+    assetManager: AssetManager,
+    rootNode: Node) extends LazyLogging {
 
   private val SemRedModel = "Textures/blocks/sem-red.blend"
   private val SemGreenModel = "Textures/blocks/sem-green.blend"
@@ -59,28 +56,29 @@ class StationRenderer(
   private val SwitchRightDivGreenModel = "Textures/blocks/swi-right-div-green.blend"
   private val SwitchRightDivRedModel = "Textures/blocks/swi-right-div-red.blend"
 
-  // Creates all the spatial names of a block template
-  private val StatusKeys: Map[BlockTemplate, Set[String]] = Map(
-    Entry -> Set(SemRedModel),
-    Exit -> Set(
+  private def resourcesNames(block: Block): Set[String] = block match {
+    case _: EntryBlock => Set(SemRedModel)
+    case _: ExitBlock => Set(
       SemRedModel,
-      SemGreenModel),
-    SegmentTemplate -> Set(
+      SemGreenModel)
+    case _: SegmentBlock => Set(
       RedPlatModel,
-      GreenPlatModel),
-    PlatformTemplate -> Set(
+      GreenPlatModel)
+    case _: PlatformBlock => Set(
       RedPlatModel,
-      GreenPlatModel),
-    LeftHandSwitchTemplate -> Set(
+      GreenPlatModel)
+    case _: LeftHandSwitchBlock => Set(
       SwitchLeftStraightRedModel,
       SwitchLeftStraightGreenModel,
       SwitchLeftDivRedModel,
-      SwitchLeftDivGreenModel),
-    RightHandSwitch -> Set(
+      SwitchLeftDivGreenModel)
+    case _: RightHandSwitchBlock => Set(
       SwitchRightStraightGreenModel,
       SwitchRightDivGreenModel,
       SwitchRightStraightRedModel,
-      SwitchRightDivRedModel))
+      SwitchRightDivRedModel)
+    case _ => Set()
+  }
 
   // Creates cache
   val cache = loadBlockModel.withDefaultValue(Set())
@@ -92,11 +90,11 @@ class StationRenderer(
       block <- blocks
     } yield {
       val spatialTrys =
-        for { statKey <- StatusKeys(block.template) } // for each status of block load spatials
+        for { statKey <- resourcesNames(block) } // for each status of block load spatials
           yield Try {
           val spat = assetManager.loadModel(statKey).clone
-          spat.setLocalRotation(new Quaternion().fromAngleAxis(block.orientation, OrientationAxis))
-          spat.setLocalTranslation(new Vector3f(-block.x, 0f, block.y))
+          spat.setLocalRotation(new Quaternion().fromAngleAxis(block.trans.orientation, OrientationAxis))
+          spat.setLocalTranslation(new Vector3f(-block.trans.translate.getX, 0f, block.trans.translate.getY))
           (statKey, spat)
         }
       // Dump loading errors
@@ -164,10 +162,10 @@ class StationRenderer(
     case s: SegmentStatus if (s.free) => GreenPlatModel
     case s: SegmentStatus => RedPlatModel
 
-    case s: SwitchStatus if (s.block.template == LeftHandSwitchTemplate && s.diverging && s.free) => SwitchLeftDivGreenModel
-    case s: SwitchStatus if (s.block.template == LeftHandSwitchTemplate && s.diverging && !s.free) => SwitchLeftDivRedModel
-    case s: SwitchStatus if (s.block.template == LeftHandSwitchTemplate && !s.diverging && s.free) => SwitchLeftStraightGreenModel
-    case s: SwitchStatus if (s.block.template == LeftHandSwitchTemplate && !s.diverging && !s.free) => SwitchLeftStraightRedModel
+    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && s.diverging && s.free) => SwitchLeftDivGreenModel
+    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && s.diverging && !s.free) => SwitchLeftDivRedModel
+    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && !s.diverging && s.free) => SwitchLeftStraightGreenModel
+    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && !s.diverging && !s.free) => SwitchLeftStraightRedModel
     case s: SwitchStatus if (s.diverging && s.free) => SwitchRightDivGreenModel
     case s: SwitchStatus if (s.diverging && !s.free) => SwitchRightDivRedModel
     case s: SwitchStatus if (s.free) => SwitchRightStraightGreenModel

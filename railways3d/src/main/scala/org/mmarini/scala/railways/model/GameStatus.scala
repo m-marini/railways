@@ -153,12 +153,12 @@ object GameStatus {
   }
 
   /** Returns the initial state of Block */
-  private def initialStatus(block: Block): BlockStatus = block.template match {
-    case Entry => EntryStatus(block)
-    case Exit => BlockStatus.exit(block)
-    case PlatformTemplate => BlockStatus.platform(block)
-    case SegmentTemplate => BlockStatus.segment(block)
-    case LeftHandSwitchTemplate => BlockStatus.switch(block)
-    case RightHandSwitch => BlockStatus.switch(block)
+  private def initialStatus(block: Block): BlockStatus = block match {
+    case x: EntryBlock => EntryStatus(x)
+    case x: ExitBlock => BlockStatus.exit(x)
+    case x: PlatformBlock => BlockStatus.platform(x)
+    case x: SegmentBlock => BlockStatus.segment(x)
+    case x: LeftHandSwitchBlock => BlockStatus.switch(x)
+    case x: RightHandSwitchBlock => BlockStatus.switch(x)
   }
 }

@@ -32,15 +32,15 @@ trait BlockStatus {
 
 object BlockStatus {
   /** Creates the initial exit block status */
-  def exit(block: Block): ExitStatus = ExitStatus(block, false, false)
+  def exit(block: ExitBlock): ExitStatus = ExitStatus(block, false, false)
 
   /** Creates the initial platform block status */
-  def platform(block: Block): PlatformStatus = PlatformStatus(block, false, false)
+  def platform(block: PlatformBlock): PlatformStatus = PlatformStatus(block, false, false)
 
   /** Creates the initial platform block status */
-  def segment(block: Block): SegmentStatus = SegmentStatus(block, false, false)
+  def segment(block: SegmentBlock): SegmentStatus = SegmentStatus(block, false, false)
 
   /** Creates the initial platform block status */
-  def switch(block: Block): SwitchStatus = SwitchStatus(block, false, false, false)
+  def switch(block: SwitchBlock): SwitchStatus = SwitchStatus(block, false, false, false)
 }
 

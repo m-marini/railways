@@ -1,48 +1,22 @@
-/**
- *
- */
 package org.mmarini.scala.railways.model
 
-import com.jme3.math.Transform
-import com.jme3.math.Vector2f
-import com.jme3.math.Quaternion
-import com.jme3.math.Vector3f
-
 /**
- * A block of station with geometry
- * This block creates the geometry to be rendered and the routing depending of state and junctions
- *
- * id the block identifier
- * template the block template
- * x,y the translation vector of block
- * orientation compass rotation angle
+ * @author us00852
  */
-case class Block(id: String, template: BlockTemplate, x: Float, y: Float, orientation: Float) {
-  /**  */
-  def trackGroupFor(track: Track, status: Any): Set[Track] = {
-    ???
-  }
-}
+trait Block {
+  /** Returns the identifier of block */
+  def id: String
 
-/** Factory for [[Block]] */
-object Block {
+  /** Returns the transformation */
+  def trans: Transform2d
 
-  /** Returns an entry Block */
-  def entry(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, Entry, x, y, orientation)
+  /** Returns the current tracks group for a given track */
+  def trackGroupFor: Int => Track => Set[Track]
 
-  /** Returns an exit Block */
-  def exit(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, Exit, x, y, orientation)
+  /** Returns the start junction containing a track */
+  def junctionsForTrack: Int => Track => (Option[Int], Option[Int])
 
-  /** Returns a platform Block */
-  def platform(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, PlatformTemplate, x, y, orientation)
-
-  /** Returns a platform Block */
-  def segment(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, SegmentTemplate, x, y, orientation)
-
-  /** Returns a platform Block */
-  def leftHandSwitch(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, LeftHandSwitchTemplate, x, y, orientation)
-
-  /** */
-  def rightHandSwitch(id: String, x: Float, y: Float, orientation: Float): Block = Block(id, RightHandSwitch, x, y, orientation)
+  /** Returns the track list for a junction */
+  def tracksForJunction: Int => Int => (Option[Int], IndexedSeq[Track])
 
 }

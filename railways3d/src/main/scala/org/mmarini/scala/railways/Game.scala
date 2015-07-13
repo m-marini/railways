@@ -3,49 +3,15 @@
  */
 package org.mmarini.scala.railways
 
-import scala.util.Try
-import org.mmarini.scala.railways.model.BlockStatus
-import org.mmarini.scala.railways.model.BlockTemplate
-import org.mmarini.scala.railways.model.Entry
-import org.mmarini.scala.railways.model.EntryStatus
-import org.mmarini.scala.railways.model.Exit
-import org.mmarini.scala.railways.model.ExitStatus
 import org.mmarini.scala.railways.model.GameParameters
 import org.mmarini.scala.railways.model.GameStatus
-import org.mmarini.scala.railways.model.PlatformTemplate
-import org.mmarini.scala.railways.model.PlatformStatus
+
 import com.jme3.light.AmbientLight
 import com.jme3.light.DirectionalLight
-import com.jme3.material.Material
 import com.jme3.math.ColorRGBA
-import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
-import com.jme3.terrain.geomipmap.TerrainLodControl
-import com.jme3.terrain.geomipmap.TerrainQuad
-import com.jme3.terrain.heightmap.ImageBasedHeightMap
-import com.jme3.texture.Texture.WrapMode
 import com.jme3.util.SkyFactory
 import com.typesafe.scalalogging.LazyLogging
-import rx.lang.scala.Observer
-import com.jme3.collision.CollisionResult
-import rx.lang.scala.Subscription
-import com.jme3.input.controls.MouseAxisTrigger
-import com.jme3.input.controls.MouseButtonTrigger
-import com.jme3.input.MouseInput
-import com.jme3.cinematic.events.MotionEvent
-import com.jme3.animation.LoopMode
-import com.jme3.cinematic.MotionPath
-import com.jme3.scene.CameraNode
-import com.jme3.scene.control.CameraControl.ControlDirection
-import com.jme3.input.ChaseCamera
-import scala.util.Random
-import scala.collection.immutable.Vector
-import rx.lang.scala.Observable
-import com.jme3.scene.Spatial
-import com.jme3.scene.control.CameraControl
-import com.jme3.input.controls.KeyTrigger
-import com.jme3.input.KeyInput
-import com.jme3.scene.Geometry
 
 /**
  * Handles the events of simulation coming from user or clock ticks

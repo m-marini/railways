@@ -8,4 +8,4 @@ package org.mmarini.scala.railways.model
  */
 
 /** A [[BlockStatus]] of an entry [[Block]] */
-case class EntryStatus(block: Block) extends BlockStatus
+case class EntryStatus(block: EntryBlock) extends BlockStatus

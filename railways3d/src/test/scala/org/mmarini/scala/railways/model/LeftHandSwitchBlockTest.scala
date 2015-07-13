@@ -16,76 +16,68 @@ import org.scalacheck.Arbitrary
 import scala.collection.immutable.Vector
 
 /** Test */
-class LefHandSwitchTemplateTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
-  val seg = LeftHandSwitchTemplate
+class LeftHandSwitchBlockTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
+  val block = LeftHandSwitchBlock("", 0, 0, 0)
 
   val entryPoint = Vector2f.ZERO
   val dirPoint = new Vector2f(0, SegmentLength)
   val midPoint = new Vector2f(-TrackGap / 2, SegmentLength / 2)
   val divPoint = new Vector2f(-TrackGap, SegmentLength)
 
-  property("trackGroupFor of LefHandSwitchTemplate for direct route should return direct track group") {
-    val tg = seg.trackGroups(0);
+  property("trackGroupFor of LeftHandSwitchBlock for direct route should return direct track group") {
+    val tg = block.trackGroups(0)
     tg should have size (1)
-    //    tg should contain(dirFor)
-    //    tg should contain(dirBack)
+    tg.head should have size (2)
   }
 
-  property("junctionRoute of LefHandSwitchTemplate for direct route from 0 junction should return forward direct track") {
-    val jr0 = seg.junctionRoute(0)(0)
-    jr0 should not be empty
-    jr0 match {
-      case Some((1, list)) =>
+  property("junctionRoute of LeftHandSwitchBlock for direct route from 0 junction should return forward direct track") {
+    block.tracksForJunction(0)(0) match {
+      case (Some(1), list) =>
         list should have size (1)
         checkForSegment(list(0), entryPoint, dirPoint)
-      case _ => fail("not match")
+      case x => fail(s"$x not match")
     }
   }
 
-  property("junctionRoute of LefHandSwitchTemplate for direct route from 1 junction should return backward direct track") {
-    val jr0 = seg.junctionRoute(0)(1)
-    jr0 should not be empty
-    jr0 match {
-      case Some((0, list)) =>
+  property("junctionRoute of LeftHandSwitchBlock for direct route from 1 junction should return backward direct track") {
+    block.tracksForJunction(0)(1) match {
+      case (Some(0), list) =>
         list should have size (1)
         checkForSegment(list(0), dirPoint, entryPoint)
-      case _ => fail("not match")
+      case x => fail(s"$x not match")
     }
   }
 
-  property("trackGroupFor of diverging LefHandSwitchTemple should return diverging track group") {
-    val tg = seg.trackGroups(1);
+  property("trackGroupFor of diverging LeftHandSwitchBlock should return diverging track group") {
+    val tg = block.trackGroups(1)
     tg should have size (1)
-    //    tg should contain(dirFor)
-    //    tg should contain(dirBack)
+    tg.head should have size (4)
   }
 
-  property("junctionRoute of diverging LefHandSwitchTemplate from 0 junction should return forward diverging track") {
-    val jr0 = seg.junctionRoute(1)(0)
-    jr0 should not be empty
-    jr0 match {
-      case Some((2, list)) =>
+  property("junctionRoute of diverging LeftHandSwitchBlock from 0 junction should return forward diverging track") {
+    block.tracksForJunction(1)(0) match {
+      case (Some(2), list) =>
         list should have size (2)
         checkForLeft(list(0), entryPoint, midPoint)
         checkForRight(list(1), midPoint, divPoint)
-      case _ => fail("not match")
+      case x => fail(s"$x not match")
     }
   }
 
-  property("junctionRoute of diverging LefHandSwitchTemplate from 1 junction should return empty tracks") {
-    val jr0 = seg.junctionRoute(1)(1)
-    jr0 shouldBe empty
+  property("junctionRoute of diverging LeftHandSwitchBlock from 1 junction should return empty tracks") {
+    block.tracksForJunction(1)(1) match {
+      case (None, IndexedSeq()) =>
+      case x => fail(s"$x not match")
+    }
   }
 
-  property("junctionRoute of diverging LefHandSwitchTemplate from 2 junction should return backward diverging track") {
-    val jr0 = seg.junctionRoute(1)(2)
-    jr0 should not be empty
-    jr0 match {
-      case Some((0, list)) =>
+  property("junctionRoute of diverging LeftHandSwitchBlock from 2 junction should return backward diverging track") {
+    block.tracksForJunction(1)(2) match {
+      case (Some(0), list) =>
         list should have size (2)
         checkForLeft(list(0), divPoint, midPoint)
         checkForRight(list(1), midPoint, entryPoint)
-      case _ => fail("not match")
+      case x => fail(s"$x not match")
     }
   }
 

@@ -24,19 +24,19 @@ trait Topology {
   def viewpoints: Seq[CameraViewpoint]
 
   /** Returns the entries */
-  lazy val entries: Set[Block] = blocks.filter(_.template == Entry)
+  lazy val entries: Set[Block] = blocks.filter(_.isInstanceOf[EntryBlock])
 
   /** Returns the exit */
-  lazy val exits: Set[Block] = blocks.filter(_.template == Exit)
+  lazy val exits: Set[Block] = blocks.filter(_.isInstanceOf[ExitBlock])
 }
 
 case object TestStation extends Topology {
 
   //  private val entry = Block.entry("entry", 0f, 0f, 0f)
   //  private val exit = Block.exit("exit", 0f, 385f, StraightAngle)
-  private val platform1 = Block.platform("platform1", +SegmentLength * 11f / 2, 0f, -RightAngle)
-  private val platform2 = Block.platform("platform2", +SegmentLength * 11f / 2, 4f, -RightAngle)
-  private val platform3 = Block.platform("platform3", +SegmentLength * 11f / 2, -4f, -RightAngle)
+  private val platform1 = PlatformBlock("platform1", +SegmentLength * 11f / 2, 0f, -RightAngle)
+  private val platform2 = PlatformBlock("platform2", +SegmentLength * 11f / 2, 4f, -RightAngle)
+  private val platform3 = PlatformBlock("platform3", +SegmentLength * 11f / 2, -4f, -RightAngle)
 
   val junctions = Set[Junction](
     (Endpoint(platform1, 0), Endpoint(platform2, 0)),

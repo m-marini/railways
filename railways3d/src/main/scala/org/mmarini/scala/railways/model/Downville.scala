@@ -11,17 +11,17 @@ import com.jme3.math.Vector3f
  */
 case object Downville extends Topology {
 
-  private val platform1 = Block.platform("platform1", -SegmentLength * 5.5f, 0, RightAngle)
-  private val platform2 = Block.platform("platform2", -SegmentLength * 5.5f, TrackGap, RightAngle)
+  private val platform1 = PlatformBlock("platform1", -SegmentLength * 5.5f, 0, RightAngle)
+  private val platform2 = PlatformBlock("platform2", -SegmentLength * 5.5f, TrackGap, RightAngle)
 
-  private val entryDev = Block.leftHandSwitch("entry-switch", -SegmentLength * 6.5f, 0, RightAngle)
-  private val exitDev = Block.rightHandSwitch("exit-switch", SegmentLength * 6.5f, 0, -RightAngle)
+  private val entryDev = LeftHandSwitchBlock("entry-switch", -SegmentLength * 6.5f, 0, RightAngle)
+  private val exitDev = RightHandSwitchBlock("exit-switch", SegmentLength * 6.5f, 0, -RightAngle)
 
-  private val entry = Block.entry("entry", -SegmentLength * 17.5f, 0, -RightAngle)
-  private val exit = Block.exit("exit", SegmentLength * 17.5f, 0, RightAngle)
+  private val entry = EntryBlock("entry", -SegmentLength * 17.5f, 0, -RightAngle)
+  private val exit = ExitBlock("exit", SegmentLength * 17.5f, 0, RightAngle)
 
-  private val entryTrack = Block.segment("entry-track", -SegmentLength * 17.5f, 0, RightAngle)
-  private val exitTrack = Block.segment("exit-track", SegmentLength * 17.5f, 0, -RightAngle)
+  private val entryTrack = SegmentBlock("entry-track", -SegmentLength * 17.5f, 0, RightAngle)
+  private val exitTrack = SegmentBlock("exit-track", SegmentLength * 17.5f, 0, -RightAngle)
 
   val junctions = Set(
     (Endpoint(platform1, 0), Endpoint(platform2, 0)),
