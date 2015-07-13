@@ -10,6 +10,8 @@ package org.mmarini.scala.railways
 
 import scala.math.Pi
 import com.jme3.math.Vector2f
+import org.mmarini.scala.railways.model.tracks.Track
+import org.mmarini.scala.railways.model.blocks.Block
 
 /** */
 package object model {

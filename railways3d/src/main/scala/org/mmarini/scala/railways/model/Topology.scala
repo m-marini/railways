@@ -5,6 +5,10 @@ package org.mmarini.scala.railways.model
 
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
+import org.mmarini.scala.railways.model.blocks.ExitBlock
+import org.mmarini.scala.railways.model.blocks.Block
+import org.mmarini.scala.railways.model.blocks.EntryBlock
+import org.mmarini.scala.railways.model.blocks.PlatformBlock
 
 /**
  * A set junctions and related blocks that sets up a station

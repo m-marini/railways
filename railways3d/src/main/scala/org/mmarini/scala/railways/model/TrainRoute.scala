@@ -4,6 +4,7 @@
 package org.mmarini.scala.railways.model
 
 import com.jme3.math.Vector2f
+import org.mmarini.scala.railways.model.tracks.Track
 
 /**
  * Contains the sequence of Block the train occupies and will pass along the direction.

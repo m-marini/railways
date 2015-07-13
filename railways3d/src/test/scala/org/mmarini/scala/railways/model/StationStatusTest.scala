@@ -12,6 +12,8 @@ import org.scalatest.prop.PropertyChecks
 import com.jme3.math.Vector2f
 import org.scalacheck.Gen
 import ModelGen._
+import org.mmarini.scala.railways.model.tracks.Track
+import org.mmarini.scala.railways.model.blocks.BlockStatus
 
 /** Test */
 class StationStatusTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {

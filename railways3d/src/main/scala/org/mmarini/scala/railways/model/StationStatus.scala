@@ -3,6 +3,10 @@
  */
 package org.mmarini.scala.railways.model
 
+import org.mmarini.scala.railways.model.tracks.Track
+import org.mmarini.scala.railways.model.blocks.Block
+import org.mmarini.scala.railways.model.blocks.BlockStatus
+
 /**
  * @author us00852
  *

@@ -5,15 +5,6 @@ package org.mmarini.scala.railways
 
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.util.Try
-import org.mmarini.scala.railways.model.Block
-import org.mmarini.scala.railways.model.BlockStatus
-import org.mmarini.scala.railways.model.EntryStatus
-import org.mmarini.scala.railways.model.ExitStatus
-import org.mmarini.scala.railways.model.LeftHandSwitchBlock
-import org.mmarini.scala.railways.model.PlatformStatus
-import org.mmarini.scala.railways.model.SegmentStatus
-import org.mmarini.scala.railways.model.StationStatus
-import org.mmarini.scala.railways.model.SwitchStatus
 import com.jme3.asset.AssetManager
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
@@ -21,11 +12,20 @@ import com.jme3.scene.Geometry
 import com.jme3.scene.Node
 import com.jme3.scene.Spatial
 import com.typesafe.scalalogging.LazyLogging
-import org.mmarini.scala.railways.model.EntryBlock
-import org.mmarini.scala.railways.model.ExitBlock
-import org.mmarini.scala.railways.model.PlatformBlock
-import org.mmarini.scala.railways.model.SegmentBlock
-import org.mmarini.scala.railways.model.RightHandSwitchBlock
+import org.mmarini.scala.railways.model.blocks.ExitStatus
+import org.mmarini.scala.railways.model.blocks.PlatformStatus
+import org.mmarini.scala.railways.model.blocks.ExitBlock
+import org.mmarini.scala.railways.model.blocks.SegmentBlock
+import org.mmarini.scala.railways.model.StationStatus
+import org.mmarini.scala.railways.model.blocks.SwitchStatus
+import org.mmarini.scala.railways.model.blocks.RightHandSwitchBlock
+import org.mmarini.scala.railways.model.blocks.SegmentStatus
+import org.mmarini.scala.railways.model.blocks.PlatformBlock
+import org.mmarini.scala.railways.model.blocks.LeftHandSwitchBlock
+import org.mmarini.scala.railways.model.blocks.EntryBlock
+import org.mmarini.scala.railways.model.blocks.BlockStatus
+import org.mmarini.scala.railways.model.blocks.Block
+import org.mmarini.scala.railways.model.blocks.EntryStatus
 
 /**
  * Handles the events of simulation coming from user or clock ticks

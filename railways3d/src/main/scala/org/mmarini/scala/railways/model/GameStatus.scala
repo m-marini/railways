@@ -6,9 +6,22 @@ package org.mmarini.scala.railways.model
 import scala.IndexedSeq
 import scala.math.exp
 import scala.util.Random
-
 import com.jme3.math.Vector2f
 import com.typesafe.scalalogging.LazyLogging
+import org.mmarini.scala.railways.model.tracks.SegmentTrack
+import org.mmarini.scala.railways.model.tracks.RightCurveTrack
+import org.mmarini.scala.railways.model.tracks.PlatformTrack
+import org.mmarini.scala.railways.model.tracks.LeftCurveTrack
+import org.mmarini.scala.railways.model.blocks.ExitBlock
+import org.mmarini.scala.railways.model.blocks.LeftHandSwitchBlock
+import org.mmarini.scala.railways.model.blocks.RightHandSwitchBlock
+import org.mmarini.scala.railways.model.blocks.SegmentBlock
+import org.mmarini.scala.railways.model.blocks.Block
+import org.mmarini.scala.railways.model.blocks.EntryBlock
+import org.mmarini.scala.railways.model.blocks.PlatformBlock
+import org.mmarini.scala.railways.model.blocks.EntryStatus
+import org.mmarini.scala.railways.model.blocks.BlockStatus
+import org.mmarini.scala.railways.model.tracks.EntryTrack
 
 /**
  * A set of game parameter, station [[Topology]], elapsed time and set of named [[BlockStatus]]

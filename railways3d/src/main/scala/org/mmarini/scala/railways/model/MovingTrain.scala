@@ -8,6 +8,8 @@ import scala.math.min
 import scala.math.max
 import scala.math.sqrt
 import com.typesafe.scalalogging.LazyLogging
+import org.mmarini.scala.railways.model.tracks.PlatformTrack
+import org.mmarini.scala.railways.model.blocks.ExitStatus
 /** This MovingTrain computes the next state of this moving train */
 case class MovingTrain(
     id: String,
