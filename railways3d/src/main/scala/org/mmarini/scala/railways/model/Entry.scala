@@ -12,8 +12,8 @@ case object Entry extends BlockTemplate {
   private val group = Set[Track](EntryTrack)
   
   /** Returns track group for the only configuration */
-  override def trackGroups(config: Int): Set[Track] = group
+  override def trackGroups(config: Int): Set[Set[Track]] = ???
 
   /** Returns junction routes */
-  def junctionRoute(config: Int)(junction: Int): Option[(Int, IndexedSeq[Track])] = None
+  override def junctionRoute(config: Int)(junction: Int): Option[(Int, IndexedSeq[Track])] = None
 }

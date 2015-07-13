@@ -15,7 +15,7 @@ import com.jme3.math.Vector2f
 trait BlockTemplate {
 
   /** Returns track group for the only configuration */
-  def trackGroups(config: Int): Set[Track]
+  def trackGroups(config: Int): Set[Set[Track]]
 
   /** Returns junction routes */
   def junctionRoute(config: Int)(junction: Int): Option[(Int, IndexedSeq[Track])]
