@@ -79,9 +79,17 @@ case class GameStatus(
   }
 
   /** Removes a train from the train list */
-  def removeTrain(train: Train): GameStatus = setTrains(trains - train)
+  def removeTrain(train: Train): GameStatus = setTrains(trains.filterNot(_.id == train.id))
 
-  /** Put a new train status */
+  /**
+   * Puts a new train status.
+   * Creates the list of train without the new train
+   * Adds to it the new train
+   * Creates the set of associations between the tracks occupied by each train
+   * Extends the set of associations to the tracks of groups occupied by each train
+   * Generates the new status of station applying all the busy tracks
+   * Generates the new status of trains computing the new route for each train
+   */
   private def putTrain(train: Train): GameStatus = {
     val otherTrains = trains.filterNot(_.id == train.id)
     val tempTrainSet = otherTrains + train
@@ -91,20 +99,17 @@ case class GameStatus(
     val trainTracks = for {
       train <- tempTrainSet
       track <- train.transitTracks
-    } yield (track -> train)
+    } yield (track -> train.id)
 
     // Extract the busy track (by mutex block tracks) 
     val busyTracks = stationStatus.extractBusyTrack(trainTracks)
 
     // Update the station status with new busyTrack
-    val newStationStatus = stationStatus.apply(
-      busyTracks.map {
-        case (track, _) => track
-      })
+    val newStationStatus = stationStatus.apply(busyTracks)
 
     // Computes the new routes for all new train state
     val newTrainSet = for { train <- tempTrainSet } yield {
-      val (newRoute, newLocation) = newStationStatus.findRoute(train);
+      val (newRoute, newLocation) = newStationStatus.findRoute(train)
       train(newRoute, newLocation)
     }
 
