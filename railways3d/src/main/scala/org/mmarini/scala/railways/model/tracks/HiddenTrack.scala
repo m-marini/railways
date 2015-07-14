@@ -4,7 +4,6 @@
 package org.mmarini.scala.railways.model.tracks
 
 import com.jme3.math.Vector2f
-import org.mmarini.scala.railways.model.tracks.Track
 
 /**
  * Describes a linear part of trajectory
@@ -12,7 +11,7 @@ import org.mmarini.scala.railways.model.tracks.Track
  * @constructor creates the segment specifying the starting point and the ending point
  *
  */
-case object EntryTrack extends Track {
+case object HiddenTrack extends Track {
   /** */
   override val length = Float.MaxValue
 

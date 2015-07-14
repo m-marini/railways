@@ -10,15 +10,15 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatest.PropSpec
 import org.scalatest.prop.PropertyChecks
 import org.scalacheck.Arbitrary
-import org.mmarini.scala.railways.model.tracks.SegmentTrack
+import org.mmarini.scala.railways.model.tracks.PlatformTrack
 import org.mmarini.scala.railways.model.tracks.Track
 
 /** Test */
-class SegmentStatusTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
-  val forward = mock[SegmentTrack]
-  val backward = mock[SegmentTrack]
-  val track = mock[SegmentTrack]
-  val block = mock[SegmentBlock]
+class PlatformStatusTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
+  val forward = mock[PlatformTrack]
+  val backward = mock[PlatformTrack]
+  val track = mock[PlatformTrack]
+  val block = mock[PlatformBlock]
 
   when(block.tracksForJunction).thenReturn(
     IndexedSeq(
@@ -40,10 +40,10 @@ class SegmentStatusTest extends PropSpec with Matchers with PropertyChecks with 
       yield if (transit) Some(TrainId) else None
 
   private def create(transitTrain: Option[String], locked: Boolean) = {
-    SegmentStatus(block, transitTrain, locked)
+    PlatformStatus(block, transitTrain, locked)
   }
 
-  property("tracksForJunction 0 of SegmentStatus should return forward track") {
+  property("tracksForJunction 0 of PlatformStatus should return forward track") {
     forAll(
       (Arbitrary.arbitrary[Boolean], "locked"),
       (transitTrain, "locked")) {
@@ -57,7 +57,7 @@ class SegmentStatusTest extends PropSpec with Matchers with PropertyChecks with 
       }
   }
 
-  property("tracksForJunction 1 of SegmentStatus should return backward track") {
+  property("tracksForJunction 1 of PlatformStatus should return backward track") {
     forAll(
       (Arbitrary.arbitrary[Boolean], "locked"),
       (transitTrain, "locked")) {
@@ -71,7 +71,7 @@ class SegmentStatusTest extends PropSpec with Matchers with PropertyChecks with 
       }
   }
 
-  property("trackGroupFor of SegmentStatus for forward track should return all tracks") {
+  property("trackGroupFor of PlatformStatus for forward track should return all tracks") {
     forAll(
       (Arbitrary.arbitrary[Boolean], "locked"),
       (transitTrain, "locked")) {
@@ -86,7 +86,7 @@ class SegmentStatusTest extends PropSpec with Matchers with PropertyChecks with 
       }
   }
 
-  property("trackGroupFor of SegmentStatus for backward track should return all tracks") {
+  property("trackGroupFor of PlatformStatus for backward track should return all tracks") {
     forAll(
       (Arbitrary.arbitrary[Boolean], "locked"),
       (transitTrain, "locked")) {

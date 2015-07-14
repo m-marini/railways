@@ -15,32 +15,59 @@ import org.mmarini.scala.railways.model._
 
 /** Test */
 class PlatformTemplateTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
-  val seg = PlatformBlock("", 0, 0, 0)
+  val block = PlatformBlock("", 0, 0, 0)
 
-  property("trackGroupFor of PlatformBlock should return all tracks (forward and backward)") {
-    val tg = seg.trackGroups(0);
+  property("trackGroups of PlatformBlock should return all tracks (forward and backward)") {
+    val tg = block.trackGroups(0);
     tg should have size (1)
     tg.head should contain(SegmentTrack(Vector2f.ZERO, new Vector2f(0f, 11 * SegmentLength)))
     tg.head should contain(SegmentTrack(new Vector2f(0f, 11 * SegmentLength), Vector2f.ZERO))
   }
 
-  property("junctionRoute of PlatformBlock from 0 should return forward track") {
-    val jr0 = seg.tracksForJunction(0)(0)
-    jr0 match {
-      case (Some(1), list) =>
-        list should have size(1)
-        list should contain(SegmentTrack(Vector2f.ZERO, new Vector2f(0f, 11 * SegmentLength)))
-      case _ => fail("not match")
+  property("tracksForJunction of PlatformBlock from 0 should return forward track") {
+    val list = block.tracksForJunction(0)(0)
+    list should have size (1)
+    list should contain(SegmentTrack(Vector2f.ZERO, new Vector2f(0f, 11 * SegmentLength)))
+  }
+
+  property("tracksForJunction of PlatformBlock from 1 should return forward track") {
+    val list = block.tracksForJunction(0)(1)
+    list should have size (1)
+    list should contain(SegmentTrack(new Vector2f(0f, 11 * SegmentLength), Vector2f.ZERO))
+  }
+
+  property("junctionsForTrack forward of PlatformBlock should be 0 - 1") {
+    val track = block.tracksForJunction(0)(0)(0)
+    val x = block.junctionsForTrack(0)(track)
+    x should matchPattern {
+      case (Some(0), Some(1)) =>
     }
   }
 
-  property("junctionRoute of PlatformBlock from 1 should return forward track") {
-    val jr0 = seg.tracksForJunction(0)(1)
-    jr0 match {
-      case (Some(0), list) =>
-        list should have size(1)
-        list should contain(SegmentTrack(new Vector2f(0f, 11 * SegmentLength), Vector2f.ZERO))
-      case _ => fail("not match")
+  property("junctionsForTrack backward of PlatformBlock should be 1 - 0") {
+    val track = block.tracksForJunction(0)(1)(0)
+    val x = block.junctionsForTrack(0)(track)
+    x should matchPattern {
+      case (Some(1), Some(0)) =>
     }
   }
+
+  property("trackGroupFor forward of PlatformBlock should return all tracks") {
+    val forward = block.tracksForJunction(0)(0)(0)
+    val backward = block.tracksForJunction(0)(1)(0)
+    val x = block.trackGroupFor(0)(forward)
+    x should have size (2)
+    x should contain(forward)
+    x should contain(backward)
+  }
+
+  property("trackGroupFor backward of PlatformBlock should return all tracks") {
+    val forward = block.tracksForJunction(0)(0)(0)
+    val backward = block.tracksForJunction(0)(1)(0)
+    val x = block.trackGroupFor(0)(backward)
+    x should have size (2)
+    x should contain(forward)
+    x should contain(backward)
+  }
+
 }

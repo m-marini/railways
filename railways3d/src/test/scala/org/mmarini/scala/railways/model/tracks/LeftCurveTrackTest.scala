@@ -10,7 +10,7 @@ import com.jme3.math.Vector2f
 import org.mmarini.scala.railways.model.ModelGen
 import org.mmarini.scala.railways.model._
 
-class CurveTrackTest extends PropSpec with Matchers with PropertyChecks {
+class LeftCurveTrackTest extends PropSpec with Matchers with PropertyChecks {
 
   property("The location a left curve should be radius distant from center") {
     forAll(

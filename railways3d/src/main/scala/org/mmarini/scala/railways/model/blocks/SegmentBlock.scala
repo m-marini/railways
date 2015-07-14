@@ -13,7 +13,8 @@ case class SegmentBlock(
   id: String,
   trans: Transform2d,
   trackGroups: IndexedSeq[Set[Set[Track]]],
-  tracksForJunction: IndexedSeq[IndexedSeq[(Option[Int], IndexedSeq[Track])]]) extends Block with TrackBlock
+  routes: IndexedSeq[Set[(Option[Int], Option[Int], IndexedSeq[Track])]])
+    extends Block with TrackBlock
 
 /** Factory of [[SegmentBlock]] */
 object SegmentBlock {
@@ -25,7 +26,9 @@ object SegmentBlock {
     val backward = forward.backward
     val group = IndexedSeq(Set(Set[Track](forward, backward)))
     val routes = IndexedSeq(
-      IndexedSeq((Some(1), IndexedSeq[Track](forward)), (Some(0), IndexedSeq[Track](backward))))
+      Set(
+        (Option(0), Option(1), IndexedSeq[Track](forward)),
+        (Option(1), Option(0), IndexedSeq[Track](backward))))
     SegmentBlock(id, trans, group, routes)
   }
 }   

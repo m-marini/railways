@@ -19,6 +19,6 @@ trait Block {
   def junctionsForTrack: Int => Track => (Option[Int], Option[Int])
 
   /** Returns the track list for a junction */
-  def tracksForJunction: Int => Int => (Option[Int], IndexedSeq[Track])
+  def tracksForJunction: Int => Int =>  IndexedSeq[Track]
 
 }

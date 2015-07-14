@@ -8,12 +8,13 @@ import com.jme3.math.Vector2f
 import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model.tracks.SegmentTrack
 
-/** The arriving trains stop at this BlockTemplate to wait for passengers boarding */
+/** The arriving trains stop at this [[Block]] to wait for passengers boarding */
 case class PlatformBlock(
   id: String,
   trans: Transform2d,
   trackGroups: IndexedSeq[Set[Set[Track]]],
-  tracksForJunction: IndexedSeq[IndexedSeq[(Option[Int], IndexedSeq[Track])]]) extends Block with TrackBlock
+  routes: IndexedSeq[Set[(Option[Int], Option[Int], IndexedSeq[Track])]])
+    extends Block with TrackBlock
 
 /** Factory of [[SegmentBlock]] */
 object PlatformBlock {
@@ -25,7 +26,9 @@ object PlatformBlock {
     val backward = forward.backward
     val group = IndexedSeq(Set(Set[Track](forward, backward)))
     val routes = IndexedSeq(
-      IndexedSeq((Some(1), IndexedSeq[Track](forward)), (Some(0), IndexedSeq[Track](backward))))
+      Set(
+        (Option(0), Option(1), IndexedSeq[Track](forward)),
+        (Option(1), Option(0), IndexedSeq[Track](backward))))
     PlatformBlock(id, trans, group, routes)
   }
 }   

@@ -17,7 +17,7 @@ trait BlockStatus {
   def changeFreedom: BlockStatus = this
 
   /** Returns the current tracks group for a given track */
-  def trackGroupFor(track: Track): Set[Track] = ???
+  def trackGroupFor: Track => Set[Track]
 
   /**
    * Creates a new block status applying a set of busy track.
@@ -26,23 +26,8 @@ trait BlockStatus {
   def apply(busyTracks: Set[Track]): BlockStatus = ??? // TODO
 
   /** Returns the start junction containing a track */
-  def junctionsForTrack(track: Track): (Option[Int], Option[Int]) = ??? // TODO
+  def junctionsForTrack: Track => (Option[Int], Option[Int])
 
   /** Returns the track list for a junction */
-  def tracksForJunction(junction: Int): IndexedSeq[Track] = ??? // TODO
+  def tracksForJunction: Int => IndexedSeq[Track]
 }
-
-object BlockStatus {
-  /** Creates the initial exit block status */
-  def exit(block: ExitBlock): ExitStatus = ExitStatus(block, false, false)
-
-  /** Creates the initial platform block status */
-  def platform(block: PlatformBlock): PlatformStatus = PlatformStatus(block, false, false)
-
-  /** Creates the initial platform block status */
-  def segment(block: SegmentBlock): SegmentStatus = SegmentStatus(block, false, false)
-
-  /** Creates the initial platform block status */
-  def switch(block: SwitchBlock): SwitchStatus = SwitchStatus(block, false, false, false)
-}
-

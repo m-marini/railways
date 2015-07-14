@@ -4,7 +4,6 @@
 package org.mmarini.scala.railways.model.tracks
 
 import com.jme3.math.Vector2f
-import org.mmarini.scala.railways.model.tracks.Track
 
 /**
  * Describes a linear part of trajectory

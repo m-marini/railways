@@ -152,7 +152,7 @@ class StationRenderer(
 
   /** Returns the status key of a block */
   def statusKey(status: BlockStatus): String = status match {
-    case EntryStatus(_) => SemRedModel
+    case s: EntryStatus => SemRedModel
     case s: ExitStatus if (s.free) => SemGreenModel
     case s: ExitStatus => SemRedModel
 

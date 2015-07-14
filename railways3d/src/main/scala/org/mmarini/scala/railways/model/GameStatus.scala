@@ -21,7 +21,12 @@ import org.mmarini.scala.railways.model.blocks.EntryBlock
 import org.mmarini.scala.railways.model.blocks.PlatformBlock
 import org.mmarini.scala.railways.model.blocks.EntryStatus
 import org.mmarini.scala.railways.model.blocks.BlockStatus
-import org.mmarini.scala.railways.model.tracks.EntryTrack
+import org.mmarini.scala.railways.model.tracks.HiddenTrack
+import org.mmarini.scala.railways.model.blocks.EntryStatus
+import org.mmarini.scala.railways.model.blocks.SegmentStatus
+import org.mmarini.scala.railways.model.blocks.PlatformStatus
+import org.mmarini.scala.railways.model.blocks.SwitchStatus
+import org.mmarini.scala.railways.model.blocks.ExitStatus
 
 /**
  * A set of game parameter, station [[Topology]], elapsed time and set of named [[BlockStatus]]
@@ -156,7 +161,7 @@ object GameStatus {
     val center1 = a.add(new Vector2f(0f, CurveRadius))
     val center2 = b.add(new Vector2f(0f, -CurveRadius))
 
-    val track0 = EntryTrack
+    val track0 = HiddenTrack
     val track1 = SegmentTrack(entry, a)
     val track2 = LeftCurveTrack(center1, CurveRadius, StraightAngle, CurveLength / 2)
     val track3 = RightCurveTrack(center2, CurveRadius, -CurveAngle / 2, CurveLength / 2)
@@ -168,10 +173,10 @@ object GameStatus {
   /** Returns the initial state of Block */
   private def initialStatus(block: Block): BlockStatus = block match {
     case x: EntryBlock => EntryStatus(x)
-    case x: ExitBlock => BlockStatus.exit(x)
-    case x: PlatformBlock => BlockStatus.platform(x)
-    case x: SegmentBlock => BlockStatus.segment(x)
-    case x: LeftHandSwitchBlock => BlockStatus.switch(x)
-    case x: RightHandSwitchBlock => BlockStatus.switch(x)
+    case x: ExitBlock => ExitStatus(x)
+    case x: PlatformBlock => PlatformStatus(x)
+    case x: SegmentBlock => SegmentStatus(x)
+    case x: LeftHandSwitchBlock => SwitchStatus(x)
+    case x: RightHandSwitchBlock => SwitchStatus(x)
   }
 }

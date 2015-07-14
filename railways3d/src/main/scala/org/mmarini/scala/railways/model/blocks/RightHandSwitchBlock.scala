@@ -15,7 +15,7 @@ case class RightHandSwitchBlock(
   id: String,
   trans: Transform2d,
   trackGroups: IndexedSeq[Set[Set[Track]]],
-  tracksForJunction: IndexedSeq[IndexedSeq[(Option[Int], IndexedSeq[Track])]])
+  routes: IndexedSeq[Set[(Option[Int], Option[Int], IndexedSeq[Track])]])
     extends Block
     with TrackBlock
     with SwitchBlock
@@ -43,14 +43,14 @@ object RightHandSwitchBlock {
       Set(Set[Track](forwardDivLeft, forwardDivRight, backwardDivLeft, backwardDivRight)))
 
     val routes = IndexedSeq(
-      IndexedSeq(
-        (Some(1), IndexedSeq[Track](forwardDirect)),
-        (Some(0), IndexedSeq[Track](backwardDirect)),
-        (None, IndexedSeq())),
-      IndexedSeq(
-        (Some(2), forwardDivTracks),
-        (None, IndexedSeq()),
-        (Some(0), backwardDivTracks)))
+      Set(
+        (Option(0), Option(1), IndexedSeq[Track](forwardDirect)),
+        (Option(1), Option(0), IndexedSeq[Track](backwardDirect)),
+        (Option(2), None, IndexedSeq())),
+      Set(
+        (Option(0), Option(2), forwardDivTracks),
+        (Option(1), None, IndexedSeq()),
+        (Option(2), Option(0), backwardDivTracks)))
     RightHandSwitchBlock(id, trans, group, routes)
   }
 }
