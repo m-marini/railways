@@ -10,6 +10,7 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatest.PropSpec
 import org.scalatest.prop.PropertyChecks
 import org.mmarini.scala.railways.model.tracks.HiddenTrack
+import org.mmarini.scala.railways.model.tracks.Track
 
 /** Test */
 class EntryBlockTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
@@ -29,6 +30,10 @@ class EntryBlockTest extends PropSpec with Matchers with PropertyChecks with Moc
     val x = block.trackGroupFor(0)(HiddenTrack)
     x should have size (1)
     x should contain(HiddenTrack)
+  }
+
+  property("trackGroupFor of EntryBlock for other track should return empty") {
+    block.trackGroupFor(0)(mock[Track]) shouldBe empty
   }
 
 }

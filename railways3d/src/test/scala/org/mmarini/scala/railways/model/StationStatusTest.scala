@@ -34,7 +34,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
       when(block.id).thenReturn(s"Block $i")
       val st = mock[BlockStatus]
       when(st.block).thenReturn(block)
-      when(st.trackGroupFor).thenReturn((_: Track) => tracks.toSet)
+      when(st.trackGroupFor).thenReturn((t: Track) => if (tracks.contains(t)) tracks.toSet else Set[Track]())
       st
     }
     val status = StationStatus(mock[Topology], blocks.map(b => (b.block.id -> b)).toMap)

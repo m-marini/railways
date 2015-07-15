@@ -85,6 +85,8 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
       blockStatus <- blocks.values
       groupTrack <- blockStatus.trackGroupFor(track)
     } yield {
-      (groupTrack, train)
+      val g=(groupTrack, train)
+      println(s"track=$track, train=$train block=${blockStatus.block.id} gt=$groupTrack")
+      g      
     }
 }

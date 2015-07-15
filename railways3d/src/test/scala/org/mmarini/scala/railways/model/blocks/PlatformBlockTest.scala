@@ -11,6 +11,7 @@ import org.scalatest.PropSpec
 import org.scalatest.prop.PropertyChecks
 import com.jme3.math.Vector2f
 import org.mmarini.scala.railways.model.tracks.SegmentTrack
+import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model._
 
 /** Test */
@@ -68,6 +69,10 @@ class PlatformTemplateTest extends PropSpec with Matchers with PropertyChecks wi
     x should have size (2)
     x should contain(forward)
     x should contain(backward)
+  }
+
+  property("trackGroupFor other track of PlatformBlock should return empty") {
+    block.trackGroupFor(0)(mock[Track]) shouldBe empty
   }
 
 }
