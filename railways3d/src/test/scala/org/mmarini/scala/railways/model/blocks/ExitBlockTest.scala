@@ -36,5 +36,4 @@ class ExitBlockTest extends PropSpec with Matchers with PropertyChecks with Mock
   property("trackGroupFor of ExitBlockTest for other track should return empty") {
     block.trackGroupFor(0)(mock[Track]) shouldBe empty
   }
-
 }

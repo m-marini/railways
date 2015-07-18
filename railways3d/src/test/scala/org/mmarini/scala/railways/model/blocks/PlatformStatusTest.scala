@@ -101,4 +101,12 @@ class PlatformStatusTest extends PropSpec with Matchers with PropertyChecks with
       }
   }
 
+  property("junctionFrom(0) should return Some(1)") {
+    PlatformStatus(mock[PlatformBlock]).junctionFrom(0) shouldBe Some(1)
+  }
+
+  property("junctionFrom(1) should return Some(0)") {
+    PlatformStatus(mock[PlatformBlock]).junctionFrom(1) shouldBe Some(0)
+  }
+
 }

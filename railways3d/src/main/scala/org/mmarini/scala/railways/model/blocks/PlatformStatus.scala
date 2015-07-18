@@ -16,4 +16,7 @@ case class PlatformStatus(
 
   /** Returns true if block is busy */
   override def busy: Boolean = !transitTrain.isEmpty
+
+  /** Returns the end junction given the entry */
+  override val junctionFrom = IndexedSeq(Option(1), Option(0))
 }

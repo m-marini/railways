@@ -86,4 +86,13 @@ class EntryStatusTest extends PropSpec with Matchers with PropertyChecks with Mo
       }
   }
 
+  property("junctionFrom(0) should return None") {
+    forAll() {
+      (idx: Int) =>
+        {
+          val status = EntryStatus(mock[EntryBlock])
+          status.junctionFrom(idx) shouldBe empty
+        }
+    }
+  }
 }

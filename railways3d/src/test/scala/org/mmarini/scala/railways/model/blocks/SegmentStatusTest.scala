@@ -101,4 +101,11 @@ class SegmentStatusTest extends PropSpec with Matchers with PropertyChecks with 
       }
   }
 
+  property("junctionFrom(0) should return Some(1)") {
+    SegmentStatus(mock[SegmentBlock]).junctionFrom(0) shouldBe Some(1)
+  }  
+
+  property("junctionFrom(1) should return Some(0)") {
+    SegmentStatus(mock[SegmentBlock]).junctionFrom(1) shouldBe Some(0)
+  }  
 }

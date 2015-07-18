@@ -13,4 +13,8 @@ import org.mmarini.scala.railways.model.tracks.Track
 case class EntryStatus(
   block: EntryBlock,
   transitTrain: Option[String] = None)
-    extends BlockStatus with SingleBlockStatus
+    extends BlockStatus with SingleBlockStatus {
+
+  /** Returns None */
+  override def junctionFrom = (_) => None
+}

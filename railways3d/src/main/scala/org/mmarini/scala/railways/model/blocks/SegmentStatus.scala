@@ -15,4 +15,7 @@ case class SegmentStatus(
 
   /** */
   override def changeFreedom: BlockStatus = SegmentStatus(block, transitTrain, !locked)
+
+  /** Returns the end junction given the entry */
+  override val junctionFrom = IndexedSeq(Option(1), Option(0))
 }

@@ -197,4 +197,27 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
       }
   }
 
+  property("junctionFrom(0) in case of direct switch should return Some(1)") {
+    SwitchStatus(mock[SwitchBlock], None, false, false).junctionFrom(0) shouldBe Some(1)
+  }
+
+  property("junctionFrom(1) in case of direct switch should return Some(0)") {
+    SwitchStatus(mock[SwitchBlock], None, false, false).junctionFrom(1) shouldBe Some(0)
+  }
+
+  property("junctionFrom(2) in case of direct switch should return None") {
+    SwitchStatus(mock[SwitchBlock], None, false, false).junctionFrom(2) shouldBe empty
+  }
+
+  property("junctionFrom(0) in case of diverging switch should return Some(2)") {
+    SwitchStatus(mock[SwitchBlock], None, false, true).junctionFrom(0) shouldBe Some(2)
+  }
+
+  property("junctionFrom(1) in case of diverging switch should return None") {
+    SwitchStatus(mock[SwitchBlock], None, false, true).junctionFrom(1) shouldBe empty
+  }
+
+  property("junctionFrom(2) in case of diverging switch should return Some(0)") {
+    SwitchStatus(mock[SwitchBlock], None, false, true).junctionFrom(2) shouldBe Some(0)
+  }
 }

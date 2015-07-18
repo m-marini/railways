@@ -17,11 +17,12 @@ trait Topology {
   val CameraRot = new Quaternion().fromAngleAxis(RightAngle / 9, Vector3f.UNIT_X)
 
   /** Returns the junctions of topology */
-  def junctions: Set[Junction]
+  def junctions: Set[(Endpoint, Endpoint)]
 
   /** Returns the blocks of the topology */
-  lazy val blocks: Set[Block] = junctions.flatMap {
-    case (a, b) => Set(a.block, b.block)
+  lazy val blocks: Set[Block] = {
+    val set = junctions.toSet
+    set.flatMap(x => Set(x._1, x._2)).map(_.block)
   }
 
   /** Returns the viewpoints */
@@ -32,6 +33,12 @@ trait Topology {
 
   /** Returns the exit */
   lazy val exits: Set[Block] = blocks.filter(_.isInstanceOf[ExitBlock])
+
+  /** Finds the connection */
+  lazy val findConnection: Endpoint => Option[Endpoint] =
+    junctions.flatMap {
+      case (a, b) => Set((a, b), (b, a))
+    }.toMap.get
 }
 
 case object TestStation extends Topology {
@@ -42,7 +49,7 @@ case object TestStation extends Topology {
   private val platform2 = PlatformBlock("platform2", +SegmentLength * 11f / 2, 4f, -RightAngle)
   private val platform3 = PlatformBlock("platform3", +SegmentLength * 11f / 2, -4f, -RightAngle)
 
-  val junctions = Set[Junction](
+  val junctions = Set(
     (Endpoint(platform1, 0), Endpoint(platform2, 0)),
     (Endpoint(platform1, 0), Endpoint(platform3, 0)))
 

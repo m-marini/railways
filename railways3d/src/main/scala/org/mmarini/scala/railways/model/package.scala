@@ -66,6 +66,7 @@ package object model {
   case class Endpoint(block: Block, index: Int)
 
   type Junction = (Endpoint, Endpoint)
+  
   type GameTransition = GameStatus => GameStatus
 
 }

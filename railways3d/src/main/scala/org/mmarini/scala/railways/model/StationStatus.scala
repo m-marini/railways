@@ -6,6 +6,7 @@ package org.mmarini.scala.railways.model
 import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model.blocks.Block
 import org.mmarini.scala.railways.model.blocks.BlockStatus
+import scala.collection.mutable.IndexedSeq
 
 /**
  * @author us00852
@@ -33,13 +34,51 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
   def setBlocks(blocks: Map[String, BlockStatus]): StationStatus =
     StationStatus(topology, blocks)
 
+  /** Finds the sequence of tracks available ot allocated by a train starting from a junction of a block */
+  def findRoute(block: BlockStatus, junction: Int, trainId: String): IndexedSeq[Track] = {
+
+    def findRoute(tracks: IndexedSeq[Track], block: BlockStatus, junction: Int): IndexedSeq[Track] = {
+      // Finds end junctions
+      val newTracks = tracks ++ block.tracksForJunction(junction)
+      block.junctionFrom(junction) match {
+        case None => newTracks
+        case Some(end) =>
+          findConnection(block)(end) match {
+            case None => newTracks
+            case Some((nextBlock, nextJunction)) =>
+              val trainIdOpt = transitTrain(nextBlock)(nextJunction)
+              if (trainIdOpt.isEmpty || trainIdOpt.contains(trainId)) {
+                findRoute(newTracks, nextBlock, nextJunction)
+              } else {
+                newTracks
+              }
+          }
+      }
+    }
+
+    findRoute(IndexedSeq(), block, junction)
+  }
+
+  /** Returns the train allocating a junction */
+  def transitTrain: BlockStatus => Int => Option[String] = ???
+
+  /** Finds connection to next block */
+  def findConnection: BlockStatus => Int => Option[(BlockStatus, Int)] = (blockStatus) => (junction) =>
+    topology.
+      findConnection(Endpoint(blockStatus.block, junction)).
+      map(ep => (blocks(ep.block.id), ep.index))
+
   /**
    * Finds the path for a given train
    * The train may not be in this station status
    * To find the path of train:
    * 1. finds the track and location of train tail
    * 2. finds the start junction of block containing the train tail
-   * 3. from the previous junction finds all the block and junction allocated by
+   * 3. from that finds the sequence of blocks and junctions allocated by this train or available
+   *    in this phase the track list may be gathered
+   * 4. maps the sequence of blocks to sequence of tracks
+   * 5. drop all track before the tail location
+   * 6. compute the new location relative to the starting track
    *
    */
   def findRoute(train: Train): (TrainRoute, Float) = {
@@ -85,8 +124,6 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
       blockStatus <- blocks.values
       groupTrack <- blockStatus.trackGroupFor(track)
     } yield {
-      val g=(groupTrack, train)
-      println(s"track=$track, train=$train block=${blockStatus.block.id} gt=$groupTrack")
-      g      
+      (groupTrack, train)
     }
 }

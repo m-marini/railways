@@ -30,4 +30,7 @@ trait BlockStatus {
 
   /** Returns the track list for a junction */
   def tracksForJunction: Int => IndexedSeq[Track]
+
+  /** Returns the end junction given the entry */
+  def junctionFrom: Int => Option[Int]
 }

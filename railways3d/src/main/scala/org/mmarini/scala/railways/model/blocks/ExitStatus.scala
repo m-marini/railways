@@ -15,4 +15,8 @@ case class ExitStatus(
   override def changeFreedom = ExitStatus(block, transitTrain, !locked)
 
   override def busy = !transitTrain.isEmpty
+
+  /** Returns None */
+  override def junctionFrom = (_) => None
+
 }

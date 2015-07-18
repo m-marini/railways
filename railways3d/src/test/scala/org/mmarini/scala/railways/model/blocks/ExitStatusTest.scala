@@ -64,4 +64,13 @@ class ExitStatusTest extends PropSpec with Matchers with PropertyChecks with Moc
       }
   }
 
+  property("junctionFrom(0) should return None") {
+    forAll() {
+      (idx: Int) =>
+        {
+          val status = ExitStatus(mock[ExitBlock])
+          status.junctionFrom(idx) shouldBe empty
+        }
+    }
+  }
 }
