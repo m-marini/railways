@@ -11,6 +11,7 @@ import org.scalatest.PropSpec
 import org.scalatest.prop.PropertyChecks
 import org.scalacheck.Arbitrary
 import org.mmarini.scala.railways.model.tracks.Track
+import org.scalacheck.Gen
 
 /** Test */
 class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
@@ -219,5 +220,64 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
 
   property("junctionFrom(2) in case of diverging switch should return Some(0)") {
     SwitchStatus(mock[SwitchBlock], None, false, true).junctionFrom(2) shouldBe Some(0)
+  }
+
+  property("transitTrain should return None") {
+    forAll(
+      (Arbitrary.arbitrary[Boolean], "locked"),
+      (Arbitrary.arbitrary[Boolean], "diverging"),
+      (Gen.oneOf(0, 1, 2), "junction")) {
+        (locked: Boolean,
+        diverging: Boolean,
+        junction: Int) =>
+          {
+            SwitchStatus(mock[SwitchBlock], None, locked, diverging).transitTrain(junction) shouldBe empty
+          }
+      }
+  }
+
+  property("transitTrain should return Some(train)") {
+    forAll(
+      (Arbitrary.arbitrary[Boolean], "locked"),
+      (Gen.oneOf(0, 1), "junction")) {
+        (locked: Boolean,
+            junction:Int) =>
+          {
+            SwitchStatus(mock[SwitchBlock], Some("train"), locked, false).transitTrain(junction) shouldBe Some("train")
+          }
+      }
+  }
+
+  property("transitTrain diverging should return Some(train)") {
+    forAll(
+      (Arbitrary.arbitrary[Boolean], "locked"),
+      (Gen.oneOf(0, 2), "junction")) {
+        (locked: Boolean,
+            junction:Int) =>
+          {
+            SwitchStatus(mock[SwitchBlock], Some("train"), locked, true).transitTrain(junction) shouldBe Some("train")
+          }
+      }
+  }
+
+  property("transitTrain(2) should return None") {
+    forAll(
+      (Arbitrary.arbitrary[Boolean], "locked")) {
+        (locked: Boolean) =>
+          {
+            SwitchStatus(mock[SwitchBlock], Some("train"), locked, false).transitTrain(2) shouldBe empty
+          }
+      }
+  }
+
+
+  property("transitTrain(1) diverging should return None") {
+    forAll(
+      (Arbitrary.arbitrary[Boolean], "locked")) {
+        (locked: Boolean) =>
+          {
+            SwitchStatus(mock[SwitchBlock], Some("train"), locked, true).transitTrain(1) shouldBe empty
+          }
+      }
   }
 }

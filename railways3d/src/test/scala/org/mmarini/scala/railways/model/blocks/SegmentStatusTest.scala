@@ -103,9 +103,27 @@ class SegmentStatusTest extends PropSpec with Matchers with PropertyChecks with 
 
   property("junctionFrom(0) should return Some(1)") {
     SegmentStatus(mock[SegmentBlock]).junctionFrom(0) shouldBe Some(1)
-  }  
+  }
 
   property("junctionFrom(1) should return Some(0)") {
     SegmentStatus(mock[SegmentBlock]).junctionFrom(1) shouldBe Some(0)
-  }  
+  }
+
+  property("transitTrain(0) in case of train should return Some(trainId)") {
+    val trainId = "train"
+    SegmentStatus(mock[SegmentBlock], Some(trainId)).transitTrain(0) shouldBe Some(trainId)
+  }
+
+  property("transitTrain(1) in case of train should return Some(trainId)") {
+    val trainId = "train"
+    SegmentStatus(mock[SegmentBlock], Some(trainId)).transitTrain(1) shouldBe Some(trainId)
+  }
+
+  property("transitTrain(0) should return None") {
+    SegmentStatus(mock[SegmentBlock]).transitTrain(0) shouldBe empty
+  }
+
+  property("transitTrain(1) should return None") {
+    SegmentStatus(mock[SegmentBlock]).transitTrain(1) shouldBe empty
+  }
 }

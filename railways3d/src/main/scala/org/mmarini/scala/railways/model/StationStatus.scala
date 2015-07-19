@@ -60,7 +60,8 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
   }
 
   /** Returns the train allocating a junction */
-  def transitTrain: BlockStatus => Int => Option[String] = ???
+  def transitTrain: BlockStatus => Int => Option[String] = (blockStatus) =>
+    blockStatus.transitTrain
 
   /** Finds connection to next block */
   def findConnection: BlockStatus => Int => Option[(BlockStatus, Int)] = (blockStatus) => (junction) =>

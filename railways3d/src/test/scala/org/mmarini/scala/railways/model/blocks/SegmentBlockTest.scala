@@ -68,7 +68,6 @@ class SegmentTemplateTest extends PropSpec with Matchers with PropertyChecks wit
     x should have size (2)
     x should contain(forward)
     x should contain(backward)
-  }
-
+  }  
 
 }

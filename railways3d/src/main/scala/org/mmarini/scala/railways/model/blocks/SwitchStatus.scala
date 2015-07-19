@@ -8,7 +8,7 @@ import org.mmarini.scala.railways.model.tracks.Track
 /** A [[BlockStatus of switch */
 case class SwitchStatus(
     block: SwitchBlock,
-    transitTrain: Option[String] = None,
+    trainId: Option[String] = None,
     locked: Boolean = false,
     diverging: Boolean = false) extends IndexedBlockStatus with LockableStatus {
 
@@ -24,12 +24,20 @@ case class SwitchStatus(
 
   override def statusIndex = if (diverging) 1 else 0
 
-  override def changeStatus: BlockStatus = SwitchStatus(block, transitTrain, locked, !diverging)
+  override def changeStatus: BlockStatus = SwitchStatus(block, trainId, locked, !diverging)
 
-  override def changeFreedom: BlockStatus = SwitchStatus(block, transitTrain, !locked, diverging)
+  override def changeFreedom: BlockStatus = SwitchStatus(block, trainId, !locked, diverging)
 
-  override def busy = !transitTrain.isEmpty
+  override def busy = !trainId.isEmpty
 
   /** Returns the end junction given the entry */
   override def junctionFrom = junctions(statusIndex)
+
+  /** Returns the transit train in a junction */
+  override def transitTrain = x => x match {
+    case 0 => trainId
+    case 1 => if (diverging) None else trainId
+    case 2 => if (diverging) trainId else None
+  }
+
 }

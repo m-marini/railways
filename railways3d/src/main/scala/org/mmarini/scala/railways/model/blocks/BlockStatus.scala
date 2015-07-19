@@ -33,4 +33,7 @@ trait BlockStatus {
 
   /** Returns the end junction given the entry */
   def junctionFrom: Int => Option[Int]
+
+  /** Returns the transit train in a junction */
+  def transitTrain: Int => Option[String]
 }

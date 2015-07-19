@@ -95,4 +95,13 @@ class EntryStatusTest extends PropSpec with Matchers with PropertyChecks with Mo
         }
     }
   }
+
+  property("transitTrain(0) with train should return Some(train)") {
+    val trainId = "train"
+    EntryStatus(mock[EntryBlock], Some(trainId)).transitTrain(0) shouldBe Some(trainId)
+  }
+
+  property("transitTrain(0) should return None") {
+    EntryStatus(mock[EntryBlock]).transitTrain(0) shouldBe empty
+  }
 }
