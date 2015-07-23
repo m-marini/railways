@@ -241,7 +241,7 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
       (Arbitrary.arbitrary[Boolean], "locked"),
       (Gen.oneOf(0, 1), "junction")) {
         (locked: Boolean,
-            junction:Int) =>
+        junction: Int) =>
           {
             SwitchStatus(mock[SwitchBlock], Some("train"), locked, false).transitTrain(junction) shouldBe Some("train")
           }
@@ -253,7 +253,7 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
       (Arbitrary.arbitrary[Boolean], "locked"),
       (Gen.oneOf(0, 2), "junction")) {
         (locked: Boolean,
-            junction:Int) =>
+        junction: Int) =>
           {
             SwitchStatus(mock[SwitchBlock], Some("train"), locked, true).transitTrain(junction) shouldBe Some("train")
           }
@@ -270,7 +270,6 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
       }
   }
 
-
   property("transitTrain(1) diverging should return None") {
     forAll(
       (Arbitrary.arbitrary[Boolean], "locked")) {
@@ -279,5 +278,85 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
             SwitchStatus(mock[SwitchBlock], Some("train"), locked, true).transitTrain(1) shouldBe empty
           }
       }
+  }
+
+  property("apply(x, train) should return status with transit train") {
+    forAll(
+      (Gen.oneOf(0, 1), "junction")) {
+        (junction: Int) =>
+          {
+            val x = SwitchStatus(mock[SwitchBlock])(junction, Some("train"))
+            x.transitTrain(0) shouldBe Some("train")
+            x.transitTrain(1) shouldBe Some("train")
+            x.transitTrain(2) shouldBe None
+          }
+      }
+  }
+
+  property("apply(2, train) should return status with no transit train") {
+    val x = SwitchStatus(mock[SwitchBlock])(2, Some("train"))
+    x.transitTrain(0) shouldBe None
+    x.transitTrain(1) shouldBe None
+    x.transitTrain(2) shouldBe None
+  }
+
+  property("apply(x, None) with train should return status with no transit train") {
+    forAll(
+      (Gen.oneOf(0, 1), "junction")) {
+        (junction: Int) =>
+          {
+            val x = SwitchStatus(mock[SwitchBlock], Some("train"))(junction, None)
+            x.transitTrain(0) shouldBe None
+            x.transitTrain(1) shouldBe None
+            x.transitTrain(2) shouldBe None
+          }
+      }
+  }
+
+  property("apply(2, None) should return status with transit train") {
+    val x = SwitchStatus(mock[SwitchBlock], Some("train"))(2, None)
+    x.transitTrain(0) shouldBe Some("train")
+    x.transitTrain(1) shouldBe Some("train")
+    x.transitTrain(2) shouldBe None
+  }
+
+  property("apply(x, train) diverging should return status with transit train") {
+    forAll(
+      (Gen.oneOf(0, 2), "junction")) {
+        (junction: Int) =>
+          {
+            val x = SwitchStatus(mock[SwitchBlock], diverging = true)(junction, Some("train"))
+            x.transitTrain(0) shouldBe Some("train")
+            x.transitTrain(1) shouldBe None
+            x.transitTrain(2) shouldBe Some("train")
+          }
+      }
+  }
+
+  property("apply(1, train) diverging should return status with no transit train") {
+    val x = SwitchStatus(mock[SwitchBlock], diverging = true)(1, Some("train"))
+    x.transitTrain(0) shouldBe None
+    x.transitTrain(1) shouldBe None
+    x.transitTrain(2) shouldBe None
+  }
+
+  property("apply(x, None) diverging with train should return status with no transit train") {
+    forAll(
+      (Gen.oneOf(0, 2), "junction")) {
+        (junction: Int) =>
+          {
+            val x = SwitchStatus(mock[SwitchBlock], Some("train"), diverging = true)(junction, None)
+            x.transitTrain(0) shouldBe None
+            x.transitTrain(1) shouldBe None
+            x.transitTrain(2) shouldBe None
+          }
+      }
+  }
+
+  property("apply(1, None) diverging with train should return status with transit train") {
+    val x = SwitchStatus(mock[SwitchBlock], Some("train"), diverging = true)(1, None)
+    x.transitTrain(0) shouldBe Some("train")
+    x.transitTrain(1) shouldBe None
+    x.transitTrain(2) shouldBe Some("train")
   }
 }

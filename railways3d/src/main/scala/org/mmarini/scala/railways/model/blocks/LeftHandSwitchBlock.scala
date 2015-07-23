@@ -9,6 +9,7 @@ import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model.tracks.LeftCurveTrack
 import org.mmarini.scala.railways.model.tracks.RightCurveTrack
 import org.mmarini.scala.railways.model.tracks.SegmentTrack
+import org.mmarini.scala.railways.model.Transform2d
 
 /** */
 case class LeftHandSwitchBlock(
@@ -26,12 +27,12 @@ object LeftHandSwitchBlock {
   /** Creates a [[LeftHandSwitchBlock]] */
   def apply(id: String, x: Float, y: Float, orientation: Float): LeftHandSwitchBlock = {
     val trans = Transform2d(x, y, orientation)
-    val forwardDirect = SegmentTrack(trans(Vector2f.ZERO), trans(new Vector2f(0f, SegmentLength)))
+    val forwardDirect = SegmentTrack(Vector2f.ZERO, new Vector2f(0f, SegmentLength))(trans)
     val backwardDirect = forwardDirect.backward
-    val center1 = trans(new Vector2f(-CurveRadius, 0f))
-    val center2 = trans(new Vector2f(CurveRadius - TrackGap, SegmentLength))
-    val forwardDivLeft = LeftCurveTrack(center1, CurveRadius, RightAngle + orientation, CurveLength / 2)
-    val forwardDivRight = RightCurveTrack(center2, CurveRadius, -RightAngle - CurveAngle / 2 + orientation, CurveLength / 2)
+    val center1 = new Vector2f(-CurveRadius, 0f)
+    val center2 = new Vector2f(CurveRadius - TrackGap, SegmentLength)
+    val forwardDivLeft = LeftCurveTrack(center1, CurveRadius, RightAngle, CurveLength / 2)(trans)
+    val forwardDivRight = RightCurveTrack(center2, CurveRadius, -RightAngle - CurveAngle / 2, CurveLength / 2)(trans)
     val backwardDivRight = forwardDivLeft.backward
     val backwardDivLeft = forwardDivRight.backward
 

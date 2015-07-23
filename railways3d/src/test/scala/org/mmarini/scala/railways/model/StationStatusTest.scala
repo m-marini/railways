@@ -15,6 +15,11 @@ import ModelGen._
 import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model.blocks.BlockStatus
 import org.mmarini.scala.railways.model.blocks.Block
+import org.mmarini.scala.railways.model.blocks.SegmentStatus
+import org.mmarini.scala.railways.model.blocks.SegmentBlock
+import sun.org.mozilla.javascript.internal.ast.Yield
+import org.mmarini.scala.railways.model.blocks.SegmentStatus
+import org.mmarini.scala.railways.model.blocks.SegmentStatus
 
 /** Test */
 class StationStatusTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
@@ -51,54 +56,74 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
   }
 
   property("apply of StationStatus should be all tracks") {
-    //    val tracks = Set[(Track, String)]()
-    //    val x = status.apply(tracks)
-    ???
+    val status = createTest3()
+    val track1 = status.blocks("track1").tracksForJunction(0)(0)
+    val track2 = status.blocks("track2").tracksForJunction(0)(0)
+    val x = status.apply(Set((track1, "train1"), (track2, "train2")))
+
+    val b1 = x.blocks("track1")
+    val b2 = x.blocks("track2")
+    val b3 = x.blocks("track3")
+
+    b1 shouldBe a[SegmentStatus]
+    b1.asInstanceOf[SegmentStatus].trainId shouldBe (Some("train1"))
+
+    b2 shouldBe a[SegmentStatus]
+    b2.asInstanceOf[SegmentStatus].trainId shouldBe (Some("train2"))
+
+    b3 shouldBe a[SegmentStatus]
+    b3.asInstanceOf[SegmentStatus].trainId shouldBe (Some("train"))
+  }
+
+  private def createTest3() = {
+    val topology = new Topology() {
+      private val track1 = SegmentBlock("track1", 0f, 0f, 0f)
+      private val track2 = SegmentBlock("track2", 0f, SegmentLength * 11f, 0f)
+      private val track3 = SegmentBlock("track3", 0f, SegmentLength * 22f, 0f)
+
+      val junctions = Set(
+        (Endpoint(track1, 1), Endpoint(track2, 0)),
+        (Endpoint(track2, 1), Endpoint(track3, 0)))
+
+      override val viewpoints = Seq[CameraViewpoint]()
+    }
+    val blocks = topology.blocks
+    val state = blocks.map {
+      case b: SegmentBlock if (b.id == "track3") => SegmentStatus(b, Some("train")).asInstanceOf[BlockStatus]
+      case b: SegmentBlock => SegmentStatus(b).asInstanceOf[BlockStatus]
+    }
+    StationStatus(topology, state.map(x => (x.block.id -> x)).toMap)
   }
 
   property("""Test the case of a station with 3 consecutive blocks
   findConnection(block1, 1) should return Some(block2, 0)""") {
-    val track1 = mock[Track]
-    val track2 = mock[Track]
-    val track3 = mock[Track]
-
-    val blocks = for { i <- 0 to 2 } yield {
-      val st = mock[BlockStatus]
-      (s"Block$i" -> st)
-    }
-    val status = StationStatus(mock[Topology], blocks.toMap)
-
-    status.findConnection(blocks(0)._2)(1) shouldBe Some((blocks(1)._2, 0))
+    val status = createTest3()
+    val block1 = status.blocks("track1")
+    val block2 = status.blocks("track2")
+    status.findConnection(block1)(1) shouldBe Some((block2, 0))
   }
 
   property("""Test the case of a station with 3 consecutive blocks
   findConnection(block2, 1) should return Some(block3, 0)""") {
-    val track1 = mock[Track]
-    val track2 = mock[Track]
-    val track3 = mock[Track]
+    val status = createTest3()
+    val block2 = status.blocks("track2")
+    val block3 = status.blocks("track3")
+    status.findConnection(block2)(1) shouldBe Some((block3, 0))
+  }
 
-    val blocks = for { i <- 0 to 2 } yield {
-      val st = mock[BlockStatus]
-      (s"Block$i" -> st)
-    }
-    val status = StationStatus(mock[Topology], blocks.toMap)
-
-    status.findConnection(blocks(1)._2)(1) shouldBe Some((blocks(2)._2, 0))
+  property("""Test the case of a station with 3 consecutive blocks
+  findConnection(block3, 0) should return Some(block2, 1)""") {
+    val status = createTest3()
+    val block2 = status.blocks("track2")
+    val block3 = status.blocks("track3")
+    status.findConnection(block3)(0) shouldBe Some((block2, 1))
   }
 
   property("""Test the case of a station with 3 consecutive blocks
   findConnection(block3, 1) should return None""") {
-    val track1 = mock[Track]
-    val track2 = mock[Track]
-    val track3 = mock[Track]
-
-    val blocks = for { i <- 0 to 2 } yield {
-      val st = mock[BlockStatus]
-      (s"Block$i" -> st)
-    }
-    val status = StationStatus(mock[Topology], blocks.toMap)
-
-    status.findConnection(blocks(0)._2)(1) shouldBe None
+    val status = createTest3()
+    val block3 = status.blocks("track3")
+    status.findConnection(block3)(1) shouldBe empty
   }
 
   property("""Test the case of a station with 3 consecutive block
@@ -107,23 +132,13 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
   and the 3rd block by train 2
   findRoute(block, junction, trainId) should return the sequence of 1st 2 tracks.""") {
 
+    val status = createTest3()
+    val block1 = status.blocks("track1")
+    val track1 = block1.block.tracksForJunction(0)(0)(0)
+    val track2 = status.blocks("track2").block.tracksForJunction(0)(0)(0)
     val trainId = "train1"
-    val train1 = mock[Train]
-    val train2 = mock[Train]
-    val track1 = mock[Track]
-    val track2 = mock[Track]
-    val track3 = mock[Track]
 
-    val blocks = for { i <- 0 to 2 } yield {
-      val st = mock[BlockStatus]
-      (s"Block$i" -> st)
-    }
-    //            when(blocks(0)._2.junctionsForTrack).thenReturn {
-    //              t: Track =>
-    //                if (t == track1) (Option(0), Option(1)) else (None, None)
-    //            }
-    val status = StationStatus(mock[Topology], blocks.toMap)
-    val route = status.findRoute(blocks(0)._2, 0, trainId)
+    val route = status.findRoute(block1, 0, trainId)
     route should have size (2)
     route should contain(track1)
     route should contain(track2)
@@ -135,41 +150,21 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
   and the 3rd block by train 2
   findRoute(train1) should return the sequence of 1st 2 tracks.""") {
 
-    ???
-    //    val minTrainLength = CoachLength * 2
-    //    val maxTrainLength = CoachLength * 11
-    //    val maxDist = 10f
-    //
-    //    forAll(
-    //      (Gen.chooseNum(minTrainLength, maxTrainLength), "trainLength"),
-    //      (Gen.chooseNum(0f, maxDist), "location")) {
-    //        (trainLength: Float,
-    //        location: Float) =>
-    //          {
-    //            val train1 = mock[Train]
-    //            val train2 = mock[Train]
-    //            val track1 = mock[Track]
-    //            val track2 = mock[Track]
-    //            val track3 = mock[Track]
-    //
-    //            when(train1.trackTailLocation).thenReturn(Option((track1, location - trainLength)))
-    //
-    //            val blocks = for { i <- 0 to 2 } yield {
-    //              val st = mock[BlockStatus]
-    //              (s"Block$i" -> st)
-    //            }
-    //            when(blocks(0)._2.junctionsForTrack).thenReturn {
-    //              t: Track =>
-    //                if (t == track1) (Option(0), Option(1)) else (None, None)
-    //            }
-    //            val status = StationStatus(mock[Topology], blocks.toMap)
-    //            val (route, dist) = status.findRoute(train1)
-    //            route.tracks should have size (2)
-    //            route.tracks should contain(track1)
-    //            route.tracks should contain(track2)
-    //
-    //            dist shouldBe (location)
-    //
-    //          }
+    val status = createTest3()
+    val block1 = status.blocks("track1")
+    val track1 = block1.block.tracksForJunction(0)(0)
+    val track2 = status.blocks("track2").block.tracksForJunction(0)(0)
+    val location = CoachLength * 3
+    val train = MovingTrain(
+      "train1",
+      2,
+      TrainRoute(track1 ++ track2),
+      location,
+      0f)
+    val (route, dist) = status.findRoute(train)
+    dist shouldBe (location)
+    route.tracks should have size (2)
+    route.tracks should contain(track1(0))
+    route.tracks should contain(track2(0))
   }
 }

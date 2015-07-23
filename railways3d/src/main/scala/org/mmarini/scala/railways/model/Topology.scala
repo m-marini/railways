@@ -71,4 +71,3 @@ object Topology {
   def apply(id: String): Topology = topologies(id)
 
 }
-

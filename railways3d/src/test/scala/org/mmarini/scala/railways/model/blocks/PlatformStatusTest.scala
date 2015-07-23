@@ -127,4 +127,22 @@ class PlatformStatusTest extends PropSpec with Matchers with PropertyChecks with
     PlatformStatus(mock[PlatformBlock]).transitTrain(1) shouldBe empty
   }
 
+  property("apply(0, train) should return status with transit train") {
+    val x = PlatformStatus(mock[PlatformBlock])(0, Some("train"))
+    x.transitTrain(0) shouldBe Some("train")
+    x.transitTrain(1) shouldBe Some("train")
+  }
+
+  property("apply(1, train) should return status with transit train") {
+    val x = PlatformStatus(mock[PlatformBlock])(1, Some("train"))
+    x.transitTrain(0) shouldBe Some("train")
+    x.transitTrain(1) shouldBe Some("train")
+  }
+
+  property("apply(0, none) should return status with none transit train") {
+    val x = PlatformStatus(mock[PlatformBlock])(0, None)
+    x.transitTrain(0) shouldBe empty
+    x.transitTrain(1) shouldBe empty
+  }
+
 }

@@ -4,6 +4,7 @@
 package org.mmarini.scala.railways.model.tracks
 
 import com.jme3.math.Vector2f
+import org.mmarini.scala.railways.model.Transform2d
 
 /**
  * Describes a left curve part of trajectory
@@ -20,4 +21,8 @@ case class LeftCurveTrack(center: Vector2f, radius: Float, begin: Float, length:
 
   /** Returns the backward track of this */
   def backward: RightCurveTrack = RightCurveTrack(center, radius, begin + angle(length), length)
+
+  /** Creates a segment track applying the transformation */
+  def apply(tran: Transform2d): LeftCurveTrack = LeftCurveTrack(tran(center), radius, tran(begin), length)
+
 }

@@ -5,6 +5,7 @@ package org.mmarini.scala.railways.model.blocks
 
 import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model.tracks.HiddenTrack
+import org.mmarini.scala.railways.model.Transform2d
 
 /** The incoming trains come in this BlockTemplate */
 case class EntryBlock(id: String, trans: Transform2d) extends Block with TrackBlock {

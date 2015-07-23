@@ -40,4 +40,13 @@ case class SwitchStatus(
     case 2 => if (diverging) trainId else None
   }
 
+  /** Creates a new block status applying trainId to a junction. */
+  override def apply(junction: Int, trainId: Option[String]) = (diverging, junction) match {
+    case (false, 0) if (trainId != this.trainId) => SwitchStatus(block, trainId, locked, diverging)
+    case (false, 1) if (trainId != this.trainId) => SwitchStatus(block, trainId, locked, diverging)
+    case (true, 0) if (trainId != this.trainId) => SwitchStatus(block, trainId, locked, diverging)
+    case (true, 2) if (trainId != this.trainId) => SwitchStatus(block, trainId, locked, diverging)
+    case _ => this
+  }
+
 }

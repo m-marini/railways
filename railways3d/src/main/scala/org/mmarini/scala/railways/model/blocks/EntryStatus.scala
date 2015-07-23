@@ -17,8 +17,13 @@ case class EntryStatus(
 
   /** Returns None */
   override def junctionFrom = (_) => None
-  
+
   /** Returns the transit train in a junction */
   override def transitTrain = _ => trainId
 
+  /** Creates a new block status applying trainId to a junction. */
+  override def apply(junction: Int, trainId: Option[String]) = junction match {
+    case 0 if (trainId != this.trainId) => EntryStatus(block, trainId)
+    case _ => this
+  }
 }

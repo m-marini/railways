@@ -7,6 +7,7 @@ import org.mmarini.scala.railways.model._
 import org.mmarini.scala.railways.model.tracks.SegmentTrack
 import com.jme3.math.Vector2f
 import org.mmarini.scala.railways.model.tracks.Track
+import org.mmarini.scala.railways.model.Transform2d
 
 /** The arriving trains stop at this BlockTemplate to wait for passengers boarding */
 case class SegmentBlock(
@@ -22,7 +23,7 @@ object SegmentBlock {
   /** Creates a [[SegmentBlock]] */
   def apply(id: String, x: Float, y: Float, orientation: Float): SegmentBlock = {
     val trans = Transform2d(x, y, orientation)
-    val forward = SegmentTrack(trans(Vector2f.ZERO), trans(new Vector2f(0f, 11 * SegmentLength)))
+    val forward = SegmentTrack(Vector2f.ZERO, new Vector2f(0f, 11 * SegmentLength))(trans)
     val backward = forward.backward
     val group = IndexedSeq(Set(Set[Track](forward, backward)))
     val routes = IndexedSeq(

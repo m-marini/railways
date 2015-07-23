@@ -20,10 +20,10 @@ trait BlockStatus {
   def trackGroupFor: Track => Set[Track]
 
   /**
-   * Creates a new block status applying a set of busy track.
+   * Creates a new block status applying trainId to a junction.
    * The new status has to reflect the properties of blocked junctions on the given busy tracks
    */
-  def apply(busyTracks: Set[Track]): BlockStatus = ??? // TODO
+  def apply(junction: Int, trainId: Option[String]): BlockStatus
 
   /** Returns the start junction containing a track */
   def junctionsForTrack: Track => (Option[Int], Option[Int])

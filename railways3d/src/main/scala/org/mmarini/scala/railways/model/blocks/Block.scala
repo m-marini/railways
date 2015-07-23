@@ -1,6 +1,7 @@
 package org.mmarini.scala.railways.model.blocks
 
 import org.mmarini.scala.railways.model.tracks.Track
+import org.mmarini.scala.railways.model.Transform2d
 
 /**
  * @author us00852

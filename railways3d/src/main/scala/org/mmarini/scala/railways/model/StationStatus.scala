@@ -6,7 +6,6 @@ package org.mmarini.scala.railways.model
 import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model.blocks.Block
 import org.mmarini.scala.railways.model.blocks.BlockStatus
-import scala.collection.mutable.IndexedSeq
 
 /**
  * @author us00852
@@ -87,36 +86,28 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
     val Some((tailTrack, loc)) = train.trackTailLocation
     // Finds block and junction containing the track of train tail
     val Some(startingBlock) = findBlock(tailTrack)
-    val (start, end) = startingBlock.junctionsForTrack(tailTrack)
-
-    // Finds track sequence starting at (startingBlock, start) for train (track allocated by the train)
-    // TODO
-    val routeJunctions: IndexedSeq[(Block, Option[Int], Option[Int])] = ???
-
-    // takes until junction route available for current train
-    // TODO
-    val freeRouteJunctions: IndexedSeq[(Block, Option[Int], Option[Int])] = ???
+    val (start, _) = startingBlock.junctionsForTrack(tailTrack)
 
     // map to track list
-    val trackList: IndexedSeq[Track] = freeRouteJunctions.flatMap {
-      // TODO
-      case (block, start, end) => ???
-    }
+    val trackList = start.map(
+      x => findRoute(startingBlock, x, train.id)).
+      toIndexedSeq.flatten
     // drop head until track of tail train
-    (TrainRoute(trackList.dropWhile { _ != tailTrack }), loc)
+    (TrainRoute(trackList.dropWhile { _ != tailTrack }), loc + train.length)
   }
 
-  /** */
+  /** Returns the block status containing the given track */
   private def findBlock(track: Track): Option[BlockStatus] =
     blocks.values.find(!_.junctionsForTrack(track)._1.isEmpty)
 
   /** Creates the status of station from current status applying the set of busy tracks */
   def apply(busyTracks: Set[(Track, String)]): StationStatus =
-    StationStatus(
-      topology,
-      blocks.map {
-        case (id, block) => (id, block(busyTracks.map(_._1)))
-      })
+    ???
+//    StationStatus(
+//      topology,
+//      blocks.map {
+//        case (id, block) => (id, block(busyTracks))
+//      })
 
   /** Extracts all busy tracks by trainId given the association of allocated track and trainId */
   def extractBusyTrack(trackTrains: Set[(Track, String)]): Set[(Track, String)] =

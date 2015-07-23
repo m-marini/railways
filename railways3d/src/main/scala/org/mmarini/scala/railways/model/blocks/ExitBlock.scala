@@ -5,6 +5,7 @@ package org.mmarini.scala.railways.model.blocks
 
 import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model.tracks.HiddenTrack
+import org.mmarini.scala.railways.model.Transform2d
 
 /** The exiting trains go out this BlockTemplate */
 case class ExitBlock(id: String, trans: Transform2d) extends Block with TrackBlock {

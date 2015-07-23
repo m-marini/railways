@@ -22,4 +22,10 @@ case class ExitStatus(
   /** Returns the transit train in a junction */
   override def transitTrain = _ => trainId
 
+  /** Creates a new block status applying trainId to a junction. */
+  override def apply(junction: Int, trainId: Option[String]) = junction match {
+    case 0 if (trainId != this.trainId) => ExitStatus(block, trainId)
+    case _ => this
+  }
+
 }

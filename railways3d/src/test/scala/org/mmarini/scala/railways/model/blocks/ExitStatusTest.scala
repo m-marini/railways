@@ -82,4 +82,14 @@ class ExitStatusTest extends PropSpec with Matchers with PropertyChecks with Moc
   property("transitTrain(0) should return None") {
     ExitStatus(mock[ExitBlock]).transitTrain(0) shouldBe empty
   }
+
+  property("apply(HiddenTrack, train) should return status with transit train") {
+    val x = ExitStatus(mock[ExitBlock])(0, Some("train"))
+    x.transitTrain(0) shouldBe Some("train")
+  }
+
+  property("apply(otherTrack, train) should return status with none transit train") {
+    val x = ExitStatus(mock[ExitBlock])(0, None)
+    x.transitTrain(0) shouldBe empty
+  }
 }
