@@ -26,4 +26,7 @@ case class SegmentStatus(
   override def apply(junction: Int, trainId: Option[String]) =
     if ((junction == 0 || junction == 1) && trainId != this.trainId) SegmentStatus(block, trainId, locked)
     else this
+
+  /** Returns the status with no transit train */
+  override def noTrainStatus = if (trainId.isEmpty) this else SegmentStatus(block, None, locked)
 }

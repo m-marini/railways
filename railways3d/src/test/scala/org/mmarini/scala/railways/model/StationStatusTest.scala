@@ -24,7 +24,7 @@ import org.mmarini.scala.railways.model.blocks.SegmentStatus
 /** Test */
 class StationStatusTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
 
-  property(""" Test the case of a set of 2 blocks each containing 2 tracks,
+  property("""Test the case of a set of 2 blocks each containing 2 tracks,
   calls with a list of first track of each block
   extractBusyTrack should return all 4 tracks.""") {
 
@@ -39,7 +39,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
       when(st.trackGroupFor).thenReturn((t: Track) => if (tracks.contains(t)) tracks.toSet else Set[Track]())
       st
     }
-    val status = StationStatus(mock[Topology], blocks.map(b => (b.block.id -> b)).toMap)
+    val status = StationStatus(mock[Topology], blocks.toSet)
 
     val x = for { (tracks, i) <- blocks1.zipWithIndex } yield (tracks(0), s"Train $i")
 
@@ -55,11 +55,13 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     }
   }
 
-  property("apply of StationStatus should be all tracks") {
+  property("""Test the case of a station with 3 consecutive blocks
+  apply with 2 trains in the first 2 blocks should return a status with just 2 trains""") {
     val status = createTest3()
-    val track1 = status.blocks("track1").tracksForJunction(0)(0)
-    val track2 = status.blocks("track2").tracksForJunction(0)(0)
-    val x = status.apply(Set((track1, "train1"), (track2, "train2")))
+    val block1 = status.blocks("track1")
+    val block2 = status.blocks("track2")
+
+    val x = status(Set(((block1, 0), "train1"), ((block2, 0), "train2")))
 
     val b1 = x.blocks("track1")
     val b2 = x.blocks("track2")
@@ -72,7 +74,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     b2.asInstanceOf[SegmentStatus].trainId shouldBe (Some("train2"))
 
     b3 shouldBe a[SegmentStatus]
-    b3.asInstanceOf[SegmentStatus].trainId shouldBe (Some("train"))
+    b3.asInstanceOf[SegmentStatus].trainId shouldBe (None)
   }
 
   private def createTest3() = {
@@ -92,7 +94,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
       case b: SegmentBlock if (b.id == "track3") => SegmentStatus(b, Some("train")).asInstanceOf[BlockStatus]
       case b: SegmentBlock => SegmentStatus(b).asInstanceOf[BlockStatus]
     }
-    StationStatus(topology, state.map(x => (x.block.id -> x)).toMap)
+    StationStatus(topology, state)
   }
 
   property("""Test the case of a station with 3 consecutive blocks
@@ -134,8 +136,8 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
 
     val status = createTest3()
     val block1 = status.blocks("track1")
-    val track1 = block1.block.tracksForJunction(0)(0)(0)
-    val track2 = status.blocks("track2").block.tracksForJunction(0)(0)(0)
+    val track1 = block1.tracksForJunction(0)(0)
+    val track2 = status.blocks("track2").tracksForJunction(0)(0)
     val trainId = "train1"
 
     val route = status.findRoute(block1, 0, trainId)
@@ -152,7 +154,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
 
     val status = createTest3()
     val block1 = status.blocks("track1")
-    val track1 = block1.block.tracksForJunction(0)(0)
+    val track1 = block1.tracksForJunction(0)
     val track2 = status.blocks("track2").block.tracksForJunction(0)(0)
     val location = CoachLength * 3
     val train = MovingTrain(
@@ -167,4 +169,35 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     route.tracks should contain(track1(0))
     route.tracks should contain(track2(0))
   }
+
+  property("""Test the case of a station with 3 consecutive blocks
+  the 1st block is occupied by train 1
+  the 2nd block is not occupied
+  and the 3rd block by train 2
+  extractJunction(track1) should return Some(block1, 0).""") {
+    val status = createTest3()
+    val block1 = status.blocks("track1")
+    val track1 = block1.tracksForJunction(0)(0)
+    val jun = status.extractJunction(track1)
+    jun should not be empty
+    jun should matchPattern {
+      case Some((block, 0)) if (block == block1) =>
+    }
+  }
+
+  property("""Test the case of a station with 3 consecutive blocks
+  the 1st block is occupied by train 1
+  the 2nd block is not occupied
+  and the 3rd block by train 2
+  extractJunction(track2) should return Some(block2, 0).""") {
+    val status = createTest3()
+    val block2 = status.blocks("track2")
+    val track2 = block2.tracksForJunction(0)(0)
+    val jun = status.extractJunction(track2)
+    jun should not be empty
+    jun should matchPattern {
+      case Some((block, 0)) if (block == block2) =>
+    }
+  }
+
 }

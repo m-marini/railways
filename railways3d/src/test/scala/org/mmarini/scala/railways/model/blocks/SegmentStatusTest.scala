@@ -144,4 +144,11 @@ class SegmentStatusTest extends PropSpec with Matchers with PropertyChecks with 
     x.transitTrain(0) shouldBe empty
     x.transitTrain(1) shouldBe empty
   }
+
+  property("noTrainStatus should return status with none transit train") {
+    val x = SegmentStatus(mock[SegmentBlock], trainId = Some("train")).noTrainStatus
+    x shouldBe a[SegmentStatus]
+    x should have('trainId(None))
+  }
+
 }

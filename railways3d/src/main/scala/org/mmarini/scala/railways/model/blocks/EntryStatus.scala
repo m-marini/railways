@@ -26,4 +26,8 @@ case class EntryStatus(
     case 0 if (trainId != this.trainId) => EntryStatus(block, trainId)
     case _ => this
   }
+
+  /** Returns the status with no transit train */
+  override def noTrainStatus: BlockStatus = if (trainId.isEmpty) this else EntryStatus(block, None)
+
 }

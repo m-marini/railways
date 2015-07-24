@@ -83,37 +83,16 @@ case class GameStatus(
 
   /**
    * Puts a new train status.
-   * Creates the list of train without the new train
-   * Adds to it the new train
-   * Creates the set of associations between the tracks occupied by each train
-   * Extends the set of associations to the tracks of groups occupied by each train
-   * Generates the new status of station applying all the busy tracks
-   * Generates the new status of trains computing the new route for each train
+   * Creates the list of trains with the new train
+   * Creates the new station status and the new list of train with new route
+   * given the new list of train (recalculate transit train for each block)
    */
   private def putTrain(train: Train): GameStatus = {
     val otherTrains = trains.filterNot(_.id == train.id)
-    val tempTrainSet = otherTrains + train
 
-    // Extracts the track occupied by trains
-    //    val trainTracks: Map[Track, Train] = tempTrainSet.
-    val trainTracks = for {
-      train <- tempTrainSet
-      track <- train.transitTracks
-    } yield (track -> train.id)
+    val (newStationStatus, trainSet) = stationStatus.apply(otherTrains + train)
 
-    // Extract the busy track (by mutex block tracks) 
-    val busyTracks = stationStatus.extractBusyTrack(trainTracks)
-
-    // Update the station status with new busyTrack
-    val newStationStatus = stationStatus.apply(busyTracks)
-
-    // Computes the new routes for all new train state
-    val newTrainSet = for { train <- tempTrainSet } yield {
-      val (newRoute, newLocation) = newStationStatus.findRoute(train)
-      train(newRoute, newLocation)
-    }
-
-    setTrains(tempTrainSet).setStationStatus(newStationStatus)
+    setTrains(trainSet).setStationStatus(newStationStatus)
   }
 
   /** Generates a random integer with a Poisson distribution */

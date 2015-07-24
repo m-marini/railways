@@ -359,4 +359,11 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
     x.transitTrain(1) shouldBe None
     x.transitTrain(2) shouldBe Some("train")
   }
+  
+  property("noTrainStatus should return status with none transit train") {
+    val x = SwitchStatus(mock[SwitchBlock], trainId = Some("train")).noTrainStatus
+    x shouldBe a[SwitchStatus]
+    x should have('trainId(None))
+  }
+
 }

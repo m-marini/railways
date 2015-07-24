@@ -49,4 +49,7 @@ case class SwitchStatus(
     case _ => this
   }
 
+  /** Returns the status with no transit train */
+  override def noTrainStatus = if (trainId.isEmpty) this else SwitchStatus(block, None, locked, diverging)
+
 }

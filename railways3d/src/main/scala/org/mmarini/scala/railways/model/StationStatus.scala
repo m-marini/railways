@@ -100,14 +100,38 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
   private def findBlock(track: Track): Option[BlockStatus] =
     blocks.values.find(!_.junctionsForTrack(track)._1.isEmpty)
 
-  /** Creates the status of station from current status applying the set of busy tracks */
-  def apply(busyTracks: Set[(Track, String)]): StationStatus =
-    ???
-//    StationStatus(
-//      topology,
-//      blocks.map {
-//        case (id, block) => (id, block(busyTracks))
-//      })
+  /** Creates the status of station from current status applying the set of busy junctions */
+  def apply(trains: Set[Train]): (StationStatus, Set[Train]) = {
+    // Extracts the junctions occupied by trains
+    //    val trainTracks: Map[Track, Train] = tempTrainSet.
+    val junctionsTrain = for {
+      train <- trains
+      track <- train.transitTracks
+      blockJunction <- extractJunction(track)
+    } yield (blockJunction -> train.id)
+
+    val newStationStatus = this(junctionsTrain)
+    val newTrains = newStationStatus.computeRoutes(trains)
+    (newStationStatus, newTrains)
+  }
+
+  /** Computes the new routes for all new train state */
+  def computeRoutes(trains: Set[Train]): Set[Train] =
+    for { train <- trains } yield {
+      val (newRoute, newLocation) = findRoute(train)
+      train(newRoute, newLocation)
+    }
+
+  /** Creates the status of station from current status applying the set of busy junctions */
+  def apply(junctions: Set[((BlockStatus, Int), String)]): StationStatus = {
+    val resetBlocks = blocks.values.map(_.noTrainStatus).map(x => (x.id -> x)).toMap
+
+    val newBlocks = junctions.map {
+      case ((block, junction), trainId) => resetBlocks(block.id)(junction, Some(trainId))
+    }
+    val other = resetBlocks.values.filter(x => !newBlocks.exists(_.id == x.id))
+    StationStatus(topology, newBlocks ++ other)
+  }
 
   /** Extracts all busy tracks by trainId given the association of allocated track and trainId */
   def extractBusyTrack(trackTrains: Set[(Track, String)]): Set[(Track, String)] =
@@ -118,4 +142,22 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
     } yield {
       (groupTrack, train)
     }
+
+  /** Extracts the blocks and junction of a track */
+  def extractJunction(track: Track): Option[(BlockStatus, Int)] = {
+    val block = blocks.values.find(x => x.junctionsForTrack(track) match {
+      case (Some(junction), _) => true
+      case _ => false
+    })
+    block.map(x => (x, x.junctionsForTrack(track)._1.get))
+  }
+}
+
+/** Factory of [[StationStatus]] */
+object StationStatus {
+
+  /** Creates a StationStatus */
+  def apply(topology: Topology, blocks: Set[BlockStatus]): StationStatus =
+    StationStatus(topology, blocks.map(x => (x.block.id -> x)).toMap)
+
 }

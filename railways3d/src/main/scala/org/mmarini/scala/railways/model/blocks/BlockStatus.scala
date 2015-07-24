@@ -12,6 +12,9 @@ trait BlockStatus {
   /** Returns the block topology */
   def block: Block
 
+  /** Returns block id */
+  def id = block.id
+  
   def changeStatus: BlockStatus = this
 
   def changeFreedom: BlockStatus = this
@@ -36,4 +39,7 @@ trait BlockStatus {
 
   /** Returns the transit train in a junction */
   def transitTrain: Int => Option[String]
+
+  /** Returns the status with no transit train */
+  def noTrainStatus: BlockStatus
 }

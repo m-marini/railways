@@ -114,4 +114,10 @@ class EntryStatusTest extends PropSpec with Matchers with PropertyChecks with Mo
     val x = EntryStatus(mock[EntryBlock])(0, None)
     x.transitTrain(0) shouldBe empty
   }
+
+  property("noTrainStatus should return status with none transit train") {
+    val x = EntryStatus(mock[EntryBlock], trainId = Some("train")).noTrainStatus
+    x shouldBe a[EntryStatus]
+    x should have('trainId(None))
+  }
 }
