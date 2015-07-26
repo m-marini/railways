@@ -40,14 +40,14 @@ class EntryStatusTest extends PropSpec with Matchers with PropertyChecks with Mo
     tracks shouldBe Some((0, 1))
   }
 
-  property("junctionFrom(0) should return entry ") {
-    forAll() {
-      (idx: Int) =>
-        {
-          val status = EntryStatus(EntryBlock("", 0f, 0f, 0f))
-          status.junctionFrom(idx) shouldBe empty
-        }
-    }
+  property("junctionFrom(0) should return 1") {
+    val status = EntryStatus(EntryBlock("", 0f, 0f, 0f))
+    status.junctionFrom(0) shouldBe Some(1)
+  }
+
+  property("junctionFrom(1) should return entry") {
+    val status = EntryStatus(EntryBlock("", 0f, 0f, 0f))
+    status.junctionFrom(1) shouldBe empty
   }
 
   property("transitTrain(0) with train should return Some(train)") {

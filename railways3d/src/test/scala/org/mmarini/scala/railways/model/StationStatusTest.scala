@@ -35,7 +35,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
       private val track3 = ExitBlock("track3", 0f, SegmentLength * 11f, 0f)
 
       val junctions = Set(
-        (Endpoint(track1, 0), Endpoint(track2, 0)),
+        (Endpoint(track1, 1), Endpoint(track2, 0)),
         (Endpoint(track2, 1), Endpoint(track3, 0)))
 
       override val viewpoints = Seq[CameraViewpoint]()
@@ -70,7 +70,8 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
   }
 
   property("""Test the case 1 of a station with entry, segment, exit
-  apply with a trains in the entry should return a status with just 2 trains""") {
+  apply with a trains in the entry should return a status with just 1 train
+  and train route with 3 tracks""") {
     val status = createTest1()
 
     val block1 = status.blocks("track1").asInstanceOf[EntryStatus]
@@ -96,6 +97,18 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
 
     b3 shouldBe a[ExitStatus]
     b3.asInstanceOf[ExitStatus] should have('trainId(None))
+
+    y should have size (1)
+    val r = y.head.route.tracks
+
+    val entryTrack = status.blocks("track1").tracksForJunction(0)(0)
+    val segTrack = status.blocks("track2").tracksForJunction(0)(0)
+    val exitTrack = status.blocks("track3").tracksForJunction(0)(0)
+
+    r should have size (3)
+    r should contain(entryTrack)
+    r should contain(segTrack)
+    r should contain(exitTrack)
   }
 
   property("""Test the case of a station with 3 consecutive blocks

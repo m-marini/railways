@@ -17,7 +17,7 @@ case class ExitStatus(
   override def busy = !trainId.isEmpty
 
   /** Returns None */
-  override def junctionFrom = (_) => None
+  override def junctionFrom = (x) => if (x == 0) Some(1) else None
 
   /** Returns the transit train in a junction */
   override def transitTrain = _ => trainId
