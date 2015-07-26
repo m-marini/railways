@@ -10,10 +10,13 @@ import org.mmarini.scala.railways.model.Transform2d
 /** The exiting trains go out this BlockTemplate */
 case class ExitBlock(id: String, trans: Transform2d) extends Block with TrackBlock {
 
-  val trackGroups: IndexedSeq[Set[Set[Track]]] = IndexedSeq(Set(Set(HiddenTrack)))
+  val track = new HiddenTrack
 
-  val routes: IndexedSeq[Set[(Option[Int], Option[Int], IndexedSeq[Track])]] =
-    IndexedSeq(Set((Some(0), None, IndexedSeq(HiddenTrack))))
+  override val trackGroups = IndexedSeq(Set(Set(track.asInstanceOf[Track])))
+
+  override val routes = IndexedSeq(
+    Set(
+      (0, 1, IndexedSeq(track.asInstanceOf[Track]))))
 }
 
 /** Factory of [[ExitBlock]] */

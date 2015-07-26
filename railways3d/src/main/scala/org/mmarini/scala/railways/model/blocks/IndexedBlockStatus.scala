@@ -16,7 +16,7 @@ trait IndexedBlockStatus extends BlockStatus {
   def trackGroupFor: Track => Set[Track] = block.trackGroupFor(statusIndex)
 
   /** Returns the start junction containing a track */
-  override def junctionsForTrack: Track => (Option[Int], Option[Int]) = block.junctionsForTrack(statusIndex)
+  override def junctionsForTrack: Track => Option[(Int, Int)] = block.junctionsForTrack(statusIndex)
 
   /** Returns the track list for a junction */
   def tracksForJunction: Int => IndexedSeq[Track] = block.tracksForJunction(statusIndex)

@@ -14,7 +14,7 @@ trait BlockStatus {
 
   /** Returns block id */
   def id = block.id
-  
+
   def changeStatus: BlockStatus = this
 
   def changeFreedom: BlockStatus = this
@@ -29,7 +29,7 @@ trait BlockStatus {
   def apply(junction: Int, trainId: Option[String]): BlockStatus
 
   /** Returns the start junction containing a track */
-  def junctionsForTrack: Track => (Option[Int], Option[Int])
+  def junctionsForTrack: Track => Option[(Int, Int)]
 
   /** Returns the track list for a junction */
   def tracksForJunction: Int => IndexedSeq[Track]

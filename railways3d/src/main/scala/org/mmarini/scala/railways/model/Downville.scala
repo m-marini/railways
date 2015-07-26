@@ -30,10 +30,14 @@ case object Downville extends Topology {
   private val exitTrack = SegmentBlock("exit-track", SegmentLength * 17.5f, 0, -RightAngle)
 
   val junctions = Set(
-    (Endpoint(platform1, 0), Endpoint(platform2, 0)),
-    (Endpoint(entryTrack, 0), Endpoint(entryDev, 0)),
-    (Endpoint(exitTrack, 0), Endpoint(exitDev, 0)),
-    (Endpoint(exit, 0), Endpoint(entry, 0)))
+    (Endpoint(entry, 1), Endpoint(entryTrack, 0)),
+    (Endpoint(entryTrack, 1), Endpoint(entryDev, 0)),
+    (Endpoint(entryDev, 1), Endpoint(platform1, 0)),
+    (Endpoint(entryDev, 2), Endpoint(platform2, 0)),
+    (Endpoint(exitDev, 1), Endpoint(platform1, 1)),
+    (Endpoint(exitDev, 2), Endpoint(platform2, 1)),
+    (Endpoint(exitTrack, 1), Endpoint(exitDev, 0)),
+    (Endpoint(exit, 0), Endpoint(exitTrack, 0)))
 
   val landscapeRot = new Quaternion().fromAngleAxis(RightAngle / 2, Vector3f.UNIT_X);
 

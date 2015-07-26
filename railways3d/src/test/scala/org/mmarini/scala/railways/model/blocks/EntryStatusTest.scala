@@ -15,108 +15,63 @@ import org.mmarini.scala.railways.model.tracks.Track
 
 /** Test */
 class EntryStatusTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
-  val track = mock[Track]
-
-  private val TrainId = "id"
 
   private def transitTrain =
     for (transit <- Arbitrary.arbitrary[Boolean])
-      yield if (transit) Some(TrainId) else None
+      yield if (transit) Some("train") else None
 
-  private def create(transitTrain: Option[String]) = {
-    val block = mock[EntryBlock]
-
-    val f = mock[Track => (Option[Int], Option[Int])]
-    when(f.apply(track)).thenReturn((None, Option(0)))
-
-    when(block.tracksForJunction).thenReturn(
-      IndexedSeq(
-        IndexedSeq(
-          IndexedSeq())))
-    when(block.junctionsForTrack).thenReturn(IndexedSeq(f))
-
-    val track2Group = mock[Track => Set[Track]]
-    when(track2Group.apply(track)).thenReturn(Set[Track](track))
-
-    val conf2Groups = mock[Int => Track => Set[Track]]
-    when(conf2Groups.apply(0)).thenReturn(track2Group)
-    when(block.trackGroupFor).thenReturn(conf2Groups)
-    (block, EntryStatus(block, transitTrain))
+  property("tracksForJunction should return forward track") {
+    val status = EntryStatus(EntryBlock("", 0f, 0f, 0f), Some("train"))
+    val tracks = status.tracksForJunction(0)
+    tracks should have size (1)
+    tracks should contain(status.block.entryTrack)
   }
 
-  property("tracksForJunction 0 of EntryStatus should return forward track") {
-    forAll(
-      (transitTrain, "transitTrain")) {
-        (transitTrain: Option[String]) =>
-          {
-            val (block, status) = create(transitTrain)
-            val tracks = status.tracksForJunction(0)
-            verify(block).tracksForJunction
-            tracks shouldBe empty
-          }
-      }
+  property("trackGroupFor for forward track should return all tracks") {
+    val status = EntryStatus(EntryBlock("", 0f, 0f, 0f), Some("train"))
+    val tracks = status.trackGroupFor(status.block.entryTrack)
+    tracks should have size (1)
+    tracks should contain(status.block.entryTrack)
   }
 
-  property("trackGroupFor of EntryStatus for forward track should return all tracks") {
-    forAll(
-      (transitTrain, "transitTrain")) {
-        (transitTrain: Option[String]) =>
-          {
-            val (block, status) = create(transitTrain)
-            val tracks = status.trackGroupFor(track)
-            verify(block).trackGroupFor
-            tracks should have size (1)
-            tracks should contain(track)
-          }
-      }
+  property("junctionsForTrack for forward track should return all tracks") {
+    val status = EntryStatus(EntryBlock("", 0f, 0f, 0f), Some("train"))
+    val tracks = status.junctionsForTrack(status.block.entryTrack)
+    tracks shouldBe Some((0, 1))
   }
 
-  property("junctionsForTrack of EntryStatus for forward track should return all tracks") {
-    forAll(
-      (transitTrain, "transitTrain")) {
-        (transitTrain: Option[String]) =>
-          {
-            val (block, status) = create(transitTrain)
-            val tracks = status.junctionsForTrack(track)
-            verify(block).junctionsForTrack
-            tracks should matchPattern {
-              case (None, Some(0)) =>
-            }
-          }
-      }
-  }
-
-  property("junctionFrom(0) should return None") {
+  property("junctionFrom(0) should return entry ") {
     forAll() {
       (idx: Int) =>
         {
-          val status = EntryStatus(mock[EntryBlock])
+          val status = EntryStatus(EntryBlock("", 0f, 0f, 0f))
           status.junctionFrom(idx) shouldBe empty
         }
     }
   }
 
   property("transitTrain(0) with train should return Some(train)") {
-    val trainId = "train"
-    EntryStatus(mock[EntryBlock], Some(trainId)).transitTrain(0) shouldBe Some(trainId)
+    val x = EntryStatus(EntryBlock("", 0f, 0f, 0f), Some("train")).transitTrain
+    x(0) shouldBe Some("train")
   }
 
   property("transitTrain(0) should return None") {
-    EntryStatus(mock[EntryBlock]).transitTrain(0) shouldBe empty
+    val x = EntryStatus(EntryBlock("", 0f, 0f, 0f)).transitTrain
+    x(0) shouldBe empty
   }
 
-  property("apply(HiddenTrack, train) should return status with transit train") {
-    val x = EntryStatus(mock[EntryBlock])(0, Some("train"))
-    x.transitTrain(0) shouldBe Some("train")
+  property("apply(0, train) should return status with transit train") {
+    val x = EntryStatus(EntryBlock("", 0f, 0f, 0f))(0, Some("train"))
+    x should have('trainId(Some("train")))
   }
 
-  property("apply(otherTrack, train) should return status with none transit train") {
-    val x = EntryStatus(mock[EntryBlock])(0, None)
-    x.transitTrain(0) shouldBe empty
+  property("apply(0, None) should return status with none transit train") {
+    val x = EntryStatus(EntryBlock("", 0f, 0f, 0f), Some("train"))(0, None)
+    x should have('trainId(None))
   }
 
   property("noTrainStatus should return status with none transit train") {
-    val x = EntryStatus(mock[EntryBlock], trainId = Some("train")).noTrainStatus
+    val x = EntryStatus(EntryBlock("", 0f, 0f, 0f), Some("train")).noTrainStatus
     x shouldBe a[EntryStatus]
     x should have('trainId(None))
   }

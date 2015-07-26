@@ -9,11 +9,14 @@ import org.mmarini.scala.railways.model.Transform2d
 
 /** The incoming trains come in this BlockTemplate */
 case class EntryBlock(id: String, trans: Transform2d) extends Block with TrackBlock {
+  val entryTrack = new HiddenTrack
 
-  val trackGroups: IndexedSeq[Set[Set[Track]]] = IndexedSeq(Set(Set(HiddenTrack)))
+  override val trackGroups = IndexedSeq(Set(Set(entryTrack.asInstanceOf[Track])))
 
-  val routes: IndexedSeq[Set[(Option[Int], Option[Int], IndexedSeq[Track])]] =
-    IndexedSeq(Set((None, Some(0), IndexedSeq(HiddenTrack))))
+  override val routes =
+    IndexedSeq(
+      Set(
+        (0, 1, IndexedSeq(entryTrack.asInstanceOf[Track]))))
 }
 
 /** Factory of [[EntryBlock]] */

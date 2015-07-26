@@ -33,6 +33,9 @@ package object model {
   /** Track width */
   val TrackWidth = 1.435f
 
+  /** Max train size */
+  val MaxTrainSize = 11
+
   /** Segment * (1-cos(curve))/sin(curve) */
   val TrackGap = 4.608f
 
@@ -66,7 +69,7 @@ package object model {
   case class Endpoint(block: Block, index: Int)
 
   type Junction = (Endpoint, Endpoint)
-  
+
   type GameTransition = GameStatus => GameStatus
 
 }

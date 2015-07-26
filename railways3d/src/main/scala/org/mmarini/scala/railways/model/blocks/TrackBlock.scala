@@ -8,7 +8,7 @@ import org.mmarini.scala.railways.model.tracks.Track
 /** The arriving trains stop at this BlockTemplate to wait for passengers boarding */
 trait TrackBlock {
   def trackGroups: IndexedSeq[Set[Set[Track]]]
-  def routes: IndexedSeq[Set[(Option[Int], Option[Int], IndexedSeq[Track])]]
+  def routes: IndexedSeq[Set[(Int, Int, IndexedSeq[Track])]]
 
   /** Returns the tracks group for a given configuration and a track and */
   def trackGroupFor: Int => Track => Set[Track] = (config) => (track) =>
@@ -18,17 +18,17 @@ trait TrackBlock {
     }
 
   /** Returns the junctions pair containing a track */
-  def junctionsForTrack: Int => Track => (Option[Int], Option[Int]) = (config) => (track) =>
+  def junctionsForTrack: Int => Track => Option[(Int, Int)] = (config) => (track) =>
     routes(config).find {
       case (_, _, list) => list.contains(track)
     } match {
-      case Some((from, to, _)) => (from, to)
-      case _ => (None, None)
+      case Some((from, to, _)) => Some((from, to))
+      case _ => None
     }
 
   /** Returns the track list for a junction */
   def tracksForJunction: Int => Int => IndexedSeq[Track] = (config) => (from) =>
-    routes(config).find(_._1.contains(from)) match {
+    routes(config).find(_._1 == from) match {
       case Some((_, _, list)) => list
       case _ => IndexedSeq()
     }

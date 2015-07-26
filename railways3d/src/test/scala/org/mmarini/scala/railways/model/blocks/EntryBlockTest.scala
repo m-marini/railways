@@ -16,20 +16,20 @@ import org.mmarini.scala.railways.model.tracks.Track
 class EntryBlockTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
   val block = EntryBlock("", 0, 0, 0)
 
-  property("tracksForJunction of EntryBlock from 0 should be empty") {
-    block.tracksForJunction(0)(0) shouldBe empty
+  property("tracksForJunction of EntryBlock from 0 should hidden track") {
+    val x = block.tracksForJunction(0)(0)
+    x should have size (1)
+    x should contain(block.entryTrack)
   }
 
-  property("junctionRoute of EntryBlock from 0 should be empty") {
-    block.junctionsForTrack(0)(HiddenTrack) should matchPattern {
-      case (None, Some(0)) =>
-    }
+  property("junctionsForTrack of EntryBlock from 0 should Some(0, 1)") {
+    block.junctionsForTrack(0)(block.entryTrack) shouldBe (Some(0, 1))
   }
 
   property("trackGroupFor of EntryBlock for HiddenTrack should return HiddenTrack") {
-    val x = block.trackGroupFor(0)(HiddenTrack)
+    val x = block.trackGroupFor(0)(block.entryTrack)
     x should have size (1)
-    x should contain(HiddenTrack)
+    x should contain(block.entryTrack)
   }
 
   property("trackGroupFor of EntryBlock for other track should return empty") {

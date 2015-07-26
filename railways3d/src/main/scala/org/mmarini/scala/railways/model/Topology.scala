@@ -34,10 +34,11 @@ trait Topology {
   /** Returns the exit */
   lazy val exits: Set[Block] = blocks.filter(_.isInstanceOf[ExitBlock])
 
-  /** Finds the connection */
+  /** Finds the connection from the entry end point */
   lazy val findConnection: Endpoint => Option[Endpoint] =
+    // Convert the junction set into a map with reverse connection
     junctions.flatMap {
-      case (a, b) => Set((a, b), (b, a))
+      case (a, b) => Set((a -> b), (b -> a))
     }.toMap.get
 }
 

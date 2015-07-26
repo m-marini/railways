@@ -16,21 +16,29 @@ import org.mmarini.scala.railways.model.tracks.Track
 class ExitBlockTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
   val block = ExitBlock("", 0, 0, 0)
 
-  property("tracksForJunction of ExitBlock from 0 should be empty") {
-    block.tracksForJunction(0)(0) should have size (1)
-    block.tracksForJunction(0)(0) should contain(HiddenTrack)
+  property("tracksForJunction of ExitBlock from 0 should the exit track") {
+    val x = block.tracksForJunction
+    x(0)(0) should have size (1)
+    x(0)(0)(0) shouldBe (block.track)
   }
 
-  property("junctionRoute of ExitBlock from 0 should be empty") {
-    block.junctionsForTrack(0)(HiddenTrack) should matchPattern {
-      case (Some(0), None) =>
-    }
+  property("tracksForJunction of ExitBlock from 1 should empty") {
+    val x = block.tracksForJunction
+    x(0)(1) shouldBe empty
+  }
+
+  property("junctionsForTrack for exit track should be Some(0, 1)") {
+    block.junctionsForTrack(0)(block.track) shouldBe (Some(0, 1))
+  }
+
+  property("junctionsForTrack for other track should be empty") {
+    block.junctionsForTrack(0)(mock[Track]) shouldBe empty
   }
 
   property("trackGroupFor of ExitBlockTest for ExitBlock should return HiddenTrack") {
-    val x = block.trackGroupFor(0)(HiddenTrack)
+    val x = block.trackGroupFor(0)(block.track)
     x should have size (1)
-    x should contain(HiddenTrack)
+    x should contain(block.track)
   }
 
   property("trackGroupFor of ExitBlockTest for other track should return empty") {

@@ -35,21 +35,17 @@ class SegmentTemplateTest extends PropSpec with Matchers with PropertyChecks wit
     list should have size (1)
     list should contain(SegmentTrack(new Vector2f(0f, 11 * SegmentLength), Vector2f.ZERO))
   }
-  
+
   property("junctionsForTrack forward of PlatformBlock should be 0 - 1") {
     val track = block.tracksForJunction(0)(0)(0)
     val x = block.junctionsForTrack(0)(track)
-    x should matchPattern {
-      case (Some(0), Some(1)) =>
-    }
+    x shouldBe Some((0, 1))
   }
 
   property("junctionsForTrack backward of PlatformBlock should be 1 - 0") {
     val track = block.tracksForJunction(0)(1)(0)
     val x = block.junctionsForTrack(0)(track)
-    x should matchPattern {
-      case (Some(1), Some(0)) =>
-    }
+    x shouldBe Some((1, 0))
   }
 
   property("trackGroupFor forward of PlatformBlock should return all tracks") {
@@ -68,6 +64,6 @@ class SegmentTemplateTest extends PropSpec with Matchers with PropertyChecks wit
     x should have size (2)
     x should contain(forward)
     x should contain(backward)
-  }  
+  }
 
 }

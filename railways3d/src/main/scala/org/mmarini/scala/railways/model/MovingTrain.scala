@@ -10,6 +10,9 @@ import scala.math.sqrt
 import com.typesafe.scalalogging.LazyLogging
 import org.mmarini.scala.railways.model.tracks.PlatformTrack
 import org.mmarini.scala.railways.model.blocks.ExitStatus
+import org.mmarini.scala.railways.model.blocks.EntryStatus
+import org.mmarini.scala.railways.model.tracks.Track
+
 /** This MovingTrain computes the next state of this moving train */
 case class MovingTrain(
     id: String,
@@ -45,5 +48,19 @@ case class MovingTrain(
     } else {
       Some(MovingTrain(id, size, route, newLocation, newSpeed))
     }
+  }
+}
+
+/** A factory of [[MovingTrain]] */
+object MovingTrain {
+
+  /** Creates a [[MovingTrain]] */
+  def apply(id: String, size: Int, entry: EntryStatus): MovingTrain = {
+    val route = TrainRoute(IndexedSeq(entry.block.entryTrack.asInstanceOf[Track]))
+    MovingTrain(id = id,
+      location = route.length,
+      size = size,
+      route = route,
+      speed = MaxSpeed)
   }
 }

@@ -75,13 +75,13 @@ class RightHandSwitchBlockTest extends PropSpec with Matchers with PropertyCheck
   property("junctionsForTrack of LeftHandSwitchBlock should match cases") {
     val cases = Table(
       ("config", "junction", "expected"),
-      (0, 0, (Some(0), Some(1))),
-      (0, 1, (Some(1), Some(0))),
-      (1, 0, (Some(0), Some(2))),
-      (1, 2, (Some(2), Some(0))))
+      (0, 0, Some((0, 1))),
+      (0, 1, Some((1, 0))),
+      (1, 0, Some((0, 2))),
+      (1, 2, Some((2, 0))))
 
     forAll(cases) {
-      (config: Int, junction: Int, expected: (Option[Int], Option[Int])) =>
+      (config: Int, junction: Int, expected: Option[(Int, Int)]) =>
         {
           val track = block.tracksForJunction(config)(junction).head
           block.junctionsForTrack(config)(track) shouldBe (expected)

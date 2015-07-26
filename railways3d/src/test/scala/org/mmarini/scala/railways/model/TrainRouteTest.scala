@@ -166,6 +166,21 @@ class TrainRouteTest extends PropSpec with Matchers with PropertyChecks with Moc
     }
   }
 
+  property(""" Test the case of route with entry block
+  trackLocationAt(distance) should return the entry (track,0f)""") {
+
+    forAll((Gen.listOf(chooseLength), "lengths")) {
+      (lengths: List[Float]) =>
+        whenever(!lengths.isEmpty) {
+          val expected = lengths.sum
+          val distance = 0f
+          val route = createTrainRoute(lengths)
+          val x = route.trackLocationAt(distance)
+
+        }
+    }
+  }
+
   private def createTrainRoute(lengths: List[Float]) =
     TrainRoute(lengths.map(len => {
       val track = mock[Track]

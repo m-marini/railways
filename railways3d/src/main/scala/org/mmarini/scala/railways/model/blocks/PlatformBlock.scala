@@ -14,7 +14,7 @@ case class PlatformBlock(
   id: String,
   trans: Transform2d,
   trackGroups: IndexedSeq[Set[Set[Track]]],
-  routes: IndexedSeq[Set[(Option[Int], Option[Int], IndexedSeq[Track])]])
+  routes: IndexedSeq[Set[(Int, Int, IndexedSeq[Track])]])
     extends Block with TrackBlock
 
 /** Factory of [[SegmentBlock]] */
@@ -28,8 +28,8 @@ object PlatformBlock {
     val group = IndexedSeq(Set(Set[Track](forward, backward)))
     val routes = IndexedSeq(
       Set(
-        (Option(0), Option(1), IndexedSeq[Track](forward)),
-        (Option(1), Option(0), IndexedSeq[Track](backward))))
+        (0, 1, IndexedSeq[Track](forward)),
+        (1, 0, IndexedSeq[Track](backward))))
     PlatformBlock(id, trans, group, routes)
   }
 }   

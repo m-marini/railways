@@ -14,23 +14,25 @@ import org.mmarini.scala.railways.model.blocks.BlockStatus
 case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
 
   /** Generates the next status changing the status of a block */
-  def changeBlockStatus(id: String): StationStatus =
-    setBlocks(blocks.
-      get(id).
-      map(_.changeStatus).
-      map(bs => blocks + (id -> bs)).
-      getOrElse(blocks))
+  def changeBlockStatus(id: String): StationStatus = {
+    val newBlocks = (for { block <- blocks.get(id) } yield {
+      val newStatus = block.changeStatus
+      blocks + (id -> newStatus)
+    })
+    if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)
+  }
 
   /** Generates the next status changing the freedom of a block */
-  def changeBlockFreedom(id: String): StationStatus =
-    setBlocks(blocks.
-      get(id).
-      map(_.changeFreedom).
-      map(bs => blocks + (id -> bs)).
-      getOrElse(blocks))
+  def changeBlockFreedom(id: String): StationStatus = {
+    val newBlocks = (for { block <- blocks.get(id) } yield {
+      val newStatus = block.changeFreedom
+      blocks + (id -> newStatus)
+    })
+    if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)
+  }
 
   /** Creates a new status with a new block map */
-  def setBlocks(blocks: Map[String, BlockStatus]): StationStatus =
+  private def setBlocks(blocks: Map[String, BlockStatus]): StationStatus =
     StationStatus(topology, blocks)
 
   /** Finds the sequence of tracks available ot allocated by a train starting from a junction of a block */
@@ -64,9 +66,11 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
 
   /** Finds connection to next block */
   def findConnection: BlockStatus => Int => Option[(BlockStatus, Int)] = (blockStatus) => (junction) =>
-    topology.
-      findConnection(Endpoint(blockStatus.block, junction)).
-      map(ep => (blocks(ep.block.id), ep.index))
+    for {
+      ep <- topology.findConnection(Endpoint(blockStatus.block, junction))
+    } yield {
+      (blocks(ep.block.id), ep.index)
+    }
 
   /**
    * Finds the path for a given train
@@ -84,34 +88,44 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
   def findRoute(train: Train): (TrainRoute, Float) = {
 
     val Some((tailTrack, loc)) = train.trackTailLocation
+
     // Finds block and junction containing the track of train tail
     val Some(startingBlock) = findBlock(tailTrack)
-    val (start, _) = startingBlock.junctionsForTrack(tailTrack)
+    val junctions = startingBlock.junctionsForTrack(tailTrack)
 
     // map to track list
-    val trackList = start.map(
-      x => findRoute(startingBlock, x, train.id)).
+    val trackList = (for {
+      (x, _) <- junctions
+    } yield findRoute(startingBlock, x, train.id)).
       toIndexedSeq.flatten
+
     // drop head until track of tail train
     (TrainRoute(trackList.dropWhile { _ != tailTrack }), loc + train.length)
   }
 
   /** Returns the block status containing the given track */
   private def findBlock(track: Track): Option[BlockStatus] =
-    blocks.values.find(!_.junctionsForTrack(track)._1.isEmpty)
+    blocks.values.find(!_.junctionsForTrack(track).isEmpty)
 
-  /** Creates the status of station from current status applying the set of busy junctions */
+  /**
+   * Creates the status of station and the new set of train with the new routes
+   * given a set of trains
+   */
   def apply(trains: Set[Train]): (StationStatus, Set[Train]) = {
+
     // Extracts the junctions occupied by trains
-    //    val trainTracks: Map[Track, Train] = tempTrainSet.
     val junctionsTrain = for {
       train <- trains
       track <- train.transitTracks
-      blockJunction <- extractJunction(track)
+      blockJunction <- extractJunctions(track)
     } yield (blockJunction -> train.id)
 
-    val newStationStatus = this(junctionsTrain)
+    // Creates the new station status applying the occupied junction
+    val newStationStatus = apply(junctionsTrain)
+
+    // Creates the new set of trains with the new routes
     val newTrains = newStationStatus.computeRoutes(trains)
+
     (newStationStatus, newTrains)
   }
 
@@ -124,32 +138,26 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
 
   /** Creates the status of station from current status applying the set of busy junctions */
   def apply(junctions: Set[((BlockStatus, Int), String)]): StationStatus = {
-    val resetBlocks = blocks.values.map(_.noTrainStatus).map(x => (x.id -> x)).toMap
+    val resetBlocks = (for {
+      b <- blocks.values
+    } yield {
+      val x = b.noTrainStatus
+      (x.id -> x)
+    }).
+      toMap
 
-    val newBlocks = junctions.map {
-      case ((block, junction), trainId) => resetBlocks(block.id)(junction, Some(trainId))
-    }
+    val newBlocks = for {
+      ((block, junction), trainId) <- junctions
+    } yield resetBlocks(block.id)(junction, Some(trainId))
+
     val other = resetBlocks.values.filter(x => !newBlocks.exists(_.id == x.id))
     StationStatus(topology, newBlocks ++ other)
   }
 
-  /** Extracts all busy tracks by trainId given the association of allocated track and trainId */
-  def extractBusyTrack(trackTrains: Set[(Track, String)]): Set[(Track, String)] =
-    for {
-      (track, train) <- trackTrains
-      blockStatus <- blocks.values
-      groupTrack <- blockStatus.trackGroupFor(track)
-    } yield {
-      (groupTrack, train)
-    }
-
   /** Extracts the blocks and junction of a track */
-  def extractJunction(track: Track): Option[(BlockStatus, Int)] = {
-    val block = blocks.values.find(x => x.junctionsForTrack(track) match {
-      case (Some(junction), _) => true
-      case _ => false
-    })
-    block.map(x => (x, x.junctionsForTrack(track)._1.get))
+  def extractJunctions(track: Track): Option[(BlockStatus, Int)] = {
+    val blockOpt = blocks.values.find(x => !x.junctionsForTrack(track).isEmpty)
+    for { x <- blockOpt } yield (x, x.junctionsForTrack(track).get._1)
   }
 }
 
@@ -157,7 +165,9 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
 object StationStatus {
 
   /** Creates a StationStatus */
-  def apply(topology: Topology, blocks: Set[BlockStatus]): StationStatus =
-    StationStatus(topology, blocks.map(x => (x.block.id -> x)).toMap)
+  def apply(topology: Topology, blocks: Set[BlockStatus]): StationStatus = {
+    val blockMap = (for { x <- blocks } yield (x.block.id -> x)).toMap
+    StationStatus(topology, blockMap)
+  }
 
 }

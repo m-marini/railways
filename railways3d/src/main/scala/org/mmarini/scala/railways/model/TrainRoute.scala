@@ -26,11 +26,11 @@ case class TrainRoute(tracks: IndexedSeq[Track]) {
 
   /** Returns the track and the distance from begin of a point in the route at a given distance of the start route */
   def trackLocationAt(distance: Float): Option[(Track, Float)] =
-    mapper.find {
-      case (len, track) => distance >= len && distance <= len + track.length
-    }.map {
-      case (len, track) => (track, distance - len)
-    }
+    for (
+      (len, track) <- mapper.find {
+        case (len, track) => distance >= len && distance <= len + track.length
+      }
+    ) yield (track, distance - len)
 
   /** Returns the location of a point in the route at a given distance of the start route */
   def locationAt(distance: Float): Option[Vector2f] =
