@@ -153,22 +153,22 @@ class StationRenderer(
   /** Returns the status key of a block */
   def statusKey(status: BlockStatus): String = status match {
     case s: EntryStatus => SemRedModel
-    case s: ExitStatus if (s.free) => SemGreenModel
+    case s: ExitStatus if (s.isClear(0)) => SemGreenModel
     case s: ExitStatus => SemRedModel
 
-    case s: PlatformStatus if (s.free) => GreenPlatModel
+    case s: PlatformStatus if (s.isClear(0)) => GreenPlatModel
     case s: PlatformStatus => RedPlatModel
 
-    case s: SegmentStatus if (s.free) => GreenPlatModel
+    case s: SegmentStatus if (s.isClear(0)) => GreenPlatModel
     case s: SegmentStatus => RedPlatModel
 
-    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && s.diverging && s.free) => SwitchLeftDivGreenModel
-    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && s.diverging && !s.free) => SwitchLeftDivRedModel
-    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && !s.diverging && s.free) => SwitchLeftStraightGreenModel
-    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && !s.diverging && !s.free) => SwitchLeftStraightRedModel
-    case s: SwitchStatus if (s.diverging && s.free) => SwitchRightDivGreenModel
-    case s: SwitchStatus if (s.diverging && !s.free) => SwitchRightDivRedModel
-    case s: SwitchStatus if (s.free) => SwitchRightStraightGreenModel
+    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && s.diverging && s.isClear(0)) => SwitchLeftDivGreenModel
+    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && s.diverging && !s.isClear(0)) => SwitchLeftDivRedModel
+    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && !s.diverging && s.isClear(0)) => SwitchLeftStraightGreenModel
+    case s: SwitchStatus if (s.block.isInstanceOf[LeftHandSwitchBlock] && !s.diverging && !s.isClear(0)) => SwitchLeftStraightRedModel
+    case s: SwitchStatus if (s.diverging && s.isClear(0)) => SwitchRightDivGreenModel
+    case s: SwitchStatus if (s.diverging && !s.isClear(0)) => SwitchRightDivRedModel
+    case s: SwitchStatus if (s.isClear(0)) => SwitchRightStraightGreenModel
     case s: SwitchStatus => SwitchRightStraightRedModel
   }
 }

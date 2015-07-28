@@ -29,9 +29,11 @@ import org.mmarini.scala.jmonkey.ApplicationOps
 import org.mmarini.scala.jmonkey.InputManagerOps
 import de.lessvoid.nifty.controls.ListBoxSelectionChangedEvent
 import org.mmarini.scala.jmonkey.ListBoxSelectionObservable
+import com.typesafe.scalalogging.LazyLogging
+import scala.util.Random
 
 /** */
-package object railways {
+package object railways extends LazyLogging {
 
   val OrientationAxis = Vector3f.UNIT_Y
 
@@ -39,6 +41,23 @@ package object railways {
   implicit def inpManagerToinpManagerOps(app: InputManager): InputManagerOps = new InputManagerOps(app)
   implicit def toListBoxSelectionObservable[T](obs: Observable[ListBoxSelectionChangedEvent[T]]): ListBoxSelectionObservable[T] =
     new ListBoxSelectionObservable(obs)
+
+  /** Shuffles a sequence */
+  def shuffle[T](seq: IndexedSeq[T])(random: Random): IndexedSeq[T] = {
+    val n = seq.length
+    if (n <= 1) {
+      seq
+    } else {
+      (0 until n - 1).foldLeft(seq)((seq, i) => {
+        val j = random.nextInt(n - i) + i
+        if (i != j) {
+          seq.updated(j, seq(i)).updated(i, seq(j))
+        } else {
+          seq
+        }
+      })
+    }
+  }
 
   /**
    *
@@ -67,19 +86,15 @@ package object railways {
     r
   }
 
-  /**
-   *
-   */
-  def stateFlow[S](s0: S)(transition: Observable[S => S]): Observable[S] =
-    Observable.create((o: Observer[S]) => {
-      o.onNext(s0)
-      var s = s0
-      transition.subscribe(
-        f => {
-          s = f(s)
-          o.onNext(s)
-        },
-        ex => o.onError(ex),
-        o.onCompleted)
+  /** State flow */
+  def stateFlow[S](s0: S)(transition: Observable[S => S]): Observable[S] = {
+    val s = Subject[S]
+    var status = s0
+    transition.subscribe((f: S => S) => {
+      status = f(status)
+      s.onNext(status)
     })
+    s
+  }
+
 }

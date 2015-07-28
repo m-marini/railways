@@ -9,7 +9,7 @@ import org.mmarini.scala.railways.model.tracks.Track
 case class SwitchStatus(
     block: SwitchBlock,
     trainId: Option[String] = None,
-    locked: Boolean = false,
+    lockedJunctions: IndexedSeq[Boolean] = IndexedSeq(false, false, false),
     diverging: Boolean = false) extends IndexedBlockStatus with LockableStatus {
 
   private val junctions = IndexedSeq(
@@ -24,11 +24,9 @@ case class SwitchStatus(
 
   override def statusIndex = if (diverging) 1 else 0
 
-  override def changeStatus: BlockStatus = SwitchStatus(block, trainId, locked, !diverging)
+  override def changeStatus: BlockStatus = SwitchStatus(block, trainId, lockedJunctions, !diverging)
 
-  override def changeFreedom: BlockStatus = SwitchStatus(block, trainId, !locked, diverging)
-
-  override def busy = !trainId.isEmpty
+  override def changeFreedom: BlockStatus = SwitchStatus(block, trainId, lockedJunctions.map(!_), diverging)
 
   /** Returns the end junction given the entry */
   override def junctionFrom = junctions(statusIndex)
@@ -42,14 +40,14 @@ case class SwitchStatus(
 
   /** Creates a new block status applying trainId to a junction. */
   override def apply(junction: Int, trainId: Option[String]) = (diverging, junction) match {
-    case (false, 0) if (trainId != this.trainId) => SwitchStatus(block, trainId, locked, diverging)
-    case (false, 1) if (trainId != this.trainId) => SwitchStatus(block, trainId, locked, diverging)
-    case (true, 0) if (trainId != this.trainId) => SwitchStatus(block, trainId, locked, diverging)
-    case (true, 2) if (trainId != this.trainId) => SwitchStatus(block, trainId, locked, diverging)
+    case (false, 0) if (trainId != this.trainId) => SwitchStatus(block, trainId, lockedJunctions, diverging)
+    case (false, 1) if (trainId != this.trainId) => SwitchStatus(block, trainId, lockedJunctions, diverging)
+    case (true, 0) if (trainId != this.trainId) => SwitchStatus(block, trainId, lockedJunctions, diverging)
+    case (true, 2) if (trainId != this.trainId) => SwitchStatus(block, trainId, lockedJunctions, diverging)
     case _ => this
   }
 
   /** Returns the status with no transit train */
-  override def noTrainStatus = if (trainId.isEmpty) this else SwitchStatus(block, None, locked, diverging)
+  override def noTrainStatus = if (trainId.isEmpty) this else SwitchStatus(block, None, lockedJunctions, diverging)
 
 }

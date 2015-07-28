@@ -34,6 +34,9 @@ package object model {
   val TrackWidth = 1.435f
 
   /** Max train size */
+  val MinTrainSize = 7
+
+  /** Max train size */
   val MaxTrainSize = 11
 
   /** Segment * (1-cos(curve))/sin(curve) */

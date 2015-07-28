@@ -236,4 +236,20 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     }
   }
 
+  property("""Test the case 1
+  entryBlocks should return entry block.""") {
+    val status = createTest1()
+    val x = status.entryBlocks
+    x should have size (1)
+    x should contain(status.blocks("track1"))
+  }
+
+  property("""Test the case 1
+  exitBlocks should return entry block.""") {
+    val status = createTest1()
+    val x = status.exitBlocks
+    x should have size (1)
+    x should contain(status.blocks("track3"))
+  }
+
 }

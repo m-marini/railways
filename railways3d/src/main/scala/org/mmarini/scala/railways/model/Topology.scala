@@ -28,12 +28,6 @@ trait Topology {
   /** Returns the viewpoints */
   def viewpoints: Seq[CameraViewpoint]
 
-  /** Returns the entries */
-  lazy val entries: Set[Block] = blocks.filter(_.isInstanceOf[EntryBlock])
-
-  /** Returns the exit */
-  lazy val exits: Set[Block] = blocks.filter(_.isInstanceOf[ExitBlock])
-
   /** Finds the connection from the entry end point */
   lazy val findConnection: Endpoint => Option[Endpoint] =
     // Convert the junction set into a map with reverse connection

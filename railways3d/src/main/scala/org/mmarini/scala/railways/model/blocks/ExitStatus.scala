@@ -9,12 +9,10 @@ import org.mmarini.scala.railways.model.tracks.Track
 case class ExitStatus(
     block: ExitBlock,
     trainId: Option[String] = None,
-    locked: Boolean = false) extends SingleBlockStatus with LockableStatus {
+    locked: Boolean = false) extends SingleBlockStatus {
 
   /** */
   override def changeFreedom = ExitStatus(block, trainId, !locked)
-
-  override def busy = !trainId.isEmpty
 
   /** Returns None */
   override def junctionFrom = (x) => if (x == 0) Some(1) else None
@@ -31,4 +29,6 @@ case class ExitStatus(
   /** Returns the status with no transit train */
   override def noTrainStatus: BlockStatus = if (trainId.isEmpty) this else ExitStatus(block, None, locked)
 
+  /** Returns true if the junction is clear. */
+  override def isClear = (x) => !locked && transitTrain(x).isEmpty
 }

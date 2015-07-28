@@ -15,7 +15,7 @@ import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model._
 
 /** Test */
-class PlatformTemplateTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
+class PlatformBlockTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
   val block = PlatformBlock("", 0, 0, 0)
 
   property("trackGroups of PlatformBlock should return all tracks (forward and backward)") {

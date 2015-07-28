@@ -7,15 +7,13 @@ import org.mmarini.scala.railways.model.tracks.Track
 
 /** A [[BlockStatus]] of an exit [[Block]] */
 case class PlatformStatus(
-    block: PlatformBlock,
-    trainId: Option[String] = None,
-    locked: Boolean = false) extends SingleBlockStatus with LockableStatus {
+  block: PlatformBlock,
+  trainId: Option[String] = None,
+  lockedJunctions: IndexedSeq[Boolean] = IndexedSeq(false, false))
+    extends SingleBlockStatus with LockableStatus {
 
   /** */
-  override def changeFreedom: BlockStatus = PlatformStatus(block, trainId, !locked)
-
-  /** Returns true if block is busy */
-  override def busy: Boolean = !trainId.isEmpty
+  override def changeFreedom: BlockStatus = PlatformStatus(block, trainId, lockedJunctions.map(!_))
 
   /** Returns the end junction given the entry */
   override val junctionFrom = IndexedSeq(Option(1), Option(0))
@@ -25,9 +23,9 @@ case class PlatformStatus(
 
   /** Creates a new block status applying trainId to a junction. */
   override def apply(junction: Int, trainId: Option[String]) =
-    if ((junction == 0 || junction == 1) && trainId != this.trainId) PlatformStatus(block, trainId, locked)
+    if ((junction == 0 || junction == 1) && trainId != this.trainId) PlatformStatus(block, trainId, lockedJunctions)
     else this
 
   /** Returns the status with no transit train */
-  override def noTrainStatus = if (trainId.isEmpty) this else PlatformStatus(block, None, locked)
+  override def noTrainStatus = if (trainId.isEmpty) this else PlatformStatus(block, None, lockedJunctions)
 }

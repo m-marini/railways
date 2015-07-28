@@ -5,6 +5,7 @@ package org.mmarini.scala.railways.model
 
 import scala.IndexedSeq
 import scala.math.exp
+import scala.math.min
 import scala.util.Random
 import com.jme3.math.Vector2f
 import com.typesafe.scalalogging.LazyLogging
@@ -28,6 +29,7 @@ import org.mmarini.scala.railways.model.blocks.PlatformStatus
 import org.mmarini.scala.railways.model.blocks.SwitchStatus
 import org.mmarini.scala.railways.model.blocks.ExitStatus
 import org.mmarini.scala.railways.model.blocks.EntryStatus
+import org.mmarini.scala.railways._
 
 /**
  * A set of game parameter, station [[Topology]], elapsed time and set of named [[BlockStatus]]
@@ -74,10 +76,47 @@ case class GameStatus(
         case _ => status.removeTrain(train)
       })
 
-    // TODO generare nuovi treni 
-    val newTrainStatus = newStatus
-
+    val entries = shuffle(stationStatus.entryBlocks.filter(_.trainId.isEmpty))(random)
+    //    val n = min(poisson(time * parameters.trainFrequence), entries.size)
+    val n = min(poisson(time), entries.size)
+    val newTrainStatus = if (n > 0) {
+      //      val exits = stationStatus.exitBlocks
+      val newTrainStatus = (0 until n).foldLeft(newStatus)((status, i) => {
+        //        val exitOpt = chooseOneOf(exits)
+        val id = createTrainId
+        logger.debug("Creating train {}", id)
+        try {
+          val train = MovingTrain(
+            id = id,
+            size = random.nextInt(MaxTrainSize - MinTrainSize) + MinTrainSize,
+            entry = entries(i))
+          status.putTrain(train)
+        } catch {
+          case t: Throwable =>
+            t.printStackTrace
+            throw t
+        }
+      })
+      newTrainStatus
+    } else {
+      newStatus
+    }
     newTrainStatus.addTime(time)
+  }
+
+  /** Creates a train id */
+  private def createTrainId: String = {
+    s"Exp ${random.nextInt(900) + 100}"
+  }
+
+  /** Chooses randomly an item */
+  private def chooseOneOf[T](seq: IndexedSeq[T]): Option[T] = {
+    if (seq.isEmpty) None
+    else {
+      val n = seq.size
+      val idx = random.nextInt(n)
+      Some(seq(idx))
+    }
   }
 
   /** Removes a train from the train list */
@@ -135,14 +174,14 @@ object GameStatus {
     } yield (b.id -> initialStatus(b))).
       toMap
 
-    //    val atrain = MovingTrain("Test", 10, createRoute, 0f, 0f / 3.6f)
     val initStatus = GameStatus(parms, stationStatus = StationStatus(t, states), random = new Random())
-    val trainOpt = for {
-      bs <- initStatus.stationStatus.blocks.get("entry")
-    } yield MovingTrain(id = "Test", 11, bs.asInstanceOf[EntryStatus])
-
-    val ngs = for (train <- trainOpt) yield initStatus.putTrain(train)
-    ngs.getOrElse(initStatus)
+    //    val trainOpt = for {
+    //      bs <- initStatus.stationStatus.blocks.get("entry")
+    //    } yield MovingTrain(id = "Test", 11, bs.asInstanceOf[EntryStatus])
+    //
+    //    val ngs = for (train <- trainOpt) yield initStatus.putTrain(train)
+    //    ngs.getOrElse(initStatus)
+    initStatus
   }
 
   /** Returns the initial state of Block */

@@ -51,19 +51,6 @@ class ExitStatusTest extends PropSpec with Matchers with PropertyChecks with Moc
       }
   }
 
-  property("trackGroupFor of ExitStatus for forward track should return all tracks") {
-    forAll(
-      (transitTrain, "transitTrain")) {
-        (transitTrain: Option[String]) =>
-          {
-            val status = create(transitTrain)
-            val tracks = status.trackGroupFor(track)
-            tracks should have size (1)
-            tracks should contain(track)
-          }
-      }
-  }
-
   property("junctionFrom(0) should return Some(1)") {
     val status = ExitStatus(mock[ExitBlock])
     status.junctionFrom(0) shouldBe Some(1)
@@ -97,6 +84,21 @@ class ExitStatusTest extends PropSpec with Matchers with PropertyChecks with Moc
     val x = ExitStatus(mock[ExitBlock], trainId = Some("train")).noTrainStatus
     x shouldBe a[ExitStatus]
     x should have('trainId(None))
+  }
+
+  property("isClear(0) with no train should return true") {
+    val x = ExitStatus(mock[ExitBlock]).isClear
+    x(0) shouldBe true
+  }
+
+  property("isClear(0) with train should return false") {
+    val x = ExitStatus(mock[ExitBlock], trainId = Some("train")).isClear
+    x(0) shouldBe false
+  }
+
+  property("isClear(0) of locked block should return false") {
+    val x = ExitStatus(mock[ExitBlock], locked = true).isClear
+    x(0) shouldBe false
   }
 
 }

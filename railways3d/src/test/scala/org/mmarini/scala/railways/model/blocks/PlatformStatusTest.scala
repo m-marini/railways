@@ -12,6 +12,7 @@ import org.scalatest.prop.PropertyChecks
 import org.scalacheck.Arbitrary
 import org.mmarini.scala.railways.model.tracks.PlatformTrack
 import org.mmarini.scala.railways.model.tracks.Track
+import org.scalacheck.Gen
 
 /** Test */
 class PlatformStatusTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
@@ -40,7 +41,7 @@ class PlatformStatusTest extends PropSpec with Matchers with PropertyChecks with
       yield if (transit) Some(TrainId) else None
 
   private def create(transitTrain: Option[String], locked: Boolean) = {
-    PlatformStatus(block, transitTrain, locked)
+    PlatformStatus(block, transitTrain, lockedJunctions = IndexedSeq(true, true))
   }
 
   property("tracksForJunction 0 of PlatformStatus should return forward track") {
@@ -67,36 +68,6 @@ class PlatformStatusTest extends PropSpec with Matchers with PropertyChecks with
             val tracks = status.tracksForJunction(1)
             tracks should have size (1)
             tracks(0) shouldBe (backward)
-          }
-      }
-  }
-
-  property("trackGroupFor of PlatformStatus for forward track should return all tracks") {
-    forAll(
-      (Arbitrary.arbitrary[Boolean], "locked"),
-      (transitTrain, "locked")) {
-        (locked: Boolean, transitTrain: Option[String]) =>
-          {
-            val status = create(transitTrain, locked)
-            val tracks = status.trackGroupFor(forward)
-            tracks should have size (2)
-            tracks should contain(forward)
-            tracks should contain(backward)
-          }
-      }
-  }
-
-  property("trackGroupFor of PlatformStatus for backward track should return all tracks") {
-    forAll(
-      (Arbitrary.arbitrary[Boolean], "locked"),
-      (transitTrain, "locked")) {
-        (locked: Boolean, transitTrain: Option[String]) =>
-          {
-            val status = create(transitTrain, locked)
-            val tracks = status.trackGroupFor(backward)
-            tracks should have size (2)
-            tracks should contain(forward)
-            tracks should contain(backward)
           }
       }
   }
@@ -151,4 +122,33 @@ class PlatformStatusTest extends PropSpec with Matchers with PropertyChecks with
     x should have('trainId(None))
   }
 
+  property("isClear(x) with no train should return true") {
+    forAll((Gen.chooseNum(0, 1), "junction")) {
+      (junction: Int) =>
+        {
+          val x = PlatformStatus(mock[PlatformBlock]).isClear
+          x(junction) shouldBe true
+        }
+    }
+  }
+
+  property("isClear(x) with train should return false") {
+    forAll((Gen.chooseNum(0, 1), "junction")) {
+      (junction: Int) =>
+        {
+          val x = PlatformStatus(mock[PlatformBlock], trainId = Some("train")).isClear
+          x(junction) shouldBe false
+        }
+    }
+  }
+
+  property("isClear(x) of locked block should return false") {
+    forAll((Gen.chooseNum(0, 1), "junction")) {
+      (junction: Int) =>
+        {
+          val x = PlatformStatus(mock[PlatformBlock], lockedJunctions = IndexedSeq(true, true)).isClear
+          x(junction) shouldBe false
+        }
+    }
+  }
 }

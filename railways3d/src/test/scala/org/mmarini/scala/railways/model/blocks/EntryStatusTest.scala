@@ -27,13 +27,6 @@ class EntryStatusTest extends PropSpec with Matchers with PropertyChecks with Mo
     tracks should contain(status.block.entryTrack)
   }
 
-  property("trackGroupFor for forward track should return all tracks") {
-    val status = EntryStatus(EntryBlock("", 0f, 0f, 0f), Some("train"))
-    val tracks = status.trackGroupFor(status.block.entryTrack)
-    tracks should have size (1)
-    tracks should contain(status.block.entryTrack)
-  }
-
   property("junctionsForTrack for forward track should return all tracks") {
     val status = EntryStatus(EntryBlock("", 0f, 0f, 0f), Some("train"))
     val tracks = status.junctionsForTrack(status.block.entryTrack)

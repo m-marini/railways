@@ -30,4 +30,6 @@ case class EntryStatus(
   /** Returns the status with no transit train */
   override def noTrainStatus: BlockStatus = if (trainId.isEmpty) this else EntryStatus(block, None)
 
+  /** Returns true if the junction is clear */
+  override def isClear = _ => false
 }

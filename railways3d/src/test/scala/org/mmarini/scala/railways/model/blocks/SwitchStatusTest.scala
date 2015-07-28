@@ -53,7 +53,7 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
       yield if (transit) Some(TrainId) else None
 
   private def create(transitTrain: Option[String], locked: Boolean, diverging: Boolean) = {
-    SwitchStatus(block, transitTrain, locked, diverging)
+    SwitchStatus(block, transitTrain, lockedJunctions = IndexedSeq(locked, locked, locked), diverging)
   }
 
   property("tracksForJunction 0 of SwitchStatus should return forward track") {
@@ -93,36 +93,6 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
             val status = create(transitTrain, locked, false)
             val tracks = status.tracksForJunction(2)
             tracks shouldBe empty
-          }
-      }
-  }
-
-  property("trackGroupFor of SwitchStatus for forward track should return all tracks") {
-    forAll(
-      (Arbitrary.arbitrary[Boolean], "locked"),
-      (transitTrain, "locked")) {
-        (locked: Boolean, transitTrain: Option[String]) =>
-          {
-            val status = create(transitTrain, locked, false)
-            val tracks = status.trackGroupFor(forward)
-            tracks should have size (2)
-            tracks should contain(forward)
-            tracks should contain(backward)
-          }
-      }
-  }
-
-  property("trackGroupFor of SwitchStatus for backward track should return all tracks") {
-    forAll(
-      (Arbitrary.arbitrary[Boolean], "locked"),
-      (transitTrain, "locked")) {
-        (locked: Boolean, transitTrain: Option[String]) =>
-          {
-            val status = create(transitTrain, locked, false)
-            val tracks = status.trackGroupFor(backward)
-            tracks should have size (2)
-            tracks should contain(forward)
-            tracks should contain(backward)
           }
       }
   }
@@ -168,58 +138,28 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
       }
   }
 
-  property("trackGroupFor of diverging SwitchStatus for forward track should return all tracks") {
-    forAll(
-      (Arbitrary.arbitrary[Boolean], "locked"),
-      (transitTrain, "locked")) {
-        (locked: Boolean, transitTrain: Option[String]) =>
-          {
-            val status = create(transitTrain, locked, true)
-            val tracks = status.trackGroupFor(divForward)
-            tracks should have size (2)
-            tracks should contain(divForward)
-            tracks should contain(divBackward)
-          }
-      }
-  }
-
-  property("trackGroupFor of diverging SwitchStatus for backward track should return all tracks") {
-    forAll(
-      (Arbitrary.arbitrary[Boolean], "locked"),
-      (transitTrain, "locked")) {
-        (locked: Boolean, transitTrain: Option[String]) =>
-          {
-            val status = create(transitTrain, locked, true)
-            val tracks = status.trackGroupFor(divBackward)
-            tracks should have size (2)
-            tracks should contain(divForward)
-            tracks should contain(divBackward)
-          }
-      }
-  }
-
   property("junctionFrom(0) in case of direct switch should return Some(1)") {
-    SwitchStatus(mock[SwitchBlock], None, false, false).junctionFrom(0) shouldBe Some(1)
+    SwitchStatus(mock[SwitchBlock]).junctionFrom(0) shouldBe Some(1)
   }
 
   property("junctionFrom(1) in case of direct switch should return Some(0)") {
-    SwitchStatus(mock[SwitchBlock], None, false, false).junctionFrom(1) shouldBe Some(0)
+    SwitchStatus(mock[SwitchBlock]).junctionFrom(1) shouldBe Some(0)
   }
 
   property("junctionFrom(2) in case of direct switch should return None") {
-    SwitchStatus(mock[SwitchBlock], None, false, false).junctionFrom(2) shouldBe empty
+    SwitchStatus(mock[SwitchBlock]).junctionFrom(2) shouldBe empty
   }
 
   property("junctionFrom(0) in case of diverging switch should return Some(2)") {
-    SwitchStatus(mock[SwitchBlock], None, false, true).junctionFrom(0) shouldBe Some(2)
+    SwitchStatus(mock[SwitchBlock], diverging = true).junctionFrom(0) shouldBe Some(2)
   }
 
   property("junctionFrom(1) in case of diverging switch should return None") {
-    SwitchStatus(mock[SwitchBlock], None, false, true).junctionFrom(1) shouldBe empty
+    SwitchStatus(mock[SwitchBlock], diverging = true).junctionFrom(1) shouldBe empty
   }
 
   property("junctionFrom(2) in case of diverging switch should return Some(0)") {
-    SwitchStatus(mock[SwitchBlock], None, false, true).junctionFrom(2) shouldBe Some(0)
+    SwitchStatus(mock[SwitchBlock], diverging = true).junctionFrom(2) shouldBe Some(0)
   }
 
   property("transitTrain should return None") {
@@ -231,7 +171,10 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
         diverging: Boolean,
         junction: Int) =>
           {
-            SwitchStatus(mock[SwitchBlock], None, locked, diverging).transitTrain(junction) shouldBe empty
+            SwitchStatus(mock[SwitchBlock],
+              lockedJunctions = IndexedSeq(locked, locked, locked),
+              diverging = diverging).
+              transitTrain(junction) shouldBe empty
           }
       }
   }
@@ -243,7 +186,10 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
         (locked: Boolean,
         junction: Int) =>
           {
-            SwitchStatus(mock[SwitchBlock], Some("train"), locked, false).transitTrain(junction) shouldBe Some("train")
+            SwitchStatus(mock[SwitchBlock],
+              trainId = Some("train"),
+              lockedJunctions = IndexedSeq(locked, locked, locked)).
+              transitTrain(junction) shouldBe Some("train")
           }
       }
   }
@@ -255,7 +201,11 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
         (locked: Boolean,
         junction: Int) =>
           {
-            SwitchStatus(mock[SwitchBlock], Some("train"), locked, true).transitTrain(junction) shouldBe Some("train")
+            SwitchStatus(mock[SwitchBlock],
+              trainId = Some("train"),
+              lockedJunctions = IndexedSeq(locked, locked, locked),
+              diverging = true).
+              transitTrain(junction) shouldBe Some("train")
           }
       }
   }
@@ -265,7 +215,10 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
       (Arbitrary.arbitrary[Boolean], "locked")) {
         (locked: Boolean) =>
           {
-            SwitchStatus(mock[SwitchBlock], Some("train"), locked, false).transitTrain(2) shouldBe empty
+            SwitchStatus(mock[SwitchBlock],
+              trainId = Some("train"),
+              lockedJunctions = IndexedSeq(locked, locked, locked)).
+              transitTrain(2) shouldBe empty
           }
       }
   }
@@ -275,7 +228,11 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
       (Arbitrary.arbitrary[Boolean], "locked")) {
         (locked: Boolean) =>
           {
-            SwitchStatus(mock[SwitchBlock], Some("train"), locked, true).transitTrain(1) shouldBe empty
+            SwitchStatus(mock[SwitchBlock],
+              trainId = Some("train"),
+              lockedJunctions = IndexedSeq(locked, locked, locked),
+              diverging = true).
+              transitTrain(1) shouldBe empty
           }
       }
   }
@@ -359,7 +316,7 @@ class SwitchStatusTest extends PropSpec with Matchers with PropertyChecks with M
     x.transitTrain(1) shouldBe None
     x.transitTrain(2) shouldBe Some("train")
   }
-  
+
   property("noTrainStatus should return status with none transit train") {
     val x = SwitchStatus(mock[SwitchBlock], trainId = Some("train")).noTrainStatus
     x shouldBe a[SwitchStatus]

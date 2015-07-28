@@ -6,6 +6,9 @@ package org.mmarini.scala.railways.model
 import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model.blocks.Block
 import org.mmarini.scala.railways.model.blocks.BlockStatus
+import org.mmarini.scala.railways.model.blocks.PlatformStatus
+import org.mmarini.scala.railways.model.blocks.EntryStatus
+import org.mmarini.scala.railways.model.blocks.ExitStatus
 
 /**
  * @author us00852
@@ -41,28 +44,28 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
     def findRoute(tracks: IndexedSeq[Track], block: BlockStatus, junction: Int): IndexedSeq[Track] = {
       // Finds end junctions
       val newTracks = tracks ++ block.tracksForJunction(junction)
-      block.junctionFrom(junction) match {
-        case None => newTracks
-        case Some(end) =>
-          findConnection(block)(end) match {
-            case None => newTracks
-            case Some((nextBlock, nextJunction)) =>
-              val trainIdOpt = transitTrain(nextBlock)(nextJunction)
-              if (trainIdOpt.isEmpty || trainIdOpt.contains(trainId)) {
-                findRoute(newTracks, nextBlock, nextJunction)
-              } else {
-                newTracks
-              }
-          }
+      if (block.isInstanceOf[PlatformStatus]) {
+        newTracks
+      } else {
+        block.junctionFrom(junction) match {
+          case None => newTracks
+          case Some(end) =>
+            findConnection(block)(end) match {
+              case None => newTracks
+              case Some((nextBlock, nextJunction)) =>
+                val trainIdOpt = nextBlock.transitTrain(nextJunction)
+                if (trainIdOpt.contains(trainId) || nextBlock.isClear(nextJunction)) {
+                  findRoute(newTracks, nextBlock, nextJunction)
+                } else {
+                  newTracks
+                }
+            }
+        }
       }
     }
 
     findRoute(IndexedSeq(), block, junction)
   }
-
-  /** Returns the train allocating a junction */
-  def transitTrain: BlockStatus => Int => Option[String] = (blockStatus) =>
-    blockStatus.transitTrain
 
   /** Finds connection to next block */
   def findConnection: BlockStatus => Int => Option[(BlockStatus, Int)] = (blockStatus) => (junction) =>
@@ -159,6 +162,22 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
     val blockOpt = blocks.values.find(x => !x.junctionsForTrack(track).isEmpty)
     for { x <- blockOpt } yield (x, x.junctionsForTrack(track).get._1)
   }
+
+  /** Returns the entry blocks */
+  def entryBlocks: IndexedSeq[EntryStatus] =
+    (for {
+      b <- blocks.values
+      if (b.isInstanceOf[EntryStatus])
+    } yield b.asInstanceOf[EntryStatus]).
+      toIndexedSeq
+
+  /** Returns the exit blocks */
+  def exitBlocks: IndexedSeq[ExitStatus] = 
+    (for {
+      b <- blocks.values
+      if (b.isInstanceOf[ExitStatus])
+    } yield b.asInstanceOf[ExitStatus]).
+      toIndexedSeq
 }
 
 /** Factory of [[StationStatus]] */

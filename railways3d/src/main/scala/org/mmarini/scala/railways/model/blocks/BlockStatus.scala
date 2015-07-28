@@ -15,12 +15,11 @@ trait BlockStatus {
   /** Returns block id */
   def id = block.id
 
+  /** Changes the status of block */
   def changeStatus: BlockStatus = this
 
+  /** Changes the locking status */
   def changeFreedom: BlockStatus = this
-
-  /** Returns the current tracks group for a given track */
-  def trackGroupFor: Track => Set[Track]
 
   /**
    * Creates a new block status applying trainId to a junction.
@@ -37,9 +36,18 @@ trait BlockStatus {
   /** Returns the end junction given the entry */
   def junctionFrom: Int => Option[Int]
 
-  /** Returns the transit train in a junction */
+  /** Returns the train running from a junction */
   def transitTrain: Int => Option[String]
 
   /** Returns the status with no transit train */
   def noTrainStatus: BlockStatus
+
+  /**
+   * Returns true if the junction is clear
+   * The junction is clear if tracks exists to next juncttion
+   * and no train is running or crossing the tracks from it
+   * and if the junction has not been locked
+   * The home semaphore of junction is green if the junction is clear else it is red
+   */
+  def isClear: Int => Boolean
 }

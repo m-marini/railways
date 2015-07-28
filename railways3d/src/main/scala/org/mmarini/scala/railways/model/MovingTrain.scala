@@ -42,8 +42,7 @@ case class MovingTrain(
           logger.debug(s"$id waiting for passenger")
           Some(WaitForPassengerTrain(id, size, route, route.length, BoardingTime))
         case _ =>
-          logger.debug(s"$id stopped")
-          Some(WaitForRouteTrain(id, size, route, route.length))
+          Some(MovingTrain(id, size, route, route.length, 0))
       }
     } else {
       Some(MovingTrain(id, size, route, newLocation, newSpeed))
