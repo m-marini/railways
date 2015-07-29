@@ -33,8 +33,14 @@ case class BrakingTrain(
       if (newLocation >= route.length) {
         Some(StoppedTrain(id, size, route, route.length))
       } else {
-        Some(MovingTrain(id, size, route, newLocation, newSpeed))
+        Some(BrakingTrain(id, size, route, newLocation, newSpeed))
       }
     }
+  }
+
+  /** Creates toogle status */
+  override def toogleStatus = {
+    logger.debug("Go train {}", id)
+    MovingTrain(id, size, route, location, speed)
   }
 }

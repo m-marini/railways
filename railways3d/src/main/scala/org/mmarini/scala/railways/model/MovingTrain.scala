@@ -48,6 +48,12 @@ case class MovingTrain(
       Some(MovingTrain(id, size, route, newLocation, newSpeed))
     }
   }
+
+  /** Creates toogle status */
+  override def toogleStatus = {
+    logger.debug("Stopping train {}", id)
+    BrakingTrain(id, size, route, location, speed)
+  }
 }
 
 /** A factory of [[MovingTrain]] */

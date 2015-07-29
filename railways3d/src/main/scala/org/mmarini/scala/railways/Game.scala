@@ -5,13 +5,16 @@ package org.mmarini.scala.railways
 
 import org.mmarini.scala.railways.model.GameParameters
 import org.mmarini.scala.railways.model.GameStatus
-
 import com.jme3.light.AmbientLight
 import com.jme3.light.DirectionalLight
 import com.jme3.math.ColorRGBA
 import com.jme3.math.Vector3f
 import com.jme3.util.SkyFactory
 import com.typesafe.scalalogging.LazyLogging
+import sun.org.mozilla.javascript.internal.ast.Yield
+import com.jme3.scene.Geometry
+import com.jme3.scene.Node
+import com.jme3.scene.Spatial
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -27,42 +30,112 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   // Creates the initial game status
   private val initialStatus = GameStatus(parameters)
 
-  // Creates the event observable
-  private val timeEvents = app.timeObservable.map[GameStatus => GameStatus](
-    p => s => s.tick(p._2))
+  // Creates the observable of time events
+  private val timeEvents =
+    for { (_, time) <- app.timeObservable } yield (status: GameStatus) => status.tick(time)
 
-  private val changeStatus =
-    for { cs <- app.actions.get("changeState") } yield {
-      val pr = app.pickRay(cs.filter(_.keyPressed))
-      app.pickCollision(app.getRootNode)(pr).
-        map(_.getGeometry).
-        map(stationRend.findByGeo).
-        filterNot(_.isEmpty).
-        map(_.get).
-        map[GameStatus => GameStatus](id => s => {
-          s.changeBlockStatus(id)
-        })
-    }
-
-  private val changeFreedom =
+  // Creates the observable of change status id
+  private val additionalChangeStateIdObs =
     for { cs <- app.actions.get("additionalChangeState") } yield {
       val pr = app.pickRay(cs.filter(_.keyPressed))
-      app.pickCollision(app.getRootNode)(pr).
-        map(_.getGeometry).
-        map(stationRend.findByGeo).
-        filterNot(_.isEmpty).
-        map(_.get).
-        map[GameStatus => GameStatus](id => s => {
-          s.changeBlockFreedom(id)
-        })
+      val idOptOvs =
+        for { cr <- app.pickCollision(app.getRootNode)(pr) } yield {
+          val spatOpt = find(Option(cr.getGeometry))(s => s.getUserData("id") != null)
+          for (spat <- spatOpt) yield spat.getUserData[String]("id")
+        }.filterNot(_.isEmpty())
+      for (idOpt <- idOptOvs if (!idOpt.isEmpty)) yield idOpt.get
     }
 
-  val events = (timeEvents :: changeStatus.toList ::: changeFreedom.toList).reduce((a, b) => a.merge(b))
+  // Creates the observable of change status id
+  private val changeStateIdObs =
+    for { cs <- app.actions.get("changeState") } yield {
+      val pr = app.pickRay(cs.filter(_.keyPressed))
+      val idOptOvs =
+        for { cr <- app.pickCollision(app.getRootNode)(pr) } yield {
+          val spatOpt = find(Option(cr.getGeometry))(s => s.getUserData("id") != null)
+          for (spat <- spatOpt) yield spat.getUserData[String]("id")
+        }.filterNot(_.isEmpty())
+      for (idOpt <- idOptOvs if (!idOpt.isEmpty)) yield idOpt.get
+    }
+
+  // Creates train change state events
+  private val trainChangeStateEventObs = {
+    for { obs <- additionalChangeStateIdObs } yield {
+      for {
+        id <- obs if (id.startsWith("train,"))
+      } yield {
+        val trainId = id.split(",")(1)
+        (status: GameStatus) => status.changeTrainStatus(trainId)
+      }
+    }
+  }
+
+  // Creates train change state events
+  private val trainReverseEventObs = {
+    for { obs <- changeStateIdObs } yield {
+      for {
+        id <- obs if (id.startsWith("train,"))
+      } yield {
+        val trainId = id.split(",")(1)
+        (status: GameStatus) => status.reverseTrain(trainId)
+      }
+    }
+  }
+
+  // Creates block change state events
+  private val blockChangeFreedomEventObs = {
+    for { obs <- additionalChangeStateIdObs } yield {
+      for {
+        id <- obs if (id.startsWith("block,"))
+      } yield {
+        val trainId = id.split(",")(1)
+        (status: GameStatus) => status.changeBlockFreedom(trainId)
+      }
+    }
+  }
+
+  // Creates block change state events
+  private val blockChangeStateEventObs = {
+    for { obs <- changeStateIdObs } yield {
+      for {
+        id <- obs if (id.startsWith("block,"))
+      } yield {
+        val trainId = id.split(",")(1)
+        (status: GameStatus) => status.changeBlockStatus(trainId)
+      }
+    }
+  }
+
+  private def dump(head: String)(n: Option[Spatial]) {
+    n match {
+      case Some(s) =>
+        logger.debug("{} name={}", head, s.getName)
+        logger.debug("{} id={}", head, s.getUserData("id"))
+        dump(head + " ")(Option(s.getParent))
+      case _ =>
+    }
+  }
+
+  private def find(n: Option[Spatial])(f: (Spatial => Boolean)): Option[Spatial] =
+    if (n.isEmpty) {
+      None
+    } else if (f(n.get)) {
+      n
+    } else {
+      find(Option(n.get.getParent))(f)
+    }
+
+  // Merges all observable to create n observable of all events
+  val events = (timeEvents ::
+    blockChangeFreedomEventObs.toList :::
+    blockChangeStateEventObs.toList :::
+    trainChangeStateEventObs.toList :::
+    trainReverseEventObs.toList).reduce((a, b) => a.merge(b))
 
   // Creates the state observable
   private val state = stateFlow(initialStatus)(events)
 
-  // Create the station renderer
+  // Creates the station renderer
   private val stationRend = new StationRenderer(
     initialStatus.stationStatus.blocks.values.map(_.block).toSet,
     app.getAssetManager,
@@ -83,12 +156,8 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   terrainTry.foreach(app.getRootNode.attachChild)
 
   // Creates train renderer transitions
-  private val trainRendTransitions = state.map((status: GameStatus) => {
-    (renderer: TrainRenderer) =>
-      {
-        renderer.render(status.vehicles)
-      }
-  })
+  private val trainRendTransitions = state.map((status: GameStatus) =>
+    (renderer: TrainRenderer) => renderer.render(status.vehicles))
 
   // Creates the train renderer and subscribe to it
   private val trainRendSub = stateFlow(TrainRenderer(app.getRootNode(), app.getAssetManager()))(trainRendTransitions).subscribe
@@ -108,8 +177,6 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
         case _ =>
       })
     }
-
-  logger.debug("Completed")
 
   //  /** Subscribe changeView observer */
   //  private val cameraController =

@@ -28,4 +28,6 @@ case class WaitForPassengerTrain(
       logger.debug(s"$id stopped")
       Some(StoppedTrain(id, size, route, location))
     }
+  /** Creates toogle status */
+  override def toogleStatus = this
 }

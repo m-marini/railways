@@ -106,29 +106,6 @@ class StationRenderer(
     assets.toMap
   }
 
-  /** Finds geometry block name by geometry */
-  def findByGeo(g: Geometry): Option[String] = {
-    def exists(pred: Spatial => Boolean)(s: Spatial): Boolean =
-      if (pred(s)) {
-        true
-      } else {
-        s match {
-          case n: Node =>
-            n.getChildren.toList.exists(exists(pred))
-          case _ =>
-            false
-        }
-      }
-    val f = for {
-      (n1, m) <- cache
-      (n2, spat) <- m
-      if (exists(_ == g)(spat))
-    } yield {
-      n1
-    }
-    if (f.isEmpty) None else Some(f.head)
-  }
-
   /** Changes the view of station */
   def change(status: StationStatus) {
     // Render each block
@@ -141,9 +118,11 @@ class StationRenderer(
         case (k, spatial) if (k == key && !Option(spatial.getUserData[String]("attached")).contains(true)) =>
           rootNode.attachChild(spatial)
           spatial.setUserData("attached", true)
+          spatial.setUserData("id", s"block,${blockStatus.id}")
         case (k, spatial) if (k != key && Option(spatial.getUserData[String]("attached")).contains(true)) =>
           rootNode.detachChild(spatial)
           spatial.setUserData("attached", false)
+          spatial.setUserData("id", null)
         case _ =>
       }
     }

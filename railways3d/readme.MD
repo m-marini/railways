@@ -112,7 +112,7 @@ Tasto centrale del mouse o sx + shift su un binario si attivano/disattivano i se
 ## Curva
 
 La curva standard ha un angolo di 360/24 = 15 gradi, raggio di 35 *1/2 * 1/sin(15) = 67,615 m
-Combinando una curva a sx e una curva a dx otteniamo una traslazione del punto iniziale di 1 segmento (35 m) e di 
-4,608 m laterali (passo tra due binari).
+Combinando mezza curva a sx e mezza curva a dx otteniamo una traslazione del punto iniziale di 1 segmento (35 m) e di 
+4,608 m laterali (distanza minima tra due binari).
 
   

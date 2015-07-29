@@ -105,19 +105,18 @@ case class GameStatus(
   }
 
   /** Creates a train id */
-  private def createTrainId: String = {
-    s"Exp ${random.nextInt(900) + 100}"
-  }
+  private def createTrainId: String =
+    s"Exp-${random.nextInt(900) + 100}"
 
   /** Chooses randomly an item */
-  private def chooseOneOf[T](seq: IndexedSeq[T]): Option[T] = {
-    if (seq.isEmpty) None
-    else {
+  private def chooseOneOf[T](seq: IndexedSeq[T]): Option[T] =
+    if (seq.isEmpty) {
+      None
+    } else {
       val n = seq.size
       val idx = random.nextInt(n)
       Some(seq(idx))
     }
-  }
 
   /** Removes a train from the train list */
   private def removeTrain(train: Train) =
@@ -149,10 +148,8 @@ case class GameStatus(
   }
 
   /** Choices a random element with equal probability distribution */
-  private def choice[T](choices: Set[T]): T = {
-    val idx = random.nextInt(choices.size)
-    choices.toSeq(idx)
-  }
+  private def choice[T](choices: Set[T]): T =
+    choices.toSeq(random.nextInt(choices.size))
 
   /** Generates the next status changing the status of a block */
   def changeBlockStatus(id: String): GameStatus =
@@ -162,6 +159,16 @@ case class GameStatus(
   def changeBlockFreedom(id: String): GameStatus =
     setStationStatus(stationStatus.changeBlockFreedom(id))
 
+  def changeTrainStatus(id: String): GameStatus = {
+    logger.debug("Change status train id={}", id)
+    val newStatus = for { train <- trains.find(_.id == id) } yield putTrain(train.toogleStatus)
+    newStatus.getOrElse(this)
+  }
+
+  def reverseTrain(id: String): GameStatus = {
+    logger.debug("reverse train id={}", id)
+    this
+  }
 }
 
 /** A factory of [[GameStatus]] */

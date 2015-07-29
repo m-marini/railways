@@ -72,23 +72,25 @@ class ApplicationOps(val app: Application) {
 
   /** Returns the observable of pick ray */
   def pickRay(o: Observable[PositionMapping]): Observable[RayMapping] =
-    o.map(n => {
+    for { _ <- o } yield {
       val mousePos = app.getInputManager.getCursorPosition
       val cam = app.getCamera
       val pos = cam.getWorldCoordinates(new Vector2f(mousePos), 0f).clone()
       val dir = cam.getWorldCoordinates(new Vector2f(mousePos), 1f).subtractLocal(pos).normalizeLocal()
       RayMapping(new Ray(pos, dir))
-    })
+    }
 
   /** Returns the observable of pick object */
   def pickCollision(shootables: Node)(o: Observable[RayMapping]): Observable[CollisionResult] = {
-    val collisions = o.map(rayMapping => {
+    val collisions = for { rayMapping <- o } yield {
       val results = new CollisionResults()
       shootables.collideWith(rayMapping.ray, results)
       results
-    })
-    val nonEmptyCollisions = collisions.filter(_.size() > 0)
-    nonEmptyCollisions.map(_.getClosestCollision())
+    }
+    for {
+      cr <- collisions
+      if (cr.size() > 0)
+    } yield cr.getClosestCollision()
   }
 }
 
