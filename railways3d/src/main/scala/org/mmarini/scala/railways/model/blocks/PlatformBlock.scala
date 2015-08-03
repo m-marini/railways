@@ -25,7 +25,7 @@ object PlatformBlock {
   def apply(id: String, x: Float, y: Float, orientation: Float): PlatformBlock = {
     val trans = Transform2d(x, y, orientation)
     val forward = PlatformTrack(Vector2f.ZERO, new Vector2f(0f, 11 * SegmentLength))(trans)
-    val backward = forward.backward
+    val Some(backward) = forward.backward
     val group = IndexedSeq(Set(Set[Track](forward, backward)))
     val routes = IndexedSeq(
       Set(

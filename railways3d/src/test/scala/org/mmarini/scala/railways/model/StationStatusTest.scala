@@ -124,13 +124,13 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     val b3 = x.blocks("track3")
 
     b1 shouldBe a[SegmentStatus]
-    b1.asInstanceOf[SegmentStatus].trainId shouldBe (Some("train1"))
+    b1.asInstanceOf[SegmentStatus].trainId should equal(Some("train1"))
 
     b2 shouldBe a[SegmentStatus]
-    b2.asInstanceOf[SegmentStatus].trainId shouldBe (Some("train2"))
+    b2.asInstanceOf[SegmentStatus].trainId should equal(Some("train2"))
 
     b3 shouldBe a[SegmentStatus]
-    b3.asInstanceOf[SegmentStatus].trainId shouldBe (None)
+    b3.asInstanceOf[SegmentStatus].trainId should equal(None)
   }
 
   property("""Test the case of a station with 3 consecutive blocks
@@ -138,7 +138,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     val status = createTest3()
     val block1 = status.blocks("track1")
     val block2 = status.blocks("track2")
-    status.findConnection(block1)(1) shouldBe Some((block2, 0))
+    status.findConnection(block1)(1) should equal(Some((block2, 0)))
   }
 
   property("""Test the case of a station with 3 consecutive blocks
@@ -146,7 +146,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     val status = createTest3()
     val block2 = status.blocks("track2")
     val block3 = status.blocks("track3")
-    status.findConnection(block2)(1) shouldBe Some((block3, 0))
+    status.findConnection(block2)(1) should equal(Some((block3, 0)))
   }
 
   property("""Test the case of a station with 3 consecutive blocks
@@ -154,7 +154,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     val status = createTest3()
     val block2 = status.blocks("track2")
     val block3 = status.blocks("track3")
-    status.findConnection(block3)(0) shouldBe Some((block2, 1))
+    status.findConnection(block3)(0) should equal(Some((block2, 1)))
   }
 
   property("""Test the case of a station with 3 consecutive blocks
@@ -176,7 +176,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     val track2 = status.blocks("track2").tracksForJunction(0)(0)
     val trainId = "train1"
 
-    val route = status.findRoute(block1, 0, trainId)
+    val route = status.findRoute(block1, 0, trainId, true)
     route should have size (2)
     route should contain(track1)
     route should contain(track2)
@@ -200,7 +200,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
       location,
       0f)
     val (route, dist) = status.findRoute(train)
-    dist shouldBe (location)
+    dist should equal(location)
     route.tracks should have size (2)
     route.tracks should contain(track1(0))
     route.tracks should contain(track2(0))
@@ -250,6 +250,20 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     val x = status.exitBlocks
     x should have size (1)
     x should contain(status.blocks("track3"))
+  }
+
+  property("""Test the case 1
+  createReverseRoute should return reverse route""") {
+    val status = createTest1()
+    val track = status.blocks("track2").tracksForJunction(0)(0)
+    val rev1 = status.blocks("track2").tracksForJunction(1)(0)
+    val location = 1f
+    val trainId = "train"
+    val (revTrack, revLoc) = status.createReverseRoute(track, location, trainId)
+
+    revTrack.tracks should have size (1)
+    revTrack.tracks should contain(rev1)
+    revLoc should equal(revTrack.length - location)
   }
 
 }

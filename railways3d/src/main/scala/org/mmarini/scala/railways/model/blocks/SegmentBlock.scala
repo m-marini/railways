@@ -24,7 +24,7 @@ object SegmentBlock {
   def apply(id: String, x: Float, y: Float, orientation: Float): SegmentBlock = {
     val trans = Transform2d(x, y, orientation)
     val forward = SegmentTrack(Vector2f.ZERO, new Vector2f(0f, 11 * SegmentLength))(trans)
-    val backward = forward.backward
+    val Some(backward) = forward.backward
     val group = IndexedSeq(Set(Set[Track](forward, backward)))
     val routes = IndexedSeq(
       Set(

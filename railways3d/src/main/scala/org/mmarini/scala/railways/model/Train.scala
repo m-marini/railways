@@ -54,4 +54,6 @@ trait Train {
   /** Returns train length */
   val length = size * CoachLength
 
+  /** Creates the reverse train */
+  def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)): Option[Train] = None
 }

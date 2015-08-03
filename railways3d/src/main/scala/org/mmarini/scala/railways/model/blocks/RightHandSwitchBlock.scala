@@ -28,13 +28,13 @@ object RightHandSwitchBlock {
   def apply(id: String, x: Float, y: Float, orientation: Float): RightHandSwitchBlock = {
     val trans = Transform2d(x, y, orientation)
     val forwardDirect = SegmentTrack(Vector2f.ZERO, new Vector2f(0f, SegmentLength))(trans)
-    val backwardDirect = forwardDirect.backward
+    val Some(backwardDirect) = forwardDirect.backward
     val center1 = new Vector2f(CurveRadius, 0f)
     val center2 = new Vector2f(TrackGap - CurveRadius, SegmentLength)
     val forwardDivRight = RightCurveTrack(center1, CurveRadius, -RightAngle, CurveLength / 2)(trans)
     val forwardDivLeft = LeftCurveTrack(center2, CurveRadius, RightAngle + CurveAngle / 2, CurveLength / 2)(trans)
-    val backwardDivRight = forwardDivLeft.backward
-    val backwardDivLeft = forwardDivRight.backward
+    val Some(backwardDivRight) = forwardDivLeft.backward
+    val Some(backwardDivLeft) = forwardDivRight.backward
 
     val forwardDivTracks = IndexedSeq[Track](forwardDivRight, forwardDivLeft)
     val backwardDivTracks = IndexedSeq[Track](backwardDivRight, backwardDivLeft)

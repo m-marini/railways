@@ -18,4 +18,6 @@ class HiddenTrack extends Track {
 
   /** */
   override def locationAt(distance: Float): Option[Vector2f] = None
+
+  override def backward = None
 }

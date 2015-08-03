@@ -160,14 +160,17 @@ case class GameStatus(
     setStationStatus(stationStatus.changeBlockFreedom(id))
 
   def changeTrainStatus(id: String): GameStatus = {
-    logger.debug("Change status train id={}", id)
     val newStatus = for { train <- trains.find(_.id == id) } yield putTrain(train.toogleStatus)
     newStatus.getOrElse(this)
   }
 
   def reverseTrain(id: String): GameStatus = {
-    logger.debug("reverse train id={}", id)
-    this
+    logger.debug("Reversing train {}", id)
+    val x = for {
+      train <- trains.find(_.id == id)
+      revTrain <- train.reverse(stationStatus.createReverseRoute) // TODO
+    } yield putTrain(revTrain)
+    x.getOrElse(this)
   }
 }
 
@@ -181,14 +184,7 @@ object GameStatus {
     } yield (b.id -> initialStatus(b))).
       toMap
 
-    val initStatus = GameStatus(parms, stationStatus = StationStatus(t, states), random = new Random())
-    //    val trainOpt = for {
-    //      bs <- initStatus.stationStatus.blocks.get("entry")
-    //    } yield MovingTrain(id = "Test", 11, bs.asInstanceOf[EntryStatus])
-    //
-    //    val ngs = for (train <- trainOpt) yield initStatus.putTrain(train)
-    //    ngs.getOrElse(initStatus)
-    initStatus
+    GameStatus(parms, stationStatus = StationStatus(t, states), random = new Random())
   }
 
   /** Returns the initial state of Block */

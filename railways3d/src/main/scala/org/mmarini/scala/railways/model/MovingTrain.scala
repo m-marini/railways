@@ -12,6 +12,7 @@ import org.mmarini.scala.railways.model.tracks.PlatformTrack
 import org.mmarini.scala.railways.model.blocks.ExitStatus
 import org.mmarini.scala.railways.model.blocks.EntryStatus
 import org.mmarini.scala.railways.model.tracks.Track
+import org.mmarini.scala.railways.model.tracks.HiddenTrack
 
 /** This MovingTrain computes the next state of this moving train */
 case class MovingTrain(
@@ -49,10 +50,25 @@ case class MovingTrain(
     }
   }
 
+  /** Creates the reverse train */
+  override def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)) =
+    if (speed == 0) {
+      None
+    } else {
+      val Some((headTrack, headLocation)) = route.trackLocationAt(location)
+      for {
+        (trackTail, _) <- trackTailLocation if (!trackTail.isInstanceOf[HiddenTrack])
+      } yield {
+        val (revRoute, revLocation) = createReverseRoute(headTrack, headLocation, id)
+        logger.debug("Train {} reversed", id)
+        MovingTrain(id, size, revRoute, revLocation + length, 0f)
+      }
+    }
+
   /** Creates toogle status */
   override def toogleStatus = {
     logger.debug("Stopping train {}", id)
-    BrakingTrain(id, size, route, location, speed)
+    StoppingTrain(id, size, route, location, speed)
   }
 }
 

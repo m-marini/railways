@@ -1,6 +1,7 @@
 # To do
 
-  * Comandi dei treni (stop, go, reverse)
+  * Comandi dei treni (reverse)
+  * Gestione carico/scarico passeggeri
   * Blocco automatico dei semafori al passaggio di un treno
   * Cambio di stato e clear dei semafori e delle tratte per giunzione
   * Cambio di stato e di clear dei semafori bloccato se treno in transito

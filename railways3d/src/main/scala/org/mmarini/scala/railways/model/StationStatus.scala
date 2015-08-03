@@ -9,12 +9,13 @@ import org.mmarini.scala.railways.model.blocks.BlockStatus
 import org.mmarini.scala.railways.model.blocks.PlatformStatus
 import org.mmarini.scala.railways.model.blocks.EntryStatus
 import org.mmarini.scala.railways.model.blocks.ExitStatus
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * @author us00852
  *
  */
-case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
+case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) extends LazyLogging {
 
   /** Generates the next status changing the status of a block */
   def changeBlockStatus(id: String): StationStatus = {
@@ -39,12 +40,13 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
     StationStatus(topology, blocks)
 
   /** Finds the sequence of tracks available ot allocated by a train starting from a junction of a block */
-  def findRoute(block: BlockStatus, junction: Int, trainId: String): IndexedSeq[Track] = {
+  def findRoute(block: BlockStatus, junction: Int, trainId: String, forLoad: Boolean): IndexedSeq[Track] = {
 
     def findRoute(tracks: IndexedSeq[Track], block: BlockStatus, junction: Int): IndexedSeq[Track] = {
       // Finds end junctions
-      val newTracks = tracks ++ block.tracksForJunction(junction)
-      if (block.isInstanceOf[PlatformStatus]) {
+      val nextTracks = block.tracksForJunction(junction)
+      val newTracks = tracks ++ nextTracks 
+      if (forLoad && block.isInstanceOf[PlatformStatus]) {
         newTracks
       } else {
         block.junctionFrom(junction) match {
@@ -99,7 +101,7 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
     // map to track list
     val trackList = (for {
       (x, _) <- junctions
-    } yield findRoute(startingBlock, x, train.id)).
+    } yield findRoute(startingBlock, x, train.id, true)).
       toIndexedSeq.flatten
 
     // drop head until track of tail train
@@ -172,12 +174,31 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) {
       toIndexedSeq
 
   /** Returns the exit blocks */
-  def exitBlocks: IndexedSeq[ExitStatus] = 
+  def exitBlocks: IndexedSeq[ExitStatus] =
     (for {
       b <- blocks.values
       if (b.isInstanceOf[ExitStatus])
     } yield b.asInstanceOf[ExitStatus]).
       toIndexedSeq
+
+  /** Create the reverse route */
+  def createReverseRoute(track: Track, location: Float, trainId: String): (TrainRoute, Float) =
+    {
+      val Some(revTrack) = track.backward
+
+      // Finds block and junction containing the track of train tail
+      val Some(startingBlock) = findBlock(revTrack)
+      val junctions = startingBlock.junctionsForTrack(revTrack)
+
+      // map to track list
+      val trackList = (for {
+        (x, _) <- junctions
+      } yield findRoute(startingBlock, x, trainId, false)).
+        toIndexedSeq.flatten
+
+      // drop head until track of tail train
+      (TrainRoute(trackList.dropWhile { _ != revTrack }), revTrack.length - location)
+    }
 }
 
 /** Factory of [[StationStatus]] */
