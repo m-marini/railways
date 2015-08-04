@@ -24,9 +24,14 @@ case class SwitchStatus(
 
   override def statusIndex = if (diverging) 1 else 0
 
-  override def changeStatus: BlockStatus = SwitchStatus(block, trainId, lockedJunctions, !diverging)
+  override def toogleStatus = (_) =>
+    if (trainId.isEmpty)
+      SwitchStatus(block, trainId, lockedJunctions, !diverging)
+    else
+      this
 
-  override def changeFreedom: BlockStatus = SwitchStatus(block, trainId, lockedJunctions.map(!_), diverging)
+  override def toogleLock = (j) =>
+    SwitchStatus(block, trainId, lockedJunctions.updated(j, !lockedJunctions(j)), diverging)
 
   /** Returns the end junction given the entry */
   override def junctionFrom = junctions(statusIndex)
@@ -49,5 +54,38 @@ case class SwitchStatus(
 
   /** Returns the status with no transit train */
   override def noTrainStatus = if (trainId.isEmpty) this else SwitchStatus(block, None, lockedJunctions, diverging)
+
+  /** Create a block status with a given locked junction */
+  override def lock = (j) =>
+    if (lockedJunctions(j))
+      this
+    else
+      SwitchStatus(block, trainId, lockedJunctions.updated(j, true))
+
+  /** Returns the current identifiers of elements and the selection identifiers */
+  override def elementIds = {
+    val dir = if (block.isInstanceOf[LeftHandSwitchBlock]) "l" else "r"
+    val st = if (diverging) "div" else "dir"
+    val jElements = for (junction <- 0 to 2) yield if (isClear(junction)) {
+      BlockElementIds(
+        s"$id $junction green",
+        s"Textures/blocks/swi-$dir-$junction-green.blend",
+        Some(s"junction $id $junction"))
+    } else {
+      BlockElementIds(
+        s"$id $junction red",
+        s"Textures/blocks/swi-$dir-$junction-red.blend",
+        Some(s"junction $id $junction"))
+    }
+    jElements.toSet +
+      BlockElementIds(
+        s"$id $st handler",
+        s"Textures/blocks/swi-$dir-hand.blend",
+        Some(s"handler $id $st")) +
+        BlockElementIds(
+          s"$id $st",
+          s"Textures/blocks/swi-$dir-$st.blend",
+          Some(s"handler $id $st"))
+  }
 
 }

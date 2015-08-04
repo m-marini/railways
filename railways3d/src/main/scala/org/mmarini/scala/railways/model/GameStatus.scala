@@ -151,15 +151,15 @@ case class GameStatus(
     choices.toSeq(random.nextInt(choices.size))
 
   /** Generates the next status changing the status of a block */
-  def changeBlockStatus(id: String): GameStatus =
-    setStationStatus(stationStatus.changeBlockStatus(id))
+  def toogleBlockStatus(id: String): GameStatus =
+    setStationStatus(stationStatus.toogleStatus(id))
 
   /** Generates the next status changing the freedom of a block */
-  def changeBlockFreedom(id: String): GameStatus =
-    setStationStatus(stationStatus.changeBlockFreedom(id))
+  def toogleLock(id: String): GameStatus =
+    setStationStatus(stationStatus.toogleLock(id))
 
   /** Creates a new status toogling the statuos of a given train */
-  def changeTrainStatus(id: String): GameStatus = {
+  def toogleTrainStatus(id: String): GameStatus = {
     val newStatus = for { train <- trains.find(_.id == id) } yield putTrain(train.toogleStatus)
     newStatus.getOrElse(this)
   }

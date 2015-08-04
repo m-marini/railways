@@ -59,19 +59,19 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     }
 
   // Creates train change state events
-  private val trainChangeStateEventObs = {
+  private val trainToogleStateObs = {
     for { obs <- additionalChangeStateIdObs } yield {
       for {
         id <- obs if (id.startsWith("train,"))
       } yield {
         val trainId = id.split(",")(1)
-        (status: GameStatus) => status.changeTrainStatus(trainId)
+        (status: GameStatus) => status.toogleTrainStatus(trainId)
       }
     }
   }
 
   // Creates train change state events
-  private val trainReverseEventObs = {
+  private val trainReverseObs = {
     for { obs <- changeStateIdObs } yield {
       for {
         id <- obs if (id.startsWith("train,"))
@@ -83,25 +83,25 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   }
 
   // Creates block change state events
-  private val blockChangeFreedomEventObs = {
+  private val blockToogleLockObs = {
     for { obs <- additionalChangeStateIdObs } yield {
       for {
         id <- obs if (id.startsWith("block,"))
       } yield {
-        val trainId = id.split(",")(1)
-        (status: GameStatus) => status.changeBlockFreedom(trainId)
+        val blockId = id.split(",")(1)
+        (status: GameStatus) => status.toogleLock(blockId)
       }
     }
   }
 
   // Creates block change state events
-  private val blockChangeStateEventObs = {
+  private val blockToogleStateObs = {
     for { obs <- changeStateIdObs } yield {
       for {
         id <- obs if (id.startsWith("block,"))
       } yield {
-        val trainId = id.split(",")(1)
-        (status: GameStatus) => status.changeBlockStatus(trainId)
+        val blockId = id.split(",")(1)
+        (status: GameStatus) => status.toogleBlockStatus(blockId)
       }
     }
   }
@@ -127,10 +127,10 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   // Merges all observable to create n observable of all events
   val events = (timeEvents ::
-    blockChangeFreedomEventObs.toList :::
-    blockChangeStateEventObs.toList :::
-    trainChangeStateEventObs.toList :::
-    trainReverseEventObs.toList).reduce((a, b) => a.merge(b))
+    blockToogleLockObs.toList :::
+    blockToogleStateObs.toList :::
+    trainToogleStateObs.toList :::
+    trainReverseObs.toList).reduce((a, b) => a.merge(b))
 
   // Creates the state observable
   private val state = stateFlow(initialStatus)(events)

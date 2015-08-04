@@ -12,7 +12,7 @@ case class ExitStatus(
     locked: Boolean = false) extends SingleBlockStatus {
 
   /** */
-  override def changeFreedom = ExitStatus(block, trainId, !locked)
+  override def toogleLock = (_) => ExitStatus(block, trainId, !locked)
 
   /** Returns None */
   override def junctionFrom = (x) => if (x == 0) Some(1) else None
@@ -31,4 +31,16 @@ case class ExitStatus(
 
   /** Returns true if the junction is clear. */
   override def isClear = (x) => !locked && transitTrain(x).isEmpty
+
+  /** Create a locked block status */
+  override def lock = (_) => if (locked) this else ExitStatus(block, trainId, true)
+
+  /** Returns the current identifiers of elements and the selection identifiers */
+  override def elementIds =
+    if (isClear(0)){
+      Set(BlockElementIds(s"$id green", "Textures/blocks/sem-green.blend", Some(s"junction $id 0")))
+    }else {
+      Set(BlockElementIds(s"$id red", "Textures/blocks/sem-red.blend", Some(s"junction $id 0")))
+    }
+
 }

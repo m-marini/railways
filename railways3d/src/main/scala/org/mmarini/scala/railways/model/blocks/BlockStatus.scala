@@ -13,13 +13,19 @@ trait BlockStatus {
   def block: Block
 
   /** Returns block id */
-  def id = block.id
+  def id: String = block.id
 
-  /** Changes the status of block */
-  def changeStatus: BlockStatus = this
+  /** Returns the current identifiers of elements and the selection identifiers */
+  def elementIds: Set[BlockElementIds] = Set()
 
-  /** Changes the locking status */
-  def changeFreedom: BlockStatus = this
+  /** Toogles the status of block for a given index of status handler */
+  def toogleStatus: Int => BlockStatus = (_) => this
+
+  /** Toogles the locking status for a given junction */
+  def toogleLock: Int => BlockStatus = (_) => this
+
+  /** Create a block status with a given locked junction */
+  def lock: Int => BlockStatus
 
   /**
    * Creates a new block status applying trainId to a junction.
@@ -44,7 +50,7 @@ trait BlockStatus {
 
   /**
    * Returns true if the junction is clear
-   * The junction is clear if tracks exists to next juncttion
+   * The junction is clear if tracks exists to next junction
    * and no train is running or crossing the tracks from it
    * and if the junction has not been locked
    * The home semaphore of junction is green if the junction is clear else it is red

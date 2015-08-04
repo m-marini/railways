@@ -44,7 +44,7 @@ I nodi descrivono anche i percorsi valide tra gli archi connessi al nodo e attri
 
 ## Modello a blocchi   
 
-Una forma alternativa di rappresentazione della stazine p il modello a blocchi.
+Una forma alternativa di rappresentazione della stazine è il modello a blocchi.
 I diversi componenti sono rappresentati da blocchi contenenti le descrizioni sia di percorsi possibili che di confine di attraversamento dei blocchi.
 I blocchi sono connessi tra loro attraverso giunzioni adimensionali che non necessitano di descrizione topologica o funzionale ma mantengono solo
 la relazione tra percorsi possibili dei blocchi.
@@ -58,7 +58,7 @@ dei vari blocchi(lunghezze e orientamenti).
 ## Modello a grafo vs modello a blocchi
  
 Il modello a grafo separa gli aspetti topologici da quelli funzionali rispettivamente negli archi e nei nodi semplificando l'implementazione.
-Per contro il modello a grafo rende complesso il rendering grafico dei componenti in quanto dipendende da ambedue gli aspetti.  
+Per contro il modello a grafo rende complesso il rendering grafico dei componenti in quanto dipendende da ambedue gli aspetti.
 Il modello a blocchi mantiene uniti i due aspetti e semplifica il rendering grafico.
 
 
@@ -103,16 +103,96 @@ Tasto dx del mouse su un treno si seleziona la vista esterna dal treno.
 
 Tasto sx del mouse su un treno si cambia lo stato del treno (start/stop).
 Tasto sx + ctrl del mouse su un treno si attiva automaticamente il percorso verso una direzione selezionabile con pop up
-Tasto sx del mouse su un semaforo si libero o blocca un semaforo
+Tasto sx del mouse su un semaforo si libera o blocca un semaforo
 Tasto sx del mouse su un deviatore si cambia lo stato del deviatore
 
 Tasto centrale del mouse o sx + shift su un treno si cambia la direzione del treno (reverse).
 Tasto centrale del mouse o sx + shift su un binario si attivano/disattivano i semafori del percorso.
+
+
+## Elementi 3D interattivi
+
+Nella scena sono presenti oggetti sensibili all'interazione con l'utente:
+
+  * Veicoli: la selezione di un veicolo di un treno permette di frenare un treno in corsa,
+    far ripartire un treno fermo o in frenata e invertire il senso di marcia di un treno fermo
+  * Semafori: la selezione di un semaforo consente di invertire lo stato di blocco del semaforo
+  * Deviatoi: la selezione di un deviatoio permette di invertirne lo stato
+  * Binari: la selezione di un binario permette di sbloccare o bloccare i semafori alle giunzioni del binario
+
+Il software deve quindi associare all'elemento grafico il relativo modello logico:
+
+  * Veicoli -> Train.id
+  * Semafori -> Block, Junction
+  * Deviatoi -> Block, Idx Deviatoio
+  * Binari -> Block, Junctions pair
+
+## Rendering blocchi
+
+Il rendereing dei blocchi dipende dallo stato dei blocchi.
+Quando un blocco è particolaremnte complesso con molti stati possibili (es. swinginh yard), è utile semplificare
+il rendering utilizzando elementi 3D componibili.
+Quindi per ogni possibile configurazione dobbiamo associare un insieme di elementi 3D base.
+
+Esempio:
+
+Una blocco di un binario con un percorso arbitrario è composto da un elemento che rappresenta le rotaie della tratta (curve e/o tratti lineari) e gli elementi dei semafori agli estremi per ogni possibile stato del semaforo (verde o rosso), quindi un totale di 5 elementi.
+Le configurazioni possibli sono 4 dipendenti dallo stato dei semafori:
+
+seg-track
+seg-0-verde
+| J0    | J1    | Elementi                 |
+| Verde | Verde | Tratta, Verde-0, Verde-1 |
+| Verde | Rosso | Tratta, Verde-0, Rosso-1 |
+| Rosso | Verde | Tratta, Rosso-0, Verde-1 |
+| Rosso | Rosso | Tratta, Rosso-0, Rosso-1 |
+
+Un blocco con un deviatoio a sx è composto invece da 10 elementi:
+
+swi-hand-l-dir (Handler diretto)
+swi-hand-l-div (Handler deviato sx)
+swi-l-dir (Deviatoio diretto sx)
+swi-l-div (Deviatoio deviato sx)
+swi-l-0-green (Semaforo in entrata verde)
+swi-l-0-red (Semaforo in entrata rosso)
+swi-l-1-green (Semaforo diretta verde)
+swi-l-1-red (Semaforo diretta rosso)
+swi-l-2-green (Semaforo deviata verde)
+swi-l-2-red (Semaforo deviata rosso)
+
+
+## ID Mapping
+
+Per ogni tipo di bloco sono definite le associazioni:
+
+BlockStatus => backStageElementId
+(BlockStatus, junctionIdx, junctionStatus) => junctionStatusElementId => (junctionType, blockId, junctionIdx)
+(BlockStatus, handlerIdx, blockStatus) => handlerStatusElementId => (handlerType, blockId, handlerIdx)
+(BlockStatus, handlerIdx, blockStatus) => trackStatusElementId => (trackType, blockId, junctionIdx)
+
+Es.
+
+Deviatoio semplice
+
+
+
+("switch") => None =>
+("switch", 0, green) => verde0 => ("junction switch 0")
+("switch", 0, red) => rosso0 => ("junction switch 0")
+("switch", 1, green) => verde1 => ("junction switch 1")
+("switch", 1, red) => rosso1 => ("junction switch 1")
+("switch", 2, green) => verde2 => ("junction switch 2")
+("switch", 2, red) => rosso2 => ("junction switch 2")
+("switch", 0, direct) => handlerDiretto => ("handler switch 0")
+("switch", 0, direct) => trackDiretto => ("track switch 0")
+("switch", 0, diverge) => handlerDeviato => ("handler switch 0")
+("switch", 0, diverge) => trackDeviato => ("track switch 0")
 
 ## Curva
 
 La curva standard ha un angolo di 360/24 = 15 gradi, raggio di 35 *1/2 * 1/sin(15) = 67,615 m
 Combinando mezza curva a sx e mezza curva a dx otteniamo una traslazione del punto iniziale di 1 segmento (35 m) e di 
 4,608 m laterali (distanza minima tra due binari).
+
 
   

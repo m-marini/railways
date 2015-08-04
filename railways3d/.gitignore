@@ -10,13 +10,12 @@
 /assets.jmp
 /*.jmp
 /private
-/readme.md~
 /.worksheet
 /bin
 /bin
 /.scalastyle
 /.cache-main
 /.cache-tests
-/analysis.MD~
 /.tmpBin
 /bin/
+/*.*~

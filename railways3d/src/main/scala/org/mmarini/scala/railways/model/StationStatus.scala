@@ -18,18 +18,18 @@ import com.typesafe.scalalogging.LazyLogging
 case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) extends LazyLogging {
 
   /** Generates the next status changing the status of a block */
-  def changeBlockStatus(id: String): StationStatus = {
+  def toogleStatus(id: String): StationStatus = {
     val newBlocks = (for { block <- blocks.get(id) } yield {
-      val newStatus = block.changeStatus
+      val newStatus = block.toogleStatus(0) // TODO
       blocks + (id -> newStatus)
     })
     if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)
   }
 
   /** Generates the next status changing the freedom of a block */
-  def changeBlockFreedom(id: String): StationStatus = {
+  def toogleLock(id: String): StationStatus = {
     val newBlocks = (for { block <- blocks.get(id) } yield {
-      val newStatus = block.changeFreedom
+      val newStatus = block.toogleLock(0)
       blocks + (id -> newStatus)
     })
     if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)
@@ -45,7 +45,7 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) e
     def findRoute(tracks: IndexedSeq[Track], block: BlockStatus, junction: Int): IndexedSeq[Track] = {
       // Finds end junctions
       val nextTracks = block.tracksForJunction(junction)
-      val newTracks = tracks ++ nextTracks 
+      val newTracks = tracks ++ nextTracks
       if (forLoad && block.isInstanceOf[PlatformStatus]) {
         newTracks
       } else {
@@ -153,10 +153,15 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) e
 
     val newBlocks = for {
       ((block, junction), trainId) <- junctions
-    } yield resetBlocks(block.id)(junction, Some(trainId))
+    } yield {
+      val rb = resetBlocks(block.id)
+      val lockedBlock = if (block.isClear(junction)) rb.lock(junction) else rb
+      lockedBlock(junction, Some(trainId))
+    }
 
-    val other = resetBlocks.values.filter(x => !newBlocks.exists(_.id == x.id))
-    StationStatus(topology, newBlocks ++ other)
+    val others = resetBlocks.values.filter(x => !newBlocks.exists(_.id == x.id))
+    StationStatus(topology, newBlocks ++ others)
+
   }
 
   /** Extracts the blocks and junction of a track */

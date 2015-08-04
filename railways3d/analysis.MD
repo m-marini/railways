@@ -149,9 +149,9 @@ Per calcolare la velocià da raggiungere si deve tener conto dello spazio di fre
 vm = sqrt(2 a s)
 ```
 questa velocità limitata al valore massimo sarà la velocità da raggiungere.
-La velocità sarà invece limitata inferiormente al valore minimo di 1.8 km/h per permettere una fermata precisa
+La velocità sarà invece limitata inferiormente al valore minimo di 0.72 km/h per permettere una fermata precisa
 ```
-vmin = 0.5 m/s
+vmin = 0.2 m/s
 ```
 
 
@@ -181,4 +181,6 @@ Il cambio di stato della stazione può avvenire per uno spostamento dei un treno
 Il cambio di stato produce il ricalcolo dei percorsi correnti dei treni ed eventualmente il cambio d stato degli stessi se in attesa di semaforo. 
 
 Il cambio di stato di un treno (user actions: stop, inversione, start) non cambia lo stato della stazione.
+
+
 
