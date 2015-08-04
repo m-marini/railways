@@ -149,9 +149,9 @@ seg-0-verde
 
 Un blocco con un deviatoio a sx è composto invece da 10 elementi:
 
-swi-hand-l-dir (Handler diretto)
-swi-hand-l-div (Handler deviato sx)
-swi-l-dir (Deviatoio diretto sx)
+swi-l-str-hand (Handler diretto)
+swi-l-div-hand (Handler deviato sx)
+swi-l-str (Deviatoio diretto sx)
 swi-l-div (Deviatoio deviato sx)
 swi-l-0-green (Semaforo in entrata verde)
 swi-l-0-red (Semaforo in entrata rosso)

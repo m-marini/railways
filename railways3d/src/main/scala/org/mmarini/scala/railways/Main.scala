@@ -25,7 +25,7 @@ object Main extends SimpleApplication with LazyLogging {
 
   val _time = Subject[(SimpleApplication, Float)]()
 
-  var actions: Map[String, Observable[ActionMapping]] = Map()
+  def action: String => Observable[ActionMapping] = (k) => inputManager.createActionMapping(k)
 
   /** */
   override def simpleInitApp: Unit = {
@@ -50,11 +50,6 @@ object Main extends SimpleApplication with LazyLogging {
     }
 
     flyCam.setDragToRotate(true)
-
-    actions = (for (k <- Set("changeState", "changeView", "additionalChangeState", "zoomSlider")) yield {
-      val obs = inputManager.createActionMapping(k)
-      (k -> obs)
-    }).toMap
 
     wireUp
 
@@ -91,11 +86,11 @@ object Main extends SimpleApplication with LazyLogging {
 
   /** Attaches mapping */
   private def attachMapping {
-    inputManager.addMapping("changeState", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT))
-    inputManager.addMapping("additionalChangeState", new MouseButtonTrigger(MouseInput.BUTTON_LEFT))
-    inputManager.addMapping("changeView", new MouseButtonTrigger(MouseInput.BUTTON_MIDDLE))
-    inputManager.addMapping("changeView", new KeyTrigger(KeyInput.KEY_G))
-    inputManager.addMapping("zoomSlider", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false))
+    inputManager.addMapping("selectRight", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT))
+    inputManager.addMapping("select", new MouseButtonTrigger(MouseInput.BUTTON_LEFT))
+    inputManager.addMapping("selectMid", new MouseButtonTrigger(MouseInput.BUTTON_MIDDLE))
+    //    inputManager.addMapping("changeView", new KeyTrigger(KeyInput.KEY_G))
+    //    inputManager.addMapping("zoomSlider", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false))
   }
 
   /** */

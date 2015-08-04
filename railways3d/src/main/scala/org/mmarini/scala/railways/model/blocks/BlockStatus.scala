@@ -25,7 +25,7 @@ trait BlockStatus {
   def toogleLock: Int => BlockStatus = (_) => this
 
   /** Create a block status with a given locked junction */
-  def lock: Int => BlockStatus
+  def lock: Int => BlockStatus = (_) => this
 
   /**
    * Creates a new block status applying trainId to a junction.

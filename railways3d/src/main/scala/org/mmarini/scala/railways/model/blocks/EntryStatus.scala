@@ -16,25 +16,34 @@ case class EntryStatus(
     extends BlockStatus with SingleBlockStatus {
 
   /** Returns None */
-  override def junctionFrom = (x) => if (x == 0) Some(1) else None
+  override def junctionFrom = (j) => {
+    require(j == 0)
+    Some(1)
+  }
 
   /** Returns the transit train in a junction */
-  override def transitTrain = _ => trainId
+  override def transitTrain = j => {
+    require(j == 0)
+    trainId
+  }
 
   /** Creates a new block status applying trainId to a junction. */
-  override def apply(junction: Int, trainId: Option[String]) = junction match {
-    case 0 if (trainId != this.trainId) => EntryStatus(block, trainId)
-    case _ => this
+  override def apply(junction: Int, trainId: Option[String]) = {
+    require(junction == 0)
+    if (trainId != this.trainId)
+      EntryStatus(block, trainId)
+    else
+      this
   }
 
   /** Returns the status with no transit train */
   override def noTrainStatus = if (trainId.isEmpty) this else EntryStatus(block, None)
 
   /** Returns true if the junction is clear */
-  override def isClear = _ => false
-
-  /** Create a locked block status */
-  override def lock = (_) => this
+  override def isClear = j => {
+    require(j == 0)
+    false
+  }
 
   /** Returns the current identifiers of elements and the selection identifiers */
   override val elementIds = Set(

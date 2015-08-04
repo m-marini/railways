@@ -24,20 +24,24 @@ case class SwitchStatus(
 
   override def statusIndex = if (diverging) 1 else 0
 
-  override def toogleStatus = (_) =>
+  override def toogleStatus = (j) => {
+    require(j >= 0 && j <= 2)
     if (trainId.isEmpty)
       SwitchStatus(block, trainId, lockedJunctions, !diverging)
     else
       this
+  }
 
-  override def toogleLock = (j) =>
+  override def toogleLock = (j) => {
+    require(j >= 0 && j <= 2)
     SwitchStatus(block, trainId, lockedJunctions.updated(j, !lockedJunctions(j)), diverging)
+  }
 
   /** Returns the end junction given the entry */
   override def junctionFrom = junctions(statusIndex)
 
   /** Returns the transit train in a junction */
-  override def transitTrain = x => x match {
+  override def transitTrain = j => j match {
     case 0 => trainId
     case 1 => if (diverging) None else trainId
     case 2 => if (diverging) trainId else None
@@ -60,12 +64,16 @@ case class SwitchStatus(
     if (lockedJunctions(j))
       this
     else
-      SwitchStatus(block, trainId, lockedJunctions.updated(j, true))
+      SwitchStatus(
+        block = block,
+        trainId = trainId,
+        lockedJunctions = IndexedSeq(true, true, true),
+        diverging = diverging)
 
   /** Returns the current identifiers of elements and the selection identifiers */
   override def elementIds = {
     val dir = if (block.isInstanceOf[LeftHandSwitchBlock]) "l" else "r"
-    val st = if (diverging) "div" else "dir"
+    val st = if (diverging) "div" else "str"
     val jElements = for (junction <- 0 to 2) yield if (isClear(junction)) {
       BlockElementIds(
         s"$id $junction green",
@@ -80,12 +88,12 @@ case class SwitchStatus(
     jElements.toSet +
       BlockElementIds(
         s"$id $st handler",
-        s"Textures/blocks/swi-$dir-hand.blend",
-        Some(s"handler $id $st")) +
+        s"Textures/blocks/swi-$dir-$st-hand.blend",
+        Some(s"handler $id 0")) +
         BlockElementIds(
           s"$id $st",
           s"Textures/blocks/swi-$dir-$st.blend",
-          Some(s"handler $id $st"))
+          Some(s"track $id 0"))
   }
 
 }

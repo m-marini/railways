@@ -13,34 +13,36 @@ case class SegmentStatus(
   lockedJunctions: IndexedSeq[Boolean] = IndexedSeq(false, false))
     extends SingleBlockStatus with LockableStatus {
 
-  /** */
-  override def toogleLock = (j) =>
+  /** Toogles the status of block for a given index of status handler */
+  override def toogleLock = (j) => {
+    require(j == 0 || j == 1)
     SegmentStatus(block, trainId, lockedJunctions.updated(j, !lockedJunctions(j)))
+  }
 
   /** Returns the end junction given the entry */
   override val junctionFrom = IndexedSeq(Option(1), Option(0))
 
   /** Returns the transit train in a junction */
-  override def transitTrain = _ => trainId
+  override def transitTrain = j => {
+    require(j == 0 || j == 1)
+    trainId
+  }
 
   /** Creates a new block status applying trainId to a junction. */
-  override def apply(junction: Int, trainId: Option[String]) =
-    if ((junction == 0 || junction == 1) && trainId != this.trainId) SegmentStatus(block, trainId, lockedJunctions)
-    else this
+  override def apply(junction: Int, trainId: Option[String]) = {
+    require(junction == 0 || junction == 1)
+    if (trainId != this.trainId)
+      SegmentStatus(block, trainId, lockedJunctions)
+    else
+      this
+  }
 
   /** Returns the status with no transit train */
   override def noTrainStatus = if (trainId.isEmpty) this else SegmentStatus(block, None, lockedJunctions)
 
-  /** Create a block status with a given locked junction */
-  override def lock = (j) =>
-    if (lockedJunctions(j))
-      this
-    else
-      SegmentStatus(block, trainId, lockedJunctions.updated(j, true))
-
   /** Returns the current identifiers of elements and the selection identifiers */
   override def elementIds = {
-    val track = BlockElementIds(s"$id", "Textures/blocks/seg.track.blend", Some(s"track $id 0"))
+    val track = BlockElementIds(s"$id", "Textures/blocks/seg-track.blend", Some(s"track $id 0"))
     val jElements = for (junction <- 0 to 1) yield if (isClear(junction)) {
       BlockElementIds(
         s"$id $junction green",

@@ -35,12 +35,12 @@ trait Train {
 
   /** Returns the train vehicle composing this train */
   lazy val vehicles: Set[Vehicle] = {
-    val head = Head(s"$id,head", route, location)
+    val head = Head(s"$id head", route, location)
     val mid = for {
       i <- 1 to size - 2
-      coach <- Coach(s"$id,coach,$i", route, location - i * CoachLength)
+      coach <- Coach(s"$id coach $i", route, location - i * CoachLength)
     } yield coach
-    val tail = Tail(s"$id,tail", route, location - (size - 1) * CoachLength)
+    val tail = Tail(s"$id tail", route, location - (size - 1) * CoachLength)
     (head.toSet) ++ mid ++ (tail.toSet)
   }
 

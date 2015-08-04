@@ -35,102 +35,49 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     for { (_, time) <- app.timeObservable } yield (status: GameStatus) => status.tick(time)
 
   // Creates the observable of change status id
-  private val additionalChangeStateIdObs =
-    for { cs <- app.actions.get("additionalChangeState") } yield {
-      val pr = app.pickRay(cs.filter(_.keyPressed))
-      val idOptOvs =
-        for { cr <- app.pickCollision(app.getRootNode)(pr) } yield {
-          val spatOpt = find(Option(cr.getGeometry))(s => s.getUserData("id") != null)
-          for (spat <- spatOpt) yield spat.getUserData[String]("id")
-        }.filterNot(_.isEmpty())
-      for (idOpt <- idOptOvs if (!idOpt.isEmpty)) yield idOpt.get
-    }
+  private val selectRightIdObs = createActionIdObs("selectRight")
 
   // Creates the observable of change status id
-  private val changeStateIdObs =
-    for { cs <- app.actions.get("changeState") } yield {
-      val pr = app.pickRay(cs.filter(_.keyPressed))
-      val idOptOvs =
-        for { cr <- app.pickCollision(app.getRootNode)(pr) } yield {
-          val spatOpt = find(Option(cr.getGeometry))(s => s.getUserData("id") != null)
-          for (spat <- spatOpt) yield spat.getUserData[String]("id")
-        }.filterNot(_.isEmpty())
-      for (idOpt <- idOptOvs if (!idOpt.isEmpty)) yield idOpt.get
+  private val selectIdObs = createActionIdObs("select")
+
+  // Creates train change state events
+  private val trainToogleStateObs =
+    for {
+      data <- selectIdObs if (data(0) == "train")
+    } yield {
+      (status: GameStatus) => status.toogleTrainStatus(data(1))
     }
 
   // Creates train change state events
-  private val trainToogleStateObs = {
-    for { obs <- additionalChangeStateIdObs } yield {
-      for {
-        id <- obs if (id.startsWith("train,"))
-      } yield {
-        val trainId = id.split(",")(1)
-        (status: GameStatus) => status.toogleTrainStatus(trainId)
-      }
+  private val trainReverseObs =
+    for {
+      data <- selectRightIdObs if (data(0) == "train")
+    } yield {
+      (status: GameStatus) => status.reverseTrain(data(1))
     }
-  }
-
-  // Creates train change state events
-  private val trainReverseObs = {
-    for { obs <- changeStateIdObs } yield {
-      for {
-        id <- obs if (id.startsWith("train,"))
-      } yield {
-        val trainId = id.split(",")(1)
-        (status: GameStatus) => status.reverseTrain(trainId)
-      }
-    }
-  }
 
   // Creates block change state events
-  private val blockToogleLockObs = {
-    for { obs <- additionalChangeStateIdObs } yield {
-      for {
-        id <- obs if (id.startsWith("block,"))
-      } yield {
-        val blockId = id.split(",")(1)
-        (status: GameStatus) => status.toogleLock(blockId)
-      }
+  private val blockToogleLockObs =
+    for {
+      data <- selectIdObs if (data(0) == "junction")
+    } yield {
+      (status: GameStatus) => status.toogleLock(data(1))(data(2).toInt)
     }
-  }
 
   // Creates block change state events
-  private val blockToogleStateObs = {
-    for { obs <- changeStateIdObs } yield {
-      for {
-        id <- obs if (id.startsWith("block,"))
-      } yield {
-        val blockId = id.split(",")(1)
-        (status: GameStatus) => status.toogleBlockStatus(blockId)
-      }
-    }
-  }
-
-  private def dump(head: String)(n: Option[Spatial]) {
-    n match {
-      case Some(s) =>
-        logger.debug("{} name={}", head, s.getName)
-        logger.debug("{} id={}", head, s.getUserData("id"))
-        dump(head + " ")(Option(s.getParent))
-      case _ =>
-    }
-  }
-
-  private def find(n: Option[Spatial])(f: (Spatial => Boolean)): Option[Spatial] =
-    if (n.isEmpty) {
-      None
-    } else if (f(n.get)) {
-      n
-    } else {
-      find(Option(n.get.getParent))(f)
+  private val blockToogleStateObs =
+    for {
+      data <- selectIdObs if (data(0) == "handler")
+    } yield {
+      (status: GameStatus) => status.toogleBlockStatus(data(1))(data(2).toInt)
     }
 
   // Merges all observable to create n observable of all events
-  val events = (timeEvents ::
-    blockToogleLockObs.toList :::
-    blockToogleStateObs.toList :::
-    trainToogleStateObs.toList :::
-    trainReverseObs.toList).reduce((a, b) => a.merge(b))
+  val events = timeEvents merge
+    blockToogleLockObs merge
+    blockToogleStateObs merge
+    trainToogleStateObs merge
+    trainReverseObs
 
   // Creates the state observable
   private val state = stateFlow(initialStatus)(events)
@@ -191,6 +138,37 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   //------------------------------------------------------
   // Functions
   //------------------------------------------------------
+
+  private def dump(head: String)(n: Option[Spatial]) {
+    n match {
+      case Some(s) =>
+        logger.debug("{} name={}", head, s.getName)
+        logger.debug("{} id={}", head, s.getUserData("id"))
+        dump(head + " ")(Option(s.getParent))
+      case _ =>
+    }
+  }
+
+  private def find(n: Option[Spatial])(f: (Spatial => Boolean)): Option[Spatial] =
+    if (n.isEmpty) {
+      None
+    } else if (f(n.get)) {
+      n
+    } else {
+      find(Option(n.get.getParent))(f)
+    }
+
+  private def createActionIdObs(actionId: String) = {
+    val pr = app.pickRay(app.action(actionId).filter(_.keyPressed))
+    val idOptObs =
+      for { cr <- app.pickCollision(app.getRootNode)(pr) } yield {
+        val spatOpt = find(Option(cr.getGeometry))(s => s.getUserData("id") != null)
+        for (spat <- spatOpt) yield spat.getUserData[String]("id")
+      }.filterNot(_.isEmpty())
+    val dataObs =
+      for (idOpt <- idOptObs if (!idOpt.isEmpty)) yield idOpt.get.split(" ")
+    dataObs.doOnNext(x => logger.debug(s"${x.mkString(" ")}"))
+  }
 
   /** Loads viewpoints list into hud panel */
   private def loadViewpoints {

@@ -18,18 +18,18 @@ import com.typesafe.scalalogging.LazyLogging
 case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) extends LazyLogging {
 
   /** Generates the next status changing the status of a block */
-  def toogleStatus(id: String): StationStatus = {
+  def toogleStatus(id: String)(handler: Int): StationStatus = {
     val newBlocks = (for { block <- blocks.get(id) } yield {
-      val newStatus = block.toogleStatus(0) // TODO
+      val newStatus = block.toogleStatus(handler)
       blocks + (id -> newStatus)
     })
     if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)
   }
 
   /** Generates the next status changing the freedom of a block */
-  def toogleLock(id: String): StationStatus = {
+  def toogleLock(id: String)(junction: Int): StationStatus = {
     val newBlocks = (for { block <- blocks.get(id) } yield {
-      val newStatus = block.toogleLock(0)
+      val newStatus = block.toogleLock(junction)
       blocks + (id -> newStatus)
     })
     if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)

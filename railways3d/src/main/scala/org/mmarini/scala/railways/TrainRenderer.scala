@@ -46,7 +46,7 @@ class TrainRenderer(vehicleCache: Map[String, Spatial], target: Node, assetManag
         vehicle <- newVehicles
         spatial <- createSpatial(vehicle)
       } yield {
-        spatial.setUserData("id", s"train,${vehicle.id}")
+        spatial.setUserData("id", s"train ${vehicle.id}")
         (vehicle.id -> spatial)
       })
 
@@ -59,7 +59,7 @@ class TrainRenderer(vehicleCache: Map[String, Spatial], target: Node, assetManag
         -vehicle.location.x,
         0,
         vehicle.location.y)
-      spatial.setUserData("id", s"train,${vehicle.id}")
+      spatial.setUserData("id", s"train ${vehicle.id}")
       spatial.setLocalTranslation(pos)
       spatial.setLocalRotation(new Quaternion().fromAngleNormalAxis(vehicle.orientation, OrientationAxis))
     }
