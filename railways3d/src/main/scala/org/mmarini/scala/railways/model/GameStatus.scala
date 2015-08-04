@@ -22,7 +22,6 @@ import org.mmarini.scala.railways.model.blocks.EntryBlock
 import org.mmarini.scala.railways.model.blocks.PlatformBlock
 import org.mmarini.scala.railways.model.blocks.EntryStatus
 import org.mmarini.scala.railways.model.blocks.BlockStatus
-import org.mmarini.scala.railways.model.tracks.HiddenTrack
 import org.mmarini.scala.railways.model.blocks.EntryStatus
 import org.mmarini.scala.railways.model.blocks.SegmentStatus
 import org.mmarini.scala.railways.model.blocks.PlatformStatus
@@ -159,16 +158,18 @@ case class GameStatus(
   def changeBlockFreedom(id: String): GameStatus =
     setStationStatus(stationStatus.changeBlockFreedom(id))
 
+  /** Creates a new status toogling the statuos of a given train */
   def changeTrainStatus(id: String): GameStatus = {
     val newStatus = for { train <- trains.find(_.id == id) } yield putTrain(train.toogleStatus)
     newStatus.getOrElse(this)
   }
 
+  /** Creates new status reversing a given train */
   def reverseTrain(id: String): GameStatus = {
     logger.debug("Reversing train {}", id)
     val x = for {
       train <- trains.find(_.id == id)
-      revTrain <- train.reverse(stationStatus.createReverseRoute) // TODO
+      revTrain <- train.reverse(stationStatus.createReverseRoute)
     } yield putTrain(revTrain)
     x.getOrElse(this)
   }

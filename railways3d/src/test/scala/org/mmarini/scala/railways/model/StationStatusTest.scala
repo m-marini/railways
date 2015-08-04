@@ -79,6 +79,7 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     val train = MovingTrain(
       id = "train",
       size = 2,
+      loaded = false,
       location = route.length,
       speed = 0f,
       route = route)
@@ -194,11 +195,12 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     val track2 = status.blocks("track2").block.tracksForJunction(0)(0)
     val location = CoachLength * 3
     val train = MovingTrain(
-      "train1",
-      2,
+      id = "train1",
+      size = 2,
+      loaded = false,
       TrainRoute(track1 ++ track2),
-      location,
-      0f)
+      location = location,
+      speed = 0f)
     val (route, dist) = status.findRoute(train)
     dist should equal(location)
     route.tracks should have size (2)

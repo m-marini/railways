@@ -18,13 +18,6 @@ import org.mmarini.scala.railways.model._
 class PlatformBlockTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
   val block = PlatformBlock("", 0, 0, 0)
 
-  property("trackGroups of PlatformBlock should return all tracks (forward and backward)") {
-    val tg = block.trackGroups(0);
-    tg should have size (1)
-    tg.head should contain(SegmentTrack(Vector2f.ZERO, new Vector2f(0f, 11 * SegmentLength)))
-    tg.head should contain(SegmentTrack(new Vector2f(0f, 11 * SegmentLength), Vector2f.ZERO))
-  }
-
   property("tracksForJunction of PlatformBlock from 0 should return forward track") {
     val list = block.tracksForJunction(0)(0)
     list should have size (1)

@@ -30,6 +30,9 @@ trait Train {
   /** Returns the toogle status */
   def toogleStatus: Train
 
+  /** Returns true if train has loaded passengers at platform */
+  def loaded: Boolean
+
   /** Returns the train vehicle composing this train */
   lazy val vehicles: Set[Vehicle] = {
     val head = Head(s"$id,head", route, location)

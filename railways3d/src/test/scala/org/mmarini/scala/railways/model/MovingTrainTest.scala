@@ -27,7 +27,7 @@ class MovingTrainTest extends PropSpec with Matchers with PropertyChecks with Mo
             val route = mock[TrainRoute]
             when(route.pathTracks(location - size * CoachLength, location)) thenReturn trackPath
 
-            val train = MovingTrain("", size, route, location, 0f)
+            val train = MovingTrain("", size, false, route, location, 0f)
             val tt = train.transitTracks
             verify(route).pathTracks(location - size * CoachLength, location)
             tt shouldBe (trackPath)

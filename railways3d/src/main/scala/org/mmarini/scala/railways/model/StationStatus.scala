@@ -101,7 +101,7 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) e
     // map to track list
     val trackList = (for {
       (x, _) <- junctions
-    } yield findRoute(startingBlock, x, train.id, true)).
+    } yield findRoute(startingBlock, x, train.id, !train.loaded)).
       toIndexedSeq.flatten
 
     // drop head until track of tail train

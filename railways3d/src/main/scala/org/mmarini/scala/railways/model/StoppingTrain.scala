@@ -13,12 +13,13 @@ import com.typesafe.scalalogging.LazyLogging
 case class StoppingTrain(
     id: String,
     size: Int,
+    loaded: Boolean,
     route: TrainRoute,
     location: Float,
     speed: Float) extends Train with LazyLogging {
 
   /** Creates the new train status apply a new route */
-  override def apply(route: TrainRoute, location: Float): Train = StoppingTrain(id, size, route, location, speed)
+  override def apply(route: TrainRoute, location: Float): Train = StoppingTrain(id, size, loaded, route, location, speed)
 
   /** Computes the next status after an elapsed time tick */
   override def tick(time: Float, gameStatus: GameStatus): Option[Train] = {
@@ -27,15 +28,15 @@ case class StoppingTrain(
 
     if (newSpeed <= 0f) {
       logger.debug("Train {} stopped", id)
-      Some(StoppedTrain(id, size, route, location))
+      Some(StoppedTrain(id, size, loaded, route, location))
     } else {
       // Computes the new location
       val newLocation = location + newSpeed * time
       if (newLocation >= route.length) {
         logger.debug("Train {} stopped", id)
-        Some(StoppedTrain(id, size, route, route.length))
+        Some(StoppedTrain(id, size, loaded, route, route.length))
       } else {
-        Some(StoppingTrain(id, size, route, newLocation, newSpeed))
+        Some(StoppingTrain(id, size, loaded, route, newLocation, newSpeed))
       }
     }
   }
@@ -43,6 +44,6 @@ case class StoppingTrain(
   /** Creates toogle status */
   override def toogleStatus = {
     logger.debug("Go train {}", id)
-    MovingTrain(id, size, route, location, speed)
+    MovingTrain(id, size, loaded, route, location, speed)
   }
 }

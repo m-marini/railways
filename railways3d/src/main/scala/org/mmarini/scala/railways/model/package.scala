@@ -57,7 +57,7 @@ package object model {
   val MaxSpeed = 140f / 3.6f
 
   /** Minimum speed */
-  val MinSpeed = 0.5f
+  val MinSpeed = 0.2f
 
   /** Max deceleration */
   val MaxDeceleration = 1.929f
@@ -67,12 +67,6 @@ package object model {
 
   val AxisDistance = 3.970f
 
-  type Route = IndexedSeq[Track]
-
   case class Endpoint(block: Block, index: Int)
-
-  type Junction = (Endpoint, Endpoint)
-
-  type GameTransition = GameStatus => GameStatus
 
 }

@@ -4,12 +4,12 @@
 package org.mmarini.scala.railways.model.blocks
 
 import org.mmarini.scala.railways.model.tracks.Track
-import org.mmarini.scala.railways.model.tracks.HiddenTrack
 import org.mmarini.scala.railways.model.Transform2d
+import org.mmarini.scala.railways.model.tracks.EntryTrack
 
 /** The incoming trains come in this BlockTemplate */
 case class EntryBlock(id: String, trans: Transform2d) extends Block with TrackBlock {
-  val entryTrack = new HiddenTrack
+  val entryTrack = new EntryTrack
 
   override val trackGroups = IndexedSeq(Set(Set(entryTrack.asInstanceOf[Track])))
 

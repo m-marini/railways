@@ -26,8 +26,12 @@ case class WaitForPassengerTrain(
       Some(WaitForPassengerTrain(id, size, route, location, timeout - time))
     } else {
       logger.debug(s"$id stopped")
-      Some(StoppedTrain(id, size, route, location))
+      Some(StoppedTrain(id, size, true, route, location))
     }
-  /** Creates toogle status */
+
+  /** Creates toogled status */
   override def toogleStatus = this
+
+  /** Returns true if train has loaded passengers at platform */
+  override def loaded = true
 }

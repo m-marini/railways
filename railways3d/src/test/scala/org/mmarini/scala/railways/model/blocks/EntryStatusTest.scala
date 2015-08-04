@@ -10,7 +10,6 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatest.PropSpec
 import org.scalatest.prop.PropertyChecks
 import org.scalacheck.Arbitrary
-import org.mmarini.scala.railways.model.tracks.HiddenTrack
 import org.mmarini.scala.railways.model.tracks.Track
 
 /** Test */

@@ -12,7 +12,7 @@ import org.mmarini.scala.railways.model._
  * @constructor creates the segment specifying the starting point and the ending point
  *
  */
-class HiddenTrack extends Track {
+class EntryTrack extends Track {
   /** */
   override val length = CoachLength * MaxTrainSize + 1
 
