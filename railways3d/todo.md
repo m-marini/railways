@@ -2,8 +2,10 @@
 
   * Bug: il  blocco sucessivo alla piattaforma non deve essere allcoato
     quando il treno si ferma per salita passeggeri 
-  * Cambio di stato dei semafori bloccato se treno in transito
-  * Gestione della posizione della camera
+  * Movimento della camera
+  * Pop-up action menus
+  * Prestazioni di gioco e fine gioco
+  * Notifiche messaggi 
   * Costruzione delle stazioni
+  * Modelli 3D finali
 
-  
