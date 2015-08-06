@@ -5,6 +5,19 @@
 	<useStyles filename="nifty-default-styles.xml" />
 	<useControls filename="nifty-default-controls.xml" />
 
+	<popup id="testPopup" childLayout="absolute-inside"
+		controller="org.mmarini.scala.railways.PopupController">
+		<interact onClick="closePopup()" onSecondaryClick="closePopup()"
+			onTertiaryClick="closePopup()" />
+		<panel id="doButton" x="100" y="300" width="200" height="100"
+			childLayout="center" backgroundColor="#aaa8">
+			<image filename="Interface/panel.png">
+				<interact onClick="doSomething()" />
+			</image>
+		</panel>
+	</popup>
+
+
 	<screen id="game-screen" controller="org.mmarini.scala.railways.GameController">
 		<layer childLayout="vertical">
 			<panel width="200" height="200" align="right" childLayout="center"
@@ -19,12 +32,5 @@
 				</control>
 			</panel>
 		</layer>
-		<popup id="niftyPopupMenu" childLayout="absolute-inside"
-			controller="org.mmarini.scala.railways.PopupController">
-			<interact onClick="closePopup()" onSecondaryClick="closePopup()"
-				onTertiaryClick="closePopup()" />
-			<control id="doButton" name="button" label="Popup!">
-			</control>
-		</popup>
 	</screen>
 </nifty>

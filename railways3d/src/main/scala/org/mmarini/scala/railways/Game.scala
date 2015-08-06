@@ -133,7 +133,9 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
         popup <- ctrl.popup
         nifty <- ctrl.nifty
       } {
-        nifty.showPopup(nifty.getCurrentScreen(), popup.getId(), null);
+        val id = popup.getId()
+        logger.debug(s"popup ${id}")
+        nifty.showPopup(nifty.getCurrentScreen(), id, null);
       }
     }
   })

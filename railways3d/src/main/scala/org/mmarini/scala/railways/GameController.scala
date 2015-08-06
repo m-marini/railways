@@ -38,7 +38,7 @@ class GameController extends AbstractAppState with AbstractController with LazyL
 
   lazy val popup = for (n <- nifty) yield {
     val popupTry = Try {
-      n.createPopup("niftyPopupMenu")
+      n.createPopup("testPopup")
     }
     for (ex <- popupTry.failed) {
       logger.error(ex.getMessage, ex)

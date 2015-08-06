@@ -311,7 +311,7 @@ Le viste legate al mouse o al touch sono attive solo nel caso la camera non sia 
     o selezionare un percorso automatico verso una destinazione.
   * Tasto sx del mouse su un semaforo si attiva il pop up menu per liberare o bloccare il semaforo
   * Tasto sx del mouse su un deviatore si cambia lo stato del deviatore
-  * Tasto sx del mouse su un binario si cambia attiva il pop-up menu per cambiare lo stato dei semafori della tratta.
+  * Tasto sx del mouse su un binario si attiva il pop-up menu per cambiare lo stato dei semafori della tratta.
   * Tasto sx del mouse su un punto della vista si indirizza la camera nel punto determinato.
   * Tasto dx del mouse si ruota la camera a dx o sx, su o giu (con angolazione limitata)
   * Ruota del mouse avanza o retrocede la camera nella direzione della stessa
