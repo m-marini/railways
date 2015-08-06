@@ -4,13 +4,14 @@
 package org.mmarini.scala.railways.model.blocks
 
 import org.mmarini.scala.railways.model.tracks.Track
+import com.typesafe.scalalogging.LazyLogging
 
 /** A [[BlockStatus of switch */
 case class SwitchStatus(
     block: SwitchBlock,
     trainId: Option[String] = None,
     lockedJunctions: IndexedSeq[Boolean] = IndexedSeq(false, false, false),
-    diverging: Boolean = false) extends IndexedBlockStatus with LockableStatus {
+    diverging: Boolean = false) extends IndexedBlockStatus with LockableStatus with LazyLogging {
 
   private val junctions = IndexedSeq(
     IndexedSeq(

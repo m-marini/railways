@@ -19,5 +19,12 @@
 				</control>
 			</panel>
 		</layer>
+		<popup id="niftyPopupMenu" childLayout="absolute-inside"
+			controller="org.mmarini.scala.railways.PopupController">
+			<interact onClick="closePopup()" onSecondaryClick="closePopup()"
+				onTertiaryClick="closePopup()" />
+			<control id="doButton" name="button" label="Popup!">
+			</control>
+		</popup>
 	</screen>
 </nifty>

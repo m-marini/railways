@@ -125,6 +125,19 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
       })
     }
 
+  selectIdObs.subscribe(id => {
+    if (id(0) == "track") {
+      logger.debug(s"selected ${id.mkString(" ")}")
+      for {
+        ctrl <- app.controller[GameController]("game-screen")
+        popup <- ctrl.popup
+        nifty <- ctrl.nifty
+      } {
+        nifty.showPopup(nifty.getCurrentScreen(), popup.getId(), null);
+      }
+    }
+  })
+
   //  /** Subscribe changeView observer */
   //  private val cameraController =
   //    pickingScene.map(new CameraController(app.getCamera, _, app.getAssetManager, app.getRootNode))

@@ -42,16 +42,16 @@ case class MovingTrain(
     // Computes the new location
     val newLocation = location + newSpeed * time
 
-    if (newLocation >= route.length) {
+    if (newLocation > route.length - MinDistance) {
       this.trackTailLocation match {
         case Some((track, _)) if (track.isInstanceOf[ExitTrack]) =>
           logger.debug(s"$id exited")
           None
         case Some((track, _)) if (track.isInstanceOf[PlatformTrack] && !loaded) =>
           logger.debug(s"$id waiting for passenger")
-          Some(WaitForPassengerTrain(id, size, route, route.length, BoardingTime))
+          Some(WaitForPassengerTrain(id, size, route, route.length - MinDistance, BoardingTime))
         case _ =>
-          Some(MovingTrain(id, size, loaded, route, route.length, 0))
+          Some(MovingTrain(id, size, loaded, route, route.length - MinDistance, 0))
       }
     } else {
       Some(MovingTrain(id, size, loaded, route, newLocation, newSpeed))

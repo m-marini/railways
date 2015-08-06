@@ -1,9 +1,7 @@
 # To do
 
-  * Bug: il  blocco sucessivo alla piattaforma non deve essere allcoato
-    quando il treno si ferma per salita passeggeri 
-  * Movimento della camera
   * Pop-up action menus
+  * Movimento della camera
   * Prestazioni di gioco e fine gioco
   * Notifiche messaggi 
   * Costruzione delle stazioni

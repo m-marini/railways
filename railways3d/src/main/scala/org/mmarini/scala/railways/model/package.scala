@@ -42,8 +42,11 @@ package object model {
   /** Segment * (1-cos(curve))/sin(curve) */
   val TrackGap = 4.608f
 
-  /**Length units of standard segment element (meters) */
+  /** Length units of standard segment element (meters) */
   val SegmentLength = 35f
+
+  /** Minimum distance to stop the train at (meters) */
+  val MinDistance = 0.01f
 
   /** Radius of curve */
   val CurveRadius = 67.615f

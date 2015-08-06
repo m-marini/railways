@@ -164,14 +164,17 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) e
 
   }
 
-  /** Extracts the blocks and junction of a track */
-  def extractJunctions(track: Track): Option[(BlockStatus, Int)] = {
-    val blockOpt = blocks.values.find(x => !x.junctionsForTrack(track).isEmpty)
-    for { x <- blockOpt } yield (x, x.junctionsForTrack(track).get._1)
+  /** Extracts the block and junction of a track */
+  def extractJunctions: Track => Option[(BlockStatus, Int)] = (track) => {
+    val blockJunction = for {
+      block <- blocks.values
+      junctions <- block.junctionsForTrack(track)
+    } yield (block, junctions._1)
+    if (blockJunction.isEmpty) None else Some(blockJunction.head)
   }
 
   /** Returns the entry blocks */
-  def entryBlocks: IndexedSeq[EntryStatus] =
+  lazy val entryBlocks: IndexedSeq[EntryStatus] =
     (for {
       b <- blocks.values
       if (b.isInstanceOf[EntryStatus])
@@ -179,7 +182,7 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) e
       toIndexedSeq
 
   /** Returns the exit blocks */
-  def exitBlocks: IndexedSeq[ExitStatus] =
+  lazy val exitBlocks: IndexedSeq[ExitStatus] =
     (for {
       b <- blocks.values
       if (b.isInstanceOf[ExitStatus])
