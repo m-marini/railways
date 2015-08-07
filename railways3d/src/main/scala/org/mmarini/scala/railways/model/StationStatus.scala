@@ -164,7 +164,7 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) e
       ((block, junction), trainId) <- junctions
     } yield {
       val rb = resetBlocks(block.id)
-      val lockedBlock = if (block.isClear(junction)) rb.lock(junction) else rb
+      val lockedBlock = if (block.isClear(junction)) rb.autolock(junction) else rb
       lockedBlock(junction, Some(trainId))
     }
 

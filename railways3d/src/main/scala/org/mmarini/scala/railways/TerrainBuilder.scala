@@ -31,7 +31,8 @@ object TerrainBuilder extends LazyLogging {
       val QuadSize = 513
       val terrain = new TerrainQuad("my terrain", PatchSize, QuadSize, map)
       terrain.setMaterial(loadTerrainMaterial(assetManager).get)
-      terrain.setLocalScale(4f, 0.1f, 4f)
+      terrain.setLocalScale(4f, 0.5f, 4f)
+//      terrain.setLocalTranslation(0f, -256f, 0f)
 
       /** 5. The LOD (level of detail) depends on were the camera is: */
       terrain.addControl(new TerrainLodControl(terrain, camera))
@@ -65,12 +66,12 @@ object TerrainBuilder extends LazyLogging {
       val dirt = assetManager.loadTexture("Textures/dirt.jpg")
       dirt.setWrap(WrapMode.Repeat)
       mat_terrain.setTexture("Tex2", dirt)
-      mat_terrain.setFloat("Tex2Scale", 32f)
+      mat_terrain.setFloat("Tex2Scale", 3f)
 
       val grass = assetManager.loadTexture("Textures/grass.jpg")
       grass.setWrap(WrapMode.Repeat)
       mat_terrain.setTexture("Tex1", grass)
-      mat_terrain.setFloat("Tex2Scale", 64f)
+      mat_terrain.setFloat("Tex1Scale", 1000f)
       mat_terrain
     }
 
