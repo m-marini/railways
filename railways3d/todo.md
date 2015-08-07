@@ -1,9 +1,11 @@
 # To do
 
-  * Pop-up action menus
   * Movimento della camera
+  * Camera su treno 
+  * Block, sblocco tratte
   * Prestazioni di gioco e fine gioco
   * Notifiche messaggi 
-  * Costruzione delle stazioni
   * Modelli 3D finali
+  * Costruzione delle stazioni
+
 

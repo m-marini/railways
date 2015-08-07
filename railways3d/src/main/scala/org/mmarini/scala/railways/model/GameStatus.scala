@@ -155,12 +155,22 @@ case class GameStatus(
     setStationStatus(stationStatus.toogleStatus(id)(handler))
 
   /** Generates the next status changing the freedom of a block */
-  def toogleLock(id: String)(junction: Int): GameStatus =
-    setStationStatus(stationStatus.toogleLock(id)(junction))
+  def lockJunction(id: String)(junction: Int): GameStatus =
+    setStationStatus(stationStatus.lock(id)(junction))
+
+  /** Generates the next status changing the freedom of a block */
+  def unlockJunction(id: String)(junction: Int): GameStatus =
+    setStationStatus(stationStatus.unlock(id)(junction))
 
   /** Creates a new status toogling the statuos of a given train */
-  def toogleTrainStatus(id: String): GameStatus = {
-    val newStatus = for { train <- trains.find(_.id == id) } yield putTrain(train.toogleStatus)
+  def startTrain(id: String): GameStatus = {
+    val newStatus = for { train <- trains.find(_.id == id) } yield putTrain(train.start)
+    newStatus.getOrElse(this)
+  }
+
+  /** Creates a new status toogling the statuos of a given train */
+  def stopTrain(id: String): GameStatus = {
+    val newStatus = for { train <- trains.find(_.id == id) } yield putTrain(train.stop)
     newStatus.getOrElse(this)
   }
 

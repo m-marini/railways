@@ -14,6 +14,7 @@ import com.jme3.texture.Texture.WrapMode
 import com.jme3.scene.Node
 import com.typesafe.scalalogging.LazyLogging
 import scala.util.Random
+import com.jme3.terrain.heightmap.ImageBasedHeightMap
 
 /**
  *
@@ -24,13 +25,13 @@ object TerrainBuilder extends LazyLogging {
   def build(assetManager: AssetManager, camera: Camera): Try[Node] = {
     val ty = for {
       mat <- loadTerrainMaterial(assetManager)
-      map <- loadHightMap
+      map <- loadHightMap(assetManager)
     } yield {
       val PatchSize = 65
       val QuadSize = 513
       val terrain = new TerrainQuad("my terrain", PatchSize, QuadSize, map)
       terrain.setMaterial(loadTerrainMaterial(assetManager).get)
-      terrain.setLocalScale(4f, 1f, 4f)
+      terrain.setLocalScale(4f, 0.1f, 4f)
 
       /** 5. The LOD (level of detail) depends on were the camera is: */
       terrain.addControl(new TerrainLodControl(terrain, camera))
@@ -42,14 +43,14 @@ object TerrainBuilder extends LazyLogging {
   }
 
   /** Loads the height map */
-  private def loadHightMap =
+  private def loadHightMap(assetManager: AssetManager) =
     Try {
-      //      val heightMapImage = app.getAssetManager.loadTexture("Textures/station-terrain-height.png")
-      //      val heightmap = new ImageBasedHeightMap(heightMapImage.getImage)
-      //      heightmap.load()
-      //      heightmap.getHeightMap
-      val map = new Array[Float](512 * 512)
-      map
+      val heightMapImage = assetManager.loadTexture("Textures/station-terrain-height.png")
+      val heightmap = new ImageBasedHeightMap(heightMapImage.getImage)
+      heightmap.load()
+      heightmap.getHeightMap
+      //      val map = new Array[Float](512 * 512)
+      //      map
     }
 
   /** Load terrain material */

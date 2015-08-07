@@ -32,17 +32,17 @@ class OptionsController extends AbstractAppState with AbstractController with La
     val valueById = Map(Short -> 5, Medium -> 10, Long -> 30).map { case (k, v) => (k.id -> v.toFloat * 60) }
   }
 
-  private def station = control("station", classOf[DropDown[String]])
+  private def station = controlById("station", classOf[DropDown[String]])
 
-  private def level = control("level", classOf[DropDown[String]])
+  private def level = controlById("level", classOf[DropDown[String]])
 
-  private def duration = control("duration", classOf[DropDown[String]])
+  private def duration = controlById("duration", classOf[DropDown[String]])
 
-  private def autoLock = control("autoLock", classOf[CheckBox])
+  private def autoLock = controlById("autoLock", classOf[CheckBox])
 
-  private def mute = control("mute", classOf[CheckBox])
+  private def mute = controlById("mute", classOf[CheckBox])
 
-  private def volume = control("volume", classOf[Slider])
+  private def volume = controlById("volume", classOf[Slider])
 
   private val _confirmed = Subject[String]()
 

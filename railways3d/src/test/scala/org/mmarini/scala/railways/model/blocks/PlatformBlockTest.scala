@@ -13,6 +13,7 @@ import com.jme3.math.Vector2f
 import org.mmarini.scala.railways.model.tracks.SegmentTrack
 import org.mmarini.scala.railways.model.tracks.Track
 import org.mmarini.scala.railways.model._
+import org.mmarini.scala.railways.model.tracks.PlatformTrack
 
 /** Test */
 class PlatformBlockTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
@@ -21,13 +22,13 @@ class PlatformBlockTest extends PropSpec with Matchers with PropertyChecks with 
   property("tracksForJunction of PlatformBlock from 0 should return forward track") {
     val list = block.tracksForJunction(0)(0)
     list should have size (1)
-    list should contain(SegmentTrack(Vector2f.ZERO, new Vector2f(0f, 11 * SegmentLength)))
+    list should contain(PlatformTrack(Vector2f.ZERO, new Vector2f(0f, 11 * SegmentLength)))
   }
 
   property("tracksForJunction of PlatformBlock from 1 should return forward track") {
     val list = block.tracksForJunction(0)(1)
     list should have size (1)
-    list should contain(SegmentTrack(new Vector2f(0f, 11 * SegmentLength), Vector2f.ZERO))
+    list should contain(PlatformTrack(new Vector2f(0f, 11 * SegmentLength), Vector2f.ZERO))
   }
 
   property("junctionsForTrack forward of PlatformBlock should be Some(0, 1)") {

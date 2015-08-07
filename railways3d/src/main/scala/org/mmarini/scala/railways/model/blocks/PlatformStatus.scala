@@ -13,9 +13,21 @@ case class PlatformStatus(
     extends SingleBlockStatus with LockableStatus {
 
   /** Toogles the status of block for a given index of status handler */
-  override def toogleLock = (j) => {
+  override def lock = (j) => {
     require(j == 0 || j == 1)
-    PlatformStatus(block, trainId, lockedJunctions.updated(j, !lockedJunctions(j)))
+    if (lockedJunctions(j))
+      this
+    else
+      PlatformStatus(block, trainId, lockedJunctions.updated(j, true))
+  }
+  
+  /** Toogles the status of block for a given index of status handler */
+  override def unlock = (j) => {
+    require(j == 0 || j == 1)
+    if (lockedJunctions(j))
+      PlatformStatus(block, trainId, lockedJunctions.updated(j, false))
+    else
+      this
   }
 
   /** Returns the end junction given the entry */
@@ -35,7 +47,7 @@ case class PlatformStatus(
     else
       this
   }
-  
+
   /** Returns the status with no transit train */
   override def noTrainStatus = if (trainId.isEmpty) this else PlatformStatus(block, None, lockedJunctions)
 

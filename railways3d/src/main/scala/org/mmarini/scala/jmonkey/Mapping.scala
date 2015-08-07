@@ -65,7 +65,7 @@ class InputManagerOps(val inputManager: InputManager) {
 
 }
 
-case class RayMapping(ray: Ray)
+case class RayMapping(ray: Ray, mousePos: Vector2f)
 
 /** Adds functionalities to the jme3 application */
 class ApplicationOps(val app: Application) {
@@ -77,20 +77,20 @@ class ApplicationOps(val app: Application) {
       val cam = app.getCamera
       val pos = cam.getWorldCoordinates(new Vector2f(mousePos), 0f).clone()
       val dir = cam.getWorldCoordinates(new Vector2f(mousePos), 1f).subtractLocal(pos).normalizeLocal()
-      RayMapping(new Ray(pos, dir))
+      RayMapping(new Ray(pos, dir), new Vector2f(mousePos))
     }
 
   /** Returns the observable of pick object */
-  def pickCollision(shootables: Node)(o: Observable[RayMapping]): Observable[CollisionResult] = {
+  def pickCollision(shootables: Node)(o: Observable[RayMapping]): Observable[(CollisionResult, RayMapping)] = {
     val collisions = for { rayMapping <- o } yield {
       val results = new CollisionResults()
       shootables.collideWith(rayMapping.ray, results)
-      results
+      (results, rayMapping)
     }
     for {
-      cr <- collisions
+      (cr, ray) <- collisions
       if (cr.size() > 0)
-    } yield cr.getClosestCollision()
+    } yield (cr.getClosestCollision(), ray)
   }
 }
 

@@ -22,26 +22,26 @@ class StartController extends AbstractAppState with AbstractController with Lazy
 
   private val _selection = Subject[String]()
 
-  /** Returns the game parameter observer */
-  def show(parms: GameParameters) {
-    station.foreach(_.setText(parms.stationName))
-    level.foreach(_.setText(parms.levelName))
-    duration.foreach(_.setText(parms.durationName))
-  }
-
   /** Returns the station element renderer */
-  private def station = element("station").map(_.getRenderer(classOf[TextRenderer]))
+  private def station = redererById("station", classOf[TextRenderer])
 
   /** Returns the level element renderer */
-  private def level = element("level").map(_.getRenderer(classOf[TextRenderer]))
+  private def level = redererById("level", classOf[TextRenderer])
 
   /** Returns the duration element renderer */
-  private def duration = element("duration").map(_.getRenderer(classOf[TextRenderer]))
+  private def duration = redererById("duration", classOf[TextRenderer])
 
   /** Converts the buttons press event into button id observable */
   @NiftyEventSubscriber(pattern = ".*")
   def select(id: String, event: ButtonClickedEvent) {
     _selection.onNext(id)
+  }
+
+  /** Returns the game parameter observer */
+  def show(parms: GameParameters) {
+    station.foreach(_.setText(parms.stationName))
+    level.foreach(_.setText(parms.levelName))
+    duration.foreach(_.setText(parms.durationName))
   }
 
   /** Return the selection button id observable */

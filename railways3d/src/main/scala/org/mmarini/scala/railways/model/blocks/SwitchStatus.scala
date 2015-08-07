@@ -33,9 +33,20 @@ case class SwitchStatus(
       this
   }
 
-  override def toogleLock = (j) => {
+  override def lock = (j) => {
     require(j >= 0 && j <= 2)
-    SwitchStatus(block, trainId, lockedJunctions.updated(j, !lockedJunctions(j)), diverging)
+    if (lockedJunctions(j))
+      this
+    else
+      SwitchStatus(block, trainId, lockedJunctions.updated(j, true), diverging)
+  }
+
+  override def unlock = (j) => {
+    require(j >= 0 && j <= 2)
+    if (lockedJunctions(j))
+      SwitchStatus(block, trainId, lockedJunctions.updated(j, false), diverging)
+    else
+      this
   }
 
   /** Returns the end junction given the entry */
@@ -61,7 +72,7 @@ case class SwitchStatus(
   override def noTrainStatus = if (trainId.isEmpty) this else SwitchStatus(block, None, lockedJunctions, diverging)
 
   /** Create a block status with a given locked junction */
-  override def lock = (j) =>
+  override def autolock = (j) =>
     if (lockedJunctions(j))
       this
     else

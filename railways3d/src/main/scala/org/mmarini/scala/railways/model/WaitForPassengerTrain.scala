@@ -29,9 +29,6 @@ case class WaitForPassengerTrain(
       Some(StoppedTrain(id, size, true, route, location))
     }
 
-  /** Creates toogled status */
-  override def toogleStatus = this
-
   /** Returns true if train has loaded passengers at platform */
   override def loaded = true
 }

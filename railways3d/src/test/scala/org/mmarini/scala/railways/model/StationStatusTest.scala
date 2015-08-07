@@ -30,13 +30,13 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
 
   private def createTest1() = {
     val topology = new Topology() {
-      private val track1 = EntryBlock("track1", 0f, 0f, 0f)
+      private val entry = EntryBlock("track1", 0f, 0f, 0f)
       private val track2 = SegmentBlock("track2", 0f, 0f, 0f)
-      private val track3 = ExitBlock("track3", 0f, SegmentLength * 11f, 0f)
+      private val exit = ExitBlock("track3", 0f, SegmentLength * 11f, 0f)
 
       val junctions = Set(
-        (Endpoint(track1, 1), Endpoint(track2, 0)),
-        (Endpoint(track2, 1), Endpoint(track3, 0)))
+        (Endpoint(entry, 0), Endpoint(track2, 0)),
+        (Endpoint(track2, 1), Endpoint(exit, 0)))
 
       override val viewpoints = Seq[CameraViewpoint]()
     }
@@ -71,7 +71,8 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
 
   property("""Test the case 1 of a station with entry, segment, exit
   apply with a trains in the entry should return a status with just 1 train
-  and train route with 3 tracks""") {
+  and train route with just entry track""") {
+
     val status = createTest1()
 
     val block1 = status.blocks("track1").asInstanceOf[EntryStatus]
@@ -84,11 +85,11 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
       speed = 0f,
       route = route)
 
-    val (x, y) = status.apply(Set[Train](train))
+    val (stationStatus, trains) = status.apply(Set[Train](train))
 
-    val b1 = x.blocks("track1")
-    val b2 = x.blocks("track2")
-    val b3 = x.blocks("track3")
+    val b1 = stationStatus.blocks("track1")
+    val b2 = stationStatus.blocks("track2")
+    val b3 = stationStatus.blocks("track3")
 
     b1 shouldBe a[EntryStatus]
     b1.asInstanceOf[EntryStatus] should have('trainId(Some("train")))
@@ -99,17 +100,15 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
     b3 shouldBe a[ExitStatus]
     b3.asInstanceOf[ExitStatus] should have('trainId(None))
 
-    y should have size (1)
-    val r = y.head.route.tracks
+    trains should have size (1)
+    val routeTracks = trains.head.route.tracks
 
     val entryTrack = status.blocks("track1").tracksForJunction(0)(0)
     val segTrack = status.blocks("track2").tracksForJunction(0)(0)
     val exitTrack = status.blocks("track3").tracksForJunction(0)(0)
 
-    r should have size (3)
-    r should contain(entryTrack)
-    r should contain(segTrack)
-    r should contain(exitTrack)
+    routeTracks should have size (1)
+    routeTracks should contain(entryTrack)
   }
 
   property("""Test the case of a station with 3 consecutive blocks

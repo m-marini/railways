@@ -15,6 +15,8 @@ import rx.lang.scala.Observer
 import rx.lang.scala.Subject
 import de.lessvoid.nifty.NiftyEventSubscriber
 import scala.util.Try
+import de.lessvoid.nifty.elements.Element
+import com.jme3.math.Vector2f
 
 /**
  * Controls the game screen
@@ -36,21 +38,25 @@ class GameController extends AbstractAppState with AbstractController with LazyL
     _camerasEventObservable.onNext(event)
   }
 
-  lazy val popup = for (n <- nifty) yield {
-    val popupTry = Try {
-      n.createPopup("testPopup")
-    }
-    for (ex <- popupTry.failed) {
-      logger.error(ex.getMessage, ex)
-    }
-    popupTry.getOrElse(null)
-  }
+  lazy val trainPopup = createPopup("trainPopup")
+
+  lazy val semPopup = createPopup("semPopup")
 
   /** Shows the camera views */
   def show(cams: List[String]) {
     for {
-      c <- control("cameras", classOf[ListBox[String]])
+      c <- controlById("cameras", classOf[ListBox[String]])
       item <- cams
     } c.addItem(item)
+  }
+
+  def showSemaphorePopup(pos: Vector2f) {
+    for (s <- semPopup)
+      showPopupAt(s, "semPane", pos)
+  }
+
+  def showTrainPopup(pos: Vector2f) {
+    for (s <- trainPopup)
+      showPopupAt(s, "trainPane", pos)
   }
 }

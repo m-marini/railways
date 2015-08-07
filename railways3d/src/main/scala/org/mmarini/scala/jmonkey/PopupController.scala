@@ -1,51 +1,59 @@
-package org.mmarini.scala.railways
+package org.mmarini.scala.jmonkey
 
 import de.lessvoid.nifty.controls.Controller
 import de.lessvoid.nifty.screen.Screen
 import de.lessvoid.nifty.screen.ScreenController
-import org.mmarini.scala.jmonkey.AbstractController
 import de.lessvoid.nifty.Nifty
 import de.lessvoid.nifty.elements.Element
 import java.util.Properties
 import de.lessvoid.xml.xpp3.Attributes
 import de.lessvoid.nifty.input.NiftyInputEvent
 import com.typesafe.scalalogging.LazyLogging
+import rx.lang.scala.Subject
+import rx.lang.scala.Observable
+import de.lessvoid.nifty.controls.NiftyControl
 
 /**
  * @author us00852
  */
-class PopupController extends Controller with LazyLogging {
+class PopupController extends Controller with ScreenUtil with NiftyUtil {
 
-  private var nifty: Option[Nifty] = None
-  private var screen: Option[Screen] = None
-  private var element: Option[Element] = None
+  var popup: Option[Element] = None
+  private val _buttonsObs = Subject[String]()
 
+  def buttons: Observable[String] = _buttonsObs
+
+  /** Binds this pop up */
   override def bind(n: Nifty, s: Screen, e: Element, p: Properties, a: Attributes) {
-    nifty = Some(n)
-    screen = Some(s)
-    element = Some(e)
+    this.nifty = Some(n)
+    this.screen = Some(s)
+    popup = Some(e)
   }
 
+  /** Initializes this pop up */
   override def init(p: Properties, a: Attributes) {}
 
-  override def onStartScreen() {}
+  override def onStartScreen {}
 
   override def onFocus(f: Boolean) {}
 
   override def inputEvent(ev: NiftyInputEvent): Boolean = false
 
-  def closePopup() {
+  /** Close this popup */
+  def closePopup {
     for {
       nifty <- nifty
-      element <- element
+      popup <- popup
     } {
-      nifty.closePopup(element.getId)
+      nifty.closePopup(popup.getId)
     }
   }
 
-  def doSomething() {
-    logger.debug(s"$screen $element")
-    closePopup()
+  /**
+   *
+   */
+  def onButton(id: String) {
+    closePopup
+    _buttonsObs.onNext(id)
   }
-
 }

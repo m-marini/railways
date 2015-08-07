@@ -16,6 +16,7 @@ Tutti gli elementi sono posizionati nel piano del terreno attraverso coordinate 
 in direzione sud-nord.
 
 ```
+
               N
 
             y ^
@@ -36,20 +37,21 @@ e l'asse z la direzione sud-nord.
 
 
 ```
-                     N
-            y ^
-              |  z ^
-              |   /
-              |  /
-              | /
-              |/
-W   <---------o----------   E
-    x        /|
-            / |
-           /  |
-          /   |
 
-        S
+                  N
+                y ^
+                  |  z ^
+                  |   /
+                  |  /
+                  | /
+                  |/
+    W   <---------o----------   E
+        x        /|
+                / |
+               /  |
+              /   |
+
+                  S
  
 ```
 
@@ -79,6 +81,23 @@ Angoli e direzioni invece sono rappresentati dall'angolo rispetto al Nord in sen
                     S
 ```
 
+L'immagine del terrain ha come orientamento:
+
+```
+
+              S
+
+              |
+              |
+              |
+    E    -----o----->    W
+              |     x
+              |
+              |
+            y V
+
+              N
+```
 
 # Stazione
 
@@ -307,11 +326,19 @@ Le viste legate al mouse o al touch sono attive solo nel caso la camera non sia 
   
 ## Uso del mouse
 
-  * Tasto sx del mouse su un treno si attiva il pop up menu per fermare, far partire, invertire la marcia, spostare la visuale nel treno
-    o selezionare un percorso automatico verso una destinazione.
-  * Tasto sx del mouse su un semaforo si attiva il pop up menu per liberare o bloccare il semaforo
+  * Tasto sx del mouse su un treno si attiva il pop up menu per
+    * fermare,
+    * far partire,
+    * invertire la marcia,
+    * spostare la visuale nel treno
+    * selezionare un percorso automatico verso una destinazione.
+  * Tasto sx del mouse su un semaforo si attiva il pop up menu per
+    * liberare
+    * bloccare il semaforo
   * Tasto sx del mouse su un deviatore si cambia lo stato del deviatore
-  * Tasto sx del mouse su un binario si attiva il pop-up menu per cambiare lo stato dei semafori della tratta.
+  * Tasto sx del mouse su un binario si attiva il pop-up menu per
+    * liberare i semafori della tratta
+    * bloccare i semafori della tratta
   * Tasto sx del mouse su un punto della vista si indirizza la camera nel punto determinato.
   * Tasto dx del mouse si ruota la camera a dx o sx, su o giu (con angolazione limitata)
   * Ruota del mouse avanza o retrocede la camera nella direzione della stessa

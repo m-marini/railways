@@ -14,9 +14,21 @@ case class SegmentStatus(
     extends SingleBlockStatus with LockableStatus {
 
   /** Toogles the status of block for a given index of status handler */
-  override def toogleLock = (j) => {
+  override def lock = (j) => {
     require(j == 0 || j == 1)
-    SegmentStatus(block, trainId, lockedJunctions.updated(j, !lockedJunctions(j)))
+    if (lockedJunctions(j))
+      this
+    else
+      SegmentStatus(block, trainId, lockedJunctions.updated(j, true))
+  }
+  
+  /** Toogles the status of block for a given index of status handler */
+  override def unlock = (j) => {
+    require(j == 0 || j == 1)
+    if (lockedJunctions(j))
+      SegmentStatus(block, trainId, lockedJunctions.updated(j, false))
+    else
+      this
   }
 
   /** Returns the end junction given the entry */

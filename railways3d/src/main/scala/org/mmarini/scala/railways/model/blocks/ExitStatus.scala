@@ -12,9 +12,21 @@ case class ExitStatus(
     locked: Boolean = false) extends SingleBlockStatus {
 
   /** */
-  override def toogleLock = (j) => {
+  override def lock = (j) => {
     require(j == 0)
-    ExitStatus(block, trainId, !locked)
+    if (locked)
+      this
+    else
+      ExitStatus(block, trainId, true)
+  }
+
+  /** */
+  override def unlock = (j) => {
+    require(j == 0)
+    if (locked)
+      ExitStatus(block, trainId, false)
+    else
+      this
   }
 
   /** Returns None */

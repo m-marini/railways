@@ -74,7 +74,7 @@ case class MovingTrain(
     }
 
   /** Creates toogle status */
-  override def toogleStatus = {
+  override def stop = {
     logger.debug("Stopping train {}", id)
     StoppingTrain(id, size, loaded, route, location, speed)
   }

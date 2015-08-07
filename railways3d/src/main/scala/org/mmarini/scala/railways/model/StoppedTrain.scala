@@ -26,7 +26,7 @@ case class StoppedTrain(
   def tick(time: Float, gameStatus: GameStatus): Option[Train] = Some(this)
 
   /** Creates toogle status */
-  override def toogleStatus = {
+  override def start = {
     logger.debug("Go train {}", id)
     MovingTrain(id, size, loaded, route, location, 0f)
   }

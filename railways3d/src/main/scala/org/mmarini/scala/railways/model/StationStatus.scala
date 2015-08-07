@@ -27,9 +27,18 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) e
   }
 
   /** Generates the next status changing the freedom of a block */
-  def toogleLock(id: String)(junction: Int): StationStatus = {
+  def lock(id: String)(junction: Int): StationStatus = {
     val newBlocks = (for { block <- blocks.get(id) } yield {
-      val newStatus = block.toogleLock(junction)
+      val newStatus = block.lock(junction)
+      blocks + (id -> newStatus)
+    })
+    if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)
+  }
+
+  /** Generates the next status changing the freedom of a block */
+  def unlock(id: String)(junction: Int): StationStatus = {
+    val newBlocks = (for { block <- blocks.get(id) } yield {
+      val newStatus = block.unlock(junction)
       blocks + (id -> newStatus)
     })
     if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)

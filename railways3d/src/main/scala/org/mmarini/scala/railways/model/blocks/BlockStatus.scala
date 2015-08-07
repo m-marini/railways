@@ -21,11 +21,14 @@ trait BlockStatus {
   /** Toogles the status of block for a given index of status handler */
   def toogleStatus: Int => BlockStatus = (_) => this
 
-  /** Toogles the locking status for a given junction */
-  def toogleLock: Int => BlockStatus = (_) => this
+  /** Create a block status with a given unlocked junction */
+  def unlock: Int => BlockStatus = (_) => this
 
   /** Create a block status with a given locked junction */
   def lock: Int => BlockStatus = (_) => this
+
+  /** Create a block status with a given locked junction */
+  def autolock: Int => BlockStatus = (_) => this
 
   /**
    * Creates a new block status applying trainId to a junction.

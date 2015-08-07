@@ -15,11 +15,12 @@ import com.jme3.input.KeyInput
 import com.jme3.input.controls.MouseAxisTrigger
 import com.jme3.input.MouseInput
 import org.mmarini.scala.jmonkey.ActionMapping
+import org.mmarini.scala.jmonkey.NiftyUtil
 
 /**
  *
  */
-object Main extends SimpleApplication with LazyLogging {
+object Main extends SimpleApplication with LazyLogging with NiftyUtil {
 
   private var niftyDisplay: Option[NiftyJmeDisplay] = None
 
@@ -31,7 +32,12 @@ object Main extends SimpleApplication with LazyLogging {
   override def simpleInitApp: Unit = {
     setDisplayStatView(false)
     //    setDisplayFps(false)
-    niftyDisplay = Some(new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort))
+    niftyDisplay = Option(new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort))
+
+    nifty = for {
+      nd <- niftyDisplay
+      n <- Option(nd.getNifty)
+    } yield n
 
     // Read your XML and initialize your custom ScreenController
     for (n <- nifty) {
@@ -59,9 +65,9 @@ object Main extends SimpleApplication with LazyLogging {
   /** */
   private def wireUp {
     for {
-      start <- controller[StartController]("start")
-      opts <- controller[OptionsController]("opts-screen")
-      game <- controller[GameController]("game-screen")
+      start <- controllerById[StartController]("start")
+      opts <- controllerById[OptionsController]("opts-screen")
+      game <- controllerById[GameController]("game-screen")
     } {
 
       // start screen selection
@@ -100,16 +106,6 @@ object Main extends SimpleApplication with LazyLogging {
   override def simpleUpdate(tpf: Float) {
     _time.onNext((this, tpf))
   }
-
-  /** */
-  private def nifty = niftyDisplay.map(n => n.getNifty())
-
-  /** */
-  private def screen(id: String) = nifty.map(n => n.getScreen(id))
-
-  /** */
-  def controller[T](id: String): Option[T] =
-    screen(id).flatMap(n => Some(n.getScreenController().asInstanceOf[T]))
 
   /** */
   def main(args: Array[String]): Unit = {

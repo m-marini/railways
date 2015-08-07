@@ -27,8 +27,11 @@ trait Train {
   /** Returns the number of vehicles composing this train */
   def size: Int
 
-  /** Returns the toogle status */
-  def toogleStatus: Train
+  /** Returns the start status */
+  def start: Train = this
+
+  /** Returns the stop status */
+  def stop: Train = this
 
   /** Returns true if train has loaded passengers at platform */
   def loaded: Boolean
