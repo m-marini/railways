@@ -98,10 +98,11 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
       }
 
     // Merges all observable to create n observable of all events
-    val txObsSeq = cmdTrainObsOpt.toSeq ++
-      cmdJunctionObsOpt :+
-      blockToogleStateObs :+
-      timeEvents
+    val txObsSeq =
+      cmdTrainObsOpt.toSeq ++
+        cmdJunctionObsOpt.toSeq :+
+        blockToogleStateObs :+
+        timeEvents
 
     val events = txObsSeq.reduce((a, b) => a merge b)
 
@@ -151,6 +152,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
           case _ =>
         })
       }
+
     trainPopupTriggerSubOpt.toSeq ++
       subCameraChangeSub :+
       trainRendSub :+

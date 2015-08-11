@@ -46,12 +46,10 @@ object TerrainBuilder extends LazyLogging {
   /** Loads the height map */
   private def loadHightMap(assetManager: AssetManager) =
     Try {
-      val heightMapImage = assetManager.loadTexture("Textures/station-terrain-height.png")
+      val heightMapImage = assetManager.loadTexture("Textures/himap.png")
       val heightmap = new ImageBasedHeightMap(heightMapImage.getImage)
       heightmap.load()
       heightmap.getHeightMap
-      //      val map = new Array[Float](512 * 512)
-      //      map
     }
 
   /** Load terrain material */
@@ -59,7 +57,7 @@ object TerrainBuilder extends LazyLogging {
     Try {
       val mat_terrain = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md")
 
-      val alpha = assetManager.loadTexture("Textures/station-terrain-alpha.png")
+      val alpha = assetManager.loadTexture("Textures/alphamap.png")
       alpha.setWrap(WrapMode.Repeat)
       mat_terrain.setTexture("Alpha", alpha)
 
@@ -72,6 +70,12 @@ object TerrainBuilder extends LazyLogging {
       grass.setWrap(WrapMode.Repeat)
       mat_terrain.setTexture("Tex1", grass)
       mat_terrain.setFloat("Tex1Scale", 1000f)
+
+      val snow = assetManager.loadTexture("Textures/snow.jpg")
+      snow.setWrap(WrapMode.Repeat)
+      mat_terrain.setTexture("Tex3", snow)
+      mat_terrain.setFloat("Tex3Scale", 1f)
+
       mat_terrain
     }
 

@@ -1,0 +1,51 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{makeidx}
+\usepackage{graphicx}
+\title{Distanza punto segmento}
+\begin{document}
+
+Siano $ \overline{AB}, O $ rispettivamente il segmento che congiunge i punti $ A, B $ e $ O $ un punto qualsiasi nello spazio.
+
+La retta $ r $ passante per $ \overline{AB} $ è definita
+\[
+   x^i = ( x_B^i - x_A^i ) t + x_A^i 
+\]
+
+Sia $ H $ il punto di intersezione tra la retta $ r $ e la retta passante per $ O $ e $ \perp $ a  $ r $.
+
+Per calcolare la distanza $ d $ tra $ O $ e il segmento $ \overline{AB} $ dobbiamo
+sapere dapprima se $ H \in AB $. Ciò e vero se
+\[
+0 \le \frac{\vec{OA} \cdot \vec{BA}} {|| \overline{BA} || ^ 2} \le 1
+\]
+
+In tal caso
+\begin{equation}
+	d = \sqrt{|| \overline{OB} || ^ 2 - || \overline{AH} || ^ 2}
+	  = \sqrt{|| \overline{OB} || ^ 2
+	  - \frac{(\vec{OA} \cdot \vec{BA}) ^ 2} {|| \overline{BA} || ^ 2}}
+\end{equation}
+
+Se invece 
+\[
+\frac{\vec{OA} \cdot \vec{BA}} {|| \overline{BA} || ^ 2} < 0
+\]
+abbiamo
+\begin{equation}
+	d = || \overline{OA} ||
+\end{equation}
+
+Nell'ultimo caso 
+\[
+\frac{\vec{OA} \cdot \vec{BA}} {|| \overline{BA} || ^ 2} > 1
+\]
+abbiamo
+\begin{equation}
+	d = || \overline{OB} ||
+\end{equation}
+
+\end{document}

@@ -59,4 +59,14 @@ class GameController extends AbstractAppState with AbstractController with LazyL
     for (s <- trainPopup)
       showPopupAt(s, "trainPane", pos)
   }
+
+  /** */
+  def onButton(btn: String) {
+    logger.debug(s"Press $btn")
+  }
+
+  /** */
+  def onRelase(btn: String) {
+    logger.debug(s"Release $btn")
+  }
 }

@@ -5,6 +5,26 @@
 	<useStyles filename="nifty-default-styles.xml" />
 	<useControls filename="nifty-default-controls.xml" />
 
+	<style id="gridbag">
+		<attributes width="64px" height="64px" />
+	</style>
+	<style id="image.right">
+		<attributes filename="Interface/frecce.png" width="64px"
+			height="64px" imageMode="subImage:163,84,64,64" />
+	</style>
+	<style id="image.left">
+		<attributes filename="Interface/frecce.png" width="64px"
+			height="64px" imageMode="subImage:85,84,64,64" />
+	</style>
+	<style id="image.down">
+		<attributes filename="Interface/frecce.png" width="64px"
+			height="64px" imageMode="subImage:85,3,64,64" />
+	</style>
+	<style id="image.up">
+		<attributes filename="Interface/frecce.png" width="64px"
+			height="64px" imageMode="subImage:163,3,64,64" />
+	</style>
+
 	<popup id="trainPopup" childLayout="absolute-inside"
 		controller="org.mmarini.scala.jmonkey.PopupController">
 		<interact onClick="closePopup()" onSecondaryClick="closePopup()"
@@ -30,7 +50,8 @@
 		controller="org.mmarini.scala.jmonkey.PopupController">
 		<interact onClick="closePopup()" onSecondaryClick="closePopup()"
 			onTertiaryClick="closePopup()" />
-		<panel id="semPane" x="100" y="300" childLayout="vertical" backgroundColor="#0008">
+		<panel id="semPane" x="100" y="300" childLayout="vertical"
+			backgroundColor="#0008">
 			<image filename="Interface/sem-green.png">
 				<interact onClick="onButton(clear)" />
 			</image>
@@ -42,17 +63,48 @@
 
 	<screen id="game-screen" controller="org.mmarini.scala.railways.GameController">
 		<layer childLayout="vertical">
-			<panel width="200" height="200" align="right" childLayout="center"
+			<panel width="300" height="300" align="right" childLayout="center"
 				backgroundColor="#0008" padding="10px">
-				<control id="cameras" name="listBox" vertical="optional"
-					horizontal="optional" displayItems="8" />
-			</panel>
-			<panel width="200" height="100" align="right" childLayout="center"
-				backgroundColor="#0008">
-				<control id="doButton" name="button" label="Do something!">
-					<interact onClick="cameraSelected()" />
+				<control id="edit_tabs" name="tabGroup">
+					<control id="tab_1" name="tab" caption="A">
+						<control id="cameras" name="listBox" vertical="optional"
+							horizontal="optional" displayItems="8" />
+					</control>
+					<control id="tab_2" name="tab" caption="B">
+					</control>
+					<control id="tab_3" name="tab" caption="C">
+					</control>
 				</control>
 			</panel>
 		</layer>
+		<layer childLayout="vertical">
+			<panel />
+			<panel childLayout="vertical">
+				<panel childLayout="horizontal">
+					<panel style="gridbag" childLayout="center" />
+					<image style="image.up" visibleToMouse="true">
+						<interact onClick="onButton(up)" onRelease="onRelease(up)" />
+					</image>
+					<panel style="gridbag" childLayout="center" />
+				</panel>
+				<panel childLayout="horizontal">
+					<image style="image.left">
+						<interact onClick="onButton(left)" />
+					</image>
+					<panel style="gridbag" childLayout="center" />
+					<image style="image.right">
+						<interact onClick="onButton(right)" />
+					</image>
+				</panel>
+				<panel childLayout="horizontal">
+					<panel style="gridbag" childLayout="center" />
+					<image style="image.down">
+						<interact onClick="onButton(down)" />
+					</image>
+					<panel style="gridbag" childLayout="center" />
+				</panel>
+			</panel>
+		</layer>
 	</screen>
+
 </nifty>
