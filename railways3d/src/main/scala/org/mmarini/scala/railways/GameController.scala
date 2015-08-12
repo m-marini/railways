@@ -30,7 +30,7 @@ class GameController extends AbstractAppState with AbstractController with LazyL
   lazy private val _camerasEventObservable = Subject[ListBoxSelectionChangedEvent[String]]()
 
   /** the observable of camera selection */
-  lazy val cameraSelected = _camerasEventObservable.singleSelection.filterNot(_.isEmpty)
+  lazy val cameraSelected = for { s <- _camerasEventObservable.singleSelection if (!s.isEmpty) } yield s.get
 
   /** Converts the camera events into camera event observer */
   @NiftyEventSubscriber(id = "cameras")

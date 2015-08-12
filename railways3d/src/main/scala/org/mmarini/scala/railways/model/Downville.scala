@@ -11,6 +11,7 @@ import org.mmarini.scala.railways.model.blocks.RightHandSwitchBlock
 import org.mmarini.scala.railways.model.blocks.SegmentBlock
 import org.mmarini.scala.railways.model.blocks.EntryBlock
 import org.mmarini.scala.railways.model.blocks.PlatformBlock
+import scala.math.tan
 
 /**
  * The Downville station
@@ -40,28 +41,20 @@ case object Downville extends Topology {
     (Endpoint(exit, 0), Endpoint(exitTrack, 0)))
 
   val landscapeRot = new Quaternion().fromAngleAxis(RightAngle / 2, Vector3f.UNIT_X);
+  private val LandscapeDirection = new Vector3f(0, -1, 1).normalize()
+  private val YDir = tan(RightAngle / 9).toFloat
+
+  private val West = new Vector3f(1, 0, YDir).normalize()
+  private val East = new Vector3f(-1, 0, YDir).normalize()
 
   private val CameraDistance = 40f
+
   val viewpoints = Seq[CameraViewpoint](
-    CameraViewpoint("landscape",
-      new Vector3f(0f, 400f, -400f),
-      new Quaternion().fromAngleAxis(0f, Vector3f.UNIT_Y).multLocal(landscapeRot)),
-    CameraViewpoint("entry",
-      new Vector3f(SegmentLength * 17.5f + CameraDistance, 5f, 0),
-      new Quaternion().fromAngleAxis(-RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
-    CameraViewpoint("west-switching-yard",
-      new Vector3f(SegmentLength * 6.5f + CameraDistance, 5f, TrackGap / 2),
-      new Quaternion().fromAngleAxis(-RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
-    CameraViewpoint("west-platform",
-      new Vector3f(SegmentLength * 5.5f - CameraDistance, 5f, TrackGap / 2),
-      new Quaternion().fromAngleAxis(RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
-    CameraViewpoint("east-platform",
-      new Vector3f(-SegmentLength * 5.5f + CameraDistance, 5f, TrackGap / 2),
-      new Quaternion().fromAngleAxis(-RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
-    CameraViewpoint("east-switching-yard",
-      new Vector3f(-SegmentLength * 6.5f - CameraDistance, 5f, TrackGap / 2),
-      new Quaternion().fromAngleAxis(RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)),
-    CameraViewpoint("exit",
-      new Vector3f(-SegmentLength * 17.5f + CameraDistance, 5f, 0f),
-      new Quaternion().fromAngleAxis(-RightAngle, Vector3f.UNIT_Y).multLocal(CameraRot)))
+    CameraViewpoint("landscape", new Vector3f(0f, 400f, -400f), LandscapeDirection),
+    CameraViewpoint("entry", new Vector3f(SegmentLength * 17.5f + CameraDistance, 5f, 0), East),
+    CameraViewpoint("west-switching-yard", new Vector3f(SegmentLength * 6.5f + CameraDistance, 5f, TrackGap / 2), East),
+    CameraViewpoint("west-platform", new Vector3f(SegmentLength * 5.5f - CameraDistance, 5f, TrackGap / 2), West),
+    CameraViewpoint("east-platform", new Vector3f(-SegmentLength * 5.5f + CameraDistance, 5f, TrackGap / 2), East),
+    CameraViewpoint("east-switching-yard", new Vector3f(-SegmentLength * 6.5f - CameraDistance, 5f, TrackGap / 2), West),
+    CameraViewpoint("exit", new Vector3f(-SegmentLength * 17.5f + CameraDistance, 5f, 0f), East))
 }

@@ -20,6 +20,11 @@ import de.lessvoid.nifty.tools.SizeValue
 import org.mmarini.scala.jmonkey.PopupController
 import de.lessvoid.nifty.controls.Controller
 import rx.lang.scala.Subscription
+import rx.lang.scala.Observable
+import com.jme3.math.Quaternion
+import com.jme3.scene.CameraNode
+import com.jme3.scene.control.CameraControl.ControlDirection
+import rx.lang.scala.subscriptions.CompositeSubscription
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -37,6 +42,81 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   val initialStatus = GameStatus(parameters)
 
   private val subscriptions = createSubscriptions
+
+  /** Subscribe for camera movement */
+  private def subscribeForCamera: Option[Subscription] = {
+    // Creates the observable of time transitions
+    val timeObs =
+      for { (_, time) <- app.timeObservable } yield (status: CameraStatus) => status.tick(time)
+
+    // Creates the observable of left command transitions
+    val leftObs = for { action <- app.action("leftCmd") } yield if (action.keyPressed) {
+      (status: CameraStatus) => status.setRotationSpeed(-1f)
+    } else {
+      (status: CameraStatus) => status.setRotationSpeed(0f)
+    }
+
+    // Creates the observable of left command transitions
+    val rightObs = for { action <- app.action("rightCmd") } yield if (action.keyPressed) {
+      (status: CameraStatus) => status.setRotationSpeed(1f)
+    } else {
+      (status: CameraStatus) => status.setRotationSpeed(0f)
+    }
+
+    // Creates the observable of up command transitions
+    val upObs = for { action <- app.action("upCmd") } yield if (action.keyPressed) {
+      (status: CameraStatus) => status.setSpeed(1f)
+    } else {
+      (status: CameraStatus) => status.setSpeed(0f)
+    }
+
+    // Creates the observable of down command transitions
+    val downObs = for { action <- app.action("downCmd") } yield if (action.keyPressed) {
+      (status: CameraStatus) => status.setSpeed(-1f)
+    } else {
+      (status: CameraStatus) => status.setSpeed(0f)
+    }
+
+    // Creates the viewpoint map
+    val viewpointMap = (for { v <- initialStatus.stationStatus.topology.viewpoints }
+      yield (v.id, v)).toMap
+
+    // Creates the observable of changing to predefined camera transitions
+    val subCameraChangeSub =
+      for {
+        gameScreen <- app.controllerById[GameController]("game-screen")
+      } yield for {
+        id <- gameScreen.cameraSelected if (viewpointMap.contains(id))
+      } yield (status: CameraStatus) => {
+        val vp = viewpointMap(id)
+        logger.debug(s"set camera at $id")
+        status.setViewAt(vp.location, vp.direction)
+      }
+
+    // Merges all the observables
+    val transitionListObs =
+      timeObs +:
+        leftObs +:
+        rightObs +:
+        upObs +:
+        downObs +:
+        subCameraChangeSub.toSeq
+    val transitionObs = transitionListObs.reduce((a, b) => a merge b)
+
+    // Creates the camera status observable
+    val initStatus: CameraStatus = FreeCameraStatus()
+    val camStateObs = stateFlow(initStatus)(transitionObs)
+
+    // Transforms the camera status and subscribes for camera observers 
+    val locObs = for { status <- camStateObs } yield status.location
+    val locSub = for { o <- app.cameraLocationObserver } yield locObs.subscribe(o)
+    val rotObs = for { status <- camStateObs } yield status.orientation
+    val rotSub = for { o <- app.cameraRotationObserver } yield rotObs.subscribe(o)
+
+    // Merges the subscriptions
+    val listSub = rotSub.toArray ++ locSub
+    Some(CompositeSubscription(listSub: _*))
+  }
 
   private def createSubscriptions = {
 
@@ -118,9 +198,6 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     // Creates the viewpoint map
     val viewpointMap = initialStatus.stationStatus.topology.viewpoints.map(v => (v.id, v)).toMap
 
-    // Creates the camera controller
-    val cameraController = new CameraController(app.getCamera, app.getAssetManager, app.getRootNode)
-
     loadViewpoints
     loadBackstage
 
@@ -143,31 +220,12 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     val statusSub = state.subscribe(status => stationRend.change(status.stationStatus))
 
     // Subscribes for camera change
-    val subCameraChangeSub =
-      for { gameScreen <- app.controllerById[GameController]("game-screen") } yield {
-        gameScreen.cameraSelected.subscribe(_ match {
-          case Some(id) =>
-            val vp = viewpointMap(id)
-            cameraController.change(vp)
-          case _ =>
-        })
-      }
 
     trainPopupTriggerSubOpt.toSeq ++
-      subCameraChangeSub :+
+      subscribeForCamera :+
       trainRendSub :+
       statusSub
   }
-
-  //  /** Subscribe changeView observer */
-  //  private val cameraController =
-  //    pickingScene.map(new CameraController(app.getCamera, _, app.getAssetManager, app.getRootNode))
-  //
-  //  private val cameraSubscription = cameraController.map(_.subscribe)
-  //
-  //  terrainTry.foreach(app.getRootNode.attachChild)
-  //
-  //  setCameraController
 
   //------------------------------------------------------
   // Functions

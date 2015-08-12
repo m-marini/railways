@@ -16,6 +16,11 @@ import com.jme3.input.controls.MouseAxisTrigger
 import com.jme3.input.MouseInput
 import org.mmarini.scala.jmonkey.ActionMapping
 import org.mmarini.scala.jmonkey.NiftyUtil
+import rx.lang.scala.Observer
+import com.jme3.math.Vector3f
+import com.jme3.math.Quaternion
+import com.jme3.scene.CameraNode
+import com.jme3.scene.control.CameraControl.ControlDirection
 
 /**
  *
@@ -27,6 +32,12 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
   val _time = Subject[(SimpleApplication, Float)]()
 
   def action: String => Observable[ActionMapping] = (k) => inputManager.createActionMapping(k)
+
+  /** Returns the observer for camera location */
+  var cameraLocationObserver: Option[Observer[Vector3f]] = None
+
+  /** Returns the observer for camera location */
+  var cameraRotationObserver: Option[Observer[Quaternion]] = None
 
   /** */
   override def simpleInitApp: Unit = {
@@ -55,11 +66,24 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
       guiViewPort.addProcessor(nd)
     }
 
-    flyCam.setDragToRotate(true)
+    flyCam.setEnabled(false)
+    val camNode = new CameraNode("Motion cam", cam)
+    rootNode.attachChild(camNode)
+    camNode.setControlDir(ControlDirection.SpatialToCamera)
+    camNode.setEnabled(true)
 
+    cameraLocationObserver = Some(Observer((location: Vector3f) => {
+      camNode.setLocalTranslation(location)
+    }))
+    
+    cameraRotationObserver = Some(Observer((rotation: Quaternion) => {
+      camNode.setLocalRotation(rotation)
+    }))
+    
     wireUp
 
     attachMapping
+
   }
 
   /** */

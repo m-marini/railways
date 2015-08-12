@@ -38,7 +38,7 @@ e l'asse z la direzione sud-nord.
 
 ```
 
-                  N
+                         N
                 y ^
                   |  z ^
                   |   /
@@ -51,7 +51,7 @@ e l'asse z la direzione sud-nord.
                /  |
               /   |
 
-                  S
+            S
  
 ```
 
