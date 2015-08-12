@@ -21,17 +21,39 @@ import com.jme3.math.Vector3f
 import com.jme3.math.Quaternion
 import com.jme3.scene.CameraNode
 import com.jme3.scene.control.CameraControl.ControlDirection
+import org.mmarini.scala.jmonkey.AnalogMapping
+import org.mmarini.scala.jmonkey.AnalogMapping
+import org.mmarini.scala.jmonkey.AnalogMapping
+import com.jme3.math.Vector2f
 
 /**
  *
  */
 object Main extends SimpleApplication with LazyLogging with NiftyUtil {
+  val Width = 1200
+  val Height = 768
 
   private var niftyDisplay: Option[NiftyJmeDisplay] = None
 
   val _time = Subject[(SimpleApplication, Float)]()
 
-  def action: String => Observable[ActionMapping] = (k) => inputManager.createActionMapping(k)
+  /** Returns the action observable by name */
+  def actionObservable: String => Observable[ActionMapping] = (k) => inputManager.createActionMapping(k)
+
+  /** Returns the analog observable by name */
+  def analogObservable: String => Observable[AnalogMapping] = (k) => inputManager.createAnalogMapping(k)
+
+  def mouseRelativeObservable: String => Observable[AnalogMapping] = (k) =>
+    for { e <- analogObservable(k) } yield {
+      val p = new Vector2f(e.position.getX / Width, e.position.getY / Height).multLocal(2).subtractLocal(1f, 1f)
+      AnalogMapping(e.name, e.value, p, e.tpf)
+    }
+    
+  def mouseRelativeActionObservable: String => Observable[ActionMapping] = (k) =>
+    for { e <- actionObservable(k) } yield {
+      val p = new Vector2f(e.position.getX / Width, e.position.getY / Height).multLocal(2).subtractLocal(1f, 1f)
+      ActionMapping(e.name, e.keyPressed, p, e.tpf)
+    }
 
   /** Returns the observer for camera location */
   var cameraLocationObserver: Option[Observer[Vector3f]] = None
@@ -42,7 +64,7 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
   /** */
   override def simpleInitApp: Unit = {
     setDisplayStatView(false)
-    //    setDisplayFps(false)
+    setDisplayFps(false)
     niftyDisplay = Option(new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort))
 
     nifty = for {
@@ -75,11 +97,11 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
     cameraLocationObserver = Some(Observer((location: Vector3f) => {
       camNode.setLocalTranslation(location)
     }))
-    
+
     cameraRotationObserver = Some(Observer((rotation: Quaternion) => {
       camNode.setLocalRotation(rotation)
     }))
-    
+
     wireUp
 
     attachMapping
@@ -123,7 +145,15 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
     inputManager.addMapping("leftCmd", new KeyTrigger(KeyInput.KEY_LEFT), new KeyTrigger(KeyInput.KEY_A))
     inputManager.addMapping("rightCmd", new KeyTrigger(KeyInput.KEY_RIGHT), new KeyTrigger(KeyInput.KEY_D))
     inputManager.addMapping("downCmd", new KeyTrigger(KeyInput.KEY_DOWN), new KeyTrigger(KeyInput.KEY_S))
-    //    inputManager.addMapping("zoomSlider", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false))
+    inputManager.addMapping("rightMouseBtn", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT))
+
+    inputManager.addMapping("xAxis",
+      new MouseAxisTrigger(MouseInput.AXIS_X, false),
+      new MouseAxisTrigger(MouseInput.AXIS_X, true))
+    inputManager.addMapping("forwardCmd",
+      new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false))
+    inputManager.addMapping("backwardCmd",
+      new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true))
   }
 
   /** */
@@ -136,8 +166,6 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
 
   /** */
   def main(args: Array[String]): Unit = {
-    val Width = 1200
-    val Height = 768
     val s = new AppSettings(true)
     s.setResolution(Width, Height)
     Main.setSettings(s)

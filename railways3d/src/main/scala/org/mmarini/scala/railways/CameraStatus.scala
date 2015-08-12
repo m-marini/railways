@@ -22,6 +22,16 @@ trait CameraStatus {
   /** Creates a new status */
   def setViewAt(location: Vector3f, direction: Vector3f): CameraStatus = this
 
+  /** Creates a new status */
+  def rotate(angle: Float): CameraStatus = this
+
   /** Creates a new status with elapsed time */
   def tick(tpf: Float) = this
+
+  /** Creates a new status with step forward */
+  def stepForward: CameraStatus = this
+
+  /** Creates a new status with step backward */
+  def stepBackward: CameraStatus = this
+
 }

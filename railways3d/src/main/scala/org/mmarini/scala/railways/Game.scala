@@ -4,6 +4,8 @@
 package org.mmarini.scala.railways
 
 import org.mmarini.scala.railways.model.GameParameters
+import org.mmarini.scala.railways.model._
+import scala.math.tan
 import org.mmarini.scala.railways.model.GameStatus
 import com.jme3.light.AmbientLight
 import com.jme3.light.DirectionalLight
@@ -25,6 +27,8 @@ import com.jme3.math.Quaternion
 import com.jme3.scene.CameraNode
 import com.jme3.scene.control.CameraControl.ControlDirection
 import rx.lang.scala.subscriptions.CompositeSubscription
+import org.mmarini.scala.jmonkey.ActionMapping
+import org.mmarini.scala.jmonkey.AnalogMapping
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -50,31 +54,52 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
       for { (_, time) <- app.timeObservable } yield (status: CameraStatus) => status.tick(time)
 
     // Creates the observable of left command transitions
-    val leftObs = for { action <- app.action("leftCmd") } yield if (action.keyPressed) {
+    val leftObs = for { action <- app.actionObservable("leftCmd") } yield if (action.keyPressed) {
       (status: CameraStatus) => status.setRotationSpeed(-1f)
     } else {
       (status: CameraStatus) => status.setRotationSpeed(0f)
     }
 
     // Creates the observable of left command transitions
-    val rightObs = for { action <- app.action("rightCmd") } yield if (action.keyPressed) {
+    val rightObs = for { action <- app.actionObservable("rightCmd") } yield if (action.keyPressed) {
       (status: CameraStatus) => status.setRotationSpeed(1f)
     } else {
       (status: CameraStatus) => status.setRotationSpeed(0f)
     }
 
     // Creates the observable of up command transitions
-    val upObs = for { action <- app.action("upCmd") } yield if (action.keyPressed) {
+    val upObs = for { action <- app.actionObservable("upCmd") } yield if (action.keyPressed) {
       (status: CameraStatus) => status.setSpeed(1f)
     } else {
       (status: CameraStatus) => status.setSpeed(0f)
     }
 
     // Creates the observable of down command transitions
-    val downObs = for { action <- app.action("downCmd") } yield if (action.keyPressed) {
+    val downObs = for { action <- app.actionObservable("downCmd") } yield if (action.keyPressed) {
       (status: CameraStatus) => status.setSpeed(-1f)
     } else {
       (status: CameraStatus) => status.setSpeed(0f)
+    }
+
+    // Creates the observable of forwardCommand
+    val forwardObs = for { action <- app.actionObservable("forwardCmd") } yield {
+      (status: CameraStatus) => status.stepForward
+    }
+
+    val backwardObs = for { action <- app.actionObservable("backwardCmd") } yield {
+      (status: CameraStatus) => status.stepBackward
+    }
+
+    val xMouseButtonObs = for {
+      (analog, action) <- trigger(app.mouseRelativeObservable("xAxis"),
+        app.mouseRelativeActionObservable("rightMouseBtn"))
+    } yield (analog.position.getX, action.keyPressed)
+
+    val seqObs = xMouseButtonObs.scan(Seq[(Float, Boolean)]())((seq, current) => current +: seq.take(1))
+
+    val xMouseObs = for { seq <- seqObs if (seq.size > 1 && seq.forall(p => p._2)) } yield {
+      val angle = (seq(0)._1 - seq(1)._1) * Pif
+      (status: CameraStatus) => status.rotate(angle)
     }
 
     // Creates the viewpoint map
@@ -89,7 +114,6 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
         id <- gameScreen.cameraSelected if (viewpointMap.contains(id))
       } yield (status: CameraStatus) => {
         val vp = viewpointMap(id)
-        logger.debug(s"set camera at $id")
         status.setViewAt(vp.location, vp.direction)
       }
 
@@ -100,6 +124,9 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
         rightObs +:
         upObs +:
         downObs +:
+        forwardObs +:
+        backwardObs +:
+        xMouseObs +:
         subCameraChangeSub.toSeq
     val transitionObs = transitionListObs.reduce((a, b) => a merge b)
 
@@ -115,6 +142,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
     // Merges the subscriptions
     val listSub = rotSub.toArray ++ locSub
+
     Some(CompositeSubscription(listSub: _*))
   }
 
@@ -241,7 +269,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   /** Creates an observable of id of pickable 3d model */
   private def createActionIdObs(actionId: String) = {
-    val pr = app.pickRay(app.action(actionId).filter(_.keyPressed))
+    val pr = app.pickRay(app.actionObservable(actionId).filter(_.keyPressed))
     val idMouseOptObs =
       for { (cr, ray) <- app.pickCollision(app.getRootNode)(pr) } yield {
         val spatOpt = find(Option(cr.getGeometry))(s => s.getUserData("id") != null)

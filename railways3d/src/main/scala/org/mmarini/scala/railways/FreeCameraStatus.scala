@@ -18,7 +18,8 @@ case class FreeCameraStatus(
     extends CameraStatus with LazyLogging {
 
   val MaxRotationSpeed = Pif / 2f
-  val MaxSpeed = 20f / 3.6f
+  val MaxSpeed = 120f / 3.6f
+  val StepLength = 10f
 
   /** Creates a new status with elapsed time */
   override def tick(tpf: Float) = {
@@ -34,6 +35,27 @@ case class FreeCameraStatus(
       speed)
   }
 
+  /** Creates a new status with step forward */
+  override def stepForward = {
+    val ds = direction.clone().setY(0).multLocal(StepLength)
+    val newLoc = location.add(ds)
+
+    FreeCameraStatus(newLoc,
+      direction,
+      rotationSpeed,
+      speed)
+  }
+
+  /** Creates a new status with step backward */
+  override def stepBackward = {
+    val ds = direction.clone().setY(0).multLocal(-StepLength)
+    val newLoc = location.add(ds)
+
+    FreeCameraStatus(newLoc,
+      direction,
+      rotationSpeed,
+      speed)
+  }
   override val orientation = {
     val o = new Quaternion
     o.lookAt(direction, Vector3f.UNIT_Y)
@@ -60,6 +82,19 @@ case class FreeCameraStatus(
       direction,
       rotationSpeed,
       speed)
+
+  /** Creates a new status */
+  override def rotate(angle: Float) = {
+    val newDir =
+      new Quaternion().fromAngleAxis(angle,
+        Vector3f.UNIT_Y.clone().negate).mult(direction)
+
+    FreeCameraStatus(location,
+      newDir,
+      rotationSpeed,
+      speed)
+
+  }
 
 }
 

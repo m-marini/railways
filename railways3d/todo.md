@@ -1,6 +1,6 @@
 # To do
 
-  * Movimento della camera (mouse, direction panel)
+  * Movimento della camera (direction panel)
   * Camera su treno 
   * Block, sblocco tratte
   * Prestazioni di gioco e fine gioco

@@ -44,8 +44,8 @@ case object Downville extends Topology {
   private val LandscapeDirection = new Vector3f(0, -1, 1).normalize()
   private val YDir = tan(RightAngle / 9).toFloat
 
-  private val West = new Vector3f(1, 0, YDir).normalize()
-  private val East = new Vector3f(-1, 0, YDir).normalize()
+  private val West = new Vector3f(1, -YDir, 0).normalize()
+  private val East = new Vector3f(-1, -YDir, 0).normalize()
 
   private val CameraDistance = 40f
 
