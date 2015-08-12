@@ -3,32 +3,21 @@
  */
 package org.mmarini.scala.railways
 
+import org.mmarini.scala.jmonkey.PopupController
 import org.mmarini.scala.railways.model.GameParameters
-import org.mmarini.scala.railways.model._
-import scala.math.tan
 import org.mmarini.scala.railways.model.GameStatus
+import org.mmarini.scala.railways.model.Pif
+
 import com.jme3.light.AmbientLight
 import com.jme3.light.DirectionalLight
 import com.jme3.math.ColorRGBA
 import com.jme3.math.Vector3f
+import com.jme3.scene.Spatial
 import com.jme3.util.SkyFactory
 import com.typesafe.scalalogging.LazyLogging
-import sun.org.mozilla.javascript.internal.ast.Yield
-import com.jme3.scene.Geometry
-import com.jme3.scene.Node
-import com.jme3.scene.Spatial
-import de.lessvoid.nifty.Size
-import de.lessvoid.nifty.tools.SizeValue
-import org.mmarini.scala.jmonkey.PopupController
-import de.lessvoid.nifty.controls.Controller
+
 import rx.lang.scala.Subscription
-import rx.lang.scala.Observable
-import com.jme3.math.Quaternion
-import com.jme3.scene.CameraNode
-import com.jme3.scene.control.CameraControl.ControlDirection
 import rx.lang.scala.subscriptions.CompositeSubscription
-import org.mmarini.scala.jmonkey.ActionMapping
-import org.mmarini.scala.jmonkey.AnalogMapping
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -81,22 +70,27 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
       (status: CameraStatus) => status.setSpeed(0f)
     }
 
-    // Creates the observable of forwardCommand
+    // Creates the observable of forward command
     val forwardObs = for { action <- app.actionObservable("forwardCmd") } yield {
       (status: CameraStatus) => status.stepForward
     }
 
+    // Creates the observable of backward ommand
     val backwardObs = for { action <- app.actionObservable("backwardCmd") } yield {
       (status: CameraStatus) => status.stepBackward
     }
 
+    // Creates the observable of xMouse axis and right button
     val xMouseButtonObs = for {
       (analog, action) <- trigger(app.mouseRelativeObservable("xAxis"),
         app.mouseRelativeActionObservable("rightMouseBtn"))
     } yield (analog.position.getX, action.keyPressed)
 
+    // Transforms to observable of last two values of xAxis and button
     val seqObs = xMouseButtonObs.scan(Seq[(Float, Boolean)]())((seq, current) => current +: seq.take(1))
 
+    // Filters the values of last two values with button press and
+    // transforms to camera status transition 
     val xMouseObs = for { seq <- seqObs if (seq.size > 1 && seq.forall(p => p._2)) } yield {
       val angle = (seq(0)._1 - seq(1)._1) * Pif
       (status: CameraStatus) => status.rotate(angle)
@@ -117,17 +111,37 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
         status.setViewAt(vp.location, vp.direction)
       }
 
+    // Create observable of pressed visual buttons
+    val buttonsObs =
+      for {
+        gameScreen <- app.controllerById[GameController]("game-screen")
+      } yield for {
+        e <- gameScreen.buttonsObservable
+      } yield e match {
+        case ("up", true) => (status: CameraStatus) => status.setSpeed(1)
+        case ("down", true) => (status: CameraStatus) => status.setSpeed(-1)
+        case ("up", false) => (status: CameraStatus) => status.setSpeed(0)
+        case ("down", false) => (status: CameraStatus) => status.setSpeed(0)
+        case ("left", true) => (status: CameraStatus) => status.setRotationSpeed(-1)
+        case ("right", true) => (status: CameraStatus) => status.setRotationSpeed(1)
+        case ("left", false) => (status: CameraStatus) => status.setRotationSpeed(0)
+        case ("right", false) => (status: CameraStatus) => status.setRotationSpeed(0)
+        case _ => (status: CameraStatus) => status.setRotationSpeed(0).setSpeed(0)
+      }
+
     // Merges all the observables
     val transitionListObs =
-      timeObs +:
-        leftObs +:
-        rightObs +:
-        upObs +:
-        downObs +:
-        forwardObs +:
-        backwardObs +:
-        xMouseObs +:
-        subCameraChangeSub.toSeq
+      subCameraChangeSub.toSeq ++
+        buttonsObs :+
+        timeObs :+
+        leftObs :+
+        rightObs :+
+        upObs :+
+        downObs :+
+        forwardObs :+
+        backwardObs :+
+        xMouseObs
+
     val transitionObs = transitionListObs.reduce((a, b) => a merge b)
 
     // Creates the camera status observable
@@ -177,7 +191,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     // Creates the observable for train command triggering
     val cmdTrainObsOpt = for {
       ctrl <- app.controllerById[GameController]("game-screen")
-      popup <- ctrl.trainPopup
+      popup <- ctrl.trainPopupOpt
       popupCtrl <- Option(popup.findControl(popup.getId, classOf[PopupController]))
     } yield for { (cmd, data) <- trigger(popupCtrl.buttons, selectIdObs.map(_._1)) } yield cmd match {
       case "start" => (status: GameStatus) => status.startTrain(data(1))
@@ -189,7 +203,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     // Creates the observable for train command triggering
     val cmdJunctionObsOpt = for {
       ctrl <- app.controllerById[GameController]("game-screen")
-      popup <- ctrl.semPopup
+      popup <- ctrl.semPopupOpt
       popupCtrl <- Option(popup.findControl(popup.getId, classOf[PopupController]))
     } yield for { (cmd, data) <- trigger(popupCtrl.buttons, selectIdObs.map(_._1)) } yield cmd match {
       case "clear" => (status: GameStatus) => status.unlockJunction(data(1))(data(2).toInt)

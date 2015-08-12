@@ -89,17 +89,17 @@
 				</panel>
 				<panel childLayout="horizontal">
 					<image style="image.left">
-						<interact onClick="onButton(left)" />
+						<interact onClick="onButton(left)" onRelease="onRelease(left)" />
 					</image>
 					<panel style="gridbag" childLayout="center" />
 					<image style="image.right">
-						<interact onClick="onButton(right)" />
+						<interact onClick="onButton(right)" onRelease="onRelease(right)" />
 					</image>
 				</panel>
 				<panel childLayout="horizontal">
 					<panel style="gridbag" childLayout="center" />
 					<image style="image.down">
-						<interact onClick="onButton(down)" />
+						<interact onClick="onButton(down)" onRelease="onRelease(down)" />
 					</image>
 					<panel style="gridbag" childLayout="center" />
 				</panel>

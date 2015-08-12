@@ -38,9 +38,12 @@ class GameController extends AbstractAppState with AbstractController with LazyL
     _camerasEventObservable.onNext(event)
   }
 
-  lazy val trainPopup = createPopup("trainPopup")
+  // 
+  lazy val trainPopupOpt = createPopup("trainPopup")
 
-  lazy val semPopup = createPopup("semPopup")
+  lazy val semPopupOpt = createPopup("semPopup")
+
+  val buttonsObservable: Subject[(String, Boolean)] = Subject()
 
   /** Shows the camera views */
   def show(cams: List[String]) {
@@ -51,22 +54,22 @@ class GameController extends AbstractAppState with AbstractController with LazyL
   }
 
   def showSemaphorePopup(pos: Vector2f) {
-    for (s <- semPopup)
+    for (s <- semPopupOpt)
       showPopupAt(s, "semPane", pos)
   }
 
   def showTrainPopup(pos: Vector2f) {
-    for (s <- trainPopup)
+    for (s <- trainPopupOpt)
       showPopupAt(s, "trainPane", pos)
   }
 
   /** */
   def onButton(btn: String) {
-    logger.debug(s"Press $btn")
+    buttonsObservable.onNext(btn, true)
   }
 
   /** */
-  def onRelase(btn: String) {
-    logger.debug(s"Release $btn")
+  def onRelease(btn: String) {
+    buttonsObservable.onNext(btn, false)
   }
 }

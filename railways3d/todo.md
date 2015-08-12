@@ -1,7 +1,7 @@
 # To do
 
-  * Movimento della camera (direction panel)
   * Camera su treno 
+  * Movimento della camera (joystick)
   * Block, sblocco tratte
   * Prestazioni di gioco e fine gioco
   * Notifiche messaggi 
