@@ -49,6 +49,26 @@ case class SwitchStatus(
       this
   }
 
+  /** Toogles the status of block for a given index of status handler */
+  override def lockTrack = (j) => {
+    require(j >= 0 && j <= 2)
+    SwitchStatus(
+      block = block,
+      trainId = trainId,
+      lockedJunctions = IndexedSeq(true, true, true),
+      diverging = diverging)
+  }
+
+  /** Toogles the status of block for a given index of status handler */
+  override def unlockTrack = (j) => {
+    require(j >= 0 && j <= 2)
+    SwitchStatus(
+      block = block,
+      trainId = trainId,
+      lockedJunctions = IndexedSeq(false, false, false),
+      diverging = diverging)
+  }
+
   /** Returns the end junction given the entry */
   override def junctionFrom = junctions(statusIndex)
 

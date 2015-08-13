@@ -27,6 +27,12 @@ trait BlockStatus {
   /** Create a block status with a given locked junction */
   def lock: Int => BlockStatus = (_) => this
 
+  /** Create a block status with a given unlocked junction */
+  def unlockTrack: Int => BlockStatus = (_) => this
+
+  /** Create a block status with a given locked junction */
+  def lockTrack: Int => BlockStatus = (_) => this
+
   /** Create a block status with a given locked junction */
   def autolock: Int => BlockStatus = (_) => this
 

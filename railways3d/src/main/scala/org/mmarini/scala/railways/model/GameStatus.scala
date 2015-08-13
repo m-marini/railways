@@ -150,17 +150,25 @@ case class GameStatus(
   private def choice[T](choices: Set[T]): T =
     choices.toSeq(random.nextInt(choices.size))
 
-  /** Generates the next status changing the status of a block */
+  /** Generates the next status unlocking a junction*/
   def toogleBlockStatus(id: String)(handler: Int): GameStatus =
     setStationStatus(stationStatus.toogleStatus(id)(handler))
 
-  /** Generates the next status changing the freedom of a block */
+  /** Generates the next status locking a junction*/
   def lockJunction(id: String)(junction: Int): GameStatus =
     setStationStatus(stationStatus.lock(id)(junction))
 
   /** Generates the next status changing the freedom of a block */
   def unlockJunction(id: String)(junction: Int): GameStatus =
     setStationStatus(stationStatus.unlock(id)(junction))
+
+  /** Generates the next status locking a track */
+  def lockTrack(id: String)(junction: Int): GameStatus =
+    setStationStatus(stationStatus.lockTrack(id)(junction))
+
+  /** Generates the next status unlocking a track */
+  def unlockTrack(id: String)(junction: Int): GameStatus =
+    setStationStatus(stationStatus.unlockTrack(id)(junction))
 
   /** Creates a new status toogling the statuos of a given train */
   def startTrain(id: String): GameStatus = {

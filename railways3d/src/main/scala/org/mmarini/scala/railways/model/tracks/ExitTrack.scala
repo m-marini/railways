@@ -14,7 +14,7 @@ import org.mmarini.scala.railways.model._
  */
 class ExitTrack extends Track {
   /** */
-  override val length = CoachLength * MaxTrainSize + 1
+  override val length = 1000f
 
   /** */
   override def locationAt(distance: Float): Option[Vector2f] = None

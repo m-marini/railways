@@ -21,7 +21,7 @@ case class SegmentStatus(
     else
       SegmentStatus(block, trainId, lockedJunctions.updated(j, true))
   }
-  
+
   /** Toogles the status of block for a given index of status handler */
   override def unlock = (j) => {
     require(j == 0 || j == 1)
@@ -29,6 +29,17 @@ case class SegmentStatus(
       SegmentStatus(block, trainId, lockedJunctions.updated(j, false))
     else
       this
+  }
+
+  /** Toogles the status of block for a given index of status handler */
+  override def lockTrack = (j) => {
+    require(j == 0 || j == 1)
+    SegmentStatus(block, trainId, IndexedSeq(true, true))
+  }
+
+  override def unlockTrack = (j) => {
+    require(j == 0 || j == 1)
+    SegmentStatus(block, trainId, IndexedSeq(false, false))
   }
 
   /** Returns the end junction given the entry */

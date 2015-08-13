@@ -18,31 +18,30 @@ import com.typesafe.scalalogging.LazyLogging
 case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) extends LazyLogging {
 
   /** Generates the next status changing the status of a block */
-  def toogleStatus(id: String)(handler: Int): StationStatus = {
-    val newBlocks = (for { block <- blocks.get(id) } yield {
-      val newStatus = block.toogleStatus(handler)
-      blocks + (id -> newStatus)
-    })
-    if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)
+  private def changeBlock(id: String)(f: (BlockStatus) => BlockStatus): StationStatus = {
+    val newBlocks = for { block <- blocks.get(id) } yield setBlocks(blocks + (id -> f(block)))
+    newBlocks.getOrElse(this)
   }
 
-  /** Generates the next status changing the freedom of a block */
-  def lock(id: String)(junction: Int): StationStatus = {
-    val newBlocks = (for { block <- blocks.get(id) } yield {
-      val newStatus = block.lock(junction)
-      blocks + (id -> newStatus)
-    })
-    if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)
-  }
+  /** Generates the next status changing the status of a block */
+  def toogleStatus(id: String)(handler: Int): StationStatus =
+    changeBlock(id)(_.toogleStatus(handler))
 
   /** Generates the next status changing the freedom of a block */
-  def unlock(id: String)(junction: Int): StationStatus = {
-    val newBlocks = (for { block <- blocks.get(id) } yield {
-      val newStatus = block.unlock(junction)
-      blocks + (id -> newStatus)
-    })
-    if (newBlocks.isEmpty) this else setBlocks(newBlocks.get)
-  }
+  def lock(id: String)(junction: Int): StationStatus =
+    changeBlock(id)(_.lock(junction))
+
+  /** Generates the next status changing the freedom of a block */
+  def unlock(id: String)(junction: Int): StationStatus =
+    changeBlock(id)(_.unlock(junction))
+
+  /** Generates the next status locking a track */
+  def lockTrack(id: String)(junction: Int): StationStatus =
+    changeBlock(id)(_.lockTrack(junction))
+
+  /** Generates the next status unlocking */
+  def unlockTrack(id: String)(junction: Int): StationStatus =
+    changeBlock(id)(_.unlockTrack(junction))
 
   /** Creates a new status with a new block map */
   private def setBlocks(blocks: Map[String, BlockStatus]): StationStatus =

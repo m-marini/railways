@@ -30,6 +30,17 @@ case class PlatformStatus(
       this
   }
 
+  /** Toogles the status of block for a given index of status handler */
+  override def lockTrack = (j) => {
+    require(j == 0 || j == 1)
+    PlatformStatus(block, trainId, IndexedSeq(true, true))
+  }
+
+  override def unlockTrack = (j) => {
+    require(j == 0 || j == 1)
+    PlatformStatus(block, trainId, IndexedSeq(false, false))
+  }
+
   /** Returns the end junction given the entry */
   override val junctionFrom = IndexedSeq(Option(1), Option(0))
 

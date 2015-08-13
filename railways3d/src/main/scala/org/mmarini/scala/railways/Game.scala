@@ -38,7 +38,10 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   private lazy val initialStatus = GameStatus(parameters)
 
   // Creates the observable of change status id
-  private lazy val objectSelectIdObs = createActionIdObs("select")
+  private lazy val objectSelectIdPosObs = createActionIdObs("select")
+
+  // Creates the observable of change status id
+  private lazy val objectSelectIdObs = for { (data, _) <- objectSelectIdPosObs } yield data
 
   // Creates the viewpoint map
   private lazy val viewpointMap = (for {
@@ -126,7 +129,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
       popup <- ctrl.trainPopupOpt
       popupCtrl <- Option(popup.findControl(popup.getId, classOf[PopupController]))
     } yield for {
-      (cmd, data) <- trigger(popupCtrl.buttons, objectSelectIdObs.map(_._1))
+      (cmd, data) <- trigger(popupCtrl.buttons, objectSelectIdObs)
       if (cmd == "camera")
     } yield Option(data(1))
 
@@ -251,28 +254,47 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
       ctrl <- app.controllerById[GameController]("game-screen")
       popup <- ctrl.trainPopupOpt
       popupCtrl <- Option(popup.findControl(popup.getId, classOf[PopupController]))
-    } yield for { (cmd, data) <- trigger(popupCtrl.buttons, objectSelectIdObs.map(_._1)) } yield cmd match {
+    } yield for {
+      (cmd, data) <- trigger(popupCtrl.buttons, objectSelectIdObs)
+      if (data(0) == "train")
+    } yield cmd match {
       case "start" => (status: GameStatus) => status.startTrain(data(1))
       case "stop" => (status: GameStatus) => status.stopTrain(data(1))
       case "reverse" => (status: GameStatus) => status.reverseTrain(data(1))
       case _ => (status: GameStatus) => status
     }
 
-    // Creates the observable for train command triggering
-    val cmdJunctionObsOpt = for {
+    // Create semaphore popup selection
+    val semPopupResultObsOpt = for {
       ctrl <- app.controllerById[GameController]("game-screen")
       popup <- ctrl.semPopupOpt
       popupCtrl <- Option(popup.findControl(popup.getId, classOf[PopupController]))
-    } yield for { (cmd, data) <- trigger(popupCtrl.buttons, objectSelectIdObs.map(_._1)) } yield cmd match {
-      case "clear" => (status: GameStatus) => status.unlockJunction(data(1))(data(2).toInt)
-      case "lock" => (status: GameStatus) => status.lockJunction(data(1))(data(2).toInt)
-      case _ => (status: GameStatus) => status
+    } yield trigger(popupCtrl.buttons, objectSelectIdObs)
+
+    // Creates the observable for junction
+    val commandObsOpt = for {
+      o <- semPopupResultObsOpt
+    } yield for {
+      (cmd, data) <- o
+      if (Set("junction", "track").contains(data(0)) && Set("clear", "lock").contains(cmd))
+    } yield (cmd, data(0)) match {
+      case ("clear", "junction") =>
+        (status: GameStatus) => status.unlockJunction(data(1))(data(2).toInt)
+        case ("lock", "junction") =>
+        (status: GameStatus) => status.lockJunction(data(1))(data(2).toInt)
+        case ("clear", "track") =>
+        (status: GameStatus) => status.unlockTrack(data(1))(data(2).toInt)
+        case ("lock", "track") =>
+        (status: GameStatus) => status.lockTrack(data(1))(data(2).toInt)
     }
+
+    //    trackToogleStateObs.subscribe { x => logger.debug(s"${x}") }
 
     // Creates block change state events
     val blockToogleStateObs =
       for {
-        (data, _) <- objectSelectIdObs if (data(0) == "handler")
+        data <- objectSelectIdObs
+        if (data(0) == "handler")
       } yield {
         (status: GameStatus) => status.toogleBlockStatus(data(1))(data(2).toInt)
       }
@@ -280,7 +302,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     // Merges all observable to create n observable of all events
     val txObsSeq =
       cmdTrainObsOpt.toSeq ++
-        cmdJunctionObsOpt.toSeq :+
+        commandObsOpt :+
         blockToogleStateObs :+
         timeEvents
 
@@ -297,7 +319,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   private lazy val trainPopupSubOpt =
     for {
       ctrl <- app.controllerById[GameController]("game-screen")
-    } yield objectSelectIdObs.subscribe((p) => {
+    } yield objectSelectIdPosObs.subscribe((p) => {
       val (id, pos) = p
       id(0) match {
         case "track" => ctrl.showSemaphorePopup(pos)
