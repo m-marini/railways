@@ -3,28 +3,30 @@
  */
 package org.mmarini.scala.railways
 
+import org.mmarini.scala.jmonkey.ActionMapping
+import org.mmarini.scala.jmonkey.AnalogMapping
+import org.mmarini.scala.jmonkey.AnalogMapping
+import org.mmarini.scala.jmonkey.AnalogMapping
+import org.mmarini.scala.jmonkey.NiftyUtil
 import com.jme3.app.SimpleApplication
+import com.jme3.input.KeyInput
+import com.jme3.input.MouseInput
+import com.jme3.input.controls.KeyTrigger
+import com.jme3.input.controls.MouseAxisTrigger
+import com.jme3.input.controls.MouseButtonTrigger
+import com.jme3.math.Quaternion
+import com.jme3.math.Vector2f
+import com.jme3.math.Vector3f
 import com.jme3.niftygui.NiftyJmeDisplay
+import com.jme3.scene.CameraNode
+import com.jme3.scene.control.CameraControl.ControlDirection
 import com.jme3.system.AppSettings
 import com.typesafe.scalalogging.LazyLogging
 import rx.lang.scala.Observable
-import rx.lang.scala.Subject
-import com.jme3.input.controls.MouseButtonTrigger
-import com.jme3.input.controls.KeyTrigger
-import com.jme3.input.KeyInput
-import com.jme3.input.controls.MouseAxisTrigger
-import com.jme3.input.MouseInput
-import org.mmarini.scala.jmonkey.ActionMapping
-import org.mmarini.scala.jmonkey.NiftyUtil
 import rx.lang.scala.Observer
-import com.jme3.math.Vector3f
-import com.jme3.math.Quaternion
-import com.jme3.scene.CameraNode
-import com.jme3.scene.control.CameraControl.ControlDirection
-import org.mmarini.scala.jmonkey.AnalogMapping
-import org.mmarini.scala.jmonkey.AnalogMapping
-import org.mmarini.scala.jmonkey.AnalogMapping
-import com.jme3.math.Vector2f
+import rx.lang.scala.Subject
+import com.jme3.input.controls.JoyAxisTrigger
+import com.jme3.input.JoyInput
 
 /**
  *
@@ -48,7 +50,7 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
       val p = new Vector2f(e.position.getX / Width, e.position.getY / Height).multLocal(2).subtractLocal(1f, 1f)
       AnalogMapping(e.name, e.value, p, e.tpf)
     }
-    
+
   def mouseRelativeActionObservable: String => Observable[ActionMapping] = (k) =>
     for { e <- actionObservable(k) } yield {
       val p = new Vector2f(e.position.getX / Width, e.position.getY / Height).multLocal(2).subtractLocal(1f, 1f)

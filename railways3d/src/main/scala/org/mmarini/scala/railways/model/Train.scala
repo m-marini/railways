@@ -36,9 +36,10 @@ trait Train {
   /** Returns true if train has loaded passengers at platform */
   def loaded: Boolean
 
+  private lazy val head = Head(s"$id head", route, location)
+
   /** Returns the train vehicle composing this train */
   lazy val vehicles: Set[Vehicle] = {
-    val head = Head(s"$id head", route, location)
     val mid = for {
       i <- 1 to size - 2
       coach <- Coach(s"$id coach $i", route, location - i * CoachLength)
@@ -62,4 +63,12 @@ trait Train {
 
   /** Creates the reverse train */
   def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)): Option[Train] = None
+
+  /** Returns the head location */
+  def headLocation: Option[Vector2f] =
+    for { h <- head } yield h.location
+
+  /** Returns the head location */
+  def headDirection: Option[Float] =
+    for { h <- head } yield h.orientation
 }

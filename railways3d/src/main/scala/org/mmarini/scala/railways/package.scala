@@ -97,4 +97,9 @@ package object railways extends LazyLogging {
     s
   }
 
+  def history[T](value: Observable[T])(length: Int): Observable[Seq[T]] =
+    value.scan(Seq[T]())((seq, current) => current +: seq.take(length - 1))
+
+  def mergeAll[T](seq: Observable[T]*): Observable[T] =
+    seq.reduce((a, b) => a merge b)
 }
