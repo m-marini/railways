@@ -27,6 +27,9 @@ trait Train {
   /** Returns the number of vehicles composing this train */
   def size: Int
 
+  /** Returns the exit id */
+  def exitId: String
+
   /** Returns the start status */
   def start: Train = this
 

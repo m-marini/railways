@@ -17,10 +17,11 @@ case class StoppedTrain(
     size: Int,
     loaded: Boolean,
     route: TrainRoute,
-    location: Float) extends Train with LazyLogging {
+    location: Float,
+    exitId: String) extends Train with LazyLogging {
 
   /** Creates the new train status apply a new route */
-  override def apply(route: TrainRoute, location: Float): Train = StoppedTrain(id, size, loaded, route, location)
+  override def apply(route: TrainRoute, location: Float): Train = StoppedTrain(id, size, loaded, route, location, exitId)
 
   /** Computes the next status after an elapsed time tick */
   def tick(time: Float, gameStatus: GameStatus): Option[Train] = Some(this)
@@ -28,7 +29,7 @@ case class StoppedTrain(
   /** Creates toogle status */
   override def start = {
     logger.debug("Go train {}", id)
-    MovingTrain(id, size, loaded, route, location, 0f)
+    MovingTrain(id, size, loaded, route, location, 0f, exitId)
   }
 
   /** Creates the reverse train */
@@ -39,7 +40,7 @@ case class StoppedTrain(
     } yield {
       val (revRoute, revLocation) = createReverseRoute(headTrack, headLocation, id)
       logger.debug("Train {} reversed", id)
-      MovingTrain(id, size, loaded, revRoute, revLocation + length, 0f)
+      MovingTrain(id, size, loaded, revRoute, revLocation + length, 0f, exitId)
     }
   }
 }

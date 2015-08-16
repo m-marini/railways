@@ -16,10 +16,11 @@ case class StoppingTrain(
     loaded: Boolean,
     route: TrainRoute,
     location: Float,
-    speed: Float) extends Train with LazyLogging {
+    speed: Float,
+    exitId: String) extends Train with LazyLogging {
 
   /** Creates the new train status apply a new route */
-  override def apply(route: TrainRoute, location: Float): Train = StoppingTrain(id, size, loaded, route, location, speed)
+  override def apply(route: TrainRoute, location: Float): Train = StoppingTrain(id, size, loaded, route, location, speed, exitId)
 
   /** Computes the next status after an elapsed time tick */
   override def tick(time: Float, gameStatus: GameStatus): Option[Train] = {
@@ -28,15 +29,15 @@ case class StoppingTrain(
 
     if (newSpeed <= 0f) {
       logger.debug("Train {} stopped", id)
-      Some(StoppedTrain(id, size, loaded, route, location))
+      Some(StoppedTrain(id, size, loaded, route, location, exitId))
     } else {
       // Computes the new location
       val newLocation = location + newSpeed * time
       if (newLocation >= route.length) {
         logger.debug("Train {} stopped", id)
-        Some(StoppedTrain(id, size, loaded, route, route.length))
+        Some(StoppedTrain(id, size, loaded, route, route.length, exitId))
       } else {
-        Some(StoppingTrain(id, size, loaded, route, newLocation, newSpeed))
+        Some(StoppingTrain(id, size, loaded, route, newLocation, newSpeed, exitId))
       }
     }
   }
@@ -44,6 +45,6 @@ case class StoppingTrain(
   /** Creates toogle status */
   override def start = {
     logger.debug("Go train {}", id)
-    MovingTrain(id, size, loaded, route, location, speed)
+    MovingTrain(id, size, loaded, route, location, speed, exitId)
   }
 }

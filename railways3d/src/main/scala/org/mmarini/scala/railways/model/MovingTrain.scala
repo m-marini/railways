@@ -26,10 +26,12 @@ case class MovingTrain(
     loaded: Boolean,
     route: TrainRoute,
     location: Float,
-    speed: Float) extends Train with LazyLogging {
+    speed: Float,
+    exitId: String) extends Train with LazyLogging {
 
   /** Creates the new train status apply a new route */
-  override def apply(route: TrainRoute, location: Float): Train = MovingTrain(id, size, loaded, route, location, speed)
+  override def apply(route: TrainRoute, location: Float): Train =
+    MovingTrain(id, size, loaded, route, location, speed, exitId)
 
   /** Computes the next status after an elapsed time tick */
   override def tick(time: Float, gameStatus: GameStatus): Option[Train] = {
@@ -49,12 +51,12 @@ case class MovingTrain(
           None
         case Some((track, _)) if (track.isInstanceOf[PlatformTrack] && !loaded) =>
           logger.debug(s"$id waiting for passenger")
-          Some(WaitForPassengerTrain(id, size, route, route.length - MinDistance, BoardingTime))
+          Some(WaitForPassengerTrain(id, size, route, route.length - MinDistance, BoardingTime, exitId))
         case _ =>
-          Some(MovingTrain(id, size, loaded, route, route.length - MinDistance, 0))
+          Some(MovingTrain(id, size, loaded, route, route.length - MinDistance, 0, exitId))
       }
     } else {
-      Some(MovingTrain(id, size, loaded, route, newLocation, newSpeed))
+      Some(MovingTrain(id, size, loaded, route, newLocation, newSpeed, exitId))
     }
   }
 
@@ -67,7 +69,7 @@ case class MovingTrain(
       } yield {
         val (revRoute, revLocation) = createReverseRoute(headTrack, headLocation, id)
         logger.debug("Train {} reversed", id)
-        MovingTrain(id, size, loaded, revRoute, revLocation + length, 0f)
+        MovingTrain(id, size, loaded, revRoute, revLocation + length, 0f, exitId)
       }
     } else {
       None
@@ -76,7 +78,7 @@ case class MovingTrain(
   /** Creates toogle status */
   override def stop = {
     logger.debug("Stopping train {}", id)
-    StoppingTrain(id, size, loaded, route, location, speed)
+    StoppingTrain(id, size, loaded, route, location, speed, exitId)
   }
 }
 
@@ -84,13 +86,14 @@ case class MovingTrain(
 object MovingTrain {
 
   /** Creates a [[MovingTrain]] */
-  def apply(id: String, size: Int, entry: EntryStatus): MovingTrain = {
+  def apply(id: String, size: Int, entry: EntryStatus, exitId: String): MovingTrain = {
     val route = TrainRoute(IndexedSeq(entry.block.entryTrack.asInstanceOf[Track]))
     MovingTrain(id = id,
       location = route.length,
       loaded = false,
       size = size,
       route = route,
-      speed = MaxSpeed)
+      speed = MaxSpeed,
+      exitId = exitId)
   }
 }

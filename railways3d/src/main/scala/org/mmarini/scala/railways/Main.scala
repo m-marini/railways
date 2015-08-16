@@ -27,6 +27,8 @@ import rx.lang.scala.Observer
 import rx.lang.scala.Subject
 import com.jme3.input.controls.JoyAxisTrigger
 import com.jme3.input.JoyInput
+import rx.lang.scala.Subscriber
+import rx.lang.scala.subscriptions.CompositeSubscription
 
 /**
  *
@@ -37,7 +39,15 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
 
   private var niftyDisplay: Option[NiftyJmeDisplay] = None
 
+  /** Returns the observer for camera location */
+  var cameraLocationObserver: Option[Observer[Vector3f]] = None
+
+  /** Returns the observer for camera location */
+  var cameraRotationObserver: Option[Observer[Quaternion]] = None
+
   val _time = Subject[(SimpleApplication, Float)]()
+
+  lazy val screenNavigationSubrOpt = for { n <- nifty } yield Subscriber((screenId: String) => n.gotoScreen(screenId))
 
   /** Returns the action observable by name */
   def actionObservable: String => Observable[ActionMapping] = (k) => inputManager.createActionMapping(k)
@@ -57,38 +67,131 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
       ActionMapping(e.name, e.keyPressed, p, e.tpf)
     }
 
-  /** Returns the observer for camera location */
-  var cameraLocationObserver: Option[Observer[Vector3f]] = None
+  /** Observable of goto screen */
+  private lazy val gotoScreenObs = {
+    // start-screen selection
+    val btnScreenMap = Map(
+      "optionsButton" -> "opts-screen",
+      "startButton" -> "game-screen")
 
-  /** Returns the observer for camera location */
-  var cameraRotationObserver: Option[Observer[Quaternion]] = None
+    // Start-screen
+    val btnStartNavObsOpt = for {
+      start <- controllerById[StartController]("start")
+    } yield for {
+      (id, _) <- start.selectObs
+      if (btnScreenMap.contains(id))
+    } yield btnScreenMap(id)
+
+    // Option selection
+    val optsConfirmObsOpt = for {
+      opts <- controllerById[OptionsController]("opts-screen")
+    } yield for {
+      (id, _) <- opts.selectObs
+      if (id == "ok")
+    } yield "start"
+
+    val endGameScreenObsOpt = for {
+      ctrl <- controllerById[EndGameController]("end-game-screen")
+    } yield for {
+      _ <- ctrl.selectObs
+    } yield "start"
+
+    val endGameStautsObs = for {
+      _ <- endGameObs
+    } yield "end-game-screen"
+
+    mergeAll((btnStartNavObsOpt.toArray ++
+      optsConfirmObsOpt ++
+      endGameScreenObsOpt :+
+      endGameStautsObs): _*)
+  }
+
+  /** Game observable */
+  private lazy val gameObs = {
+    val gameSubj = Subject[Game]()
+
+    val sub = for {
+      opts <- controllerById[OptionsController]("opts-screen")
+      game <- controllerById[GameController]("game-screen")
+    } yield {
+      val obs = for {
+        id <- game.screenObs
+        if (id == "start")
+      } yield id
+      obs.subscribe(_ => gameSubj.onNext(new Game(this, opts.parameters)))
+    }
+    gameSubj
+  }
+
+  /** Subscription to gotoScreen */
+  private lazy val gotoScreenSubOpt = for {
+    n <- nifty
+  } yield gotoScreenObs.subscribe((id) =>
+    try {
+      n.gotoScreen(id)
+    } catch {
+      case t: Throwable => logger.error(t.getMessage, t)
+    })
+
+  /** Subscription to quit command */
+  private lazy val quitSubOpt = {
+    val obsOpt = for {
+      start <- controllerById[StartController]("start")
+    } yield for {
+      (btn, _) <- start.selectObs
+      if (btn == "quitButton")
+    } yield btn
+
+    for { o <- obsOpt } yield o.subscribe(_ => stop)
+  }
+
+  /** Subscription to show parameters from option screen */
+  private lazy val showParmsSubOpt =
+    for {
+      start <- controllerById[StartController]("start")
+      opts <- controllerById[OptionsController]("opts-screen")
+    } yield opts.selectObs.subscribe(_ => start.show(opts.parameters))
+
+  /** Subscription to start game */
+  private lazy val startGameSub = gameObs.subscribe()
+
+  private lazy val endGameObs =
+    for {
+      game <- gameObs
+      status <- game.gameStatusObs
+      if (status.isFinished)
+    } yield game
+
+  private lazy val endGameSub = endGameObs.subscribe(game => game.onEnd)
+
+  private lazy val subscriptions =
+    CompositeSubscription((gotoScreenSubOpt.toArray ++
+      showParmsSubOpt ++
+      quitSubOpt :+
+      endGameSub :+
+      startGameSub): _*)
 
   /** */
   override def simpleInitApp: Unit = {
     setDisplayStatView(false)
     setDisplayFps(false)
-    niftyDisplay = Option(new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort))
+    val nd = new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort)
+    val n = nd.getNifty
 
-    nifty = for {
-      nd <- niftyDisplay
-      n <- Option(nd.getNifty)
-    } yield n
+    nifty = Option(n)
 
     // Read your XML and initialize your custom ScreenController
-    for (n <- nifty) {
-      try {
-        n.fromXml("Interface/start.xml", "start")
-        n.addXml("Interface/opts.xml")
-        n.addXml("Interface/game.xml")
-      } catch {
-        case ex: Exception => logger.error(ex.getMessage, ex)
-      }
+    try {
+      n.fromXml("Interface/start.xml", "start")
+      n.addXml("Interface/opts.xml")
+      n.addXml("Interface/game.xml")
+      n.addXml("Interface/endGame.xml")
+    } catch {
+      case ex: Exception => logger.error(ex.getMessage, ex)
     }
 
     // attach the Nifty display to the gui view port as a processor
-    for (nd <- niftyDisplay) {
-      guiViewPort.addProcessor(nd)
-    }
+    guiViewPort.addProcessor(nd)
 
     flyCam.setEnabled(false)
     val camNode = new CameraNode("Motion cam", cam)
@@ -104,38 +207,10 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
       camNode.setLocalRotation(rotation)
     }))
 
-    wireUp
+    subscriptions
 
     attachMapping
 
-  }
-
-  /** */
-  private def wireUp {
-    for {
-      start <- controllerById[StartController]("start")
-      opts <- controllerById[OptionsController]("opts-screen")
-      game <- controllerById[GameController]("game-screen")
-    } {
-
-      // start screen selection
-      start.selection.subscribe(_ match {
-        case "optionsButton" => nifty.foreach(_.gotoScreen("opts-screen"))
-        case "startButton" => nifty.foreach(_.gotoScreen("game-screen"))
-        case "quitButton" => stop
-      })
-
-      // Option selection
-      opts.confirmed.subscribe(_ => {
-        nifty.foreach(_.gotoScreen("start"))
-        start.show(opts.parameters)
-      })
-
-      // game controller behaviour
-      game.screenObservable.subscribe(_ match {
-        case "start" => new Game(this, opts.parameters)
-      })
-    }
   }
 
   /** Attaches mapping */

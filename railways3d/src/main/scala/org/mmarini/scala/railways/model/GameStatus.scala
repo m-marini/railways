@@ -37,10 +37,12 @@ import org.mmarini.scala.railways._
  */
 case class GameStatus(
     private val parameters: GameParameters,
-    val time: Float = 0,
     val stationStatus: StationStatus,
     private val random: Random,
-    trains: Set[Train] = Set()) extends LazyLogging {
+    trains: Set[Train] = Set(),
+    performance: GamePerformance) extends LazyLogging {
+
+  def isFinished: Boolean = performance.elapsedTime >= parameters.duration
 
   /** Returns the veicles of the game */
   def vehicles: Set[Vehicle] =
@@ -51,19 +53,19 @@ case class GameStatus(
 
   /** Creates a new status with a new time value */
   private def setTime(time: Float): GameStatus =
-    GameStatus(parameters, time, stationStatus, random, trains)
-
-  /** Creates a new status with time changed by a value */
-  private def addTime(dt: Float): GameStatus =
-    GameStatus(parameters, time + dt, stationStatus, random, trains)
+    GameStatus(parameters, stationStatus, random, trains, performance)
 
   /** Creates a new status with a new station status */
   private def setStationStatus(stationStatus: StationStatus): GameStatus =
-    GameStatus(parameters, time, stationStatus, random, trains)
+    GameStatus(parameters, stationStatus, random, trains, performance)
 
   /** Creates a new status with a new train set */
   private def setTrains(trains: Set[Train]): GameStatus =
-    GameStatus(parameters, time, stationStatus, random, trains)
+    GameStatus(parameters, stationStatus, random, trains, performance)
+
+  /** Creates a new status with a new train set */
+  private def setPerformance(performance: GamePerformance): GameStatus =
+    GameStatus(parameters, stationStatus, random, trains, performance)
 
   /** Generates the next status simulating a time elapsing */
   def tick(time: Float): GameStatus = {
@@ -72,35 +74,47 @@ case class GameStatus(
       // Processes single train
       train.tick(time, status) match {
         case Some(train) => status.putTrain(train)
-        case _ => status.removeTrain(train)
+        case _ => {
+          val correctCountOpt = for {
+            (track, _) <- train.trackTailLocation
+            (block, _) <- stationStatus.extractJunctions(track)
+          } yield if (block.id == train.exitId) 1 else 0
+          val newPerf = performance.
+            addRightRoutedTrainCount(correctCountOpt.getOrElse(0)).
+            addExitedTrainCount(1)
+          status.removeTrain(train).setPerformance(newPerf)
+        }
       })
 
     val entries = shuffle(stationStatus.entryBlocks.filter(_.trainId.isEmpty))(random)
-    //    val n = min(poisson(time * parameters.trainFrequence), entries.size)
+    //        val n = min(poisson(time * parameters.trainFrequence), entries.size)
     val n = min(poisson(time), entries.size)
     val newTrainStatus = if (n > 0) {
-      //      val exits = stationStatus.exitBlocks
-      val newTrainStatus = (0 until n).foldLeft(newStatus)((status, i) => {
-        //        val exitOpt = chooseOneOf(exits)
-        val id = createTrainId
-        logger.debug("Creating train {}", id)
-        try {
-          val train = MovingTrain(
-            id = id,
-            size = random.nextInt(MaxTrainSize - MinTrainSize) + MinTrainSize,
-            entry = entries(i))
-          status.putTrain(train)
-        } catch {
-          case t: Throwable =>
-            t.printStackTrace
-            throw t
-        }
-      })
-      newTrainStatus
+      val exitIds = for (e <- stationStatus.exitBlocks) yield e.id
+      val newTrainStatus = (0 until n).foldLeft(newStatus)(
+        (status, i) => {
+          val exitOpt = chooseOneOf(exitIds)
+          val id = createTrainId
+          try {
+            val train = MovingTrain(
+              id = id,
+              size = random.nextInt(MaxTrainSize - MinTrainSize) + MinTrainSize,
+              entry = entries(i),
+              exitId = exitOpt.get)
+            status.putTrain(train)
+          } catch {
+            case t: Throwable =>
+              t.printStackTrace
+              throw t
+          }
+        })
+      val newStatus1 = newTrainStatus.setPerformance(performance.addEnteredTrainCount(n))
+      logger.debug("Creating trains {}", newStatus1.performance)
+      newStatus1
     } else {
       newStatus
     }
-    newTrainStatus.addTime(time)
+    newTrainStatus.setPerformance(performance.addElapsedTime(time))
   }
 
   /** Creates a train id */
@@ -203,7 +217,11 @@ object GameStatus {
     } yield (b.id -> initialStatus(b))).
       toMap
 
-    GameStatus(parms, stationStatus = StationStatus(t, states), random = new Random())
+    GameStatus(
+      parms,
+      stationStatus = StationStatus(t, states),
+      random = new Random(),
+      performance = GamePerformance())
   }
 
   /** Returns the initial state of Block */

@@ -87,14 +87,37 @@ package object railways extends LazyLogging {
   }
 
   /** State flow */
-  def stateFlow[S](s0: S)(transition: Observable[S => S]): Observable[S] = {
-    val s = Subject[S]
-    var status = s0
-    transition.subscribe((f: S => S) => {
-      status = f(status)
-      s.onNext(status)
-    })
-    s
+  def stateFlow[T](init: T)(f: Observable[T => T]): Observable[T] = {
+    val subj = Subject[T]
+    var acc: T = init
+    var count = 0
+    var sub: Option[Subscription] = None
+
+    Observable.create[T] { x =>
+      {
+        count = count + 1
+        if (count == 1) {
+          sub = Some(f.subscribe((y: T => T) => {
+            acc = y(acc)
+            subj.onNext(acc)
+          },
+            e => subj.onError(e),
+            subj.onCompleted))
+        }
+        val txSub = subj.subscribe(
+          y => x.onNext(y),
+          e => x.onError(e),
+          x.onCompleted)
+        Subscription {
+          count = count - 1
+          if (count == 0)
+            for (s <- sub) {
+              s.unsubscribe
+            }
+          txSub.unsubscribe()
+        }
+      }
+    }
   }
 
   def history[T](value: Observable[T])(length: Int): Observable[Seq[T]] =

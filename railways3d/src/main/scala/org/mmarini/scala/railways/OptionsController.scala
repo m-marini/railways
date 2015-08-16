@@ -13,14 +13,18 @@ import de.lessvoid.nifty.controls.Slider
 import de.lessvoid.nifty.screen.Screen
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
-import org.mmarini.scala.jmonkey.AbstractController
 import de.lessvoid.nifty.NiftyEventSubscriber
+import org.mmarini.scala.jmonkey.SelectionObservable
+import org.mmarini.scala.jmonkey.DefaultScreenController
 
 /**
  * @author us00852
  *
  */
-class OptionsController extends AbstractAppState with AbstractController with LazyLogging {
+class OptionsController extends AbstractAppState
+    with DefaultScreenController
+    with SelectionObservable
+    with LazyLogging {
 
   val FrequenceEnum = new Enumeration {
     val Easy, Medium, Difficult, Custom = Value
@@ -29,7 +33,7 @@ class OptionsController extends AbstractAppState with AbstractController with La
 
   val DurationEnum = new Enumeration {
     val Short, Medium, Long, Custom = Value
-    val valueById = Map(Short -> 5, Medium -> 10, Long -> 30).map { case (k, v) => (k.id -> v.toFloat * 60) }
+    val valueById = Map(Short -> 1, Medium -> 10, Long -> 30).map { case (k, v) => (k.id -> v.toFloat * 60) }
   }
 
   private def station = controlById("station", classOf[DropDown[String]])
@@ -55,8 +59,6 @@ class OptionsController extends AbstractAppState with AbstractController with La
     true,
     false,
     0.5f)
-
-  def confirmed: Observable[String] = _confirmed
 
   /**
    *
@@ -92,12 +94,6 @@ class OptionsController extends AbstractAppState with AbstractController with La
         "Personalizzato")
     } dur.addItem(s)
     duration.map(_.selectItemByIndex(0))
-  }
-
-  /** Converts the events of ok button in the observable */
-  @NiftyEventSubscriber(id = "ok")
-  def onSelect(id: String, event: ButtonClickedEvent) {
-    _confirmed.onNext("confirmed")
   }
 
   /**

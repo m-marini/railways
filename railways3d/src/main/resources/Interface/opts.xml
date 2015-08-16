@@ -64,9 +64,7 @@
 					</panel>
 				</panel>
 				<panel width="*" height="*" childLayout="center">
-					<control id="ok" name="button" label="OK">
-						<!-- interact onClick="okPressed()" /> -->
-					</control>
+					<control id="ok" name="button" label="OK" />
 				</panel>
 			</panel>
 		</layer>

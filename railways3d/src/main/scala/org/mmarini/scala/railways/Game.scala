@@ -238,7 +238,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     }
   }
 
-  private lazy val gameStatusObs = {
+  lazy val gameStatusObs = {
 
     // Creates the observable of time events
     val timeEvents =
