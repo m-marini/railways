@@ -29,6 +29,7 @@ import com.jme3.input.controls.JoyAxisTrigger
 import com.jme3.input.JoyInput
 import rx.lang.scala.Subscriber
 import rx.lang.scala.subscriptions.CompositeSubscription
+import org.mmarini.scala.railways.model.GameStatus
 
 /**
  *
@@ -78,32 +79,33 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
     val btnStartNavObsOpt = for {
       start <- controllerById[StartController]("start")
     } yield for {
-      (id, _) <- start.selectObs
-      if (btnScreenMap.contains(id))
-    } yield btnScreenMap(id)
+      ev <- start.buttonClickedObs
+      if (btnScreenMap.contains(ev.getButton.getId))
+    } yield btnScreenMap(ev.getButton.getId)
 
     // Option selection
     val optsConfirmObsOpt = for {
       opts <- controllerById[OptionsController]("opts-screen")
     } yield for {
-      (id, _) <- opts.selectObs
-      if (id == "ok")
+      ev <- opts.buttonClickedObs
+      if (ev.getButton.getId == "ok")
     } yield "start"
 
     val endGameScreenObsOpt = for {
       ctrl <- controllerById[EndGameController]("end-game-screen")
     } yield for {
-      _ <- ctrl.selectObs
+      x <- ctrl.buttonClickedObs
     } yield "start"
 
-    val endGameStautsObs = for {
-      _ <- endGameObs
+    val endGameObs = for {
+      game <- gameObs
+      _ <- game.endGameObs
     } yield "end-game-screen"
 
-    mergeAll((btnStartNavObsOpt.toArray ++
+    mergeAll(btnStartNavObsOpt.toArray ++
       optsConfirmObsOpt ++
       endGameScreenObsOpt :+
-      endGameStautsObs): _*)
+      endGameObs: _*)
   }
 
   /** Game observable */
@@ -138,9 +140,9 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
     val obsOpt = for {
       start <- controllerById[StartController]("start")
     } yield for {
-      (btn, _) <- start.selectObs
-      if (btn == "quitButton")
-    } yield btn
+      ev <- start.buttonClickedObs
+      if (ev.getButton.getId == "quitButton")
+    } yield ev.getButton.getId
 
     for { o <- obsOpt } yield o.subscribe(_ => stop)
   }
@@ -150,25 +152,15 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
     for {
       start <- controllerById[StartController]("start")
       opts <- controllerById[OptionsController]("opts-screen")
-    } yield opts.selectObs.subscribe(_ => start.show(opts.parameters))
+    } yield opts.buttonClickedObs.subscribe(_ => start.show(opts.parameters))
 
   /** Subscription to start game */
   private lazy val startGameSub = gameObs.subscribe()
-
-  private lazy val endGameObs =
-    for {
-      game <- gameObs
-      status <- game.gameStatusObs
-      if (status.isFinished)
-    } yield game
-
-  private lazy val endGameSub = endGameObs.subscribe(game => game.onEnd)
 
   private lazy val subscriptions =
     CompositeSubscription((gotoScreenSubOpt.toArray ++
       showParmsSubOpt ++
       quitSubOpt :+
-      endGameSub :+
       startGameSub): _*)
 
   /** */
@@ -207,9 +199,8 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
       camNode.setLocalRotation(rotation)
     }))
 
-    subscriptions
-
     attachMapping
+    subscriptions
 
   }
 
@@ -234,7 +225,7 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
   }
 
   /** */
-  def timeObservable: Observable[(SimpleApplication, Float)] = _time
+  lazy val timeObservable: Observable[(SimpleApplication, Float)] = _time
 
   /** */
   override def simpleUpdate(tpf: Float) {

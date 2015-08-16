@@ -16,12 +16,14 @@ import de.lessvoid.nifty.controls.NiftyControl
 /**
  * @author us00852
  */
-class PopupController extends Controller with ScreenUtil with NiftyUtil {
+class PopupController extends Controller
+    with ScreenUtil
+    with NiftyUtil
+    with MousePrimarClickedObservable {
 
   var popup: Option[Element] = None
-  private val _buttonsObs = Subject[String]()
 
-  def buttons: Observable[String] = _buttonsObs
+  mousePrimaryClickedObs.subscribe(_ => closePopup)
 
   /** Binds this pop up */
   override def bind(n: Nifty, s: Screen, e: Element, p: Properties, a: Attributes) {
@@ -33,7 +35,8 @@ class PopupController extends Controller with ScreenUtil with NiftyUtil {
   /** Initializes this pop up */
   override def init(p: Properties, a: Attributes) {}
 
-  override def onStartScreen {}
+  override def onStartScreen {
+  }
 
   override def onFocus(f: Boolean) {}
 
@@ -49,11 +52,4 @@ class PopupController extends Controller with ScreenUtil with NiftyUtil {
     }
   }
 
-  /**
-   *
-   */
-  def onButton(id: String) {
-    closePopup
-    _buttonsObs.onNext(id)
-  }
 }

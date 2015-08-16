@@ -31,17 +31,17 @@
 			onTertiaryClick="closePopup()" />
 		<panel id="trainPane" x="100" y="300" childLayout="vertical"
 			backgroundColor="#0008">
-			<image filename="Interface/start.png">
-				<interact onClick="onButton(start)" />
+			<image id="startTrain" filename="Interface/start.png"
+				visibleToMouse="true">
 			</image>
-			<image filename="Interface/stop.png">
-				<interact onClick="onButton(stop)" />
+			<image id="stopTrain" filename="Interface/stop.png"
+				visibleToMouse="true">
 			</image>
-			<image filename="Interface/reverse.png">
-				<interact onClick="onButton(reverse)" />
+			<image id="reverseTrain" filename="Interface/reverse.png"
+				visibleToMouse="true">
 			</image>
-			<image filename="Interface/camera.png">
-				<interact onClick="onButton(camera)" />
+			<image id="cameraTrain" filename="Interface/camera.png"
+				visibleToMouse="true">
 			</image>
 		</panel>
 	</popup>
@@ -52,12 +52,10 @@
 			onTertiaryClick="closePopup()" />
 		<panel id="semPane" x="100" y="300" childLayout="vertical"
 			backgroundColor="#0008">
-			<image filename="Interface/sem-green.png">
-				<interact onClick="onButton(clear)" />
-			</image>
-			<image filename="Interface/sem-red.png">
-				<interact onClick="onButton(lock)" />
-			</image>
+			<image id="clear" filename="Interface/sem-green.png"
+				visibleToMouse="true" />
+			<image id="lock" filename="Interface/sem-red.png"
+				visibleToMouse="true" />
 		</panel>
 	</popup>
 
@@ -82,25 +80,18 @@
 			<panel childLayout="vertical">
 				<panel childLayout="horizontal">
 					<panel style="gridbag" childLayout="center" />
-					<image style="image.up" visibleToMouse="true">
-						<interact onClick="onButton(up)" onRelease="onRelease(up)" />
-					</image>
+					<image id="up" style="image.up" visibleToMouse="true" />
 					<panel style="gridbag" childLayout="center" />
 				</panel>
 				<panel childLayout="horizontal">
-					<image style="image.left">
-						<interact onClick="onButton(left)" onRelease="onRelease(left)" />
-					</image>
-					<panel style="gridbag" childLayout="center" />
-					<image style="image.right">
-						<interact onClick="onButton(right)" onRelease="onRelease(right)" />
-					</image>
+					<image id="left" style="image.left" visibleToMouse="true" />
+					<panel id="quit" style="gridbag" childLayout="center"
+						backgroundColor="ffff" visibleToMouse="true" />
+					<image id="right" style="image.right" visibleToMouse="true" />
 				</panel>
 				<panel childLayout="horizontal">
 					<panel style="gridbag" childLayout="center" />
-					<image style="image.down">
-						<interact onClick="onButton(down)" onRelease="onRelease(down)" />
-					</image>
+					<image id="down" style="image.down" visibleToMouse="true" />
 					<panel style="gridbag" childLayout="center" />
 				</panel>
 			</panel>

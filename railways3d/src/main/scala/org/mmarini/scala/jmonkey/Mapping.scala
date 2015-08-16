@@ -17,6 +17,7 @@ import com.jme3.math.Ray
 import com.jme3.collision.CollisionResults
 import com.jme3.app.Application
 import com.jme3.scene.Node
+import com.typesafe.scalalogging.LazyLogging
 
 /** */
 
@@ -33,7 +34,7 @@ case class ActionMapping(name: String, keyPressed: Boolean, position: Vector2f, 
 case class AnalogMapping(name: String, value: Float, position: Vector2f, tpf: Float) extends Mapping with PositionMapping
 
 /** Adds functionalities to the jme3 inputManager */
-class InputManagerOps(val inputManager: InputManager) {
+class InputManagerOps(val inputManager: InputManager) extends LazyLogging {
 
   /** Creates an observable of actions */
   def createActionMapping(names: String*): Observable[ActionMapping] =

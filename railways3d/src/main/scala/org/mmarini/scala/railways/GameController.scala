@@ -18,6 +18,10 @@ import de.lessvoid.nifty.elements.Element
 import com.jme3.math.Vector2f
 import org.mmarini.scala.jmonkey.ScreenObservable
 import org.mmarini.scala.jmonkey.AbstractScreenController
+import org.mmarini.scala.jmonkey.MousePrimarClickedObservable
+import org.mmarini.scala.jmonkey.MousePrimarReleaseObservable
+import org.mmarini.scala.jmonkey.ListBoxSelectionChangedObservable
+import rx.lang.scala.Observable
 
 /**
  * Controls the game screen
@@ -28,26 +32,20 @@ import org.mmarini.scala.jmonkey.AbstractScreenController
 class GameController extends AbstractAppState
     with AbstractScreenController
     with ScreenObservable
+    with MousePrimarClickedObservable
+    with MousePrimarReleaseObservable
+    with ListBoxSelectionChangedObservable[String]
     with LazyLogging {
 
   /** the observable of camera event selection */
   lazy private val _camerasEventObservable = Subject[ListBoxSelectionChangedEvent[String]]()
 
   /** the observable of camera selection */
-  lazy val cameraSelected = for { s <- _camerasEventObservable.singleSelection if (!s.isEmpty) } yield s.get
+  lazy val cameraSelectedObs = singleSelection(listBoxSelectionChangedObs)
 
-  /** Converts the camera events into camera event observer */
-  @NiftyEventSubscriber(id = "cameras")
-  def onListBoxSelectionChanged(id: String, event: ListBoxSelectionChangedEvent[String]) {
-    _camerasEventObservable.onNext(event)
-  }
-
-  // 
   lazy val trainPopupOpt = createPopup("trainPopup")
 
   lazy val semPopupOpt = createPopup("semPopup")
-
-  val buttonsObservable: Subject[(String, Boolean)] = Subject()
 
   /** Shows the camera views */
   def show(cams: List[String]) {
@@ -65,15 +63,5 @@ class GameController extends AbstractAppState
   def showTrainPopup(pos: Vector2f) {
     for (s <- trainPopupOpt)
       showPopupAt(s, "trainPane", pos)
-  }
-
-  /** */
-  def onButton(btn: String) {
-    buttonsObservable.onNext(btn, true)
-  }
-
-  /** */
-  def onRelease(btn: String) {
-    buttonsObservable.onNext(btn, false)
   }
 }

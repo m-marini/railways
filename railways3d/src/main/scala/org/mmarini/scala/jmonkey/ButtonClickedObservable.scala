@@ -8,21 +8,22 @@ import de.lessvoid.nifty.controls.ButtonClickedEvent
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
 import de.lessvoid.nifty.NiftyEventSubscriber
+import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
 
 /**
  * @author us00852
  *
  */
-trait SelectionObservable {
+trait ButtonClickedObservable {
 
-  private val selectSubj = Subject[(String, ButtonClickedEvent)]()
+  private val buttonClickedSubj = Subject[ButtonClickedEvent]()
 
   /** Return the selection button id observable */
-  def selectObs: Observable[(String, ButtonClickedEvent)] = selectSubj
+  def buttonClickedObs: Observable[ButtonClickedEvent] = buttonClickedSubj
 
   /** Converts the buttons press event into button id observable */
   @NiftyEventSubscriber(pattern = ".*")
   def select(id: String, event: ButtonClickedEvent) {
-    selectSubj.onNext((id, event))
+    buttonClickedSubj.onNext(event)
   }
 }

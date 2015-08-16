@@ -3,19 +3,19 @@
  */
 package org.mmarini.scala.railways
 
+import org.mmarini.scala.jmonkey.ButtonClickedObservable
+import org.mmarini.scala.jmonkey.DefaultScreenController
 import org.mmarini.scala.railways.model.GameParameters
+
 import com.jme3.app.state.AbstractAppState
 import com.typesafe.scalalogging.LazyLogging
+
 import de.lessvoid.nifty.Nifty
-import de.lessvoid.nifty.controls.CheckBox
 import de.lessvoid.nifty.controls._
+import de.lessvoid.nifty.controls.CheckBox
 import de.lessvoid.nifty.controls.Slider
 import de.lessvoid.nifty.screen.Screen
-import rx.lang.scala.Observable
 import rx.lang.scala.Subject
-import de.lessvoid.nifty.NiftyEventSubscriber
-import org.mmarini.scala.jmonkey.SelectionObservable
-import org.mmarini.scala.jmonkey.DefaultScreenController
 
 /**
  * @author us00852
@@ -23,17 +23,17 @@ import org.mmarini.scala.jmonkey.DefaultScreenController
  */
 class OptionsController extends AbstractAppState
     with DefaultScreenController
-    with SelectionObservable
+    with ButtonClickedObservable
     with LazyLogging {
 
   val FrequenceEnum = new Enumeration {
     val Easy, Medium, Difficult, Custom = Value
-    val valueById = Map(Easy -> 20, Medium -> 50, Difficult -> 100).map { case (k, v) => (k.id -> v.toFloat / 3600f) }
+    val valueById = Map(Easy.id -> 20 / 3600f, Medium.id -> 50 / 3600f, Difficult.id -> 100 / 3600f)
   }
 
   val DurationEnum = new Enumeration {
     val Short, Medium, Long, Custom = Value
-    val valueById = Map(Short -> 1, Medium -> 10, Long -> 30).map { case (k, v) => (k.id -> v.toFloat * 60) }
+    val valueById = Map(Short.id -> 5 * 60f, Medium.id -> 10 * 60f, Long.id -> 30 * 6f)
   }
 
   private def station = controlById("station", classOf[DropDown[String]])

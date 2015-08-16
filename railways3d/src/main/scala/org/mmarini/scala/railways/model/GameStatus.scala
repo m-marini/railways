@@ -40,9 +40,18 @@ case class GameStatus(
     val stationStatus: StationStatus,
     private val random: Random,
     trains: Set[Train] = Set(),
-    performance: GamePerformance) extends LazyLogging {
+    performance: GamePerformance,
+    completed: Boolean = false) extends LazyLogging {
 
-  def isFinished: Boolean = performance.elapsedTime >= parameters.duration
+  def quit: GameStatus = GameStatus(
+    parameters,
+    stationStatus,
+    random,
+    trains,
+    performance,
+    true)
+
+  def isFinished: Boolean = completed || performance.elapsedTime >= parameters.duration
 
   /** Returns the veicles of the game */
   def vehicles: Set[Vehicle] =

@@ -3,17 +3,14 @@
  */
 package org.mmarini.scala.railways
 
+import org.mmarini.scala.jmonkey.ButtonClickedObservable
+import org.mmarini.scala.jmonkey.DefaultScreenController
 import org.mmarini.scala.railways.model.GameParameters
+
 import com.jme3.app.state.AbstractAppState
 import com.typesafe.scalalogging.LazyLogging
+
 import de.lessvoid.nifty.elements.render.TextRenderer
-import rx.lang.scala.Observable
-import rx.lang.scala.Observer
-import rx.lang.scala.Subject
-import de.lessvoid.nifty.controls.ButtonClickedEvent
-import de.lessvoid.nifty.NiftyEventSubscriber
-import org.mmarini.scala.jmonkey.SelectionObservable
-import org.mmarini.scala.jmonkey.DefaultScreenController
 
 /**
  * @author us00852
@@ -21,7 +18,8 @@ import org.mmarini.scala.jmonkey.DefaultScreenController
  */
 class StartController extends AbstractAppState
     with DefaultScreenController
-    with SelectionObservable with LazyLogging {
+    with ButtonClickedObservable
+    with LazyLogging {
 
   /** Returns the station element renderer */
   private def station = redererById("station", classOf[TextRenderer])

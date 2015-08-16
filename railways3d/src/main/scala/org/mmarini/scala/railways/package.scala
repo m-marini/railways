@@ -28,7 +28,6 @@ import com.jme3.input.InputManager
 import org.mmarini.scala.jmonkey.ApplicationOps
 import org.mmarini.scala.jmonkey.InputManagerOps
 import de.lessvoid.nifty.controls.ListBoxSelectionChangedEvent
-import org.mmarini.scala.jmonkey.ListBoxSelectionObservable
 import com.typesafe.scalalogging.LazyLogging
 import scala.util.Random
 
@@ -39,8 +38,6 @@ package object railways extends LazyLogging {
 
   implicit def appToAppOps(app: Application): ApplicationOps = new ApplicationOps(app)
   implicit def inpManagerToinpManagerOps(app: InputManager): InputManagerOps = new InputManagerOps(app)
-  implicit def toListBoxSelectionObservable[T](obs: Observable[ListBoxSelectionChangedEvent[T]]): ListBoxSelectionObservable[T] =
-    new ListBoxSelectionObservable(obs)
 
   /** Shuffles a sequence */
   def shuffle[T](seq: IndexedSeq[T])(random: Random): IndexedSeq[T] = {
@@ -58,6 +55,13 @@ package object railways extends LazyLogging {
       })
     }
   }
+
+  /** Returns an observable of single option selection */
+  def singleSelection[T]: Observable[ListBoxSelectionChangedEvent[T]] => Observable[T] = (obs) =>
+    for {
+      e <- obs
+      if (!e.getSelection.isEmpty)
+    } yield e.getSelection.get(0)
 
   /**
    *

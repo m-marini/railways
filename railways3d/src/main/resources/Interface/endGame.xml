@@ -9,6 +9,8 @@
 		<layer childLayout="center">
 			<panel height="80%" width="80%" childLayout="vertical"
 				backgroundColor="#000e" padding="30px">
+				<text id="text1" style="nifty-label" height="15%" width="75%"
+					text="End Game" />
 				<control id="ok" name="button" label="OK" />
 			</panel>
 		</layer>

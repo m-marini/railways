@@ -1,6 +1,6 @@
 # To do
 
-  * Fine gioco
+  * Bug: Fine gioco + start ricrea i modelli doppi
   * Reingegnerizzazione TrainRenderer con l'uso di observable
   * Notifiche messaggi
   * Pannello prestazioni gioco
