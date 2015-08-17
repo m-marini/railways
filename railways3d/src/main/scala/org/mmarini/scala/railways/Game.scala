@@ -372,18 +372,31 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     })
 
   /** Subscribe for Train Render */
-  private lazy val trainRenderSub = {
+  private lazy val vehicleRenderSub = {
     // Creates train renderer transitions
-    val trainRendTransitions = for {
+    val vehicleRenderTxObs = for {
       status <- gameStatusObs
-    } yield (renderer: TrainRenderer) => renderer.render(status.vehicles)
+    } yield (renderer: VehicleRenderer) => renderer(status.vehicles)
 
     // Creates the train renderer and subscribe to it
-    val trainRendObs = stateFlow(TrainRenderer(
-      app.getRootNode(),
-      app.getAssetManager()))(trainRendTransitions)
+    val vehicleRenderObs = stateFlow(VehicleRenderer(app.getAssetManager))(vehicleRenderTxObs)
 
-    trainRendObs.subscribe
+    vehicleRenderObs.subscribe(renderer => {
+      for (spatial <- renderer.detached) {
+        app.getRootNode.detachChild(spatial)
+      }
+      for (spatial <- renderer.attached) {
+        app.getRootNode.attachChild(spatial)
+      }
+      for ((vehicle, spatial) <- renderer.vehicleSpatialsSet) {
+        val id = s"train ${vehicle.id}"
+        val pos = new Vector3f(-vehicle.location.getX, 0, vehicle.location.getY)
+        val rot = new Quaternion().fromAngleNormalAxis(vehicle.orientation, OrientationAxis)
+        spatial.setUserData("id", id)
+        spatial.setLocalTranslation(pos)
+        spatial.setLocalRotation(rot)
+      }
+    })
   }
 
   private lazy val stationRenderSub = {
@@ -410,7 +423,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     CompositeSubscription(cameraSubOpt.toArray ++
       trainPopupSubOpt :+
       stationRenderSub :+
-      trainRenderSub :+
+      vehicleRenderSub :+
       gameStatusSub: _*)
 
   //------------------------------------------------------

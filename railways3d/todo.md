@@ -1,7 +1,7 @@
 # To do
 
   * Bug: Fine gioco + start ricrea i modelli doppi
-  * Reingegnerizzazione TrainRenderer con l'uso di observable
+  * Reingegnerizzazione StationRenderer con l'uso di observable
   * Notifiche messaggi
   * Pannello prestazioni gioco
   * Pannello stato treni
