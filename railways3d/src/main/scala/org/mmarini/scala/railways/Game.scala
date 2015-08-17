@@ -18,6 +18,7 @@ import rx.lang.scala.Subscription
 import rx.lang.scala.subscriptions.CompositeSubscription
 import com.jme3.math.Quaternion
 import rx.lang.scala.Subject
+import scala.util.Try
 
 /**
  * Handles the events of simulation coming from user or clock ticks
@@ -400,12 +401,16 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   }
 
   private lazy val stationRenderSub = {
-    // Creates the station renderer
-    val stationRend = new StationRenderer(
-      initialStatus.stationStatus.blocks.values.map(_.block).toSet,
-      app.getAssetManager,
-      app.getRootNode)
-    gameStatusObs.subscribe(status => stationRend.change(status.stationStatus))
+    val txObs = for {
+      status <- gameStatusObs
+    } yield (renderer: StationRenderer) => renderer.change(status.stationStatus.blocks.values.toSet)
+
+    val rendererObs = stateFlow(StationRenderer(app.getAssetManager))(txObs)
+
+    rendererObs.subscribe(renderer => {
+      for (spatial <- renderer.detached) app.getRootNode.detachChild(spatial)
+      for (spatial <- renderer.attached) app.getRootNode.attachChild(spatial)
+    })
   }
 
   private def init {
@@ -467,47 +472,61 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     app.getRootNode.detachAllChildren
   }
 
+  /** Creates sky */
+  private def skyTry = {
+    // Load sky
+    val SkyboxIndex = Seq("east", "west", "north", "south", "up", "down")
+    val assetManager = app.getAssetManager
+    val skyTry = Try {
+
+      val imgs = for {
+        idx <- SkyboxIndex
+      } yield assetManager.loadTexture(s"Textures/sky/desert_${idx}.png")
+
+      SkyFactory.createSky(assetManager, imgs(0), imgs(1), imgs(2), imgs(3), imgs(4), imgs(5))
+    }
+
+    for { e <- skyTry.failed } logger.error(e.getMessage, e)
+
+    skyTry
+  }
+
+  /** Creates ambient light */
+  private def ambientLightTry = Try {
+    val ambLight = new AmbientLight
+    ambLight.setColor(ColorRGBA.White.mult(1.3f))
+    ambLight
+  }
+
+  /** Creates sun light */
+  private def sunLightTry = Try {
+    val sunLight = new DirectionalLight
+    sunLight.setColor(ColorRGBA.White.mult(1.3f));
+    sunLight.setDirection(Vector3f.UNIT_XYZ.negate().normalizeLocal())
+
+    val sunLight1 = new DirectionalLight
+    sunLight1.setColor(ColorRGBA.White.mult(1.3f));
+    sunLight1.setDirection(new Vector3f(1f, -1f, 1f).normalizeLocal())
+
+    Seq(sunLight, sunLight1)
+  }
+
+  private lazy val lightsTry = for {
+    a <- ambientLightTry
+    sl <- sunLightTry
+  } yield sl :+ a
+
   /** Loads backstage of scene */
   private def loadBackstage {
-    // Load sky
     val rootNode = app.getRootNode
-    try {
 
-      object SkyboxIndex extends Enumeration {
-        val East, West, North, South, Up, Down = Value
-      }
+    for { sky <- skyTry } rootNode.attachChild(sky)
 
-      import SkyboxIndex._
-      implicit def skyboxIndexToInt(idx: SkyboxIndex.Value): Int = idx.id
+    for (e <- lightsTry.failed) logger.error(e.getMessage, e)
 
-      val assetManager = app.getAssetManager
-      val imgs = (for (idx <- SkyboxIndex.values) yield {
-        val tex = assetManager.loadTexture(s"Textures/sky/desert_${idx.toString.toLowerCase}.png")
-        (idx -> tex)
-      }).toMap
-
-      val sky = SkyFactory.createSky(assetManager, imgs(East), imgs(West), imgs(North), imgs(South), imgs(Up), imgs(Down))
-
-      rootNode.attachChild(sky)
-    } catch { case e: Throwable => logger.error(e.getMessage, e) }
-
-    // Create ambient light
-    try {
-      val ambLight = new AmbientLight
-      ambLight.setColor(ColorRGBA.White.mult(1.3f))
-      rootNode.addLight(ambLight)
-    } catch { case e: Throwable => logger.error(e.getMessage, e) }
-
-    // Create sun light
-    try {
-      val sunLight = new DirectionalLight
-      sunLight.setColor(ColorRGBA.White.mult(1.3f));
-      sunLight.setDirection(Vector3f.UNIT_XYZ.negate().normalizeLocal())
-      rootNode.addLight(sunLight)
-      val sunLight1 = new DirectionalLight
-      sunLight1.setColor(ColorRGBA.White.mult(1.3f));
-      sunLight1.setDirection(new Vector3f(1f, -1f, 1f).normalizeLocal())
-      rootNode.addLight(sunLight1)
-    } catch { case e: Throwable => logger.error(e.getMessage, e) }
+    for {
+      lights <- lightsTry
+      light <- lights
+    } rootNode.addLight(light)
   }
 }

@@ -37,58 +37,53 @@ import org.mmarini.scala.railways.model.Transform2d
  *
  * This Game constructor initializes the game status
  */
-class StationRenderer(
-    blocks: Set[Block],
+case class StationRenderer(
     assetManager: AssetManager,
-    rootNode: Node) extends LazyLogging {
+    cache: Map[String, Option[Spatial]] = Map(),
+    attached: Set[Spatial] = Set(),
+    detached: Set[Spatial] = Set()) extends LazyLogging {
 
-  // Creates cache
-  private var cache = Map[String, Spatial]()
-
-  private def getCached(ids: BlockElementIds, trans: Transform2d): Option[Spatial] = {
-
-    def load(ids: BlockElementIds): Try[Spatial] = {
-      val spatialTry = Try {
-        val spat = assetManager.loadModel(ids.templateId).clone
-        spat.setLocalRotation(new Quaternion().fromAngleAxis(trans.orientation, OrientationAxis))
-        spat.setLocalTranslation(new Vector3f(-trans.translate.getX, 0f, trans.translate.getY))
-        for (selId <- ids.selectionId) { spat.setUserData("id", selId) }
-        spat
-      }
-
-      // Dump loading errors
-      spatialTry.failed.foreach(ex => logger.error(ex.getMessage, ex))
-      spatialTry
-    }
-
-    val spatial = cache.get(ids.elementId)
-    if (spatial.isEmpty) {
-      val spTry = load(ids)
-      if (spTry.isSuccess) {
-        cache = cache + (ids.elementId -> spTry.get)
-      }
-      spTry.toOption
-    } else {
-      spatial
-    }
+  private def load(ids: BlockElementIds, trans: Transform2d) = Try {
+    val spat = assetManager.loadModel(ids.templateId).clone
+    spat.setLocalRotation(new Quaternion().fromAngleAxis(trans.orientation, OrientationAxis))
+    spat.setLocalTranslation(new Vector3f(-trans.translate.getX, 0f, trans.translate.getY))
+    for (selId <- ids.selectionId) { spat.setUserData("id", selId) }
+    spat
   }
 
   /** Changes the view of station */
-  def change(status: StationStatus) {
-    // Render each block
-    val ids = (for {
-      blockStatus <- status.blocks.values
-      id <- blockStatus.elementIds
-      spatial <- getCached(id, blockStatus.block.trans)
+  def change(blocks: Set[BlockStatus]): StationRenderer = {
+    val newSpatials = for {
+      blockStatus <- blocks
+      ids <- blockStatus.elementIds
+      if (!cache.contains(ids.elementId))
     } yield {
-      rootNode.attachChild(spatial)
-      id.elementId
-    }).toSet
-    for {
-      (id, spatial) <- cache
-    } {
-      if (!ids.contains(id))
-        rootNode.detachChild(spatial)
+      val spatialTry = load(ids, blockStatus.block.trans)
+      for { ex <- spatialTry.failed } logger.error(ex.getMessage, ex)
+      (ids.elementId, spatialTry.toOption)
     }
+
+    val newCache = cache ++ newSpatials
+
+    val ids = for {
+      blockStatus <- blocks
+      id <- blockStatus.elementIds
+    } yield id.elementId
+
+    val detached = for {
+      (id, spatialOpt) <- cache
+      if (!ids.contains(id))
+      spatial <- spatialOpt
+    } yield spatial
+
+    val attached = for {
+      id <- ids
+      spatial <- newCache(id)
+    } yield spatial
+
+    StationRenderer(assetManager,
+      newCache,
+      attached,
+      detached.toSet)
   }
 }
