@@ -37,7 +37,7 @@ case class MovingTrain(
   override def tick(time: Float, gameStatus: GameStatus) = {
     // Computes the target speed by braking space
     val stopLocation = route.length - MinDistance
-    val dist = stopLocation - location
+    val dist = max(stopLocation - location, 0)
 
     val targetSpeed = min(max(MinSpeed, sqrt(2 * MaxDeceleration * dist).toFloat), MaxSpeed)
     // Computes the acceleration
@@ -47,7 +47,7 @@ case class MovingTrain(
     // Computes the new location
     val newLocation = location + newSpeed * time
 
-    if (newLocation > stopLocation) {
+    if (newLocation >= stopLocation) {
       this.trackTailLocation match {
         case Some((track, _)) if (track.isInstanceOf[ExitTrack]) =>
           (None, Seq(TrainExitedMsg(id)))

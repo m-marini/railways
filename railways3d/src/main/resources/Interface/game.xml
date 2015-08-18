@@ -76,7 +76,11 @@
 						<control id="trainsList" name="listBox" vertical="optional"
 							horizontal="optional" displayItems="8" />
 					</control>
-					<control id="perfTab" name="tab" caption="Perfromace">
+					<control id="perfTab" name="tab" caption="Performace">
+						<panel childLayout="vertical">
+							<control name="label" text="Duration" style="nifty-label" />
+							<control id="duration" name="label" text="???" style="nifty-label" />
+						</panel>
 					</control>
 				</control>
 			</panel>

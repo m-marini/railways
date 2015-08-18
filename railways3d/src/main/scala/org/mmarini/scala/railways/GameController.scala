@@ -24,6 +24,13 @@ import org.mmarini.scala.jmonkey.ListBoxSelectionChangedObservable
 import rx.lang.scala.Observable
 import org.mmarini.scala.railways.model.TrainMessage
 import org.mmarini.scala.railways.model.Train
+import org.mmarini.scala.railways.model.MovingTrain
+import org.mmarini.scala.railways.model.StoppingTrain
+import org.mmarini.scala.railways.model.StoppedTrain
+import org.mmarini.scala.railways.model.WaitForPassengerTrain
+import org.mmarini.scala.railways.model.WaitingForTrackTrain
+import org.mmarini.scala.railways.model.GamePerformance
+import de.lessvoid.nifty.elements.render.TextRenderer
 
 /**
  * Controls the game screen
@@ -62,8 +69,19 @@ class GameController extends AbstractAppState
   def showMsgs(msgs: Seq[TrainMessage]) {
     for {
       c <- logListOpt
-      item <- msgs
-    } c.addItem(item.toString())
+    } {
+      val current = c.getItems.size
+      val removing = current + msgs.size - 5;
+      if (removing > current)
+        c.clear
+      else if (removing > 0) {
+        for (i <- current - removing until current)
+          c.removeItemByIndex(i)
+      }
+      for {
+        item <- msgs
+      } c.insertItem(item.toString(), 0)
+    }
   }
 
   /** Shows the trains in the trains list panel */
@@ -75,10 +93,19 @@ class GameController extends AbstractAppState
       for {
         train <- trains
       } {
-        val item = f"${train.id}%s ${(train.speed * 3.6).toInt}%d Km/h"
+        val item = trainStatusString(train)
         ctrl.addItem(item)
       }
     }
+  }
+
+  private def trainStatusString(train: Train): String = train match {
+    case _: MovingTrain => f"${train.id}%s moving at ${(train.speed * 3.6).toInt}%d Km/h"
+    case _: StoppingTrain => f"${train.id}%s brackingt at ${(train.speed * 3.6).toInt}%d Km/h"
+    case _: StoppedTrain => f"${train.id}%s stopped"
+    case _: WaitForPassengerTrain => f"${train.id}%s waiting for passenger"
+    case _: WaitingForTrackTrain => f"${train.id}%s waiting for semaphore"
+    case _ => "???"
   }
 
   def showSemaphorePopup(pos: Vector2f) {
@@ -90,4 +117,56 @@ class GameController extends AbstractAppState
     for (s <- trainPopupOpt)
       showPopupAt(s, "trainPane", pos)
   }
+  
+  private def duration = redererById("duration", classOf[TextRenderer])
+
+  private def correctTrain = redererById("correct-train", classOf[TextRenderer])
+
+  private def correctTrainFreq = redererById("correct-train-freq", classOf[TextRenderer])
+
+  private def correctTrainPerc = redererById("correct-train-perc", classOf[TextRenderer])
+
+  private def incomeTrain = redererById("income-train", classOf[TextRenderer])
+
+  private def incomeTrainFreq = redererById("income-train-freq", classOf[TextRenderer])
+
+  private def outcomeTrain = redererById("outcome-train", classOf[TextRenderer])
+
+  private def outcomeTrainFreq = redererById("outcome-train-freq", classOf[TextRenderer])
+
+  private def outcomeTrainPerc = redererById("outcome-train-perc", classOf[TextRenderer])
+
+  /** Shows the performance result */
+  def show(performance: GamePerformance) {
+    for (rend <- duration)
+      rend.setText(f"${(performance.elapsedTime / 60).toInt}%d '")
+
+    for (rend <- correctTrain)
+      rend.setText(f"${performance.rightRoutedTrainCount}%d trains")
+    for (rend <- correctTrainFreq)
+      rend.setText(f"${performance.rightRoutedTrainCount / performance.elapsedTime * 3600}%g trains/h")
+    for (rend <- correctTrainPerc)
+      rend.setText(
+        if (performance.exitedTrainCount > 0)
+          f"${performance.rightRoutedTrainCount * 100 / performance.exitedTrainCount}%d %%"
+        else
+          "0 %")
+
+    for (rend <- outcomeTrain)
+      rend.setText(f"${performance.exitedTrainCount}%d trains")
+    for (rend <- outcomeTrainFreq)
+      rend.setText(f"${performance.exitedTrainCount / performance.elapsedTime * 3600}%g trains/h")
+    for (rend <- outcomeTrainPerc)
+      rend.setText(
+        if (performance.enteredTrainCount > 0)
+          f"${performance.exitedTrainCount * 100 / performance.enteredTrainCount}%d %%"
+        else
+          "0 %")
+
+    for (rend <- incomeTrain)
+      rend.setText(f"${performance.enteredTrainCount}%d %%")
+    for (rend <- incomeTrainFreq)
+      rend.setText(f"${performance.enteredTrainCount / performance.elapsedTime * 3600}%g trains/h")
+  }
+
 }

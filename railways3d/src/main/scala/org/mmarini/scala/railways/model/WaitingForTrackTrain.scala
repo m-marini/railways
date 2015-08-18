@@ -37,21 +37,14 @@ case class WaitingForTrackTrain(
   /** Computes the next status after an elapsed time tick */
   override def tick(time: Float, gameStatus: GameStatus) = {
     // Computes the target speed by braking space
-    val targetSpeed = min(max(MinSpeed, sqrt(2 * MaxDeceleration * (route.length - location)).toFloat), MaxSpeed)
-    // Computes the acceleration
-    val acc = min(max(-MaxDeceleration, (targetSpeed) / time), MaxAcceleration)
-    // Computes the real speed
-    val newSpeed = acc * time
-    // Computes the new location
-    val newLocation = location + newSpeed * time
-
-    if (newLocation > route.length - MinDistance) {
-      (Some(this), Seq())
-    } else {
+    val stopLocation = route.length - MinDistance
+    val dist = max(stopLocation - location, 0)
+    if (dist > MinDistance * 2)
       (Some(
-        MovingTrain(id, size, loaded, route, newLocation, newSpeed, exitId)),
+        MovingTrain(id, size, loaded, route, location, 0f, exitId)),
         Seq(TrainStartedMsg(id)))
-    }
+    else
+      (Some(this), Seq())
   }
 
   /** Creates the reverse train */

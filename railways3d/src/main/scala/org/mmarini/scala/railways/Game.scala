@@ -59,12 +59,12 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     } yield status.messages
 
   private def messagesSubOpt = None
-    for {
-      ctrl <- app.gameCtrlOpt
-    } yield messagesObs.subscribe(msgs => {
-      for { m <- msgs } { logger.debug("Messages {}", m) }
-      ctrl.showMsgs(msgs)
-    })
+  for {
+    ctrl <- app.gameCtrlOpt
+  } yield messagesObs.subscribe(msgs => {
+    for { m <- msgs } { logger.debug("Messages {}", m) }
+    ctrl.showMsgs(msgs)
+  })
 
   /** Creates observable of speed */
   private def speedObs = {
@@ -281,7 +281,9 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     val timeEvents =
       for {
         time <- timeObs
-      } yield (status: GameStatus) => status.tick(time)
+      } yield (status: GameStatus) => {
+        status.tick(time)
+      }
 
     // Creates the observable of change status id
     val selectRightIdObs = createActionIdObs("selectRight")
@@ -351,7 +353,15 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
         blockToogleStateObs :+
         timeEvents
 
-    val events = txObsSeq.reduce((a, b) => a merge b)
+    val events = for {
+      f <- txObsSeq.reduce((a, b) => a merge b)
+    } yield (status: GameStatus) =>
+      try { f(status) }
+      catch {
+        case t: Throwable =>
+          logger.error(t.getMessage, t)
+          throw t
+      }
 
     // Creates the state observable
     stateFlow(initialStatus)(events)
