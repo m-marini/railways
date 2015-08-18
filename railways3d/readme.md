@@ -364,4 +364,12 @@ Nella scena sono presenti oggetti sensibili all'interazione con l'utente, selezi
   * Elemento neutro: la selezione di un element neutro (sfondo) sposta la camera per riprendere l'elemento selezionato
 
 
+## Notifiche di gioco
 
+Durante il gioco vengono notificati eventi d'interesse attraverso messaggi:
+
+  * Treno in arrivo 
+  * Treno in attesa ad un semaforo
+  * Inizio scarico/carico
+  * Scarico/carico completati
+  * Treno uscito

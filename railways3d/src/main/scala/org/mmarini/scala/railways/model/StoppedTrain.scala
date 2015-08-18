@@ -13,18 +13,20 @@ import org.mmarini.scala.railways.model.tracks.EntryTrack
 
 /** This StoppedTrain computes the next state of this stopped train */
 case class StoppedTrain(
-    id: String,
-    size: Int,
-    loaded: Boolean,
-    route: TrainRoute,
-    location: Float,
-    exitId: String) extends Train with LazyLogging {
+  id: String,
+  size: Int,
+  loaded: Boolean,
+  route: TrainRoute,
+  location: Float,
+  exitId: String) extends Train
+    with NoMoveTrain
+    with LazyLogging {
 
   /** Creates the new train status apply a new route */
   override def apply(route: TrainRoute, location: Float): Train = StoppedTrain(id, size, loaded, route, location, exitId)
 
   /** Computes the next status after an elapsed time tick */
-  def tick(time: Float, gameStatus: GameStatus): Option[Train] = Some(this)
+  def tick(time: Float, gameStatus: GameStatus) = (Some(this), Seq())
 
   /** Creates toogle status */
   override def start = {

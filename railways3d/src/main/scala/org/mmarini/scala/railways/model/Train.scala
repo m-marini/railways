@@ -16,7 +16,7 @@ trait Train {
   def id: String
 
   /** Computes the next status after an elapsed time tick */
-  def tick(time: Float, gameStatus: GameStatus): Option[Train]
+  def tick(time: Float, gameStatus: GameStatus): (Option[Train], Seq[TrainMessage])
 
   /** Returns the current route of train */
   def route: TrainRoute
@@ -26,6 +26,9 @@ trait Train {
 
   /** Returns the number of vehicles composing this train */
   def size: Int
+
+  /** Returns the speed of train */
+  def speed: Float 
 
   /** Returns the exit id */
   def exitId: String

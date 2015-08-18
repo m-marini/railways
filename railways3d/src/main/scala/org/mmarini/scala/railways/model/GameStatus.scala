@@ -41,15 +41,17 @@ case class GameStatus(
     private val random: Random,
     trains: Set[Train] = Set(),
     performance: GamePerformance,
-    completed: Boolean = false) extends LazyLogging {
+    completed: Boolean = false,
+    messages: Seq[TrainMessage] = Seq()) extends LazyLogging {
 
   def quit: GameStatus = GameStatus(
-    parameters,
-    stationStatus,
-    random,
-    trains,
-    performance,
-    true)
+    parameters = parameters,
+    stationStatus = stationStatus,
+    random = random,
+    trains = trains,
+    performance = performance,
+    completed = true,
+    messages = messages)
 
   def isFinished: Boolean = completed || performance.elapsedTime >= parameters.duration
 
@@ -60,30 +62,82 @@ case class GameStatus(
       vehicle <- train.vehicles
     } yield vehicle
 
-  /** Creates a new status with a new time value */
-  private def setTime(time: Float): GameStatus =
-    GameStatus(parameters, stationStatus, random, trains, performance)
-
   /** Creates a new status with a new station status */
   private def setStationStatus(stationStatus: StationStatus): GameStatus =
-    GameStatus(parameters, stationStatus, random, trains, performance)
+    GameStatus(
+      parameters = parameters,
+      stationStatus = stationStatus,
+      random = random,
+      trains = trains,
+      performance = performance,
+      completed = completed,
+      messages = messages)
 
   /** Creates a new status with a new train set */
   private def setTrains(trains: Set[Train]): GameStatus =
-    GameStatus(parameters, stationStatus, random, trains, performance)
+    GameStatus(
+      parameters = parameters,
+      stationStatus = stationStatus,
+      random = random,
+      trains = trains,
+      performance = performance,
+      completed = completed,
+      messages = messages)
 
   /** Creates a new status with a new train set */
   private def setPerformance(performance: GamePerformance): GameStatus =
-    GameStatus(parameters, stationStatus, random, trains, performance)
+    GameStatus(
+      parameters = parameters,
+      stationStatus = stationStatus,
+      random = random,
+      trains = trains,
+      performance = performance,
+      completed = completed,
+      messages = messages)
+
+  /** Clears all messages */
+  private def clearMessages: GameStatus =
+    if (messages.isEmpty)
+      this
+    else
+      new GameStatus(parameters = parameters,
+        stationStatus = stationStatus,
+        random = random,
+        trains = trains,
+        performance = performance,
+        completed = completed)
+
+  /** Add a message */
+  private def +(msg: TrainMessage): GameStatus =
+    new GameStatus(parameters = parameters,
+      stationStatus = stationStatus,
+      random = random,
+      trains = trains,
+      performance = performance,
+      completed = completed,
+      messages = messages :+ msg)
+
+  /** Add a sequence of messages */
+  private def ++(msgs: Seq[TrainMessage]): GameStatus =
+    if (msgs.isEmpty)
+      this
+    else
+      new GameStatus(parameters = parameters,
+        stationStatus = stationStatus,
+        random = random,
+        trains = trains,
+        performance = performance,
+        completed = completed,
+        messages = messages ++ msgs)
 
   /** Generates the next status simulating a time elapsing */
   def tick(time: Float): GameStatus = {
     // Generates status changes for each train e returns the final status
-    val newStatus = trains.foldLeft(this)((status, train) =>
+    val trainTickStatus = trains.foldLeft(this.clearMessages)((status, train) =>
       // Processes single train
       train.tick(time, status) match {
-        case Some(train) => status.putTrain(train)
-        case _ => {
+        case (Some(train), msgs) => status.putTrain(train) ++ msgs
+        case (None, msgs) => {
           val correctCountOpt = for {
             (track, _) <- train.trackTailLocation
             (block, _) <- stationStatus.extractJunctions(track)
@@ -91,39 +145,31 @@ case class GameStatus(
           val newPerf = performance.
             addRightRoutedTrainCount(correctCountOpt.getOrElse(0)).
             addExitedTrainCount(1)
-          status.removeTrain(train).setPerformance(newPerf)
+          status.removeTrain(train).setPerformance(newPerf) ++ msgs
         }
       })
 
     val entries = shuffle(stationStatus.entryBlocks.filter(_.trainId.isEmpty))(random)
-    //        val n = min(poisson(time * parameters.trainFrequence), entries.size)
+    //   TODO     val n = min(poisson(time * parameters.trainFrequence), entries.size)
     val n = min(poisson(time), entries.size)
-    val newTrainStatus = if (n > 0) {
-      val exitIds = for (e <- stationStatus.exitBlocks) yield e.id
-      val newTrainStatus = (0 until n).foldLeft(newStatus)(
-        (status, i) => {
-          val exitOpt = chooseOneOf(exitIds)
-          val id = createTrainId
-          try {
-            val train = MovingTrain(
-              id = id,
-              size = random.nextInt(MaxTrainSize - MinTrainSize) + MinTrainSize,
-              entry = entries(i),
-              exitId = exitOpt.get)
-            status.putTrain(train)
-          } catch {
-            case t: Throwable =>
-              t.printStackTrace
-              throw t
-          }
-        })
-      val newStatus1 = newTrainStatus.setPerformance(performance.addEnteredTrainCount(n))
-      logger.debug("Creating trains {}", newStatus1.performance)
-      newStatus1
+
+    if (n == 0) {
+      trainTickStatus.setPerformance(performance.addElapsedTime(time))
     } else {
-      newStatus
+      val exitIds = for (e <- stationStatus.exitBlocks) yield e.id
+      val newTrainStatus = (0 until n).foldLeft(trainTickStatus)(
+        (status, i) => {
+          val train = MovingTrain(
+            id = createTrainId,
+            size = random.nextInt(MaxTrainSize - MinTrainSize) + MinTrainSize,
+            entry = entries(i),
+            exitId = chooseOneOf(exitIds).get)
+          status.putTrain(train) + TrainEnteredMsg(train.id)
+        })
+      newTrainStatus.setPerformance(performance.
+        addEnteredTrainCount(n).
+        addElapsedTime(time))
     }
-    newTrainStatus.setPerformance(performance.addElapsedTime(time))
   }
 
   /** Creates a train id */
@@ -227,7 +273,7 @@ object GameStatus {
       toMap
 
     GameStatus(
-      parms,
+      parameters = parms,
       stationStatus = StationStatus(t, states),
       random = new Random(),
       performance = GamePerformance())

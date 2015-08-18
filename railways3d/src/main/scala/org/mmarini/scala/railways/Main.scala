@@ -5,8 +5,6 @@ package org.mmarini.scala.railways
 
 import org.mmarini.scala.jmonkey.ActionMapping
 import org.mmarini.scala.jmonkey.AnalogMapping
-import org.mmarini.scala.jmonkey.AnalogMapping
-import org.mmarini.scala.jmonkey.AnalogMapping
 import org.mmarini.scala.jmonkey.NiftyUtil
 import com.jme3.app.SimpleApplication
 import com.jme3.input.KeyInput
@@ -30,6 +28,7 @@ import com.jme3.input.JoyInput
 import rx.lang.scala.Subscriber
 import rx.lang.scala.subscriptions.CompositeSubscription
 import org.mmarini.scala.railways.model.GameStatus
+import de.lessvoid.nifty.screen.ScreenController
 
 /**
  *
@@ -46,9 +45,9 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
   /** Returns the observer for camera location */
   var cameraRotationObserver: Option[Observer[Quaternion]] = None
 
-  val _time = Subject[(SimpleApplication, Float)]()
+  private val _time = Subject[(SimpleApplication, Float)]()
 
-  lazy val screenNavigationSubrOpt = for { n <- nifty } yield Subscriber((screenId: String) => n.gotoScreen(screenId))
+  private def screenNavigationSubrOpt = for { n <- nifty } yield Subscriber((screenId: String) => n.gotoScreen(screenId))
 
   /** Returns the action observable by name */
   def actionObservable: String => Observable[ActionMapping] = (k) => inputManager.createActionMapping(k)
@@ -68,8 +67,18 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
       ActionMapping(e.name, e.keyPressed, p, e.tpf)
     }
 
+  def gameCtrlOpt = controllerById[GameController]("game-screen")
+  def startCtrlOpt = controllerById[StartController]("start")
+  def optsCtrlOpt = controllerById[OptionsController]("opts-screen")
+  def endGameCtrlOpt = controllerById[EndGameController]("end-game-screen")
+
+  private def endGameObs = for {
+    game <- startGameObs
+    endGame <- game.endGameObs
+  } yield endGame
+
   /** Observable of goto screen */
-  private lazy val gotoScreenObs = {
+  private def gotoScreenObs = {
     // start-screen selection
     val btnScreenMap = Map(
       "optionsButton" -> "opts-screen",
@@ -77,7 +86,7 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
 
     // Start-screen
     val btnStartNavObsOpt = for {
-      start <- controllerById[StartController]("start")
+      start <- startCtrlOpt
     } yield for {
       ev <- start.buttonClickedObs
       if (btnScreenMap.contains(ev.getButton.getId))
@@ -85,36 +94,41 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
 
     // Option selection
     val optsConfirmObsOpt = for {
-      opts <- controllerById[OptionsController]("opts-screen")
+      opts <- optsCtrlOpt
     } yield for {
       ev <- opts.buttonClickedObs
       if (ev.getButton.getId == "ok")
     } yield "start"
 
     val endGameScreenObsOpt = for {
-      ctrl <- controllerById[EndGameController]("end-game-screen")
+      ctrl <- endGameCtrlOpt
     } yield for {
       x <- ctrl.buttonClickedObs
     } yield "start"
 
-    val endGameObs = for {
-      game <- gameObs
-      _ <- game.endGameObs
-    } yield "end-game-screen"
+    val toEndGameScreenObs = for { _ <- endGameObs } yield "end-game-screen"
 
     mergeAll(btnStartNavObsOpt.toArray ++
       optsConfirmObsOpt ++
       endGameScreenObsOpt :+
-      endGameObs: _*)
+      toEndGameScreenObs: _*)
   }
 
+  private def showPerfSub =
+    endGameObs.subscribe {
+      status =>
+        for {
+          ctrl <- endGameCtrlOpt
+        } ctrl.show(status.performance)
+    }
+
   /** Game observable */
-  private lazy val gameObs = {
+  private lazy val startGameObs = {
     val gameSubj = Subject[Game]()
 
     val sub = for {
-      opts <- controllerById[OptionsController]("opts-screen")
-      game <- controllerById[GameController]("game-screen")
+      opts <- optsCtrlOpt
+      game <- gameCtrlOpt
     } yield {
       val obs = for {
         id <- game.screenObs
@@ -126,7 +140,7 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
   }
 
   /** Subscription to gotoScreen */
-  private lazy val gotoScreenSubOpt = for {
+  private def gotoScreenSubOpt = for {
     n <- nifty
   } yield gotoScreenObs.subscribe((id) =>
     try {
@@ -136,9 +150,9 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
     })
 
   /** Subscription to quit command */
-  private lazy val quitSubOpt = {
+  private def quitSubOpt = {
     val obsOpt = for {
-      start <- controllerById[StartController]("start")
+      start <- startCtrlOpt
     } yield for {
       ev <- start.buttonClickedObs
       if (ev.getButton.getId == "quitButton")
@@ -148,20 +162,21 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
   }
 
   /** Subscription to show parameters from option screen */
-  private lazy val showParmsSubOpt =
+  private def showParmsSubOpt =
     for {
-      start <- controllerById[StartController]("start")
-      opts <- controllerById[OptionsController]("opts-screen")
+      start <- startCtrlOpt
+      opts <- optsCtrlOpt
     } yield opts.buttonClickedObs.subscribe(_ => start.show(opts.parameters))
 
   /** Subscription to start game */
-  private lazy val startGameSub = gameObs.subscribe()
+  private def startGameSub = startGameObs.subscribe()
 
   private lazy val subscriptions =
-    CompositeSubscription((gotoScreenSubOpt.toArray ++
+    CompositeSubscription(gotoScreenSubOpt.toArray ++
       showParmsSubOpt ++
       quitSubOpt :+
-      startGameSub): _*)
+      startGameSub :+
+      showPerfSub: _*)
 
   /** */
   override def simpleInitApp: Unit = {
@@ -225,7 +240,7 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
   }
 
   /** */
-  lazy val timeObservable: Observable[(SimpleApplication, Float)] = _time
+  def timeObs: Observable[(SimpleApplication, Float)] = _time
 
   /** */
   override def simpleUpdate(tpf: Float) {

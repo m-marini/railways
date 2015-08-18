@@ -5,12 +5,41 @@
 
 	<useStyles filename="nifty-default-styles.xml" />
 	<useControls filename="nifty-default-controls.xml" />
+		
+	<style id="performance-label">
+		<attributes font="Fonts/UbuntuMedium.fnt" color="#ffff" />
+	</style>
+
 	<screen id="end-game-screen" controller="org.mmarini.scala.railways.EndGameController">
 		<layer childLayout="center">
+			<effect>
+				<onStartScreen name="fade" />
+				<onEndScreen name="fade" start="#f" end="#0" />
+			</effect>
 			<panel height="80%" width="80%" childLayout="vertical"
 				backgroundColor="#000e" padding="30px">
-				<text id="text1" style="nifty-label" height="15%" width="75%"
-					text="End Game" />
+				<text id="title" style="performance-label" text="End Game" />
+				<panel childLayout="vertical">
+					<text style="performance-label" text="Duration" />
+					<text id="duration" style="performance-label" text="???" />
+				</panel>
+				<panel childLayout="vertical">
+					<text style="performance-label" text="Correct outcome train " />
+					<text id="correct-train" style="performance-label" text="???" />
+					<text id="correct-train-freq" style="performance-label" text="??? trains/h" />
+					<text id="correct-train-perc" style="performance-label" text="??? %" />
+				</panel>
+				<panel childLayout="vertical">
+					<text style="performance-label" text="Income train " />
+					<text id="income-train" style="performance-label" text="???" />
+					<text id="income-train-freq" style="performance-label" text="??? trains/h" />
+				</panel>
+				<panel childLayout="vertical">
+					<text style="performance-label" text="Outcome train " />
+					<text id="outcome-train" style="performance-label" text="???" />
+					<text id="outcome-train-freq" style="performance-label" text="??? trains/h" />
+					<text id="outcome-train-perc" style="performance-label" text="??? %" />
+				</panel>
 				<control id="ok" name="button" label="OK" />
 			</panel>
 		</layer>

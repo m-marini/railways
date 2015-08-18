@@ -64,13 +64,19 @@
 			<panel width="300" height="300" align="right" childLayout="center"
 				backgroundColor="#0008" padding="10px">
 				<control id="edit_tabs" name="tabGroup">
-					<control id="tab_1" name="tab" caption="A">
-						<control id="cameras" name="listBox" vertical="optional"
+					<control id="cameraTab" name="tab" caption="Cameras">
+						<control id="camerasList" name="listBox" vertical="optional"
 							horizontal="optional" displayItems="8" />
 					</control>
-					<control id="tab_2" name="tab" caption="B">
+					<control id="msgTab" name="tab" caption="Messages">
+						<control id="messagesList" name="listBox" vertical="optional"
+							horizontal="optional" displayItems="8" />
 					</control>
-					<control id="tab_3" name="tab" caption="C">
+					<control id="trainTab" name="tab" caption="Trains">
+						<control id="trainsList" name="listBox" vertical="optional"
+							horizontal="optional" displayItems="8" />
+					</control>
+					<control id="perfTab" name="tab" caption="Perfromace">
 					</control>
 				</control>
 			</panel>

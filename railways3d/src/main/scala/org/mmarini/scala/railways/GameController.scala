@@ -22,6 +22,8 @@ import org.mmarini.scala.jmonkey.MousePrimarClickedObservable
 import org.mmarini.scala.jmonkey.MousePrimarReleaseObservable
 import org.mmarini.scala.jmonkey.ListBoxSelectionChangedObservable
 import rx.lang.scala.Observable
+import org.mmarini.scala.railways.model.TrainMessage
+import org.mmarini.scala.railways.model.Train
 
 /**
  * Controls the game screen
@@ -37,9 +39,6 @@ class GameController extends AbstractAppState
     with ListBoxSelectionChangedObservable[String]
     with LazyLogging {
 
-  /** the observable of camera event selection */
-  lazy private val _camerasEventObservable = Subject[ListBoxSelectionChangedEvent[String]]()
-
   /** the observable of camera selection */
   lazy val cameraSelectedObs = singleSelection(listBoxSelectionChangedObs)
 
@@ -47,12 +46,39 @@ class GameController extends AbstractAppState
 
   lazy val semPopupOpt = createPopup("semPopup")
 
-  /** Shows the camera views */
-  def show(cams: List[String]) {
+  private def logListOpt = controlById("messagesList", classOf[ListBox[String]])
+
+  private def trainListOpt = controlById("trainsList", classOf[ListBox[String]])
+
+  /** Shows the camera views in the camera list panel */
+  def showCameras(cams: List[String]) {
     for {
-      c <- controlById("cameras", classOf[ListBox[String]])
+      c <- controlById("camerasList", classOf[ListBox[String]])
       item <- cams
     } c.addItem(item)
+  }
+
+  /** Shows the messages in the messages list panel */
+  def showMsgs(msgs: Seq[TrainMessage]) {
+    for {
+      c <- logListOpt
+      item <- msgs
+    } c.addItem(item.toString())
+  }
+
+  /** Shows the trains in the trains list panel */
+  def showTrains(trains: Set[Train]) {
+    for {
+      ctrl <- trainListOpt
+    } {
+      ctrl.clear
+      for {
+        train <- trains
+      } {
+        val item = f"${train.id}%s ${(train.speed * 3.6).toInt}%d Km/h"
+        ctrl.addItem(item)
+      }
+    }
   }
 
   def showSemaphorePopup(pos: Vector2f) {

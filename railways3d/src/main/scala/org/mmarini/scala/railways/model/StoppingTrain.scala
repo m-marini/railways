@@ -23,21 +23,24 @@ case class StoppingTrain(
   override def apply(route: TrainRoute, location: Float): Train = StoppingTrain(id, size, loaded, route, location, speed, exitId)
 
   /** Computes the next status after an elapsed time tick */
-  override def tick(time: Float, gameStatus: GameStatus): Option[Train] = {
+  override def tick(time: Float, gameStatus: GameStatus) = {
     // Computes the new speed
     val newSpeed = max(speed - MaxDeceleration * time, 0f)
 
     if (newSpeed <= 0f) {
-      logger.debug("Train {} stopped", id)
-      Some(StoppedTrain(id, size, loaded, route, location, exitId))
+      (Some(StoppedTrain(id, size, loaded, route, location, exitId)),
+        Seq(TrainStoppedMsg(id)))
     } else {
       // Computes the new location
       val newLocation = location + newSpeed * time
       if (newLocation >= route.length) {
-        logger.debug("Train {} stopped", id)
-        Some(StoppedTrain(id, size, loaded, route, route.length, exitId))
+        (Some(
+          StoppedTrain(id, size, loaded, route, route.length, exitId)),
+          Seq(TrainStoppedMsg(id)))
       } else {
-        Some(StoppingTrain(id, size, loaded, route, newLocation, newSpeed, exitId))
+        (Some(
+          StoppingTrain(id, size, loaded, route, newLocation, newSpeed, exitId)),
+          Seq())
       }
     }
   }

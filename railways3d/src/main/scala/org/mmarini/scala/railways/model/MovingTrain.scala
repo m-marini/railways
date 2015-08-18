@@ -34,9 +34,12 @@ case class MovingTrain(
     MovingTrain(id, size, loaded, route, location, speed, exitId)
 
   /** Computes the next status after an elapsed time tick */
-  override def tick(time: Float, gameStatus: GameStatus): Option[Train] = {
+  override def tick(time: Float, gameStatus: GameStatus) = {
     // Computes the target speed by braking space
-    val targetSpeed = min(max(MinSpeed, sqrt(2 * MaxDeceleration * (route.length - location)).toFloat), MaxSpeed)
+    val stopLocation = route.length - MinDistance
+    val dist = stopLocation - location
+
+    val targetSpeed = min(max(MinSpeed, sqrt(2 * MaxDeceleration * dist).toFloat), MaxSpeed)
     // Computes the acceleration
     val acc = min(max(-MaxDeceleration, (targetSpeed - speed) / time), MaxAcceleration)
     // Computes the real speed
@@ -44,19 +47,22 @@ case class MovingTrain(
     // Computes the new location
     val newLocation = location + newSpeed * time
 
-    if (newLocation > route.length - MinDistance) {
+    if (newLocation > stopLocation) {
       this.trackTailLocation match {
         case Some((track, _)) if (track.isInstanceOf[ExitTrack]) =>
-          logger.debug(s"$id exited")
-          None
+          (None, Seq(TrainExitedMsg(id)))
         case Some((track, _)) if (track.isInstanceOf[PlatformTrack] && !loaded) =>
-          logger.debug(s"$id waiting for passenger")
-          Some(WaitForPassengerTrain(id, size, route, route.length - MinDistance, BoardingTime, exitId))
+          (Some(WaitForPassengerTrain(id, size, route, stopLocation, BoardingTime, exitId)),
+            Seq(TrainWaitForReloadMsg(id)))
         case _ =>
-          Some(MovingTrain(id, size, loaded, route, route.length - MinDistance, 0, exitId))
+          logger.debug(s"out of track $this ")
+          (Some(WaitingForTrackTrain(id, size, loaded, route, stopLocation, exitId)),
+            Seq(TrainWaitForTrackMsg(id)))
       }
     } else {
-      Some(MovingTrain(id, size, loaded, route, newLocation, newSpeed, exitId))
+      (Some(
+        MovingTrain(id, size, loaded, route, newLocation, newSpeed, exitId)),
+        Seq())
     }
   }
 
@@ -76,10 +82,8 @@ case class MovingTrain(
     }
 
   /** Creates toogle status */
-  override def stop = {
-    logger.debug("Stopping train {}", id)
+  override def stop =
     StoppingTrain(id, size, loaded, route, location, speed, exitId)
-  }
 }
 
 /** A factory of [[MovingTrain]] */
