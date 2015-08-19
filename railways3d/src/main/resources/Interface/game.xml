@@ -78,7 +78,7 @@
 					</control>
 					<control id="perfTab" name="tab" caption="Performace">
 						<panel childLayout="vertical">
-							<control name="label" text="Duration" style="nifty-label" />
+							<control name="label" text="Duration" font="Fonts/07x5.fnt" color="#ff9f"/>
 							<control id="duration" name="label" text="???" style="nifty-label" />
 						</panel>
 					</control>
