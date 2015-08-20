@@ -57,16 +57,26 @@ class GameController extends AbstractAppState
 
   private def trainListOpt = controlById("trainsList", classOf[ListBox[String]])
 
+  private def cameraCtrlOpt = controllerById("cameraPanel", classOf[CameraController])
+
+  private def trainCtrlOpt = controllerById("trainPanel", classOf[TrainController])
+
+  private def msgCtrlOpt = controllerById("messagesPanel", classOf[MessageController])
+
   /** Shows the camera views in the camera list panel */
   def showCameras(cams: List[String]) {
     for {
       c <- controlById("camerasList", classOf[ListBox[String]])
       item <- cams
     } c.addItem(item)
+    for { ctrl <- cameraCtrlOpt } ctrl.showCameras(cams)
   }
 
   /** Shows the messages in the messages list panel */
   def showMsgs(msgs: Seq[TrainMessage]) {
+    for { ctrl <- msgCtrlOpt }
+      ctrl.show(for { msg <- msgs } yield msg.toString)
+      
     for {
       c <- logListOpt
     } {
@@ -97,6 +107,9 @@ class GameController extends AbstractAppState
         ctrl.addItem(item)
       }
     }
+    for {
+      ctrl <- trainCtrlOpt
+    } ctrl.show(trains.toSeq)
   }
 
   private def trainStatusString(train: Train): String = train match {
@@ -117,7 +130,7 @@ class GameController extends AbstractAppState
     for (s <- trainPopupOpt)
       showPopupAt(s, "trainPane", pos)
   }
-  
+
   private def duration = redererById("duration", classOf[TextRenderer])
 
   private def correctTrain = redererById("correct-train", classOf[TextRenderer])

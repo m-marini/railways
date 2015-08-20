@@ -25,11 +25,11 @@ trait ScreenObservable extends ScreenUtil {
 
   /**  */
   def onStartScreen {
-    for (s <- screen) screenSubj.onNext("start")
+    for (s <- screenOpt) screenSubj.onNext("start")
   }
 
   /** */
   def onEndScreen {
-    for (s <- screen) screenSubj.onNext("end")
+    for (s <- screenOpt) screenSubj.onNext("end")
   }
 }

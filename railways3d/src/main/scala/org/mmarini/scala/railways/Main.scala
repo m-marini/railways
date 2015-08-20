@@ -47,7 +47,7 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
 
   private val _time = Subject[(SimpleApplication, Float)]()
 
-  private def screenNavigationSubrOpt = for { n <- nifty } yield Subscriber((screenId: String) => n.gotoScreen(screenId))
+  private def screenNavigationSubrOpt = for { n <- niftyOpt } yield Subscriber((screenId: String) => n.gotoScreen(screenId))
 
   /** Returns the action observable by name */
   def actionObservable: String => Observable[ActionMapping] = (k) => inputManager.createActionMapping(k)
@@ -67,10 +67,10 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
       ActionMapping(e.name, e.keyPressed, p, e.tpf)
     }
 
-  def gameCtrlOpt = controllerById[GameController]("game-screen")
-  def startCtrlOpt = controllerById[StartController]("start")
-  def optsCtrlOpt = controllerById[OptionsController]("opts-screen")
-  def endGameCtrlOpt = controllerById[EndGameController]("end-game-screen")
+  def gameCtrlOpt = screenControllerById[GameController]("game-screen")
+  def startCtrlOpt = screenControllerById[StartController]("start")
+  def optsCtrlOpt = screenControllerById[OptionsController]("opts-screen")
+  def endGameCtrlOpt = screenControllerById[EndGameController]("end-game-screen")
 
   private def endGameObs = for {
     game <- startGameObs
@@ -141,7 +141,7 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
 
   /** Subscription to gotoScreen */
   private def gotoScreenSubOpt = for {
-    n <- nifty
+    n <- niftyOpt
   } yield gotoScreenObs.subscribe((id) =>
     try {
       n.gotoScreen(id)
@@ -185,7 +185,7 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
     val nd = new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort)
     val n = nd.getNifty
 
-    nifty = Option(n)
+    niftyOpt = Option(n)
 
     // Read your XML and initialize your custom ScreenController
     try {

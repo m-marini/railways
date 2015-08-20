@@ -3,27 +3,8 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
 	<useStyles filename="nifty-default-styles.xml" />
+	<useStyles filename="Interface/style.xml" />
 	<useControls filename="nifty-default-controls.xml" />
-
-	<style id="gridbag">
-		<attributes width="64px" height="64px" />
-	</style>
-	<style id="image.right">
-		<attributes filename="Interface/frecce.png" width="64px"
-			height="64px" imageMode="subImage:163,84,64,64" />
-	</style>
-	<style id="image.left">
-		<attributes filename="Interface/frecce.png" width="64px"
-			height="64px" imageMode="subImage:85,84,64,64" />
-	</style>
-	<style id="image.down">
-		<attributes filename="Interface/frecce.png" width="64px"
-			height="64px" imageMode="subImage:85,3,64,64" />
-	</style>
-	<style id="image.up">
-		<attributes filename="Interface/frecce.png" width="64px"
-			height="64px" imageMode="subImage:163,3,64,64" />
-	</style>
 
 	<popup id="trainPopup" childLayout="absolute-inside"
 		controller="org.mmarini.scala.jmonkey.PopupController">
@@ -61,8 +42,8 @@
 
 	<screen id="game-screen" controller="org.mmarini.scala.railways.GameController">
 		<layer childLayout="vertical">
-			<panel width="300" height="300" align="right" childLayout="center"
-				backgroundColor="#0008" padding="10px">
+			<panel width="300" height="100%" align="left" childLayout="vertical"
+				padding="10px">
 				<control id="edit_tabs" name="tabGroup">
 					<control id="cameraTab" name="tab" caption="Cameras">
 						<control id="camerasList" name="listBox" vertical="optional"
@@ -78,31 +59,97 @@
 					</control>
 					<control id="perfTab" name="tab" caption="Performace">
 						<panel childLayout="vertical">
-							<control name="label" text="Duration" font="Fonts/07x5.fnt" color="#ff9f"/>
-							<control id="duration" name="label" text="???" style="nifty-label" />
+							<control name="label" text="Duration" style="text.light-panel" />
+							<control id="duration" name="label" text="???"
+								style="text.light-panel" />
 						</panel>
 					</control>
 				</control>
 			</panel>
 		</layer>
+
+		<layer childLayout="vertical">
+			<panel width="360" height="100%" align="right" childLayout="vertical">
+				<panel childLayout="horizontal">
+					<image filename="Interface/camera1.png" style="image.tab-panel" />
+					<image filename="Interface/treno.png" style="image.tab-panel" />
+					<image filename="Interface/messages.png" style="image.tab-panel" />
+					<image filename="Interface/perform.png" style="image.tab-panel" />
+				</panel>
+
+				<panel childLayout="overlay">
+					<panel id="cameraPanel" childLayout="horizontal"
+						backgroundColor="#0000" visible="false"
+						controller="org.mmarini.scala.railways.CameraController">
+						<panel id="camera-icon-col" childLayout="vertical">
+							<image style="image.camera-selection" />
+						</panel>
+						<panel id="camera-name-col" childLayout="vertical">
+							<text text="Camera1" style="text.camera-name" />
+						</panel>
+					</panel>
+
+					<panel id="trainPanel" childLayout="horizontal" visible="false"
+						backgroundColor="#000f" padding="5px"
+						controller="org.mmarini.scala.railways.TrainController">
+						<!-- 7 + 9 + 9 + 3 = 25% 32% 32% 11% -->
+						<panel childLayout="vertical" width="25%">
+							<text text="Train" style="text.light-panel-head" />
+							<panel id="train-id-col" childLayout="vertical">
+								<text text="B-----E" style="text.light-panel" />
+							</panel>
+						</panel>
+						<panel childLayout="vertical" width="32%">
+							<text text="Destination" style="text.light-panel-head" />
+							<panel id="train-to-col" childLayout="vertical">
+								<text text="B-------E" style="text.light-panel" />
+							</panel>
+						</panel>
+						<panel childLayout="vertical" width="32%">
+							<text text="At" style="text.light-panel-head" />
+							<panel id="train-at-col" childLayout="vertical">
+								<text text="B-------E" style="text.light-panel" />
+							</panel>
+						</panel>
+						<panel childLayout="vertical" width="11%">
+							<text text="Km/h" style="text.light-panel-head" />
+							<panel id="train-speed-col" childLayout="vertical">
+								<text text="999" style="text.light-panel" />
+							</panel>
+						</panel>
+					</panel>
+
+					<panel id="messagesPanel" childLayout="horizontal"
+						backgroundColor="#0000" visible="true"
+						controller="org.mmarini.scala.railways.MessageController">
+						<panel id="message-col" childLayout="vertical">
+							<text text="Messaggio" style="text.message" />
+						</panel>
+					</panel>
+				</panel>
+			</panel>
+		</layer>
+
+
+		<!-- Camera Controller Panel -->
 		<layer childLayout="vertical">
 			<panel />
 			<panel childLayout="vertical">
 				<panel childLayout="horizontal">
-					<panel style="gridbag" childLayout="center" />
-					<image id="up" style="image.up" visibleToMouse="true" />
-					<panel style="gridbag" childLayout="center" />
+					<panel style="panel.gridbag" />
+					<image id="up" style="image.up" />
+					<panel style="panel.gridbag" />
 				</panel>
 				<panel childLayout="horizontal">
-					<image id="left" style="image.left" visibleToMouse="true" />
-					<panel id="quit" style="gridbag" childLayout="center"
-						backgroundColor="ffff" visibleToMouse="true" />
-					<image id="right" style="image.right" visibleToMouse="true" />
+					<image id="left" style="image.left" />
+					<panel id="quit" style="panel.gridbag" backgroundColor="#f00f"
+						visibleToMouse="true" />
+					<image id="right" style="image.right" />
 				</panel>
 				<panel childLayout="horizontal">
-					<panel style="gridbag" childLayout="center" />
-					<image id="down" style="image.down" visibleToMouse="true" />
-					<panel style="gridbag" childLayout="center" />
+					<panel style="panel.gridbag" />
+					<image id="down" style="image.down" />
+					<panel style="panel.gridbag" />
 				</panel>
 			</panel>
 		</layer>

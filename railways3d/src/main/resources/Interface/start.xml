@@ -6,20 +6,8 @@
 	<!-- start screen -->
 	<!-- +++++++++++++++++++++++++++++++++++++++ -->
 	<useStyles filename="nifty-default-styles.xml" />
+	<useStyles filename="Interface/style.xml" />
 	<useControls filename="nifty-default-controls.xml" />
-	<style id="text.bluPanel">
-		<attributes font="Fonts/UbuntuMedium.fnt" color="#ffff"
-			align="center" />
-	</style>
-	<style id="image.bluPanel">
-		<attributes filename="Interface/panel.png" height="80"
-			width="300" imageMode="resize:13,3,13,13,13,3,13,3,13,3,13,13" />
-	</style>
-	<style id="image.bluPanel">
-		<attributes filename="Interface/panel.png" height="80"
-			width="300" imageMode="resize:13,3,13,13,13,3,13,3,13,3,13,13" />
-	</style>
-
 	<screen id="start" controller="org.mmarini.scala.railways.StartController">
 		<layer backgroundColor="#000f" childLayout="center">
 			<effect>

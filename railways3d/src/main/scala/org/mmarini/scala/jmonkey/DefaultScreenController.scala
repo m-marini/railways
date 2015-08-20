@@ -20,8 +20,8 @@ import de.lessvoid.nifty.controls.ButtonClickedEvent
 trait DefaultScreenController extends AbstractScreenController with ScreenUtil with NiftyUtil {
   /**   */
   override def bind(nifty: Nifty, screen: Screen) {
-    this.nifty = Some(nifty)
-    this.screen = Some(screen)
+    niftyOpt = Some(nifty)
+    screenOpt = Some(screen)
   }
 
   override def onStartScreen {}

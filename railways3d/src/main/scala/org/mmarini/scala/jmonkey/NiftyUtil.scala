@@ -11,17 +11,17 @@ import de.lessvoid.nifty.tools.SizeValue
  * @author us00852
  */
 trait NiftyUtil extends LazyLogging {
-  var nifty: Option[Nifty] = None
+  var niftyOpt: Option[Nifty] = None
 
   /** */
   def screenById = (id: String) =>
     for {
-      n <- nifty
+      n <- niftyOpt
       s <- Option(n.getScreen(id))
     } yield s
 
   /** */
-  def controllerById[T]: String => Option[T] = (id) =>
+  def screenControllerById[T]: String => Option[T] = (id) =>
     for {
       scr <- screenById(id)
       ctrl <- Option(scr.getScreenController().asInstanceOf[T])
@@ -29,7 +29,7 @@ trait NiftyUtil extends LazyLogging {
 
   /** Create a popup instance */
   def createPopup: String => Option[Element] = (id) =>
-    for (n <- nifty) yield {
+    for (n <- niftyOpt) yield {
       val popupTry = Try {
         n.createPopup(id)
       }
@@ -42,7 +42,7 @@ trait NiftyUtil extends LazyLogging {
   /** **/
   def showPopupAt: (Element, String, Vector2f) => Unit = (popup, paneId, pos) =>
     for {
-      n <- nifty
+      n <- niftyOpt
       pane <- Option(popup.findElementByName(paneId))
     } {
       val id = popup.getId()

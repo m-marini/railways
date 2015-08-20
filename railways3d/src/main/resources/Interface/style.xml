@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nifty-styles xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
+
+	<style id="text.bluPanel">
+		<attributes font="Fonts/UbuntuMedium.fnt" color="#ffff"
+			align="center" />
+	</style>
+	<style id="image.bluPanel">
+		<attributes filename="Interface/panel.png" height="80"
+			width="300" imageMode="resize:13,3,13,13,13,3,13,3,13,3,13,13" />
+	</style>
+
+	<style id="image.camera-selection">
+		<attributes filename="Interface/camera.png" height="32px"
+			margin="2px,5px" />
+	</style>
+	<style id="text.camera-name">
+		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
+			backgroundColor="#0004" margin="2px,5px" width="100%" textHAlign="left"
+			height="32px" textVAlign="center" valign="center" />
+	</style>
+
+	<style id="text.light-panel-head">
+		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
+			backgroundColor="#000f" margin="1px,5px" width="100%" textHAlign="left" />
+	</style>
+	<style id="text.light-panel">
+		<attributes font="Fonts/07x5.fnt" color="#fa0f"
+			backgroundColor="#333f" margin="1px,5px" width="100%" textHAlign="left" />
+	</style>
+	<style id="text.light-panel-right">
+		<attributes font="Fonts/07x5.fnt" color="#fa0f"
+			backgroundColor="#333f" margin="1px,5px" width="100%" textHAlign="right" />
+	</style>
+
+	<style id="image.tab-panel">
+		<attributes width="64px" height="64px" />
+	</style>
+
+	<style id="panel.gridbag">
+		<attributes width="64px" height="64px" />
+	</style>
+
+	<style id="image.right">
+		<attributes filename="Interface/frecce.png" width="64px"
+			height="64px" imageMode="subImage:163,84,64,64" visibleToMouse="true" />
+	</style>
+	<style id="image.left">
+		<attributes filename="Interface/frecce.png" width="64px"
+			height="64px" imageMode="subImage:85,84,64,64" visibleToMouse="true" />
+	</style>
+	<style id="image.down">
+		<attributes filename="Interface/frecce.png" width="64px"
+			height="64px" imageMode="subImage:85,3,64,64" visibleToMouse="true" />
+	</style>
+	<style id="image.up">
+		<attributes filename="Interface/frecce.png" width="64px"
+			height="64px" imageMode="subImage:163,3,64,64" visibleToMouse="true" />
+	</style>
+
+	<style id="text.message">
+		<attributes font="Fonts/UbuntuSmall.fnt" color="#000f"
+			backgroundColor="#fff4" margin="2px,5px" width="100%" textHAlign="left"
+			textVAlign="center" valign="center" />
+	</style>
+
+</nifty-styles>

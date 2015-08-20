@@ -16,21 +16,27 @@ import de.lessvoid.nifty.controls.NiftyControl
 /**
  * @author us00852
  */
-class PopupController extends JmeController
+class JmeController extends Controller
     with ScreenUtil
     with NiftyUtil
     with MousePrimarClickedObservable {
 
-  mousePrimaryClickedObs.subscribe(_ => closePopup)
+  var elementOpt: Option[Element] = None
 
-  /** Close this popup */
-  def closePopup {
-    for {
-      nifty <- niftyOpt
-      popup <- elementOpt
-    } {
-      nifty.closePopup(popup.getId)
-    }
+  /** Binds this pop up */
+  override def bind(n: Nifty, s: Screen, e: Element, p: Properties, a: Attributes) {
+    this.niftyOpt = Some(n)
+    this.screenOpt = Some(s)
+    elementOpt = Some(e)
   }
 
+  /** Initializes this pop up */
+  override def init(p: Properties, a: Attributes) {}
+
+  override def onStartScreen {
+  }
+
+  override def onFocus(f: Boolean) {}
+
+  override def inputEvent(ev: NiftyInputEvent): Boolean = false
 }
