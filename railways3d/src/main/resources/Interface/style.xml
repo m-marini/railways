@@ -38,14 +38,30 @@
 		<attributes font="Fonts/07x5.fnt" color="#fa0f"
 			backgroundColor="#333f" margin="1px,5px" width="100%" textHAlign="right" />
 	</style>
+	<style id="panel.train-id">
+		<attributes childLayout="vertical" width="25%"/>
+	</style>
+
+	<style id="panel.train-to">
+		<attributes childLayout="vertical" width="32%"/>
+	</style>
+
+	<style id="panel.train-at">
+		<attributes childLayout="vertical" width="32%"/>
+	</style>
+
+	<style id="panel.train-speed">
+		<attributes childLayout="vertical" width="11%"/>
+	</style>
+
 
 	<style id="panel.selectedTab">
-		<attributes padding="10px" childLayout="center"
-			backgroundColor="#000f" visibleToMouse="true" />
+		<attributes padding="10px,10px,0px" childLayout="center"
+			backgroundColor="#888f" visibleToMouse="true" />
 	</style>
 	<style id="panel.unselectedTab">
-		<attributes padding="10px" childLayout="center"
-			backgroundColor="#00ff" visibleToMouse="true" />
+		<attributes padding="10px,10px,0px" childLayout="center"
+			backgroundColor="#8884" visibleToMouse="true" />
 	</style>
 	<style id="image.tab-panel">
 		<attributes width="64px" height="64px" />

@@ -57,10 +57,11 @@ class MessageController extends JmeController
 
   /** Shows the camera views in the camera list panel */
   def show(msgs: Seq[String]) {
-    log = (msgs ++ log) take 10
+    val l = log ++ msgs
+    log = l drop (l.size - 10)
     val x = for {
-      m <- msgs.toIndexedSeq
-    } yield IndexedSeq(m, m)
+      m <- log.toIndexedSeq
+    } yield IndexedSeq(m)
     setCells(x)
   }
 }

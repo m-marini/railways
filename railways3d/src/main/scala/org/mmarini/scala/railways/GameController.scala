@@ -46,22 +46,15 @@ class GameController extends AbstractAppState
     with ListBoxSelectionChangedObservable[String]
     with LazyLogging {
 
-  /** the observable of camera selection */
-  lazy val cameraSelectedObs = singleSelection(listBoxSelectionChangedObs)
-
   lazy val trainPopupOpt = createPopup("trainPopup")
 
   lazy val semPopupOpt = createPopup("semPopup")
 
-  private def logListOpt = controlById("messagesList", classOf[ListBox[String]])
+  def cameraCtrlOpt = controllerById("cameraPanel", classOf[CameraController])
 
-  private def trainListOpt = controlById("trainsList", classOf[ListBox[String]])
+  def trainCtrlOpt = controllerById("trainPanel", classOf[TrainController])
 
-  private def cameraCtrlOpt = controllerById("cameraPanel1", classOf[CameraController])
-
-  private def trainCtrlOpt = controllerById("trainPanel1", classOf[TrainController])
-
-  private def msgCtrlOpt = controllerById("messagesPanel1", classOf[MessageController])
+  private def msgCtrlOpt = controllerById("messagesPanel", classOf[MessageController])
 
   /** Shows the camera views in the camera list panel */
   def showCameras(cams: List[String]) {
@@ -76,37 +69,10 @@ class GameController extends AbstractAppState
   def showMsgs(msgs: Seq[TrainMessage]) {
     for { ctrl <- msgCtrlOpt }
       ctrl.show(for { msg <- msgs } yield msg.toString)
-      
-    for {
-      c <- logListOpt
-    } {
-      val current = c.getItems.size
-      val removing = current + msgs.size - 5;
-      if (removing > current)
-        c.clear
-      else if (removing > 0) {
-        for (i <- current - removing until current)
-          c.removeItemByIndex(i)
-      }
-      for {
-        item <- msgs
-      } c.insertItem(item.toString(), 0)
-    }
   }
 
   /** Shows the trains in the trains list panel */
   def showTrains(trains: Set[Train]) {
-    for {
-      ctrl <- trainListOpt
-    } {
-      ctrl.clear
-      for {
-        train <- trains
-      } {
-        val item = trainStatusString(train)
-        ctrl.addItem(item)
-      }
-    }
     for {
       ctrl <- trainCtrlOpt
     } ctrl.show(trains.toSeq)

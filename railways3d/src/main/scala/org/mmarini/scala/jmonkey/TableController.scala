@@ -26,6 +26,12 @@ trait TableController extends MousePrimaryClickedObservable
   val DefaultCellStyle = "nifty-label"
 
   /** */
+  def headerOpt: Option[Int => String] = None
+
+  /** */
+  def headerStyle: Int => String = _ => DefaultCellStyle
+
+  /** */
   def columnStyle: Int => String = _ => DefaultColumnElementStyle
 
   /** */
@@ -54,51 +60,70 @@ trait TableController extends MousePrimaryClickedObservable
 
   // change the image
   /** */
-  private def resize(n: Int, m: Int) =
+  private def resize(n: Int, m: Int) = for {
+    nifty <- niftyOpt
+    screen <- screenOpt
+    parent <- elementOpt
+  } yield {
+    val pid = Option(parent.getId).getOrElse(parent.hashCode().toString())
+    val m0 = colElements.size
+    val headerSize = headerOpt.size
+    val colElements1 = if (m0 == m) {
+      colElements
+    } else if (m0 > m) {
+      // Removes old columns
+      for { col <- colElements.drop(m) } {
+        col.markForRemoval
+      }
+      colElements.take(m)
+    } else {
+      // Add new colums
+      val b = new PanelBuilder
+      for (idx <- m0 until m) yield {
+        val style = columnStyle(idx)
+        b.style(style)
+        b.build(nifty, screen, parent)
+      }
+    }
+
+    val hb = new TextBuilder
     for {
-      nifty <- niftyOpt
-      screen <- screenOpt
-      parent <- elementOpt
-    } yield {
-      val m0 = colElements.size
-      val colElements1 = if (m0 == m) {
-        colElements
-      } else if (m0 > m) {
-        // Removes old columns
-        for { col <- colElements.drop(m) } col.markForRemoval
-        colElements.take(m)
-      } else {
-        // Add new colums
-        val b = new PanelBuilder
-        for (idx <- m0 until m) yield {
-          val style = columnStyle(idx)
-          b.style(style)
-          b.build(nifty, screen, parent)
-        }
+      (colElement, colIdx) <- colElements1 zipWithIndex
+    } {
+      val cellElems = colElement.getElements
+      for {
+        header <- headerOpt
+        if (cellElems.isEmpty())
+      } {
+        // Create header
+        val head = header(colIdx)
+        val style = headerStyle(colIdx)
+        hb.style(style)
+        hb.text(head)
+        hb.build(nifty, screen, colElement)
       }
 
-      for {
-        (colElement, colIdx) <- colElements1 zipWithIndex
-      } {
-        val cellElems = colElement.getElements
-        val n0 = cellElems.size
-        if (n0 > n) {
-          // Removes old cells
-          for { cell <- cellElems.drop(n) } cell.markForRemoval
-        } else if (n0 < n) {
-          // Add new cells
-          val b = builder(colIdx)
-          for { rowIdx <- n0 until n } {
-            val id = s"${parent.getId}-${rowIdx}-${colIdx}"
-            val style = cellStyle(rowIdx, colIdx)
-            b.id(id)
-            b.style(style)
-            b.build(nifty, screen, colElement)
-          }
+      val n0 = cellElems.size
+      val nn = n + headerSize
+      if (n0 > nn) {
+        // Removes old cells
+        for { cell <- cellElems.drop(nn) } {
+          cell.markForRemoval
+        }
+      } else if (n0 < nn) {
+        // Add new cells
+        val b = builder(colIdx)
+        for { rowIdx <- n0 - headerSize until n } {
+          val id = s"$pid-$rowIdx-$colIdx"
+          val style = cellStyle(rowIdx, colIdx)
+          b.id(id)
+          b.style(style)
+          b.build(nifty, screen, colElement)
         }
       }
-      colElements1
     }
+    colElements1
+  }
 
   /** */
   def setCells(cells: IndexedSeq[IndexedSeq[String]]) {
@@ -107,12 +132,19 @@ trait TableController extends MousePrimaryClickedObservable
     val colElements1 = resize(n, m)
     for {
       colElems <- colElements1
-      (colElem, colIdx) <- colElems zipWithIndex
-    } for {
-      (cellElem, rowIdx) <- colElem.getElements zipWithIndex
     } {
-      val value = cells(rowIdx)(colIdx)
-      setter(rowIdx, colIdx)(cellElem, value)
+      for {
+        (colElem, colIdx) <- colElems zipWithIndex
+      } {
+        val elems = colElem.getElements
+        for {
+          (cellElem, rowIdx) <- elems.drop(headerOpt.size) zipWithIndex
+        } {
+          val value = cells(rowIdx)(colIdx)
+          setter(rowIdx, colIdx)(cellElem, value)
+        }
+      }
+      colElements = colElems
     }
   }
 
@@ -121,10 +153,11 @@ trait TableController extends MousePrimaryClickedObservable
     for {
       parent <- elementOpt
     } yield {
+      val pid = Option(parent.getId).getOrElse(parent.hashCode().toString())
       val idxOptObs = for {
         ev <- mousePrimaryClickedObs
       } yield for {
-        matcher <- s"""${parent.getId}-(\\d*)-(\\d*)""".r.findFirstMatchIn(ev.getElement.getId)
+        matcher <- s"$pid-(\\d*)-(\\d*)".r.findFirstMatchIn(ev.getElement.getId)
         if (matcher.groupCount == 2)
       } yield (matcher.group(1).toInt, matcher.group(2).toInt)
       for {

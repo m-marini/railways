@@ -48,18 +48,17 @@ class TabbedController extends JmeController
     with MousePrimaryClickedObservable
     with LazyLogging {
 
-  private val contentTabMap = Set(
-    "cameraTab1" -> "cameraPanel1",
-    "trainTab1" -> "trainPanel1",
-    "messageTab1" -> "messagesPanel1",
-    "performanceTab1" -> "performancePanel1")
+  private val contentTabMap = Map(
+    "cameraTab" -> "cameraPanel",
+    "trainTab" -> "trainPanel",
+    "messageTab" -> "messagesPanel",
+    "performanceTab" -> "performancePanel")
 
   private val subscriptions = changeTabSubOpt
 
   private def selectTab(tabId: String) {
     // hides or shows tab and content
-    logger.debug(s"$tabId")
-    if (contentTabMap.exists(_._1 == tabId)) {
+    if (contentTabMap.contains(tabId)) {
       for {
         (tabId1, contentId) <- contentTabMap
         tabElem <- elementById(tabId1)

@@ -60,32 +60,6 @@
 	</popup>
 
 	<screen id="game-screen" controller="org.mmarini.scala.railways.GameController">
-		<layer childLayout="vertical">
-			<panel width="300" height="100%" align="left" childLayout="vertical"
-				padding="10px">
-				<control id="edit_tabs" name="tabGroup">
-					<control id="cameraTab" name="tab" caption="Cameras">
-						<control id="camerasList" name="listBox" vertical="optional"
-							horizontal="optional" displayItems="8" />
-					</control>
-					<control id="msgTab" name="tab" caption="Messages">
-						<control id="messagesList" name="listBox" vertical="optional"
-							horizontal="optional" displayItems="8" />
-					</control>
-					<control id="trainTab" name="tab" caption="Trains">
-						<control id="trainsList" name="listBox" vertical="optional"
-							horizontal="optional" displayItems="8" />
-					</control>
-					<control id="perfTab" name="tab" caption="Performace">
-						<panel childLayout="vertical">
-							<control name="label" text="Duration" style="text.light-panel" />
-							<control id="duration" name="label" text="???"
-								style="text.light-panel" />
-						</panel>
-					</control>
-				</control>
-			</panel>
-		</layer>
 
 		<!-- Control Tab Panel -->
 
@@ -95,16 +69,16 @@
 			<panel width="360" align="right" childLayout="vertical">
 				<panel childLayout="horizontal"
 					controller="org.mmarini.scala.railways.TabbedController">
-					<panel id="cameraTab1" style="panel.selectedTab">
+					<panel id="cameraTab" style="panel.selectedTab">
 						<image filename="Interface/camera1.png" style="image.tab-panel" />
 					</panel>
-					<panel id="trainTab1" style="panel.unselectedTab">
+					<panel id="trainTab" style="panel.unselectedTab">
 						<image filename="Interface/treno.png" style="image.tab-panel" />
 					</panel>
-					<panel id="messageTab1" style="panel.unselectedTab">
+					<panel id="messageTab" style="panel.unselectedTab">
 						<image filename="Interface/messages.png" style="image.tab-panel" />
 					</panel>
-					<panel id="performanceTab1" style="panel.unselectedTab">
+					<panel id="performanceTab" style="panel.unselectedTab">
 						<image filename="Interface/perform.png" style="image.tab-panel" />
 					</panel>
 				</panel>
@@ -115,61 +89,27 @@
 
 					<!-- Panel with the list of predefined cameras -->
 
-					<panel id="cameraPanel1" childLayout="horizontal"
-						backgroundColor="#0000" visible="false"
+					<panel id="cameraPanel" childLayout="horizontal"
+						backgroundColor="#0000" visible="true"
 						controller="org.mmarini.scala.railways.CameraController">
 					</panel>
+
 					<!-- Train Panel -->
 
 					<!-- Panel with the list of train -->
 
-					<panel id="trainPanel1" childLayout="horizontal" visible="false"
+					<panel id="trainPanel" childLayout="horizontal" visible="false"
 						backgroundColor="#000f" padding="5px"
-						controller="org.mmarini.scala.railways.TrainController">
-						<!-- 7 + 9 + 9 + 3 = 25% 32% 32% 11% -->
-						<panel childLayout="vertical" width="25%">
-							<text text="Train" style="text.light-panel-head" />
-							<panel id="train-id-col" childLayout="vertical">
-								<text text="B-----E" style="text.light-panel" />
-							</panel>
-						</panel>
-						<panel childLayout="vertical" width="32%">
-							<text text="Destination" style="text.light-panel-head" />
-							<panel id="train-to-col" childLayout="vertical">
-								<text text="B-------E" style="text.light-panel" />
-							</panel>
-						</panel>
-						<panel childLayout="vertical" width="32%">
-							<text text="At" style="text.light-panel-head" />
-							<panel id="train-at-col" childLayout="vertical">
-								<text text="B-------E" style="text.light-panel" />
-							</panel>
-						</panel>
-						<panel childLayout="vertical" width="11%">
-							<text text="Km/h" style="text.light-panel-head" />
-							<panel id="train-speed-col" childLayout="vertical">
-								<text text="999" style="text.light-panel" />
-							</panel>
-						</panel>
-					</panel>
-
+						controller="org.mmarini.scala.railways.TrainController" />
 
 					<!-- Message Panel -->
 
 					<!-- Panel with the list of messages -->
 
-					<panel id="messagesPanel1" childLayout="horizontal"
-						backgroundColor="#0000" visible="true"
-						controller="org.mmarini.scala.railways.MessageController"/>
-
-<!-- 					<panel id="messagesPanel1" childLayout="horizontal"
+					<panel id="messagesPanel" childLayout="horizontal"
 						backgroundColor="#0000" visible="false"
-						controller="org.mmarini.scala.railways.MessageController">
-						<panel id="message-col" childLayout="vertical">
-							<text text="Messaggio" style="text.message" />
-						</panel>
-					</panel>
- -->				</panel>
+						controller="org.mmarini.scala.railways.MessageController" />
+				</panel>
 			</panel>
 		</layer>
 

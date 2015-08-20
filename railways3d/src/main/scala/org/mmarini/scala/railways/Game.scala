@@ -192,10 +192,15 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   private def cameraSelectionObsOpt =
     for {
       gameScreen <- app.gameCtrlOpt
-    } yield for {
-      id <- gameScreen.cameraSelectedObs
-      if (viewpointMap.contains(id))
-    } yield viewpointMap(id)
+      cameraCtrl <- gameScreen.cameraCtrlOpt
+      idxObs <- cameraCtrl.selectionObsOpt
+    } yield {
+      for {
+        (row, _) <- idxObs
+      } yield {
+        initialStatus.stationStatus.topology.viewpoints(row)
+      }
+    }
 
   /** Creates observable of location at */
   private def locationAtObsOpt = {

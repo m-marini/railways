@@ -32,9 +32,9 @@ class CameraController extends JmeController
     with TableController
     with LazyLogging {
 
-  override def cellStyle = (row, col) => if (col == 0) "image.camera-selection" else "text.camera-name"
+  override def cellStyle = (_, col) => if (col == 0) "image.camera-selection" else "text.camera-name"
 
-  override def setter = (row, col) => { if (col == 0) dummySetter else textSetter }
+  override def setter = (_, col) => { if (col == 0) dummySetter else textSetter }
 
   override def builder = (col) => { if (col == 0) new ImageBuilder else new TextBuilder }
 
