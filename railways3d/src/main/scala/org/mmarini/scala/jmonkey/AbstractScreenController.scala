@@ -17,7 +17,9 @@ import de.lessvoid.nifty.controls.ButtonClickedEvent
  * @author us00852
  *
  */
-trait AbstractScreenController extends ScreenController with ScreenUtil with NiftyUtil {
+trait AbstractScreenController extends ScreenController
+    with ScreenUtil
+    with NiftyUtil {
   /**   */
   override def bind(nifty: Nifty, screen: Screen) {
     niftyOpt = Some(nifty)

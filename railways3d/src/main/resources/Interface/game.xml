@@ -6,31 +6,50 @@
 	<useStyles filename="Interface/style.xml" />
 	<useControls filename="nifty-default-controls.xml" />
 
+	<!-- Train Pop Up -->
+
+	<!-- Pop up panel with the buttons to action trains -->
+
 	<popup id="trainPopup" childLayout="absolute-inside"
 		controller="org.mmarini.scala.jmonkey.PopupController">
 		<interact onClick="closePopup()" onSecondaryClick="closePopup()"
 			onTertiaryClick="closePopup()" />
-		<panel id="trainPane" x="100" y="300" childLayout="vertical"
-			backgroundColor="#0008">
-			<image id="startTrain" filename="Interface/start.png"
-				visibleToMouse="true">
-			</image>
-			<image id="stopTrain" filename="Interface/stop.png"
-				visibleToMouse="true">
-			</image>
-			<image id="reverseTrain" filename="Interface/reverse.png"
-				visibleToMouse="true">
-			</image>
-			<image id="cameraTrain" filename="Interface/camera.png"
-				visibleToMouse="true">
-			</image>
+		<effect>
+			<onStartScreen name="fade" length="200" />
+			<onEndScreen name="fade" start="#f" end="#0" length="200" />
+		</effect>
+		<panel id="trainPane" x="100" y="300" childLayout="vertical">
+			<panel childLayout="horizontal">
+				<image id="startTrain" filename="Interface/start.png"
+					visibleToMouse="true" margin="5px">
+				</image>
+				<image id="stopTrain" filename="Interface/stop.png"
+					visibleToMouse="true" margin="5px">
+				</image>
+			</panel>
+			<panel childLayout="horizontal">
+				<image id="reverseTrain" filename="Interface/reverse.png"
+					visibleToMouse="true" margin="5px">
+				</image>
+				<image id="cameraTrain" filename="Interface/camera.png"
+					visibleToMouse="true" margin="5px">
+				</image>
+			</panel>
 		</panel>
 	</popup>
+
+	<!-- Semaphore Pop Up -->
+
+	<!-- Pop up panel with the buttons to action semaphores an tracks -->
 
 	<popup id="semPopup" childLayout="absolute-inside"
 		controller="org.mmarini.scala.jmonkey.PopupController">
 		<interact onClick="closePopup()" onSecondaryClick="closePopup()"
 			onTertiaryClick="closePopup()" />
+		<effect>
+			<onStartScreen name="fade" length="200" />
+			<onEndScreen name="fade" start="#f" end="#0" length="200" />
+		</effect>
 		<panel id="semPane" x="100" y="300" childLayout="vertical"
 			backgroundColor="#0008">
 			<image id="clear" filename="Interface/sem-green.png"
@@ -68,28 +87,43 @@
 			</panel>
 		</layer>
 
+		<!-- Control Tab Panel -->
+
+		<!-- Tab panel with the controls of cameras, trains, messages, performance -->
+
 		<layer childLayout="vertical">
-			<panel width="360" height="100%" align="right" childLayout="vertical">
-				<panel childLayout="horizontal">
-					<image filename="Interface/camera1.png" style="image.tab-panel" />
-					<image filename="Interface/treno.png" style="image.tab-panel" />
-					<image filename="Interface/messages.png" style="image.tab-panel" />
-					<image filename="Interface/perform.png" style="image.tab-panel" />
+			<panel width="360" align="right" childLayout="vertical">
+				<panel childLayout="horizontal"
+					controller="org.mmarini.scala.railways.TabbedController">
+					<panel id="cameraTab1" style="panel.selectedTab">
+						<image filename="Interface/camera1.png" style="image.tab-panel" />
+					</panel>
+					<panel id="trainTab1" style="panel.unselectedTab">
+						<image filename="Interface/treno.png" style="image.tab-panel" />
+					</panel>
+					<panel id="messageTab1" style="panel.unselectedTab">
+						<image filename="Interface/messages.png" style="image.tab-panel" />
+					</panel>
+					<panel id="performanceTab1" style="panel.unselectedTab">
+						<image filename="Interface/perform.png" style="image.tab-panel" />
+					</panel>
 				</panel>
 
-				<panel childLayout="overlay">
-					<panel id="cameraPanel" childLayout="horizontal"
+				<panel id="contentTabPane" childLayout="overlay">
+
+					<!-- Camera Panel -->
+
+					<!-- Panel with the list of predefined cameras -->
+
+					<panel id="cameraPanel1" childLayout="horizontal"
 						backgroundColor="#0000" visible="false"
 						controller="org.mmarini.scala.railways.CameraController">
-						<panel id="camera-icon-col" childLayout="vertical">
-							<image style="image.camera-selection" />
-						</panel>
-						<panel id="camera-name-col" childLayout="vertical">
-							<text text="Camera1" style="text.camera-name" />
-						</panel>
 					</panel>
+					<!-- Train Panel -->
 
-					<panel id="trainPanel" childLayout="horizontal" visible="false"
+					<!-- Panel with the list of train -->
+
+					<panel id="trainPanel1" childLayout="horizontal" visible="false"
 						backgroundColor="#000f" padding="5px"
 						controller="org.mmarini.scala.railways.TrainController">
 						<!-- 7 + 9 + 9 + 3 = 25% 32% 32% 11% -->
@@ -119,19 +153,30 @@
 						</panel>
 					</panel>
 
-					<panel id="messagesPanel" childLayout="horizontal"
+
+					<!-- Message Panel -->
+
+					<!-- Panel with the list of messages -->
+
+					<panel id="messagesPanel1" childLayout="horizontal"
 						backgroundColor="#0000" visible="true"
+						controller="org.mmarini.scala.railways.MessageController"/>
+
+<!-- 					<panel id="messagesPanel1" childLayout="horizontal"
+						backgroundColor="#0000" visible="false"
 						controller="org.mmarini.scala.railways.MessageController">
 						<panel id="message-col" childLayout="vertical">
 							<text text="Messaggio" style="text.message" />
 						</panel>
 					</panel>
-				</panel>
+ -->				</panel>
 			</panel>
 		</layer>
 
-
 		<!-- Camera Controller Panel -->
+
+		<!-- Panel with the buttons to move the camera -->
+
 		<layer childLayout="vertical">
 			<panel />
 			<panel childLayout="vertical">
@@ -142,8 +187,7 @@
 				</panel>
 				<panel childLayout="horizontal">
 					<image id="left" style="image.left" />
-					<panel id="quit" style="panel.gridbag" backgroundColor="#f00f"
-						visibleToMouse="true" />
+					<image id="quit" style="image.quit" />
 					<image id="right" style="image.right" />
 				</panel>
 				<panel childLayout="horizontal">

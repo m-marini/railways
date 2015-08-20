@@ -16,19 +16,6 @@ import de.lessvoid.nifty.controls.NiftyControl
 /**
  * @author us00852
  */
-class PopupController extends JmeController
-    with MousePrimaryClickedObservable {
-
-  mousePrimaryClickedObs.subscribe(_ => closePopup)
-
-  /** Close this popup */
-  def closePopup {
-    for {
-      nifty <- niftyOpt
-      popup <- elementOpt
-    } {
-      nifty.closePopup(popup.getId)
-    }
-  }
-
+trait ElementUtil {
+  var elementOpt: Option[Element] = None
 }

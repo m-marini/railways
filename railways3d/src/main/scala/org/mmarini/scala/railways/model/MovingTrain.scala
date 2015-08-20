@@ -55,7 +55,6 @@ case class MovingTrain(
           (Some(WaitForPassengerTrain(id, size, route, stopLocation, BoardingTime, exitId)),
             Seq(TrainWaitForReloadMsg(id)))
         case _ =>
-          logger.debug(s"out of track $this ")
           (Some(WaitingForTrackTrain(id, size, loaded, route, stopLocation, exitId)),
             Seq(TrainWaitForTrackMsg(id)))
       }

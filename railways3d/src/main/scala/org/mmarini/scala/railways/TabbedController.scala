@@ -37,9 +37,6 @@ import org.mmarini.scala.jmonkey.ScreenUtil
 import collection.JavaConversions._
 import de.lessvoid.nifty.builder.TextBuilder
 import de.lessvoid.nifty.builder.ImageBuilder
-import scala.math.min
-import scala.math.max
-import org.mmarini.scala.jmonkey.TableController
 
 /**
  * Controls the game screen
@@ -47,20 +44,39 @@ import org.mmarini.scala.jmonkey.TableController
  * It exposes a game start observer that creates a game for each event
  * The generated game handles the user event and clocks tick updating the rootNode of application.
  */
-class MessageController extends JmeController
-    with TableController
+class TabbedController extends JmeController
+    with MousePrimaryClickedObservable
     with LazyLogging {
 
-  var log = Seq[String]()
+  private val contentTabMap = Set(
+    "cameraTab1" -> "cameraPanel1",
+    "trainTab1" -> "trainPanel1",
+    "messageTab1" -> "messagesPanel1",
+    "performanceTab1" -> "performancePanel1")
 
-  override def cellStyle = (_, _) => "text.message"
+  private val subscriptions = changeTabSubOpt
 
-  /** Shows the camera views in the camera list panel */
-  def show(msgs: Seq[String]) {
-    log = (msgs ++ log) take 10
-    val x = for {
-      m <- msgs.toIndexedSeq
-    } yield IndexedSeq(m, m)
-    setCells(x)
+  private def selectTab(tabId: String) {
+    // hides or shows tab and content
+    logger.debug(s"$tabId")
+    if (contentTabMap.exists(_._1 == tabId)) {
+      for {
+        (tabId1, contentId) <- contentTabMap
+        tabElem <- elementById(tabId1)
+        contentElem <- elementById(contentId)
+      } if (tabId == tabId1) {
+        tabElem.setStyle("panel.selectedTab")
+        contentElem.show
+      } else {
+        tabElem.setStyle("panel.unselectedTab")
+        contentElem.hide
+      }
+    }
   }
+
+  private def changeTabSubOpt =
+    mousePrimaryClickedObs.subscribe(event => {
+      selectTab(event.getElement.getId)
+    })
+
 }

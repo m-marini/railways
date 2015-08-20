@@ -19,9 +19,7 @@ import de.lessvoid.nifty.controls.NiftyControl
 class JmeController extends Controller
     with ScreenUtil
     with NiftyUtil
-    with MousePrimarClickedObservable {
-
-  var elementOpt: Option[Element] = None
+    with ElementUtil {
 
   /** Binds this pop up */
   override def bind(n: Nifty, s: Screen, e: Element, p: Properties, a: Attributes) {

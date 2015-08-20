@@ -13,17 +13,19 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.util.Try
 
 object Test extends LazyLogging {
-  val a = Try {
-    throw new IllegalArgumentException
-  }                                               //> a  : scala.util.Try[Nothing] = Failure(java.lang.IllegalArgumentException)
-  val b = Try {
-    2
-  }                                               //> b  : scala.util.Try[Int] = Success(2)
+  """row-(\d*)-.*""".r.findFirstMatchIn("rowa-113-aaa").get.group(1)
+                                                  //> java.util.NoSuchElementException: None.get
+                                                  //| 	at scala.None$.get(Option.scala:347)
+                                                  //| 	at scala.None$.get(Option.scala:345)
+                                                  //| 	at Test$$anonfun$main$1.apply$mcV$sp(Test.scala:16)
+                                                  //| 	at org.scalaide.worksheet.runtime.library.WorksheetSupport$$anonfun$$exe
+                                                  //| cute$1.apply$mcV$sp(WorksheetSupport.scala:76)
+                                                  //| 	at org.scalaide.worksheet.runtime.library.WorksheetSupport$.redirected(W
+                                                  //| orksheetSupport.scala:65)
+                                                  //| 	at org.scalaide.worksheet.runtime.library.WorksheetSupport$.$execute(Wor
+                                                  //| ksheetSupport.scala:75)
+                                                  //| 	at Test$.main(Test.scala:15)
+                                                  //| 	at Test.main(Test.scala)
 
-  val c =for {
-    va <- a
-    vb <- b
-  } yield Seq(va,vb)                              //> c  : scala.util.Try[Seq[Int]] = Failure(java.lang.IllegalArgumentException)
-  
 }
                                                   

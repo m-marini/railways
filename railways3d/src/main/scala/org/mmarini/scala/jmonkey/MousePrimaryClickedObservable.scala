@@ -14,7 +14,7 @@ import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
  * @author us00852
  *
  */
-trait MousePrimarClickedObservable {
+trait MousePrimaryClickedObservable {
 
   private val mousePrimaryClickedSubj = Subject[NiftyMousePrimaryClickedEvent]()
 

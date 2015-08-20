@@ -14,12 +14,16 @@
 
 	<style id="image.camera-selection">
 		<attributes filename="Interface/camera.png" height="32px"
-			margin="2px,5px" />
+			margin="2px,5px" visibleToMouse="true" />
 	</style>
 	<style id="text.camera-name">
 		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
 			backgroundColor="#0004" margin="2px,5px" width="100%" textHAlign="left"
-			height="32px" textVAlign="center" valign="center" />
+			height="32px" textVAlign="center" valign="center" visibleToMouse="true" />
+	</style>
+
+	<style id="panel.table-column">
+		<attributes childLayout="vertical" />
 	</style>
 
 	<style id="text.light-panel-head">
@@ -35,6 +39,14 @@
 			backgroundColor="#333f" margin="1px,5px" width="100%" textHAlign="right" />
 	</style>
 
+	<style id="panel.selectedTab">
+		<attributes padding="10px" childLayout="center"
+			backgroundColor="#000f" visibleToMouse="true" />
+	</style>
+	<style id="panel.unselectedTab">
+		<attributes padding="10px" childLayout="center"
+			backgroundColor="#00ff" visibleToMouse="true" />
+	</style>
 	<style id="image.tab-panel">
 		<attributes width="64px" height="64px" />
 	</style>
@@ -43,27 +55,31 @@
 		<attributes width="64px" height="64px" />
 	</style>
 
-	<style id="image.right">
-		<attributes filename="Interface/frecce.png" width="64px"
-			height="64px" imageMode="subImage:163,84,64,64" visibleToMouse="true" />
-	</style>
+
 	<style id="image.left">
-		<attributes filename="Interface/frecce.png" width="64px"
-			height="64px" imageMode="subImage:85,84,64,64" visibleToMouse="true" />
+		<attributes filename="Interface/arrows.png" width="64px"
+			height="64px" imageMode="subImage:0,0,64,64" visibleToMouse="true" />
 	</style>
-	<style id="image.down">
-		<attributes filename="Interface/frecce.png" width="64px"
-			height="64px" imageMode="subImage:85,3,64,64" visibleToMouse="true" />
+	<style id="image.right">
+		<attributes filename="Interface/arrows.png" width="64px"
+			height="64px" imageMode="subImage:64,0,64,64" visibleToMouse="true" />
 	</style>
 	<style id="image.up">
-		<attributes filename="Interface/frecce.png" width="64px"
-			height="64px" imageMode="subImage:163,3,64,64" visibleToMouse="true" />
+		<attributes filename="Interface/arrows.png" width="64px"
+			height="64px" imageMode="subImage:0,64,64,64" visibleToMouse="true" />
+	</style>
+	<style id="image.down">
+		<attributes filename="Interface/arrows.png" width="64px"
+			height="64px" imageMode="subImage:64,64,64,64" visibleToMouse="true" />
+	</style>
+	<style id="image.quit">
+		<attributes filename="Interface/quit.png" width="64px"
+			height="64px" visibleToMouse="true" />
 	</style>
 
 	<style id="text.message">
 		<attributes font="Fonts/UbuntuSmall.fnt" color="#000f"
-			backgroundColor="#fff4" margin="2px,5px" width="100%" textHAlign="left"
-			textVAlign="center" valign="center" />
+			backgroundColor="#fff4" textHAlign="left" />
 	</style>
 
 </nifty-styles>

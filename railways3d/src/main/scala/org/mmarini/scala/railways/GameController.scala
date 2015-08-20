@@ -18,8 +18,8 @@ import de.lessvoid.nifty.elements.Element
 import com.jme3.math.Vector2f
 import org.mmarini.scala.jmonkey.ScreenObservable
 import org.mmarini.scala.jmonkey.AbstractScreenController
-import org.mmarini.scala.jmonkey.MousePrimarClickedObservable
-import org.mmarini.scala.jmonkey.MousePrimarReleaseObservable
+import org.mmarini.scala.jmonkey.MousePrimaryClickedObservable
+import org.mmarini.scala.jmonkey.MousePrimaryReleaseObservable
 import org.mmarini.scala.jmonkey.ListBoxSelectionChangedObservable
 import rx.lang.scala.Observable
 import org.mmarini.scala.railways.model.TrainMessage
@@ -41,8 +41,8 @@ import de.lessvoid.nifty.elements.render.TextRenderer
 class GameController extends AbstractAppState
     with AbstractScreenController
     with ScreenObservable
-    with MousePrimarClickedObservable
-    with MousePrimarReleaseObservable
+    with MousePrimaryClickedObservable
+    with MousePrimaryReleaseObservable
     with ListBoxSelectionChangedObservable[String]
     with LazyLogging {
 
@@ -57,11 +57,11 @@ class GameController extends AbstractAppState
 
   private def trainListOpt = controlById("trainsList", classOf[ListBox[String]])
 
-  private def cameraCtrlOpt = controllerById("cameraPanel", classOf[CameraController])
+  private def cameraCtrlOpt = controllerById("cameraPanel1", classOf[CameraController])
 
-  private def trainCtrlOpt = controllerById("trainPanel", classOf[TrainController])
+  private def trainCtrlOpt = controllerById("trainPanel1", classOf[TrainController])
 
-  private def msgCtrlOpt = controllerById("messagesPanel", classOf[MessageController])
+  private def msgCtrlOpt = controllerById("messagesPanel1", classOf[MessageController])
 
   /** Shows the camera views in the camera list panel */
   def showCameras(cams: List[String]) {

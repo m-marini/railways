@@ -16,27 +16,11 @@ import de.lessvoid.nifty.NiftyEventSubscriber
 import scala.util.Try
 import de.lessvoid.nifty.elements.Element
 import com.jme3.math.Vector2f
-import org.mmarini.scala.jmonkey.ScreenObservable
-import org.mmarini.scala.jmonkey.AbstractScreenController
-import org.mmarini.scala.jmonkey.MousePrimarClickedObservable
-import org.mmarini.scala.jmonkey.MousePrimarReleaseObservable
-import org.mmarini.scala.jmonkey.ListBoxSelectionChangedObservable
-import rx.lang.scala.Observable
-import org.mmarini.scala.railways.model.TrainMessage
-import org.mmarini.scala.railways.model.Train
-import org.mmarini.scala.railways.model.MovingTrain
-import org.mmarini.scala.railways.model.StoppingTrain
-import org.mmarini.scala.railways.model.StoppedTrain
-import org.mmarini.scala.railways.model.WaitForPassengerTrain
-import org.mmarini.scala.railways.model.WaitingForTrackTrain
-import org.mmarini.scala.railways.model.GamePerformance
-import de.lessvoid.nifty.elements.render.TextRenderer
-import org.mmarini.scala.jmonkey.JmeController
-import org.mmarini.scala.jmonkey.NiftyUtil
-import org.mmarini.scala.jmonkey.ScreenUtil
-import collection.JavaConversions._
-import de.lessvoid.nifty.builder.TextBuilder
+import org.mmarini.scala.jmonkey.TableController
 import de.lessvoid.nifty.builder.ImageBuilder
+import de.lessvoid.nifty.builder.TextBuilder
+import org.mmarini.scala.jmonkey.ScreenObservable
+import org.mmarini.scala.jmonkey.JmeController
 
 /**
  * Controls the game screen
@@ -45,27 +29,19 @@ import de.lessvoid.nifty.builder.ImageBuilder
  * The generated game handles the user event and clocks tick updating the rootNode of application.
  */
 class CameraController extends JmeController
-    with ColumnController
+    with TableController
     with LazyLogging {
+
+  override def cellStyle = (row, col) => if (col == 0) "image.camera-selection" else "text.camera-name"
+
+  override def setter = (row, col) => { if (col == 0) dummySetter else textSetter }
+
+  override def builder = (col) => { if (col == 0) new ImageBuilder else new TextBuilder }
 
   /** Shows the camera views in the camera list panel */
   def showCameras(cams: Seq[String]) {
-    val ti = new ImageBuilder
-    ti.style("image.camera-selection")
-
-    showColumn[String]("camera-icon-col",
-      _ => ti,
-      (_, _) => {},
-      cams)
-
-    val tb = new TextBuilder
-    tb.style("text.camera-name")
-    showColumn[String]("camera-name-col",
-      text => {
-        tb.text(text)
-        tb
-      },
-      (elem, text) => elem.getRenderer(classOf[TextRenderer]).setText(text),
-      cams)
+    val s = cams.toIndexedSeq
+    val xx = for { n <- s } yield IndexedSeq("", n)
+    setCells(xx)
   }
 }

@@ -15,7 +15,7 @@ import de.lessvoid.nifty.elements.events.NiftyMousePrimaryReleaseEvent
  * @author us00852
  *
  */
-trait MousePrimarReleaseObservable {
+trait MousePrimaryReleaseObservable {
 
   private val mousePrimaryReleaseSubj = Subject[NiftyMousePrimaryReleaseEvent]()
 

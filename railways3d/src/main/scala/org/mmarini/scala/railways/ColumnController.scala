@@ -18,8 +18,8 @@ import de.lessvoid.nifty.elements.Element
 import com.jme3.math.Vector2f
 import org.mmarini.scala.jmonkey.ScreenObservable
 import org.mmarini.scala.jmonkey.AbstractScreenController
-import org.mmarini.scala.jmonkey.MousePrimarClickedObservable
-import org.mmarini.scala.jmonkey.MousePrimarReleaseObservable
+import org.mmarini.scala.jmonkey.MousePrimaryClickedObservable
+import org.mmarini.scala.jmonkey.MousePrimaryReleaseObservable
 import org.mmarini.scala.jmonkey.ListBoxSelectionChangedObservable
 import rx.lang.scala.Observable
 import org.mmarini.scala.railways.model.TrainMessage
@@ -50,7 +50,24 @@ import de.lessvoid.nifty.builder.ElementBuilder
 trait ColumnController
     extends NiftyUtil
     with ScreenUtil
+    with MousePrimaryClickedObservable
     with LazyLogging {
+
+  def selectedIndexObs: Observable[Int] = {
+    val idxOptObs = for {
+      x <- mousePrimaryClickedObs
+    } yield {
+      val element = x.getElement
+      val idxOpt = for {
+        matcher <- """row-(\d*)-.*""".r.findFirstMatchIn(element.getId)
+      } yield matcher.group(1).toInt
+      idxOpt
+    }
+    for {
+      x <- idxOptObs
+      if (!x.isEmpty)
+    } yield x.get
+  }
 
   def showColumn[T](elemId: String,
     builder: (T) => ElementBuilder,
