@@ -16,7 +16,7 @@ import de.lessvoid.nifty.controls.NiftyControl
 /**
  * @author us00852
  */
-class PopupController extends JmeController
+class PopupController extends ControllerAdapter
     with MousePrimaryClickedObservable {
 
   mousePrimaryClickedObs.subscribe(_ => closePopup)

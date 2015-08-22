@@ -16,6 +16,25 @@ import de.lessvoid.nifty.controls.NiftyControl
 /**
  * @author us00852
  */
-trait ElementUtil {
+class ControllerAdapter extends Controller {
+
+  var niftyOpt: Option[Nifty] = None
+  var screenOpt: Option[Screen] = None
   var elementOpt: Option[Element] = None
+
+  /** Binds this pop up */
+  override def bind(n: Nifty, s: Screen, e: Element, p: Properties, a: Attributes) {
+    niftyOpt = Some(n)
+    screenOpt = Some(s)
+    elementOpt = Some(e)
+  }
+
+  /** Initializes this pop up */
+  override def init(p: Properties, a: Attributes) {}
+
+  override def onStartScreen {}
+
+  override def onFocus(f: Boolean) {}
+
+  override def inputEvent(ev: NiftyInputEvent): Boolean = false
 }

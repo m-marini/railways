@@ -1,8 +1,6 @@
 # To do
 
   * Bug: Fine gioco + start ricrea i modelli doppi
-  * Pannello log messaggi
-  * Pannello stato treni
   * Pannello prestazioni gioco
   * Movimento camera su un punto dello sfondo (click) 
   * Vista camera esterna treno con click su pannelli messaggi / train

@@ -19,8 +19,9 @@ import de.lessvoid.nifty.elements.render.ImageRenderer
  */
 trait TableController extends MousePrimaryClickedObservable
     with NiftyUtil
-    with ScreenUtil
-    with ElementUtil {
+    with ScreenAdapter {
+
+  def elementOpt: Option[Element]
 
   val DefaultColumnElementStyle = "panel.table-column"
   val DefaultCellStyle = "nifty-label"

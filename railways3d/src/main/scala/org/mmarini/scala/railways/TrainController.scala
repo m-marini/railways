@@ -3,12 +3,14 @@
  */
 package org.mmarini.scala.railways
 
-import org.mmarini.scala.jmonkey.JmeController
+import org.mmarini.scala.jmonkey.ControllerAdapter
 import org.mmarini.scala.railways.model.Train
 import com.typesafe.scalalogging.LazyLogging
 import de.lessvoid.nifty.builder.TextBuilder
 import de.lessvoid.nifty.elements.render.TextRenderer
 import org.mmarini.scala.jmonkey.TableController
+import rx.lang.scala.Observable
+import rx.lang.scala.Subscription
 
 /**
  * Controls the game screen
@@ -16,7 +18,7 @@ import org.mmarini.scala.jmonkey.TableController
  * It exposes a game start observer that creates a game for each event
  * The generated game handles the user event and clocks tick updating the rootNode of application.
  */
-class TrainController extends JmeController
+class TrainController extends ControllerAdapter
     with TableController
     with LazyLogging {
 
@@ -35,12 +37,12 @@ class TrainController extends JmeController
     "panel.train-speed")
 
   override def cellStyle = (_, col) => if (col == 3)
-    "text.light-panel-right"
+    "text.selectable-light-panel-right"
   else
-    "text.light-panel"
+    "text.selectable-light-panel"
 
   /** Shows the camera views in the camera list panel */
-  def show(trains: Seq[Train]) {
+  private def show(trains: Seq[Train]) {
     val cells = for { t <- trains.toIndexedSeq }
       yield IndexedSeq(
       t.id.toUpperCase,
@@ -49,8 +51,10 @@ class TrainController extends JmeController
       f"${(t.speed * 3.6).toInt}%d")
 
     setCells(cells)
-
-    //    tb.style("text.light-panel")
-    //    tb.style("text.light-panel-right")
   }
+
+  /** Subscribes for train status changes */
+  def subscribe(trainsObs: Observable[Seq[Train]]): Subscription =
+    trainsObs.subscribe(x => show _)
+
 }

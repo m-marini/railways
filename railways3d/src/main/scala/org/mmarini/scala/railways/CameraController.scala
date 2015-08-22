@@ -3,24 +3,16 @@
  */
 package org.mmarini.scala.railways
 
-import org.mmarini.scala.railways.model.GameParameters
-import com.jme3.app.state.AbstractAppState
-import com.typesafe.scalalogging.LazyLogging
-import de.lessvoid.nifty.Nifty
-import de.lessvoid.nifty.controls.ListBox
-import de.lessvoid.nifty.controls.ListBoxSelectionChangedEvent
-import de.lessvoid.nifty.screen.Screen
-import rx.lang.scala.Observer
-import rx.lang.scala.Subject
-import de.lessvoid.nifty.NiftyEventSubscriber
-import scala.util.Try
-import de.lessvoid.nifty.elements.Element
-import com.jme3.math.Vector2f
+import scala.IndexedSeq
+
+import org.mmarini.scala.jmonkey.ControllerAdapter
 import org.mmarini.scala.jmonkey.TableController
+
+import com.typesafe.scalalogging.LazyLogging
+
 import de.lessvoid.nifty.builder.ImageBuilder
 import de.lessvoid.nifty.builder.TextBuilder
-import org.mmarini.scala.jmonkey.ScreenObservable
-import org.mmarini.scala.jmonkey.JmeController
+import rx.lang.scala.Observable
 
 /**
  * Controls the game screen
@@ -28,7 +20,7 @@ import org.mmarini.scala.jmonkey.JmeController
  * It exposes a game start observer that creates a game for each event
  * The generated game handles the user event and clocks tick updating the rootNode of application.
  */
-class CameraController extends JmeController
+class CameraController extends ControllerAdapter
     with TableController
     with LazyLogging {
 
@@ -39,9 +31,12 @@ class CameraController extends JmeController
   override def builder = (col) => { if (col == 0) new ImageBuilder else new TextBuilder }
 
   /** Shows the camera views in the camera list panel */
-  def showCameras(cams: Seq[String]) {
+  def show(cams: Seq[String]) {
     val s = cams.toIndexedSeq
     val xx = for { n <- s } yield IndexedSeq("", n)
     setCells(xx)
   }
+
+  /** Subscribe to cameras observable */
+  def subscribe(camsObs: Observable[Seq[String]]) = camsObs.subscribe(x => show _)
 }

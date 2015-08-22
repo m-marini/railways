@@ -3,6 +3,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
 
+	<style id="text">
+		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
+			align="left" />
+	</style>
+
+	<!-- Styles of station blue panel -->
 	<style id="text.bluPanel">
 		<attributes font="Fonts/UbuntuMedium.fnt" color="#ffff"
 			align="center" />
@@ -12,49 +18,18 @@
 			width="300" imageMode="resize:13,3,13,13,13,3,13,3,13,3,13,13" />
 	</style>
 
+	<!-- Styles of camera selection panel -->
 	<style id="image.camera-selection">
 		<attributes filename="Interface/camera.png" height="32px"
-			margin="2px,5px" visibleToMouse="true" />
+			padding="2px,5px" visibleToMouse="true" />
 	</style>
 	<style id="text.camera-name">
 		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
-			backgroundColor="#0004" margin="2px,5px" width="100%" textHAlign="left"
-			height="32px" textVAlign="center" valign="center" visibleToMouse="true" />
+			padding="2px,5px" width="*" textHAlign="left" height="32px"
+			textVAlign="center" valign="center" visibleToMouse="true" />
 	</style>
 
-	<style id="panel.table-column">
-		<attributes childLayout="vertical" />
-	</style>
-
-	<style id="text.light-panel-head">
-		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
-			backgroundColor="#000f" margin="1px,5px" width="100%" textHAlign="left" />
-	</style>
-	<style id="text.light-panel">
-		<attributes font="Fonts/07x5.fnt" color="#fa0f"
-			backgroundColor="#333f" margin="1px,5px" width="100%" textHAlign="left" />
-	</style>
-	<style id="text.light-panel-right">
-		<attributes font="Fonts/07x5.fnt" color="#fa0f"
-			backgroundColor="#333f" margin="1px,5px" width="100%" textHAlign="right" />
-	</style>
-	<style id="panel.train-id">
-		<attributes childLayout="vertical" width="25%"/>
-	</style>
-
-	<style id="panel.train-to">
-		<attributes childLayout="vertical" width="32%"/>
-	</style>
-
-	<style id="panel.train-at">
-		<attributes childLayout="vertical" width="32%"/>
-	</style>
-
-	<style id="panel.train-speed">
-		<attributes childLayout="vertical" width="11%"/>
-	</style>
-
-
+	<!-- Styles of tabbed panel -->
 	<style id="panel.selectedTab">
 		<attributes padding="10px,10px,0px" childLayout="center"
 			backgroundColor="#888f" visibleToMouse="true" />
@@ -64,14 +39,79 @@
 			backgroundColor="#8884" visibleToMouse="true" />
 	</style>
 	<style id="image.tab-panel">
-		<attributes width="64px" height="64px" />
+		<attributes width="32px" height="32px" />
 	</style>
 
+	<!-- Styles of table panel -->
+	<style id="panel.table-column">
+		<attributes childLayout="vertical" />
+	</style>
+
+	<!-- Style of light panel -->
+	<style id="text.light-panel-head">
+		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
+			backgroundColor="#000f" margin="1px,5px" width="*" textHAlign="left" />
+	</style>
+	<style id="text.light-panel">
+		<attributes font="Fonts/07x5.fnt" color="#fc4f"
+			backgroundColor="#333f" margin="1px,5px" width="*" textHAlign="left" />
+	</style>
+	<style id="text.light-panel-right">
+		<attributes font="Fonts/07x5.fnt" color="#fc4f"
+			backgroundColor="#333f" margin="1px,5px" width="*" textHAlign="right" />
+	</style>
+	<style id="text.selectable-light-panel">
+		<attributes font="Fonts/07x5.fnt" color="#fc4f"
+			backgroundColor="#333f" margin="1px,5px" width="*" textHAlign="left"
+			visibleToMouse="true" />
+	</style>
+	<style id="text.selectable-light-panel-right">
+		<attributes font="Fonts/07x5.fnt" color="#fc4f"
+			backgroundColor="#333f" margin="1px,5px" width="*" textHAlign="right"
+			visibleToMouse="true" />
+	</style>
+
+	<!-- Styles of train panel -->
+	<style id="panel.train-id">
+		<attributes childLayout="vertical" width="25%" />
+	</style>
+	<style id="panel.train-to">
+		<attributes childLayout="vertical" width="32%" />
+	</style>
+	<style id="panel.train-at">
+		<attributes childLayout="vertical" width="32%" />
+	</style>
+	<style id="panel.train-speed">
+		<attributes childLayout="vertical" width="11%" />
+	</style>
+
+	<!-- Styles of message panel -->
+	<style id="text.message">
+		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
+			padding="2px" textHAlign="left" />
+	</style>
+
+	<!-- Styles of performance panel -->
+	<style id="panel.performance-content">
+		<attributes childLayout="vertical" padding="10px" />
+	</style>
+	<style id="image.perfomance-icon">
+		<attributes width="32px" height="32px" valign="center"
+			padding="5px" />
+	</style>
+	<style id="text.performance-title">
+		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
+			textHAlign="left" valign="center" />
+	</style>
+	<style id="text.performance-value">
+		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
+			textHAlign="left" valign="center" />
+	</style>
+
+	<!-- Styles of movement control buttons -->
 	<style id="panel.gridbag">
 		<attributes width="64px" height="64px" />
 	</style>
-
-
 	<style id="image.left">
 		<attributes filename="Interface/arrows.png" width="64px"
 			height="64px" imageMode="subImage:0,0,64,64" visibleToMouse="true" />
@@ -88,14 +128,11 @@
 		<attributes filename="Interface/arrows.png" width="64px"
 			height="64px" imageMode="subImage:64,64,64,64" visibleToMouse="true" />
 	</style>
+
 	<style id="image.quit">
-		<attributes filename="Interface/quit.png" width="64px"
-			height="64px" visibleToMouse="true" />
+		<attributes filename="Interface/quit.png" width="32px"
+			height="32px" visibleToMouse="true" />
 	</style>
 
-	<style id="text.message">
-		<attributes font="Fonts/UbuntuSmall.fnt" color="#000f"
-			backgroundColor="#fff4" textHAlign="left" />
-	</style>
 
 </nifty-styles>

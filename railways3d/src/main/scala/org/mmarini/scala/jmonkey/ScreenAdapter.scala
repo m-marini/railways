@@ -10,9 +10,9 @@ import de.lessvoid.nifty.controls.Controller
 /**
  * @author us00852
  */
-trait ScreenUtil {
+trait ScreenAdapter {
 
-  var screenOpt: Option[Screen] = None
+  def screenOpt: Option[Screen]
 
   /** Returns a nifty control */
   def controlById[T <: NiftyControl]: (String, Class[T]) => Option[T] = (id, clazz) =>

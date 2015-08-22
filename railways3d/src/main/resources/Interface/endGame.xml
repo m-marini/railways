@@ -4,8 +4,9 @@
 	xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
 
 	<useStyles filename="nifty-default-styles.xml" />
+	<useStyles filename="Interface/style.xml" />
 	<useControls filename="nifty-default-controls.xml" />
-		
+
 	<style id="performance-label">
 		<attributes font="Fonts/UbuntuMedium.fnt" color="#ffff" />
 	</style>
@@ -18,27 +19,27 @@
 			</effect>
 			<panel height="80%" width="80%" childLayout="vertical"
 				backgroundColor="#000e" padding="30px">
-				<text id="title" style="performance-label" text="End Game" />
+				<text id="title" text="End Game" style="performance-label" />
 				<panel childLayout="vertical">
 					<text style="performance-label" text="Duration" />
 					<text id="duration" style="performance-label" text="???" />
 				</panel>
 				<panel childLayout="vertical">
-					<text style="performance-label" text="Correct outcome train " />
-					<text id="correct-train" style="performance-label" text="???" />
-					<text id="correct-train-freq" style="performance-label" text="??? trains/h" />
-					<text id="correct-train-perc" style="performance-label" text="??? %" />
+					<text text="Errors" style="performance-label" />
+					<text id="error-train" text="??? trains" style="performance-label" />
+					<text id="error-train-freq" text="??? trains/h" style="performance-label" />
+					<text id="error-train-perc" text="??? %" style="performance-label" />
 				</panel>
 				<panel childLayout="vertical">
-					<text style="performance-label" text="Income train " />
-					<text id="income-train" style="performance-label" text="???" />
-					<text id="income-train-freq" style="performance-label" text="??? trains/h" />
+					<text text="Arrivals" style="performance-label" />
+					<text id="income-train" text="??? trains" style="performance-label" />
+					<text id="income-train-freq" text="??? trains/h" style="performance-label" />
 				</panel>
 				<panel childLayout="vertical">
-					<text style="performance-label" text="Outcome train " />
-					<text id="outcome-train" style="performance-label" text="???" />
-					<text id="outcome-train-freq" style="performance-label" text="??? trains/h" />
-					<text id="outcome-train-perc" style="performance-label" text="??? %" />
+					<text text="Departures" style="performance-label" />
+					<text id="outcome-train" text="??? trains" style="performance-label" />
+					<text id="outcome-train-freq" text="??? trains/h" style="performance-label" />
+					<text id="outcome-train-perc" text="??? %" style="performance-label" />
 				</panel>
 				<control id="ok" name="button" label="OK" />
 			</panel>

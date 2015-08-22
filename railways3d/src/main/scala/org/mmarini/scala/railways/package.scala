@@ -97,27 +97,30 @@ package object railways extends LazyLogging {
     var count = 0
     var sub: Option[Subscription] = None
 
-    Observable.create[T] { x =>
+    Observable.create[T] { observer =>
       {
         count = count + 1
-        if (count == 1) {
-          sub = Some(f.subscribe((y: T => T) => {
-            acc = y(acc)
-            subj.onNext(acc)
-          },
+        if (sub.isEmpty) {
+          sub = Some(f.subscribe(
+            (tx: T => T) => {
+              acc = tx(acc)
+              subj.onNext(acc)
+            },
             e => subj.onError(e),
             subj.onCompleted))
         }
+
         val txSub = subj.subscribe(
-          y => x.onNext(y),
-          e => x.onError(e),
-          x.onCompleted)
+          t => observer.onNext(t),
+          e => observer.onError(e),
+          observer.onCompleted)
+
         Subscription {
           count = count - 1
-          if (count == 0)
-            for (s <- sub) {
-              s.unsubscribe
-            }
+          if (count == 0) {
+            for (s <- sub) s.unsubscribe
+            sub = None
+          }
           txSub.unsubscribe()
         }
       }

@@ -7,6 +7,7 @@ import org.mmarini.scala.jmonkey.PopupController
 import org.mmarini.scala.railways.model.GameParameters
 import org.mmarini.scala.railways.model.GameStatus
 import org.mmarini.scala.railways.model.Pif
+import org.mmarini.scala.railways.model.RightAngle
 import com.jme3.light.AmbientLight
 import com.jme3.light.DirectionalLight
 import com.jme3.math.ColorRGBA
@@ -31,15 +32,127 @@ import scala.util.Try
  * wires the observable for camera viewpoint selections, time ticks and input actions
  */
 class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
-  val TrainCameraHeight = 3f
+
+  val TrainCameraHeight = 5f
+  val TrainHeadCameraDistance = 10f
+  val TrainCameraToDistance = 1f
+  val TrainCameraPitch = RightAngle / 9
 
   init
   subscription
+
+  private lazy val subscription =
+    CompositeSubscription(cameraSubOpt.toArray ++
+      trainPopupSubOpt ++
+      trainStatusSubOpt ++
+      performanceSubOpt ++
+      messageHistorySubOpt :+
+      messageDebugSub :+
+      stationRenderSub :+
+      vehicleRenderSub :+
+      gameStatusSub: _*)
 
   lazy val endGameObs = Subject[GameStatus]
 
   // Creates the initial game status
   private lazy val initialStatus = GameStatus(parameters)
+
+  // Creates the viewpoint map
+  private lazy val viewpointMap = (for {
+    v <- initialStatus.stationStatus.topology.viewpoints
+  } yield (v.id -> v)).toMap
+
+  lazy val gameStatusObs = {
+
+    // Creates the observable of time events
+    val timeEvents =
+      for {
+        time <- app.timeObs
+      } yield (status: GameStatus) => {
+        status.tick(time)
+      }
+
+    // Creates the observable of change status id
+    val selectRightIdObs = createActionIdObs("selectRight")
+
+    // Creates the observable for train command triggering
+    val cmdTrainObsOpt = for {
+      ctrl <- app.gameCtrlOpt
+      popup <- ctrl.trainPopupOpt
+      popupCtrl <- Option(popup.findControl(popup.getId, classOf[PopupController]))
+    } yield for {
+      (ev, data) <- trigger(popupCtrl.mousePrimaryClickedObs, objectSelectIdObs)
+      if (data(0) == "train")
+    } yield ev.getElement.getId match {
+      case "startTrain" => (status: GameStatus) => status.startTrain(data(1))
+      case "stopTrain" => (status: GameStatus) => status.stopTrain(data(1))
+      case "reverseTrain" => (status: GameStatus) => status.reverseTrain(data(1))
+      case _ => (status: GameStatus) => status
+    }
+
+    // Create semaphore popup selection
+    val semPopupResultObsOpt = for {
+      ctrl <- app.gameCtrlOpt
+      popup <- ctrl.semPopupOpt
+      popupCtrl <- Option(popup.findControl(popup.getId, classOf[PopupController]))
+    } yield trigger(popupCtrl.mousePrimaryClickedObs, objectSelectIdObs)
+
+    // Creates the observable for junction
+    val commandObsOpt = for {
+      o <- semPopupResultObsOpt
+    } yield for {
+      (ev, data) <- o
+      if (Set("junction", "track").contains(data(0)) && Set("clear", "lock").contains(ev.getElement.getId))
+    } yield (ev.getElement.getId, data(0)) match {
+      case ("clear", "junction") =>
+        (status: GameStatus) => status.unlockJunction(data(1))(data(2).toInt)
+        case ("lock", "junction") =>
+        (status: GameStatus) => status.lockJunction(data(1))(data(2).toInt)
+        case ("clear", "track") =>
+        (status: GameStatus) => status.unlockTrack(data(1))(data(2).toInt)
+        case ("lock", "track") =>
+        (status: GameStatus) => status.lockTrack(data(1))(data(2).toInt)
+    }
+
+    //    trackToogleStateObs.subscribe { x => logger.debug(s"${x}") }
+
+    // Creates block change state events
+    val blockToogleStateObs =
+      for {
+        data <- objectSelectIdObs
+        if (data(0) == "handler")
+      } yield {
+        (status: GameStatus) => status.toogleBlockStatus(data(1))(data(2).toInt)
+      }
+
+    val quitEventObsOpt = for {
+      ctrl <- app.gameCtrlOpt
+    } yield for {
+      ev <- ctrl.mousePrimaryClickedObs
+      if (ev.getElement.getId == "quit")
+    } yield (status: GameStatus) => status.quit
+
+    // Merges all observable to create n observable of all events
+    val txObsSeq =
+      cmdTrainObsOpt.toSeq ++
+        quitEventObsOpt ++
+        commandObsOpt :+
+        blockToogleStateObs :+
+        timeEvents
+
+    val events = for {
+      f <- txObsSeq.reduce((a, b) => a merge b)
+    } yield (status: GameStatus) =>
+      try { f(status) }
+      catch {
+        case t: Throwable =>
+          logger.error(t.getMessage, t)
+          throw t
+      }
+
+    // Creates the state observable
+    stateFlow(initialStatus)(events)
+  }
 
   // Creates the observable of change status id
   private def objectSelectIdPosObs = createActionIdObs("select")
@@ -47,24 +160,30 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   // Creates the observable of change status id
   private def objectSelectIdObs = for { (data, _) <- objectSelectIdPosObs } yield data
 
-  // Creates the viewpoint map
-  private lazy val viewpointMap = (for {
-    v <- initialStatus.stationStatus.topology.viewpoints
-  } yield (v.id -> v)).toMap
-
   /** Messages observer */
-  private def messagesObs =
-    for {
+  private def messagesObs = {
+    val msgsObs = for {
       status <- gameStatusObs
     } yield status.messages
+    msgsObs.flatMapIterable { x => x }
+  }
 
-  private def messagesSubOpt = None
-  for {
-    ctrl <- app.gameCtrlOpt
-  } yield messagesObs.subscribe(msgs => {
-    for { m <- msgs } { logger.debug("Messages {}", m) }
-    ctrl.showMsgs(msgs)
-  })
+  private def performanceObs = for { status <- gameStatusObs } yield status.performance
+
+  private def performanceSubOpt =
+    for {
+      ctrl <- app.gameCtrlOpt
+    } yield performanceObs.subscribe(ctrl.show _)
+
+  private def messageHistoryObs = history(messagesObs)(10)
+
+  private def messageHistorySubOpt =
+    for {
+      ctrl <- app.gameCtrlOpt
+    } yield messageHistoryObs.subscribe(ctrl.showMsgs _)
+
+  private def messageDebugSub =
+    messagesObs.subscribe { x => logger.debug(x.toString) }
 
   /** Creates observable of speed */
   private def speedObs = {
@@ -159,10 +278,12 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   }
 
+  private def trainSeqObs = for { status <- gameStatusObs } yield status.trains.toIndexedSeq
+
   /** Creates observable of */
   private def trainFollowerObs = {
-    // Creates the observable for train command triggering
-    val cmdTrainObsOpt = for {
+    // Creates the observable for train popup command triggering 
+    val cmdPopupTrainObsOpt = for {
       ctrl <- app.gameCtrlOpt
       popup <- ctrl.trainPopupOpt
       popupCtrl <- Option(popup.findControl(popup.getId, classOf[PopupController]))
@@ -171,10 +292,21 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
       if (ev.getElement.getId == "cameraTrain")
     } yield Option(data(1))
 
+    // Creates the observable for train status panel triggering 
+    val cmdPanelTrainObsOpt = for {
+      gameCtrl <- app.gameCtrlOpt
+      ctrl <- gameCtrl.trainCtrlOpt
+      trainSelectionObs <- ctrl.selectionObsOpt
+    } yield for {
+      ((row, _), trains) <- trigger(trainSelectionObs, trainSeqObs)
+    } yield Option(trains(row).id)
+
     val clearTrainObsOpt = for { o <- cameraSelectionObsOpt }
       yield for (_ <- o) yield None
 
-    val trainFollowerObs = mergeAll(cmdTrainObsOpt.toArray ++ clearTrainObsOpt: _*)
+    val trainFollowerObs = mergeAll(cmdPopupTrainObsOpt.toArray ++
+      clearTrainObsOpt ++
+      cmdPanelTrainObsOpt: _*)
 
     val x = for {
       (gameStatus, trainId) <- trigger(gameStatusObs, trainFollowerObs)
@@ -204,17 +336,18 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
 
   /** Creates observable of location at */
   private def locationAtObsOpt = {
-
+    // Camaera selected by panel
     val cameraAtObsOpt = for {
       o <- cameraSelectionObsOpt
     } yield for {
       vp <- o
     } yield vp.location
 
+    // Camera located at train
     val cameraTrainOptObs = for {
       train <- trainFollowerObs
     } yield for {
-      location <- train.headLocation
+      location <- train.locationAt(TrainHeadCameraDistance)
     } yield new Vector3f(
       -location.getX,
       TrainCameraHeight,
@@ -239,8 +372,11 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     val cameraTrainOptObs = for {
       train <- trainFollowerObs
     } yield for {
-      angle <- train.headDirection
-    } yield new Quaternion().fromAngleNormalAxis(angle, Vector3f.UNIT_Y).mult(Vector3f.UNIT_Z)
+      angle <- train.directionAt(TrainHeadCameraDistance, TrainCameraToDistance)
+    } yield new Quaternion().
+      fromAngleNormalAxis(angle, Vector3f.UNIT_Y).
+      mult(new Quaternion().fromAngleNormalAxis(TrainCameraPitch, Vector3f.UNIT_X)).
+      mult(Vector3f.UNIT_Z)
 
     val cameraTrainObs = for {
       locOpt <- cameraTrainOptObs
@@ -250,10 +386,6 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     for { o <- cameraDirObsOpt } yield o merge cameraTrainObs
   }
 
-  /** Creates observable of elapsed time */
-  private def timeObs =
-    for { (_, time) <- app.timeObs } yield time
-
   /** Subscribe for camera movement */
   private def cameraSubOpt: Option[Subscription] = {
     for {
@@ -261,7 +393,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
       dirToObs <- directionToObsOpt
     } yield {
       val (locObs, rotObs) = CameraUtils.createObservables(
-        timeObs,
+        app.timeObs,
         speedObs,
         rotationSpeedObs,
         rotateObs,
@@ -280,98 +412,6 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     }
   }
 
-  lazy val gameStatusObs = {
-
-    // Creates the observable of time events
-    val timeEvents =
-      for {
-        time <- timeObs
-      } yield (status: GameStatus) => {
-        status.tick(time)
-      }
-
-    // Creates the observable of change status id
-    val selectRightIdObs = createActionIdObs("selectRight")
-
-    // Creates the observable for train command triggering
-    val cmdTrainObsOpt = for {
-      ctrl <- app.gameCtrlOpt
-      popup <- ctrl.trainPopupOpt
-      popupCtrl <- Option(popup.findControl(popup.getId, classOf[PopupController]))
-    } yield for {
-      (ev, data) <- trigger(popupCtrl.mousePrimaryClickedObs, objectSelectIdObs)
-      if (data(0) == "train")
-    } yield ev.getElement.getId match {
-      case "startTrain" => (status: GameStatus) => status.startTrain(data(1))
-      case "stopTrain" => (status: GameStatus) => status.stopTrain(data(1))
-      case "reverseTrain" => (status: GameStatus) => status.reverseTrain(data(1))
-      case _ => (status: GameStatus) => status
-    }
-
-    // Create semaphore popup selection
-    val semPopupResultObsOpt = for {
-      ctrl <- app.gameCtrlOpt
-      popup <- ctrl.semPopupOpt
-      popupCtrl <- Option(popup.findControl(popup.getId, classOf[PopupController]))
-    } yield trigger(popupCtrl.mousePrimaryClickedObs, objectSelectIdObs)
-
-    // Creates the observable for junction
-    val commandObsOpt = for {
-      o <- semPopupResultObsOpt
-    } yield for {
-      (ev, data) <- o
-      if (Set("junction", "track").contains(data(0)) && Set("clear", "lock").contains(ev.getElement.getId))
-    } yield (ev.getElement.getId, data(0)) match {
-      case ("clear", "junction") =>
-        (status: GameStatus) => status.unlockJunction(data(1))(data(2).toInt)
-        case ("lock", "junction") =>
-        (status: GameStatus) => status.lockJunction(data(1))(data(2).toInt)
-        case ("clear", "track") =>
-        (status: GameStatus) => status.unlockTrack(data(1))(data(2).toInt)
-        case ("lock", "track") =>
-        (status: GameStatus) => status.lockTrack(data(1))(data(2).toInt)
-    }
-
-    //    trackToogleStateObs.subscribe { x => logger.debug(s"${x}") }
-
-    // Creates block change state events
-    val blockToogleStateObs =
-      for {
-        data <- objectSelectIdObs
-        if (data(0) == "handler")
-      } yield {
-        (status: GameStatus) => status.toogleBlockStatus(data(1))(data(2).toInt)
-      }
-
-    val quitEventObsOpt = for {
-      ctrl <- app.gameCtrlOpt
-    } yield for {
-      ev <- ctrl.mousePrimaryClickedObs
-      if (ev.getElement.getId == "quit")
-    } yield (status: GameStatus) => status.quit
-
-    // Merges all observable to create n observable of all events
-    val txObsSeq =
-      cmdTrainObsOpt.toSeq ++
-        quitEventObsOpt ++
-        commandObsOpt :+
-        blockToogleStateObs :+
-        timeEvents
-
-    val events = for {
-      f <- txObsSeq.reduce((a, b) => a merge b)
-    } yield (status: GameStatus) =>
-      try { f(status) }
-      catch {
-        case t: Throwable =>
-          logger.error(t.getMessage, t)
-          throw t
-      }
-
-    // Creates the state observable
-    stateFlow(initialStatus)(events)
-  }
-
   /** Subscribes for game status changes */
   private def gameStatusSub = {
     val endObs = for {
@@ -385,7 +425,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
     })
   }
 
-  /** Subscribes for trigger popup panels */
+  /** Subscribes for trigger pop up panels */
   private def trainPopupSubOpt =
     for {
       ctrl <- app.gameCtrlOpt
@@ -401,7 +441,7 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
       }
     })
 
-  /** Subscribe for Train Render */
+  /** Subscribe for train render */
   private def vehicleRenderSub = {
     // Creates train renderer transitions
     val vehicleRenderTxObs = for {
@@ -456,19 +496,9 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   /** Trains status subscription */
   private def trainStatusSubOpt =
     for {
-      ctrl <- app.gameCtrlOpt
-    } yield gameStatusObs.subscribe(status => {
-      ctrl.showTrains(status.trains)
-    })
-
-  private lazy val subscription =
-    CompositeSubscription(cameraSubOpt.toArray ++
-      trainPopupSubOpt ++
-      trainStatusSubOpt ++
-      messagesSubOpt :+
-      stationRenderSub :+
-      vehicleRenderSub :+
-      gameStatusSub: _*)
+      gameCtrl <- app.gameCtrlOpt
+      ctrl <- gameCtrl.trainCtrlOpt
+    } yield ctrl.subscribe(trainSeqObs)
 
   //------------------------------------------------------
   // Functions
@@ -502,8 +532,9 @@ class Game(app: Main.type, parameters: GameParameters) extends LazyLogging {
   /** Loads viewpoints list into hud panel */
   private def loadViewpoints {
     for {
-      ctrl <- app.gameCtrlOpt
-    } ctrl.showCameras(initialStatus.stationStatus.topology.viewpoints.map(_.id).toList)
+      gameCtrl <- app.gameCtrlOpt
+      ctrl <- gameCtrl.cameraCtrlOpt
+    } ctrl.show(initialStatus.stationStatus.topology.viewpoints.map(_.id).toList)
   }
 
   /** Unsubscribes all the observers when game ends */

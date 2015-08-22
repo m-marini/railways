@@ -27,7 +27,7 @@ object Head {
     } yield {
       val dir = p2.subtract(p1)
       val p0 = p1.add(dir.negate.mult(AxisDistance / dir.length))
-      val orientation = atan2(dir.x, -dir.y).toFloat
+      val orientation = atan2(dir.getX, -dir.getY).toFloat
       Head(id, p0, orientation)
     }
   }

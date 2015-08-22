@@ -29,31 +29,24 @@ import rx.lang.scala.Subscriber
 import rx.lang.scala.subscriptions.CompositeSubscription
 import org.mmarini.scala.railways.model.GameStatus
 import de.lessvoid.nifty.screen.ScreenController
+import org.mmarini.scala.jmonkey.SimpleAppAdapter
+import org.mmarini.scala.jmonkey.InputManagerAdapter
 
 /**
  *
  */
-object Main extends SimpleApplication with LazyLogging with NiftyUtil {
+object Main extends SimpleAppAdapter
+    with NiftyUtil
+    with InputManagerAdapter
+    with LazyLogging {
   val Width = 1200
   val Height = 768
-
-  private var niftyDisplay: Option[NiftyJmeDisplay] = None
 
   /** Returns the observer for camera location */
   var cameraLocationObserver: Option[Observer[Vector3f]] = None
 
   /** Returns the observer for camera location */
   var cameraRotationObserver: Option[Observer[Quaternion]] = None
-
-  private val _time = Subject[(SimpleApplication, Float)]()
-
-  private def screenNavigationSubrOpt = for { n <- niftyOpt } yield Subscriber((screenId: String) => n.gotoScreen(screenId))
-
-  /** Returns the action observable by name */
-  def actionObservable: String => Observable[ActionMapping] = (k) => inputManager.createActionMapping(k)
-
-  /** Returns the analog observable by name */
-  def analogObservable: String => Observable[AnalogMapping] = (k) => inputManager.createAnalogMapping(k)
 
   def mouseRelativeObservable: String => Observable[AnalogMapping] = (k) =>
     for { e <- analogObservable(k) } yield {
@@ -72,47 +65,10 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
   def optsCtrlOpt = screenControllerById[OptionsController]("opts-screen")
   def endGameCtrlOpt = screenControllerById[EndGameController]("end-game-screen")
 
-  private def endGameObs = for {
+  def endGameObs = for {
     game <- startGameObs
     endGame <- game.endGameObs
   } yield endGame
-
-  /** Observable of goto screen */
-  private def gotoScreenObs = {
-    // start-screen selection
-    val btnScreenMap = Map(
-      "optionsButton" -> "opts-screen",
-      "startButton" -> "game-screen")
-
-    // Start-screen
-    val btnStartNavObsOpt = for {
-      start <- startCtrlOpt
-    } yield for {
-      ev <- start.buttonClickedObs
-      if (btnScreenMap.contains(ev.getButton.getId))
-    } yield btnScreenMap(ev.getButton.getId)
-
-    // Option selection
-    val optsConfirmObsOpt = for {
-      opts <- optsCtrlOpt
-    } yield for {
-      ev <- opts.buttonClickedObs
-      if (ev.getButton.getId == "ok")
-    } yield "start"
-
-    val endGameScreenObsOpt = for {
-      ctrl <- endGameCtrlOpt
-    } yield for {
-      x <- ctrl.buttonClickedObs
-    } yield "start"
-
-    val toEndGameScreenObs = for { _ <- endGameObs } yield "end-game-screen"
-
-    mergeAll(btnStartNavObsOpt.toArray ++
-      optsConfirmObsOpt ++
-      endGameScreenObsOpt :+
-      toEndGameScreenObs: _*)
-  }
 
   private def showPerfSub =
     endGameObs.subscribe {
@@ -139,27 +95,12 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
     gameSubj
   }
 
-  /** Subscription to gotoScreen */
-  private def gotoScreenSubOpt = for {
-    n <- niftyOpt
-  } yield gotoScreenObs.subscribe((id) =>
-    try {
-      n.gotoScreen(id)
-    } catch {
-      case t: Throwable => logger.error(t.getMessage, t)
-    })
-
   /** Subscription to quit command */
-  private def quitSubOpt = {
-    val obsOpt = for {
-      start <- startCtrlOpt
-    } yield for {
-      ev <- start.buttonClickedObs
-      if (ev.getButton.getId == "quitButton")
-    } yield ev.getButton.getId
-
-    for { o <- obsOpt } yield o.subscribe(_ => stop)
-  }
+  private def quitSubOpt =
+    for {
+      ctrl <- startCtrlOpt
+    } yield ctrl.buttonClickedObs.subscribe(ev =>
+      if (ev.getButton.getId == "quitButton") stop)
 
   /** Subscription to show parameters from option screen */
   private def showParmsSubOpt =
@@ -172,7 +113,7 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
   private def startGameSub = startGameObs.subscribe()
 
   private lazy val subscriptions =
-    CompositeSubscription(gotoScreenSubOpt.toArray ++
+    CompositeSubscription(ScreenNavigation.subscribeOpt.toArray ++
       showParmsSubOpt ++
       quitSubOpt :+
       startGameSub :+
@@ -180,27 +121,23 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
 
   /** */
   override def simpleInitApp: Unit = {
+    super.simpleInitApp
+
     setDisplayStatView(false)
     setDisplayFps(false)
-    val nd = new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort)
-    val n = nd.getNifty
-
-    niftyOpt = Option(n)
+    flyCam.setEnabled(false)
 
     // Read your XML and initialize your custom ScreenController
-    try {
-      n.fromXml("Interface/start.xml", "start")
-      n.addXml("Interface/opts.xml")
-      n.addXml("Interface/game.xml")
-      n.addXml("Interface/endGame.xml")
-    } catch {
-      case ex: Exception => logger.error(ex.getMessage, ex)
-    }
+    for (n <- niftyOpt)
+      try {
+        n.fromXml("Interface/start.xml", "start")
+        n.addXml("Interface/opts.xml")
+        n.addXml("Interface/game.xml")
+        n.addXml("Interface/endGame.xml")
+      } catch {
+        case ex: Exception => logger.error(ex.getMessage, ex)
+      }
 
-    // attach the Nifty display to the gui view port as a processor
-    guiViewPort.addProcessor(nd)
-
-    flyCam.setEnabled(false)
     val camNode = new CameraNode("Motion cam", cam)
     rootNode.attachChild(camNode)
     camNode.setControlDir(ControlDirection.SpatialToCamera)
@@ -216,7 +153,6 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
 
     attachMapping
     subscriptions
-
   }
 
   /** Attaches mapping */
@@ -237,14 +173,6 @@ object Main extends SimpleApplication with LazyLogging with NiftyUtil {
       new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false))
     inputManager.addMapping("backwardCmd",
       new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true))
-  }
-
-  /** */
-  def timeObs: Observable[(SimpleApplication, Float)] = _time
-
-  /** */
-  override def simpleUpdate(tpf: Float) {
-    _time.onNext((this, tpf))
   }
 
   /** */

@@ -4,25 +4,25 @@
 package org.mmarini.scala.railways
 
 import org.mmarini.scala.jmonkey.ButtonClickedObservable
-import org.mmarini.scala.jmonkey.DefaultScreenController
 import org.mmarini.scala.railways.model.GameParameters
-
 import com.jme3.app.state.AbstractAppState
 import com.typesafe.scalalogging.LazyLogging
-
 import de.lessvoid.nifty.Nifty
-import de.lessvoid.nifty.controls._
+import de.lessvoid.nifty.controls.DropDown
 import de.lessvoid.nifty.controls.CheckBox
 import de.lessvoid.nifty.controls.Slider
 import de.lessvoid.nifty.screen.Screen
 import rx.lang.scala.Subject
+import org.mmarini.scala.jmonkey.ScreenControllerAdapter
+import de.lessvoid.nifty.screen.ScreenController
+import org.mmarini.scala.jmonkey.ScreenAdapter
 
 /**
  * @author us00852
  *
  */
-class OptionsController extends AbstractAppState
-    with DefaultScreenController
+class OptionsController extends ScreenControllerAdapter
+    with ScreenAdapter
     with ButtonClickedObservable
     with LazyLogging {
 

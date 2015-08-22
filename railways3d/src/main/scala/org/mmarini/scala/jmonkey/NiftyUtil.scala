@@ -6,13 +6,22 @@ import scala.util.Try
 import de.lessvoid.nifty.elements.Element
 import com.jme3.math.Vector2f
 import de.lessvoid.nifty.tools.SizeValue
+import rx.lang.scala.Observable
+import rx.lang.scala.Subscription
 
 /**
  * @author us00852
  */
 trait NiftyUtil extends LazyLogging {
-  var niftyOpt: Option[Nifty] = None
+  
+  def niftyOpt: Option[Nifty]
 
+  
+  def gotoScreenSubOpt(o: Observable[String]): Option[Subscription] = for {
+    n <- niftyOpt
+  } yield o.subscribe(screenId => n.gotoScreen(screenId))
+
+  
   /** */
   def screenById = (id: String) =>
     for {

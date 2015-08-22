@@ -88,27 +88,79 @@
 					<!-- Camera Panel -->
 
 					<!-- Panel with the list of predefined cameras -->
-
-					<panel id="cameraPanel" childLayout="horizontal"
-						backgroundColor="#0000" visible="true"
-						controller="org.mmarini.scala.railways.CameraController">
+					<panel id="cameraPanel" childLayout="vertical" visible="true">
+						<panel childLayout="horizontal" backgroundColor="#888f"
+							padding="5px" controller="org.mmarini.scala.railways.CameraController">
+						</panel>
+						<panel />
 					</panel>
 
 					<!-- Train Panel -->
 
 					<!-- Panel with the list of train -->
 
-					<panel id="trainPanel" childLayout="horizontal" visible="false"
-						backgroundColor="#000f" padding="5px"
-						controller="org.mmarini.scala.railways.TrainController" />
+					<panel id="trainPanel" childLayout="vertical" visible="false">
+						<panel childLayout="horizontal" backgroundColor="#000f"
+							padding="5px" controller="org.mmarini.scala.railways.TrainController" />
+						<panel />
+					</panel>
 
 					<!-- Message Panel -->
 
 					<!-- Panel with the list of messages -->
 
-					<panel id="messagesPanel" childLayout="horizontal"
-						backgroundColor="#0000" visible="false"
-						controller="org.mmarini.scala.railways.MessageController" />
+					<panel id="messagesPanel" childLayout="vertical" visible="false">
+						<panel childLayout="horizontal" backgroundColor="#888f"
+							padding="5px" controller="org.mmarini.scala.railways.MessageController"
+							width="*" />
+						<panel />
+					</panel>
+
+					<panel id="performancePanel" childLayout="vertical" visible="false">
+						<panel childLayout="vertical" backgroundColor="#888f" width="*">
+
+							<text text="Duration" style="text.performance-title" />
+							<panel childLayout="horizontal">
+								<image filename="Interface/arrival-train.png" style="image.perfomance-icon" />
+								<panel style="panel.performance-content">
+									<text id="perf-duration" style="text.performance-value" />
+								</panel>
+							</panel>
+
+							<text text="Arrivals" style="text.performance-title" />
+							<panel childLayout="horizontal">
+								<image filename="Interface/arrival-train.png" style="image.perfomance-icon" />
+								<panel style="panel.performance-content">
+									<text id="perf-arrivals" text="?" style="text.performance-value" />
+									<text id="perf-arrivals-freq" text="?"
+										style="text.performance-value" />
+								</panel>
+							</panel>
+
+							<text text="Departures" style="text.performance-title" />
+							<panel childLayout="horizontal">
+								<image filename="Interface/departure-train.png" style="image.perfomance-icon" />
+								<panel style="panel.performance-content">
+									<text id="perf-departures" text="?" style="text.performance-value" />
+									<text id="perf-departures-freq" text="?"
+										style="text.performance-value" />
+									<text id="perf-departures-perc" text="?"
+										style="text.performance-value" />
+								</panel>
+							</panel>
+
+							<text text="Errors" style="text.performance-title" />
+							<panel childLayout="horizontal">
+								<image filename="Interface/error-train.png" style="image.perfomance-icon" />
+								<panel style="panel.performance-content">
+									<text id="perf-errors" text="?" style="text.performance-value" />
+									<text id="perf-errors-freq" text="?" style="text.performance-value" />
+									<text id="perf-errors-perc" text="?" style="text.performance-value" />
+								</panel>
+							</panel>
+						</panel>
+						<panel />
+					</panel>
 				</panel>
 			</panel>
 		</layer>
@@ -118,6 +170,9 @@
 		<!-- Panel with the buttons to move the camera -->
 
 		<layer childLayout="vertical">
+			<panel childLayout="vertical" align="left">
+				<image id="quit" style="image.quit" />
+			</panel>
 			<panel />
 			<panel childLayout="vertical">
 				<panel childLayout="horizontal">
@@ -127,7 +182,7 @@
 				</panel>
 				<panel childLayout="horizontal">
 					<image id="left" style="image.left" />
-					<image id="quit" style="image.quit" />
+					<panel style="panel.gridbag" />
 					<image id="right" style="image.right" />
 				</panel>
 				<panel childLayout="horizontal">

@@ -16,8 +16,7 @@ import de.lessvoid.nifty.NiftyEventSubscriber
 import scala.util.Try
 import de.lessvoid.nifty.elements.Element
 import com.jme3.math.Vector2f
-import org.mmarini.scala.jmonkey.ScreenObservable
-import org.mmarini.scala.jmonkey.AbstractScreenController
+import org.mmarini.scala.jmonkey.ScreenControllerAdapter
 import org.mmarini.scala.jmonkey.MousePrimaryClickedObservable
 import org.mmarini.scala.jmonkey.MousePrimaryReleaseObservable
 import org.mmarini.scala.jmonkey.ListBoxSelectionChangedObservable
@@ -31,6 +30,8 @@ import org.mmarini.scala.railways.model.WaitForPassengerTrain
 import org.mmarini.scala.railways.model.WaitingForTrackTrain
 import org.mmarini.scala.railways.model.GamePerformance
 import de.lessvoid.nifty.elements.render.TextRenderer
+import org.mmarini.scala.jmonkey.ScreenAdapter
+import org.mmarini.scala.jmonkey.NiftyUtil
 
 /**
  * Controls the game screen
@@ -38,9 +39,9 @@ import de.lessvoid.nifty.elements.render.TextRenderer
  * It exposes a game start observer that creates a game for each event
  * The generated game handles the user event and clocks tick updating the rootNode of application.
  */
-class GameController extends AbstractAppState
-    with AbstractScreenController
-    with ScreenObservable
+class GameController extends ScreenControllerAdapter
+    with ScreenAdapter
+    with NiftyUtil
     with MousePrimaryClickedObservable
     with MousePrimaryReleaseObservable
     with ListBoxSelectionChangedObservable[String]
@@ -56,26 +57,10 @@ class GameController extends AbstractAppState
 
   private def msgCtrlOpt = controllerById("messagesPanel", classOf[MessageController])
 
-  /** Shows the camera views in the camera list panel */
-  def showCameras(cams: List[String]) {
-    for {
-      c <- controlById("camerasList", classOf[ListBox[String]])
-      item <- cams
-    } c.addItem(item)
-    for { ctrl <- cameraCtrlOpt } ctrl.showCameras(cams)
-  }
-
   /** Shows the messages in the messages list panel */
   def showMsgs(msgs: Seq[TrainMessage]) {
     for { ctrl <- msgCtrlOpt }
       ctrl.show(for { msg <- msgs } yield msg.toString)
-  }
-
-  /** Shows the trains in the trains list panel */
-  def showTrains(trains: Set[Train]) {
-    for {
-      ctrl <- trainCtrlOpt
-    } ctrl.show(trains.toSeq)
   }
 
   private def trainStatusString(train: Train): String = train match {
@@ -97,55 +82,48 @@ class GameController extends AbstractAppState
       showPopupAt(s, "trainPane", pos)
   }
 
-  private def duration = redererById("duration", classOf[TextRenderer])
+  private def durationOpt = redererById("perf-duration", classOf[TextRenderer])
+  private def incomeTrainOpt = redererById("perf-arrivals", classOf[TextRenderer])
+  private def incomeTrainFreqOpt = redererById("perf-arrivals-freq", classOf[TextRenderer])
 
-  private def correctTrain = redererById("correct-train", classOf[TextRenderer])
-
-  private def correctTrainFreq = redererById("correct-train-freq", classOf[TextRenderer])
-
-  private def correctTrainPerc = redererById("correct-train-perc", classOf[TextRenderer])
-
-  private def incomeTrain = redererById("income-train", classOf[TextRenderer])
-
-  private def incomeTrainFreq = redererById("income-train-freq", classOf[TextRenderer])
-
-  private def outcomeTrain = redererById("outcome-train", classOf[TextRenderer])
-
-  private def outcomeTrainFreq = redererById("outcome-train-freq", classOf[TextRenderer])
-
-  private def outcomeTrainPerc = redererById("outcome-train-perc", classOf[TextRenderer])
+  private def outcomeTrainOpt = redererById("perf-departures", classOf[TextRenderer])
+  private def outcomeTrainFreqOpt = redererById("perf-departures-freq", classOf[TextRenderer])
+  private def outcomeTrainPercOpt = redererById("perf-departures-perc", classOf[TextRenderer])
+  private def errorTrainOpt = redererById("perf-errors", classOf[TextRenderer])
+  private def errorTrainFreqOpt = redererById("perf-errors-freq", classOf[TextRenderer])
+  private def errorTrainPercOpt = redererById("perf-errors-perc", classOf[TextRenderer])
 
   /** Shows the performance result */
   def show(performance: GamePerformance) {
-    for (rend <- duration)
-      rend.setText(f"${(performance.elapsedTime / 60).toInt}%d '")
+    for (rend <- durationOpt)
+      rend.setText(f"${(performance.elapsedTime / 60).toInt}%d'")
 
-    for (rend <- correctTrain)
-      rend.setText(f"${performance.rightRoutedTrainCount}%d trains")
-    for (rend <- correctTrainFreq)
-      rend.setText(f"${performance.rightRoutedTrainCount / performance.elapsedTime * 3600}%g trains/h")
-    for (rend <- correctTrainPerc)
+    for (rend <- incomeTrainOpt)
+      rend.setText(f"${performance.arrivals}%d trains")
+    for (rend <- incomeTrainFreqOpt)
+      rend.setText(f"${3600 * performance.arrivals / performance.elapsedTime}%.0f trains/h")
+
+    for (rend <- outcomeTrainOpt)
+      rend.setText(f"${performance.departures}%d trains")
+    for (rend <- outcomeTrainFreqOpt)
+      rend.setText(f"${performance.departures / performance.elapsedTime * 3600}%.0f trains/h")
+    for (rend <- outcomeTrainPercOpt)
       rend.setText(
-        if (performance.exitedTrainCount > 0)
-          f"${performance.rightRoutedTrainCount * 100 / performance.exitedTrainCount}%d %%"
+        if (performance.arrivals > 0)
+          f"${100 * performance.departures / performance.arrivals}%d %%"
         else
           "0 %")
 
-    for (rend <- outcomeTrain)
-      rend.setText(f"${performance.exitedTrainCount}%d trains")
-    for (rend <- outcomeTrainFreq)
-      rend.setText(f"${performance.exitedTrainCount / performance.elapsedTime * 3600}%g trains/h")
-    for (rend <- outcomeTrainPerc)
+    for (rend <- errorTrainOpt)
+      rend.setText(f"${performance.errors}%d trains")
+    for (rend <- errorTrainFreqOpt)
+      rend.setText(f"${3600 * performance.errors / performance.elapsedTime}%.0f trains/h")
+    for (rend <- errorTrainPercOpt)
       rend.setText(
-        if (performance.enteredTrainCount > 0)
-          f"${performance.exitedTrainCount * 100 / performance.enteredTrainCount}%d %%"
+        if (performance.departures > 0)
+          f"${100 * performance.errors / performance.departures}%d %%"
         else
           "0 %")
-
-    for (rend <- incomeTrain)
-      rend.setText(f"${performance.enteredTrainCount}%d %%")
-    for (rend <- incomeTrainFreq)
-      rend.setText(f"${performance.enteredTrainCount / performance.elapsedTime * 3600}%g trains/h")
   }
 
 }

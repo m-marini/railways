@@ -7,6 +7,7 @@ import com.jme3.math.Vector2f
 import scala.math.min
 import scala.math.max
 import scala.math.sqrt
+import scala.math.atan2
 import com.typesafe.scalalogging.LazyLogging
 import org.mmarini.scala.railways.model.tracks.Track
 
@@ -28,7 +29,7 @@ trait Train {
   def size: Int
 
   /** Returns the speed of train */
-  def speed: Float 
+  def speed: Float
 
   /** Returns the exit id */
   def exitId: String
@@ -71,10 +72,16 @@ trait Train {
   def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)): Option[Train] = None
 
   /** Returns the head location */
-  def headLocation: Option[Vector2f] =
-    for { h <- head } yield h.location
+  def locationAt(distance: Float): Option[Vector2f] =
+    route.locationAt(location - distance)
 
   /** Returns the head location */
-  def headDirection: Option[Float] =
-    for { h <- head } yield h.orientation
+  def directionAt(headDistance: Float, ds: Float): Option[Float] =
+    for {
+      p0 <- locationAt(headDistance)
+      p1 <- locationAt(headDistance - ds)
+    } yield {
+      val dp = p0.subtract(p1)
+      atan2(dp.getX, -dp.getY).toFloat
+    }
 }

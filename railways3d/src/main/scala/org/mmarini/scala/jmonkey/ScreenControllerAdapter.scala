@@ -17,19 +17,26 @@ import de.lessvoid.nifty.controls.ButtonClickedEvent
  * @author us00852
  *
  */
-trait ScreenObservable extends ScreenUtil {
+class ScreenControllerAdapter extends ScreenController {
 
-  private val screenSubj = Subject[String]()
+  var niftyOpt: Option[Nifty] = None
+  var screenOpt: Option[Screen] = None
+  val screenObs = Subject[(String, ScreenControllerAdapter)]()
 
-  def screenObs: Observable[String] = screenSubj
+  /**   */
+  override def bind(nifty: Nifty, screen: Screen) {
+    niftyOpt = Some(nifty)
+    screenOpt = Some(screen)
+    for (s <- screenOpt) screenObs.onNext("bind", this)
+  }
 
   /**  */
   def onStartScreen {
-    for (s <- screenOpt) screenSubj.onNext("start")
+    for (s <- screenOpt) screenObs.onNext("start", this)
   }
 
   /** */
   def onEndScreen {
-    for (s <- screenOpt) screenSubj.onNext("end")
+    for (s <- screenOpt) screenObs.onNext("end", this)
   }
 }

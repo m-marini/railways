@@ -138,13 +138,13 @@ case class GameStatus(
       train.tick(time, status) match {
         case (Some(train), msgs) => status.putTrain(train) ++ msgs
         case (None, msgs) => {
-          val correctCountOpt = for {
+          val errorCountOpt = for {
             (track, _) <- train.trackTailLocation
             (block, _) <- stationStatus.extractJunctions(track)
-          } yield if (block.id == train.exitId) 1 else 0
+          } yield if (block.id != train.exitId) 1 else 0
           val newPerf = performance.
-            addRightRoutedTrainCount(correctCountOpt.getOrElse(0)).
-            addExitedTrainCount(1)
+            addErrors(errorCountOpt.getOrElse(0)).
+            addDepartures(1)
           status.removeTrain(train).setPerformance(newPerf) ++ msgs
         }
       })
@@ -167,7 +167,7 @@ case class GameStatus(
           status.putTrain(train) + TrainEnteredMsg(train.id)
         })
       newTrainStatus.setPerformance(performance.
-        addEnteredTrainCount(n).
+        addArrivals(n).
         addElapsedTime(time))
     }
   }
