@@ -15,7 +15,7 @@ import de.lessvoid.nifty.controls.ListBoxSelectionChangedEvent
  * @author us00852
  *
  */
-trait ListBoxSelectionChangedObservable[T] {
+trait ListBoxSelectionChangedObservable[T] extends LazyLogging {
 
   private val listBoxSelectionChangedSubj = Subject[ListBoxSelectionChangedEvent[T]]()
 
@@ -25,6 +25,7 @@ trait ListBoxSelectionChangedObservable[T] {
   /** Converts the camera events into camera event observer */
   @NiftyEventSubscriber(pattern = ".*")
   def onListBoxSelectionChanged(id: String, event: ListBoxSelectionChangedEvent[T]) {
+    logger.debug("List box selection {} changed {}", id, event)
     listBoxSelectionChangedSubj.onNext(event)
   }
 }

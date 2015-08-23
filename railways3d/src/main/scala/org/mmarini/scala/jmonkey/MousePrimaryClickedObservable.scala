@@ -14,7 +14,7 @@ import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
  * @author us00852
  *
  */
-trait MousePrimaryClickedObservable {
+trait MousePrimaryClickedObservable extends LazyLogging {
 
   private val mousePrimaryClickedSubj = Subject[NiftyMousePrimaryClickedEvent]()
 
@@ -23,6 +23,7 @@ trait MousePrimaryClickedObservable {
 
   @NiftyEventSubscriber(pattern = ".*")
   def select(id: String, event: NiftyMousePrimaryClickedEvent) {
+    logger.debug("Mouse clicked on {}: {}", id, event)
     mousePrimaryClickedSubj.onNext(event)
   }
 }

@@ -29,14 +29,4 @@ class CameraController extends ControllerAdapter
   override def setter = (_, col) => { if (col == 0) dummySetter else textSetter }
 
   override def builder = (col) => { if (col == 0) new ImageBuilder else new TextBuilder }
-
-  /** Shows the camera views in the camera list panel */
-  def show(cams: Seq[String]) {
-    val s = cams.toIndexedSeq
-    val xx = for { n <- s } yield IndexedSeq("", n)
-    setCells(xx)
-  }
-
-  /** Subscribe to cameras observable */
-  def subscribe(camsObs: Observable[Seq[String]]) = camsObs.subscribe(x => show _)
 }

@@ -5,9 +5,10 @@ package org.mmarini.scala.railways
 
 import org.mmarini.scala.jmonkey.ControllerAdapter
 import org.mmarini.scala.jmonkey.MousePrimaryClickedObservable
-import org.mmarini.scala.jmonkey.ScreenAdapter
-
+import org.mmarini.scala.jmonkey.ScreenObservables
 import com.typesafe.scalalogging.LazyLogging
+import rx.lang.scala.Observable
+import rx.lang.scala.Subscription
 
 /**
  * Controls the game screen
@@ -17,7 +18,7 @@ import com.typesafe.scalalogging.LazyLogging
  */
 class TabbedController extends ControllerAdapter
     with MousePrimaryClickedObservable
-    with ScreenAdapter
+    with ScreenObservables
     with LazyLogging {
 
   private val contentTabMap = Map(
@@ -26,28 +27,25 @@ class TabbedController extends ControllerAdapter
     "messageTab" -> "messagesPanel",
     "performanceTab" -> "performancePanel")
 
-  private val subscriptions = changeTabSubOpt
+  private val subscriptions = mousePrimaryClickedObs.subscribe(event => {
+    selectTab(event.getElement.getId)
+  })
 
   private def selectTab(tabId: String) {
     // hides or shows tab and content
     if (contentTabMap.contains(tabId)) {
       for {
         (tabId1, contentId) <- contentTabMap
-        tabElem <- elementById(tabId1)
-        contentElem <- elementById(contentId)
-      } if (tabId == tabId1) {
-        tabElem.setStyle("panel.selectedTab")
-        contentElem.show
-      } else {
-        tabElem.setStyle("panel.unselectedTab")
-        contentElem.hide
+      } {
+        (elementByIdObs(tabId1) combineLatest elementByIdObs(contentId)).subscribe(_ match {
+          case (tabElem, contentElem) if (tabId == tabId1) =>
+            tabElem.setStyle("panel.selectedTab")
+            contentElem.show
+          case (tabElem, contentElem) =>
+            tabElem.setStyle("panel.unselectedTab")
+            contentElem.hide
+        })
       }
     }
   }
-
-  private def changeTabSubOpt =
-    mousePrimaryClickedObs.subscribe(event => {
-      selectTab(event.getElement.getId)
-    })
-
 }

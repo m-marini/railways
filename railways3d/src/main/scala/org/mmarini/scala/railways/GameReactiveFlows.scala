@@ -1,0 +1,315 @@
+package org.mmarini.scala.railways
+
+import rx.lang.scala.Observable
+import rx.lang.scala.subscriptions.CompositeSubscription
+import rx.lang.scala.Subscription
+import org.mmarini.scala.railways.model.GameStatus
+import com.typesafe.scalalogging.LazyLogging
+import org.mmarini.scala.railways.model.CameraViewpoint
+import org.mmarini.scala.railways.model.GameParameters
+import com.jme3.scene.Spatial
+import scala.util.Try
+import com.jme3.util.SkyFactory
+import com.jme3.light.AmbientLight
+import com.jme3.light.DirectionalLight
+import com.jme3.math.ColorRGBA
+import com.jme3.math.Vector3f
+import org.mmarini.scala.railways.model.GameParameters
+import com.jme3.math.Quaternion
+import com.jme3.scene.CameraNode
+import rx.lang.scala.Subscriber
+import com.jme3.scene.control.CameraControl.ControlDirection
+import org.mmarini.scala.railways.model.CameraViewpoint
+import org.mmarini.scala.railways.model.Train
+import org.mmarini.scala.railways.model.RightAngle
+import org.mmarini.scala.railways.model.Pif
+import org.mmarini.scala.railways.model.GameParameters
+import org.mmarini.scala.railways.model.GameParameters
+
+/**
+ * @author us00852
+ */
+object GameReactiveFlows extends LazyLogging {
+
+  val TrainCameraHeight = 5f
+  val TrainHeadCameraDistance = 10f
+  val TrainCameraToDistance = 1f
+  val TrainCameraPitch = RightAngle / 9
+
+  // ======================================================
+  // Observables
+  // ======================================================
+
+  /** Creates the parameters generators from options panel */
+  def gameParamsObs: Observable[GameParameters] = {
+    val parmsObs = for {
+      ctrl <- GameViewAdapter.optionsCtrlObs
+    } yield {
+      val parmsObs = for {
+        _ <- GameViewAdapter.optionsButtonsObs
+      } yield ctrl.readParametersObs
+      Observable.just(OptionsController.DefaultParms) merge (parmsObs.flatten)
+    }
+    parmsObs.flatten
+  }
+
+  /** Creates the initial game status triggered by the start of game screen */
+  def initialGameStatusObs: Observable[GameStatus] =
+    for {
+      (_, parms) <- trigger(GameViewAdapter.gameScreenObs.filter(_._1 == "start"), gameParamsObs)
+    } yield GameStatus(parms)
+
+  /** Creates the observable of viewpoints */
+  def viewpointObs: Observable[Seq[CameraViewpoint]] =
+    for { status <- initialGameStatusObs } yield status.stationStatus.topology.viewpoints
+
+  /** Creates observable of camera selection */
+  def cameraSelectionObs: Observable[CameraViewpoint] =
+    for {
+      ((row, _), viewpoints) <- trigger(GameViewAdapter.cameraPanelObs, viewpointObs)
+    } yield viewpoints(row)
+
+  /** Creates the observable  of backstage of scene loading */
+  def backstageObs: Observable[Spatial] = {
+    val bo = for {
+      status <- initialGameStatusObs
+    } yield Observable.from(backstage(status))
+    GameViewAdapter.cameraNodeObs merge bo.flatten
+  }
+
+  /** Creates the observable of attach spatial */
+  def attachToRootObs: Observable[Spatial] = {
+    backstageObs
+  }
+
+  def trainFollowerObs: Observable[Train] =
+    Observable.never
+
+  /** Creates the observable of camera translation */
+  def cameraTranslationObs: Observable[Vector3f] = {
+    // Camera selected by panel
+    val cameraAtObs = for {
+      vp <- cameraSelectionObs
+    } yield vp.location
+
+    // Camera located at train
+    val cameraTrainOptObs = for {
+      train <- trainFollowerObs
+    } yield for {
+      location <- train.locationAt(TrainHeadCameraDistance)
+    } yield new Vector3f(
+      -location.getX,
+      TrainCameraHeight,
+      location.getY)
+
+    val cameraTrainObs = for {
+      locOpt <- cameraTrainOptObs
+      if (!locOpt.isEmpty)
+    } yield locOpt.get
+
+    cameraAtObs merge cameraTrainObs
+  }
+
+  /** Creates the observable of camera translation */
+  def cameraDirectionObs: Observable[Vector3f] = {
+    val cameraDirObsOpt = for {
+      vp <- cameraSelectionObs
+    } yield vp.direction
+
+    val cameraTrainOptObs = for {
+      train <- trainFollowerObs
+    } yield for {
+      angle <- train.directionAt(TrainHeadCameraDistance, TrainCameraToDistance)
+    } yield new Quaternion().
+      fromAngleNormalAxis(angle, Vector3f.UNIT_Y).
+      mult(new Quaternion().fromAngleNormalAxis(TrainCameraPitch, Vector3f.UNIT_X)).
+      mult(Vector3f.UNIT_Z)
+
+    val cameraTrainObs = for {
+      locOpt <- cameraTrainOptObs
+      if (!locOpt.isEmpty)
+    } yield locOpt.get
+    cameraDirObsOpt merge cameraTrainObs
+  }
+
+  /** Creates the observable of camera translation */
+  def cameraSpeedObs: Observable[Float] = {
+    // Creates the observable of up command transitions
+    val upObs = for {
+      action <- GameViewAdapter.upCommandActionObs
+    } yield if (action.keyPressed) 1f else 0f
+
+    // Creates the observable of down command transitions
+    val downObs = for {
+      action <- GameViewAdapter.downCommandActionObs
+    } yield if (action.keyPressed) -1f else 0f
+
+    // Create observable of pressed visual buttons
+    val buttonsPressObs =
+      for {
+        ev <- GameViewAdapter.gameMouseClickedObs
+        if (Set("up", "down").contains(ev.getElement.getId))
+      } yield ev.getElement.getId match {
+        case "up" => 1f
+        case "down" => -1f
+        case _ => 0f
+      }
+    val buttonsReleaseObs =
+      for {
+        ev <- GameViewAdapter.gameMouseReleasedObs
+        if (Set("up", "down").contains(ev.getElement.getId))
+      } yield 0f
+
+    buttonsPressObs merge
+      buttonsReleaseObs merge
+      upObs merge
+      downObs
+  }
+
+  /** Creates the observable of camera translation */
+  def cameraRotationSpeedObs: Observable[Float] = {
+    // Creates the observable of left command transitions
+    val leftObs = for {
+      action <- GameViewAdapter.leftCommandActionObs
+    } yield if (action.keyPressed) -1f else 0f
+
+    // Creates the observable of left command transitions
+    val rightObs = for {
+      action <- GameViewAdapter.rightCommandActionObs
+    } yield if (action.keyPressed) 1f else 0f
+
+    // Create observable of pressed visual buttons
+    val buttonsPressObs =
+      for {
+        ev <- GameViewAdapter.gameMouseClickedObs
+        if (Set("left", "right").contains(ev.getElement.getId))
+      } yield ev.getElement.getId match {
+        case "left" => -1f
+        case "right" => 1f
+      }
+
+    val buttonsReleaseObs =
+      for {
+        ev <- GameViewAdapter.gameMouseReleasedObs
+        if (Set("left", "right").contains(ev.getElement.getId))
+      } yield 0f
+
+    buttonsPressObs merge
+      buttonsReleaseObs merge
+      leftObs merge
+      rightObs
+  }
+
+  /** Creates the observable of camera translation */
+  def cameraRotationObs: Observable[Float] = {
+    // Creates the observable of xMouse axis and right button
+    val xMouseButtonObs = for {
+      (analog, action) <- trigger(GameViewAdapter.xRelativeAxisObs,
+        GameViewAdapter.selectRightActionObs)
+    } yield (analog.position.getX, action.keyPressed)
+
+    // Filters the values of last two values with button press and
+    // transforms to camera status transition 
+    for {
+      seq <- history(xMouseButtonObs)(2)
+      if (seq.size > 1 && seq.forall(p => p._2))
+    } yield (seq(0)._1 - seq(1)._1) * Pif
+
+  }
+
+  def cameraMovementObs =
+    CameraUtils.createObservables(
+      GameViewAdapter.timeObs,
+      cameraSpeedObs,
+      cameraRotationSpeedObs,
+      cameraRotationObs,
+      GameViewAdapter.forwardAnalogObs,
+      GameViewAdapter.backwardAnalogObs,
+      cameraTranslationObs,
+      cameraDirectionObs)
+
+  //  trace("==> rotation", cameraMovementObs._1)
+
+  // ======================================================
+  // Subscriptions
+  // ======================================================
+
+  /** Subscription to quit command */
+  private def quitSub: Subscription = GameViewAdapter.quitSub(
+    GameViewAdapter.startButtonsObs.filter(_.getButton.getId == "quitButton"))
+
+  /** Subscribes for parameter changes to startParameters */
+  private def startPanelSub: Subscription =
+    (GameViewAdapter.startCtrlObs combineLatest gameParamsObs).subscribe(
+      _ match { case (ctrl, parms) => ctrl.show(parms) })
+
+  /** Subscribes for camera viewpoint changes to camera panel */
+  private def cameraPanelSub: Subscription =
+    (GameViewAdapter.cameraCtrlObs combineLatest viewpointObs).subscribe(_ match {
+      case (ctrl, viewpoints) =>
+        val cells = for { v <- viewpoints } yield { IndexedSeq("", v.id) }
+        ctrl.setCell(cells.toIndexedSeq)
+    })
+
+  /** Subscribes for attach spatials to root */
+  private def attachToRootSub: Subscription =
+    GameViewAdapter.attachToRootSub(attachToRootObs)
+
+  /** Subscribes for camera movements */
+  def cameraMovementSub = {
+    val (locObs, rotObs) = cameraMovementObs
+
+    CompositeSubscription(
+      cameraTranslationSub(locObs),
+      cameraRotationSub(rotObs))
+  }
+
+  /** Subscribes for camera translations */
+  private def cameraTranslationSub(obs: Observable[Vector3f]): Subscription =
+    (obs combineLatest GameViewAdapter.cameraNodeObs).subscribe(_ match {
+      case (location, cameraNode) => cameraNode.setLocalTranslation(location)
+    })
+
+  /** Subscribes for camera rotations */
+  private def cameraRotationSub(obs: Observable[Quaternion]): Subscription =
+    (obs combineLatest GameViewAdapter.cameraNodeObs).subscribe(_ match {
+      case (rotation, cameraNode) => cameraNode.setLocalRotation(rotation)
+    })
+
+  /** Composes all subscriptions */
+  def gameFlowSub = {
+    CompositeSubscription(
+      startPanelSub,
+      cameraPanelSub,
+      attachToRootSub,
+      cameraMovementSub,
+      quitSub)
+  }
+
+  // ======================================================
+  // Function
+  // ======================================================
+
+  /** Creates sky */
+  private lazy val sky = {
+    // Load sky
+    val SkyboxIndex = Seq("east", "west", "north", "south", "up", "down")
+    val assetManager = Main.getAssetManager
+    val skyTry = Try {
+      val imgs = for {
+        idx <- SkyboxIndex
+      } yield assetManager.loadTexture(s"Textures/sky/desert_${idx}.png")
+      SkyFactory.createSky(assetManager, imgs(0), imgs(1), imgs(2), imgs(3), imgs(4), imgs(5))
+    }
+
+    for { e <- skyTry.failed } logger.error(e.getMessage, e)
+    skyTry.toOption.toSeq
+  }
+
+  /** Create the backstage */
+  private def backstage(status: GameStatus): Seq[Spatial] = {
+    // Creates the terrain builder
+    val terrainTry = TerrainBuilder.build(Main.getAssetManager, Main.getCamera)
+    sky ++ terrainTry.toOption
+  }
+}

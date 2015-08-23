@@ -41,20 +41,4 @@ class TrainController extends ControllerAdapter
   else
     "text.selectable-light-panel"
 
-  /** Shows the camera views in the camera list panel */
-  private def show(trains: Seq[Train]) {
-    val cells = for { t <- trains.toIndexedSeq }
-      yield IndexedSeq(
-      t.id.toUpperCase,
-      t.exitId.toUpperCase,
-      "---",
-      f"${(t.speed * 3.6).toInt}%d")
-
-    setCells(cells)
-  }
-
-  /** Subscribes for train status changes */
-  def subscribe(trainsObs: Observable[Seq[Train]]): Subscription =
-    trainsObs.subscribe(x => show _)
-
 }

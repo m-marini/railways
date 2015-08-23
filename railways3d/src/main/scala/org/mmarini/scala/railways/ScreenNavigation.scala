@@ -1,5 +1,8 @@
 package org.mmarini.scala.railways
 
+import rx.lang.scala.Observable
+import rx.lang.scala.Subscription
+
 /**
  * @author us00852
  */
@@ -13,35 +16,25 @@ object ScreenNavigation {
       "startButton" -> "game-screen")
 
     // Start-screen
-    val btnStartNavObsOpt = for {
-      start <- GameViewAdapter.startCtrlOpt
-    } yield for {
-      ev <- start.buttonClickedObs
+    val btnStartNavObs = for {
+      ev <- GameViewAdapter.startButtonsObs
       if (btnScreenMap.contains(ev.getButton.getId))
     } yield btnScreenMap(ev.getButton.getId)
 
     // Option selection
-    val optsConfirmObsOpt = for {
-      opts <- GameViewAdapter.optionsCtrlOpt
-    } yield for {
-      ev <- opts.buttonClickedObs
+    val optsConfirmObs = for {
+      ev <- GameViewAdapter.optionsButtonsObs
       if (ev.getButton.getId == "ok")
     } yield "start"
 
-    val endGameScreenObsOpt = for {
-      ctrl <- GameViewAdapter.endGameCtrlOpt
-    } yield for {
-      x <- ctrl.buttonClickedObs
-    } yield "start"
+    val endGameScreenObs = for { x <- GameViewAdapter.endGameButtonsObs } yield "start"
 
-    val toEndGameScreenObs = for { _ <- Main.endGameObs } yield "end-game-screen"
-
-    mergeAll(btnStartNavObsOpt.toArray ++
-      optsConfirmObsOpt ++
-      endGameScreenObsOpt :+
-      toEndGameScreenObs: _*)
+    btnStartNavObs merge
+      optsConfirmObs merge
+      endGameScreenObs
   }
 
   /** Subscription to gotoScreen */
-  def subscribeOpt = Main.gotoScreenSubOpt(gotoScreenObs)
+  def gotoScreenSub: Subscription = gotoScreenObs.subscribe(id => GameViewAdapter.gotoScreen(id))
+
 }

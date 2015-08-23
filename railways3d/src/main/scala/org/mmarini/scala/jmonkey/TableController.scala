@@ -1,6 +1,8 @@
 package org.mmarini.scala.jmonkey
 
 import rx.lang.scala.Observable
+import de.lessvoid.nifty.Nifty
+import de.lessvoid.nifty.screen.Screen
 import de.lessvoid.nifty.builder.TextBuilder
 import de.lessvoid.nifty.builder.ElementBuilder
 import de.lessvoid.nifty.elements.Element
@@ -8,6 +10,7 @@ import de.lessvoid.nifty.builder.PanelBuilder
 import collection.JavaConversions._
 import de.lessvoid.nifty.elements.render.TextRenderer
 import de.lessvoid.nifty.elements.render.ImageRenderer
+import rx.lang.scala.Subscription
 
 /**
  * table-panel,center
@@ -18,10 +21,10 @@ import de.lessvoid.nifty.elements.render.ImageRenderer
  * @author us00852
  */
 trait TableController extends MousePrimaryClickedObservable
-    with NiftyUtil
-    with ScreenAdapter {
+    with NiftyObservables
+    with ScreenObservables {
 
-  def elementOpt: Option[Element]
+  def elementObs: Observable[Element]
 
   val DefaultColumnElementStyle = "panel.table-column"
   val DefaultCellStyle = "nifty-label"
@@ -50,8 +53,8 @@ trait TableController extends MousePrimaryClickedObservable
 
   val imageSetter: (Element, String) => Unit = (elem, text) =>
     for {
-      nifty <- niftyOpt
-      screen <- screenOpt
+      nifty <- niftyObs
+      screen <- screenObs
     } {
       elem.getRenderer(classOf[ImageRenderer]).
         setImage(nifty.getRenderEngine.createImage(screen, text, false))
@@ -61,11 +64,11 @@ trait TableController extends MousePrimaryClickedObservable
 
   // change the image
   /** */
-  private def resize(n: Int, m: Int) = for {
-    nifty <- niftyOpt
-    screen <- screenOpt
-    parent <- elementOpt
-  } yield {
+  private def resize(nifty: Nifty,
+    screen: Screen,
+    parent: Element,
+    n: Int,
+    m: Int): IndexedSeq[Element] = {
     val pid = Option(parent.getId).getOrElse(parent.hashCode().toString())
     val m0 = colElements.size
     val headerSize = headerOpt.size
@@ -127,43 +130,51 @@ trait TableController extends MousePrimaryClickedObservable
   }
 
   /** */
-  def setCells(cells: IndexedSeq[IndexedSeq[String]]) {
+  private def setCells(nifty: Nifty,
+    screen: Screen,
+    parent: Element,
+    cells: IndexedSeq[IndexedSeq[String]]) {
     val n = cells.size
     val m = colCount(cells)
-    val colElements1 = resize(n, m)
+    val colElements1 = resize(nifty, screen, parent, n, m)
     for {
-      colElems <- colElements1
+      (colElem, colIdx) <- colElements1 zipWithIndex
     } {
+      val elems = colElem.getElements
       for {
-        (colElem, colIdx) <- colElems zipWithIndex
+        (cellElem, rowIdx) <- elems.drop(headerOpt.size) zipWithIndex
       } {
-        val elems = colElem.getElements
-        for {
-          (cellElem, rowIdx) <- elems.drop(headerOpt.size) zipWithIndex
-        } {
-          val value = cells(rowIdx)(colIdx)
-          setter(rowIdx, colIdx)(cellElem, value)
-        }
+        val value = cells(rowIdx)(colIdx)
+        setter(rowIdx, colIdx)(cellElem, value)
       }
-      colElements = colElems
     }
+    colElements = colElements1
+  }
+
+  /** Subscribes for cell values */
+  def setCell(cells: IndexedSeq[IndexedSeq[String]]): Subscription = {
+    val ctxObs = for {
+      nifty <- niftyObs
+      screen <- screenObs
+      parent <- elementObs
+    } yield (nifty, screen, parent)
+    ctxObs.subscribe(_ match {
+      case (nifty, screen, parent) => setCells(nifty, screen, parent, cells)
+    })
   }
 
   /** */
-  def selectionObsOpt: Option[Observable[(Int, Int)]] =
-    for {
-      parent <- elementOpt
+  def selectionObsOpt: Observable[(Int, Int)] = {
+    val idxOptObs = for {
+      parent <- elementObs
+      ev <- mousePrimaryClickedObs
     } yield {
       val pid = Option(parent.getId).getOrElse(parent.hashCode().toString())
-      val idxOptObs = for {
-        ev <- mousePrimaryClickedObs
-      } yield for {
+      for {
         matcher <- s"$pid-(\\d*)-(\\d*)".r.findFirstMatchIn(ev.getElement.getId)
         if (matcher.groupCount == 2)
       } yield (matcher.group(1).toInt, matcher.group(2).toInt)
-      for {
-        x <- idxOptObs
-        if (!x.isEmpty)
-      } yield x.get
     }
+    for { idxOpt <- idxOptObs if (!idxOpt.isEmpty) } yield idxOpt.get
+  }
 }

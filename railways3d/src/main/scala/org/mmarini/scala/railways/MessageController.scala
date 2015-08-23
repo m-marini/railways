@@ -21,9 +21,4 @@ class MessageController extends ControllerAdapter
     with LazyLogging {
 
   override def cellStyle = (_, _) => "text.message"
-
-  /** Shows the camera views in the camera list panel */
-  def show(msgs: Seq[String]) {
-    setCells(for (m <- msgs.toIndexedSeq) yield IndexedSeq(m))
-  }
 }

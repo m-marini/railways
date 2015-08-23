@@ -12,23 +12,26 @@ import rx.lang.scala.Subscription
  * @author us00852
  */
 class SimpleAppAdapter extends SimpleApplication {
-  var niftyDisplayOpt: Option[NiftyJmeDisplay] = None
-  var niftyOpt: Option[Nifty] = None
+
+  val bindObs = Subject[(NiftyJmeDisplay)]()
+
+  val niftyDisplayObs = bindObs.cache(1)
+
+  niftyDisplayObs.subscribe()
+
+  def niftyObs: Observable[Nifty] = for { nd <- niftyDisplayObs } yield nd.getNifty
 
   val timeObs: Subject[Float] = Subject()
 
   /** */
   override def simpleInitApp: Unit = {
     val nd = new NiftyJmeDisplay(assetManager, inputManager, audioRenderer, guiViewPort)
-    niftyDisplayOpt = Option(nd)
-    niftyOpt = Option(nd.getNifty)
-
-    // attach the Nifty display to the gui view port as a processor
     guiViewPort.addProcessor(nd)
+    bindObs.onNext(nd)
+    bindObs.onCompleted()
   }
 
   override def simpleUpdate(tpf: Float) {
     timeObs.onNext(tpf)
   }
-
 }

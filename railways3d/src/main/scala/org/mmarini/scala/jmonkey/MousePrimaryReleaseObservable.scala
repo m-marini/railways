@@ -4,18 +4,17 @@
 package org.mmarini.scala.jmonkey
 
 import com.typesafe.scalalogging.LazyLogging
-import de.lessvoid.nifty.controls.ButtonClickedEvent
+
+import de.lessvoid.nifty.NiftyEventSubscriber
+import de.lessvoid.nifty.elements.events.NiftyMousePrimaryReleaseEvent
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
-import de.lessvoid.nifty.NiftyEventSubscriber
-import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
-import de.lessvoid.nifty.elements.events.NiftyMousePrimaryReleaseEvent
 
 /**
  * @author us00852
  *
  */
-trait MousePrimaryReleaseObservable {
+trait MousePrimaryReleaseObservable extends LazyLogging {
 
   private val mousePrimaryReleaseSubj = Subject[NiftyMousePrimaryReleaseEvent]()
 
@@ -24,6 +23,7 @@ trait MousePrimaryReleaseObservable {
 
   @NiftyEventSubscriber(pattern = ".*")
   def select(id: String, event: NiftyMousePrimaryReleaseEvent) {
+    logger.debug("Mouse released on {}: {}", id, event)
     mousePrimaryReleaseSubj.onNext(event)
   }
 }

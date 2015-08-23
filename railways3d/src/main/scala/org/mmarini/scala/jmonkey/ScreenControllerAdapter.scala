@@ -12,31 +12,47 @@ import rx.lang.scala.Subject
 import rx.lang.scala.Observable
 import de.lessvoid.nifty.NiftyEventSubscriber
 import de.lessvoid.nifty.controls.ButtonClickedEvent
+import com.typesafe.scalalogging.LazyLogging
+import de.lessvoid.nifty.elements.render.ElementRenderer
+import de.lessvoid.nifty.controls.Controller
 
 /**
  * @author us00852
  *
  */
-class ScreenControllerAdapter extends ScreenController {
+class ScreenControllerAdapter extends ScreenController with LazyLogging {
 
-  var niftyOpt: Option[Nifty] = None
-  var screenOpt: Option[Screen] = None
-  val screenObs = Subject[(String, ScreenControllerAdapter)]()
+  val bindObs = Subject[(Nifty, Screen)]()
+
+  private val cache = bindObs.first.cache(1)
+
+  cache.subscribe()
+
+  def niftyObs: Observable[Nifty] = for (x <- cache) yield x._1
+
+  def screenObs: Observable[Screen] = for (x <- cache) yield x._2
+
+  val screenEventObs = Subject[(String, ScreenControllerAdapter)]()
+
+  logger.debug("Screen controller created")
 
   /**   */
   override def bind(nifty: Nifty, screen: Screen) {
-    niftyOpt = Some(nifty)
-    screenOpt = Some(screen)
-    for (s <- screenOpt) screenObs.onNext("bind", this)
+    screenEventObs.onNext("bind", this)
+    bindObs.onNext((nifty, screen))
+    bindObs.onCompleted()
+    logger.debug("Screen controller bound to {}", screen)
   }
 
   /**  */
-  def onStartScreen {
-    for (s <- screenOpt) screenObs.onNext("start", this)
+  override def onStartScreen {
+    logger.debug("Screen controller {} on start screen", this)
+    screenEventObs.onNext("start", this)
   }
 
   /** */
-  def onEndScreen {
-    for (s <- screenOpt) screenObs.onNext("end", this)
+  override def onEndScreen {
+    logger.debug("Screen controller {} on end screen", this)
+    screenEventObs.onNext("end", this)
   }
 }

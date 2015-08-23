@@ -23,12 +23,8 @@ class PopupController extends ControllerAdapter
 
   /** Close this popup */
   def closePopup {
-    for {
-      nifty <- niftyOpt
-      popup <- elementOpt
-    } {
-      nifty.closePopup(popup.getId)
-    }
+    val o = niftyObs combineLatest elementObs
+    o.subscribe(x => x._1.closePopup(x._2.getId))
   }
 
 }

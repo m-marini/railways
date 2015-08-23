@@ -5,7 +5,7 @@ package org.mmarini.scala.railways
 
 import org.mmarini.scala.jmonkey.ActionMapping
 import org.mmarini.scala.jmonkey.AnalogMapping
-import org.mmarini.scala.jmonkey.NiftyUtil
+import org.mmarini.scala.jmonkey.NiftyObservables
 import com.jme3.app.SimpleApplication
 import com.jme3.input.KeyInput
 import com.jme3.input.MouseInput
@@ -27,133 +27,85 @@ import com.jme3.input.controls.JoyAxisTrigger
 import com.jme3.input.JoyInput
 import rx.lang.scala.Subscriber
 import rx.lang.scala.subscriptions.CompositeSubscription
-import org.mmarini.scala.railways.model.GameStatus
 import de.lessvoid.nifty.screen.ScreenController
 import org.mmarini.scala.jmonkey.SimpleAppAdapter
-import org.mmarini.scala.jmonkey.InputManagerAdapter
+import org.mmarini.scala.jmonkey.InputManagerObservables
+import org.mmarini.scala.jmonkey.RootNodeObservables
+import com.jme3.light.DirectionalLight
+import com.jme3.light.AmbientLight
+import scala.util.Try
+import com.jme3.math.ColorRGBA
 
 /**
  *
  */
 object Main extends SimpleAppAdapter
-    with NiftyUtil
-    with InputManagerAdapter
+    with NiftyObservables
+    with RootNodeObservables
+    with InputManagerObservables
     with LazyLogging {
   val Width = 1200
   val Height = 768
 
-  /** Returns the observer for camera location */
-  var cameraLocationObserver: Option[Observer[Vector3f]] = None
-
-  /** Returns the observer for camera location */
-  var cameraRotationObserver: Option[Observer[Quaternion]] = None
-
-  def mouseRelativeObservable: String => Observable[AnalogMapping] = (k) =>
+  def mouseRelativeObs: String => Observable[AnalogMapping] = (k) =>
     for { e <- analogObservable(k) } yield {
       val p = new Vector2f(e.position.getX / Width, e.position.getY / Height).multLocal(2).subtractLocal(1f, 1f)
       AnalogMapping(e.name, e.value, p, e.tpf)
     }
 
-  def mouseRelativeActionObservable: String => Observable[ActionMapping] = (k) =>
-    for { e <- actionObservable(k) } yield {
-      val p = new Vector2f(e.position.getX / Width, e.position.getY / Height).multLocal(2).subtractLocal(1f, 1f)
-      ActionMapping(e.name, e.keyPressed, p, e.tpf)
-    }
-
-  def gameCtrlOpt = screenControllerById[GameController]("game-screen")
-  def startCtrlOpt = screenControllerById[StartController]("start")
-  def optsCtrlOpt = screenControllerById[OptionsController]("opts-screen")
-  def endGameCtrlOpt = screenControllerById[EndGameController]("end-game-screen")
-
-  def endGameObs = for {
-    game <- startGameObs
-    endGame <- game.endGameObs
-  } yield endGame
-
-  private def showPerfSub =
-    endGameObs.subscribe {
-      status =>
-        for {
-          ctrl <- endGameCtrlOpt
-        } ctrl.show(status.performance)
-    }
-
-  /** Game observable */
-  private lazy val startGameObs = {
-    val gameSubj = Subject[Game]()
-
-    val sub = for {
-      opts <- optsCtrlOpt
-      game <- gameCtrlOpt
-    } yield {
-      val obs = for {
-        id <- game.screenObs
-        if (id == "start")
-      } yield id
-      obs.subscribe(_ => gameSubj.onNext(new Game(this, opts.parameters)))
-    }
-    gameSubj
-  }
-
-  /** Subscription to quit command */
-  private def quitSubOpt =
-    for {
-      ctrl <- startCtrlOpt
-    } yield ctrl.buttonClickedObs.subscribe(ev =>
-      if (ev.getButton.getId == "quitButton") stop)
-
-  /** Subscription to show parameters from option screen */
-  private def showParmsSubOpt =
-    for {
-      start <- startCtrlOpt
-      opts <- optsCtrlOpt
-    } yield opts.buttonClickedObs.subscribe(_ => start.show(opts.parameters))
-
-  /** Subscription to start game */
-  private def startGameSub = startGameObs.subscribe()
-
-  private lazy val subscriptions =
-    CompositeSubscription(ScreenNavigation.subscribeOpt.toArray ++
-      showParmsSubOpt ++
-      quitSubOpt :+
-      startGameSub :+
-      showPerfSub: _*)
-
-  /** */
-  override def simpleInitApp: Unit = {
-    super.simpleInitApp
-
+  niftyObs.subscribe(nifty => {
     setDisplayStatView(false)
     setDisplayFps(false)
     flyCam.setEnabled(false)
 
     // Read your XML and initialize your custom ScreenController
-    for (n <- niftyOpt)
-      try {
-        n.fromXml("Interface/start.xml", "start")
-        n.addXml("Interface/opts.xml")
-        n.addXml("Interface/game.xml")
-        n.addXml("Interface/endGame.xml")
-      } catch {
-        case ex: Exception => logger.error(ex.getMessage, ex)
-      }
-
-    val camNode = new CameraNode("Motion cam", cam)
-    rootNode.attachChild(camNode)
-    camNode.setControlDir(ControlDirection.SpatialToCamera)
-    camNode.setEnabled(true)
-
-    cameraLocationObserver = Some(Observer((location: Vector3f) => {
-      camNode.setLocalTranslation(location)
-    }))
-
-    cameraRotationObserver = Some(Observer((rotation: Quaternion) => {
-      camNode.setLocalRotation(rotation)
-    }))
+    try {
+      nifty.fromXml("Interface/start.xml", "start")
+      nifty.addXml("Interface/opts.xml")
+      nifty.addXml("Interface/game.xml")
+      nifty.addXml("Interface/endGame.xml")
+    } catch {
+      case ex: Exception => logger.error(ex.getMessage, ex)
+    }
 
     attachMapping
-    subscriptions
+
+    val lt = lightsTry
+    for { e <- lt.failed } logger.error(e.getMessage, e)
+    for {
+      lightSeq <- lt
+      light <- lightSeq
+    } getRootNode.addLight(light)
+  })
+
+  val sub1 = GameReactiveFlows.gameFlowSub
+  val sub2 = ScreenNavigation.gotoScreenSub
+
+  /** Creates ambient light */
+  private def ambientLightTry = Try {
+    val ambLight = new AmbientLight
+    ambLight.setColor(ColorRGBA.White.mult(1.3f))
+    ambLight
   }
+
+  /** Creates sun light */
+  private def sunLightTry = Try {
+    val sunLight = new DirectionalLight
+    sunLight.setColor(ColorRGBA.White.mult(1.3f));
+    sunLight.setDirection(Vector3f.UNIT_XYZ.negate().normalizeLocal())
+
+    val sunLight1 = new DirectionalLight
+    sunLight1.setColor(ColorRGBA.White.mult(1.3f));
+    sunLight1.setDirection(new Vector3f(1f, -1f, 1f).normalizeLocal())
+
+    Seq(sunLight, sunLight1)
+  }
+
+  /** Create lights */
+  private def lightsTry = for {
+    a <- ambientLightTry
+    sl <- sunLightTry
+  } yield sl :+ a
 
   /** Attaches mapping */
   private def attachMapping {
@@ -164,7 +116,6 @@ object Main extends SimpleAppAdapter
     inputManager.addMapping("leftCmd", new KeyTrigger(KeyInput.KEY_LEFT), new KeyTrigger(KeyInput.KEY_A))
     inputManager.addMapping("rightCmd", new KeyTrigger(KeyInput.KEY_RIGHT), new KeyTrigger(KeyInput.KEY_D))
     inputManager.addMapping("downCmd", new KeyTrigger(KeyInput.KEY_DOWN), new KeyTrigger(KeyInput.KEY_S))
-    inputManager.addMapping("rightMouseBtn", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT))
 
     inputManager.addMapping("xAxis",
       new MouseAxisTrigger(MouseInput.AXIS_X, false),

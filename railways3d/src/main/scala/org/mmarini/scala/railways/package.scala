@@ -39,6 +39,11 @@ package object railways extends LazyLogging {
   implicit def appToAppOps(app: Application): ApplicationOps = new ApplicationOps(app)
   implicit def inpManagerToinpManagerOps(app: InputManager): InputManagerOps = new InputManagerOps(app)
 
+  def trace[T](msg: String = "", obs: Observable[T]) = obs.subscribe(
+    x => logger.debug("{} onNext({})", msg, x.toString),
+    e => logger.error(msg, e),
+    () => logger.debug("{} onComplete()", msg))
+
   /** Shuffles a sequence */
   def shuffle[T](seq: IndexedSeq[T])(random: Random): IndexedSeq[T] = {
     val n = seq.length
@@ -129,7 +134,4 @@ package object railways extends LazyLogging {
 
   def history[T](value: Observable[T])(length: Int): Observable[Seq[T]] =
     value.scan(Seq[T]())((seq, current) => current +: seq.take(length - 1))
-
-  def mergeAll[T](seq: Observable[T]*): Observable[T] =
-    seq.reduce((a, b) => a merge b)
 }

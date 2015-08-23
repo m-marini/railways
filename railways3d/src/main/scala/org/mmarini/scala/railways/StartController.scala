@@ -9,30 +9,26 @@ import com.jme3.app.state.AbstractAppState
 import com.typesafe.scalalogging.LazyLogging
 import de.lessvoid.nifty.elements.render.TextRenderer
 import org.mmarini.scala.jmonkey.ScreenControllerAdapter
-import org.mmarini.scala.jmonkey.ScreenAdapter
+import org.mmarini.scala.jmonkey.ScreenObservables
+import org.mmarini.scala.railways.model.GameParameters
+import rx.lang.scala.Subscription
+import rx.lang.scala.Observable
+import org.mmarini.scala.jmonkey.ScreenObservables
+import rx.lang.scala.subscriptions.CompositeSubscription
 
 /**
  * @author us00852
  *
  */
 class StartController extends ScreenControllerAdapter
-    with ScreenAdapter
+    with ScreenObservables
     with ButtonClickedObservable
     with LazyLogging {
 
-  /** Returns the station element renderer */
-  private def station = redererById("station", classOf[TextRenderer])
-
-  /** Returns the level element renderer */
-  private def level = redererById("level", classOf[TextRenderer])
-
-  /** Returns the duration element renderer */
-  private def duration = redererById("duration", classOf[TextRenderer])
-
   /** Returns the game parameter observer */
-  def show(parms: GameParameters) {
-    station.foreach(_.setText(parms.stationName))
-    level.foreach(_.setText(parms.levelName))
-    duration.foreach(_.setText(parms.durationName))
+  def show(parms: GameParameters) = {
+    redererByIdObs("station", classOf[TextRenderer]).subscribe(r => r.setText(parms.stationName))
+    redererByIdObs("level", classOf[TextRenderer]).subscribe(r => r.setText(parms.levelName))
+    redererByIdObs("duration", classOf[TextRenderer]).subscribe(r => r.setText(parms.durationName))
   }
 }

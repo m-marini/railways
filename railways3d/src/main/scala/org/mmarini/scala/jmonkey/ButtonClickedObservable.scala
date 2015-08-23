@@ -14,7 +14,7 @@ import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
  * @author us00852
  *
  */
-trait ButtonClickedObservable {
+trait ButtonClickedObservable extends LazyLogging {
 
   private val buttonClickedSubj = Subject[ButtonClickedEvent]()
 
@@ -24,6 +24,7 @@ trait ButtonClickedObservable {
   /** Converts the buttons press event into button id observable */
   @NiftyEventSubscriber(pattern = ".*")
   def select(id: String, event: ButtonClickedEvent) {
+    logger.debug("Button clicked at {}: {}", id, event)
     buttonClickedSubj.onNext(event)
   }
 }

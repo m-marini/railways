@@ -1,0 +1,289 @@
+package org.mmarini.scala.railways
+
+import rx.lang.scala.Observable
+import rx.lang.scala.subscriptions.CompositeSubscription
+import rx.lang.scala.Subscription
+import org.mmarini.scala.railways.model.GameStatus
+import com.typesafe.scalalogging.LazyLogging
+import org.mmarini.scala.railways.model.CameraViewpoint
+import org.mmarini.scala.railways.model.GameParameters
+import com.jme3.scene.Spatial
+import scala.util.Try
+import com.jme3.util.SkyFactory
+import com.jme3.light.AmbientLight
+import com.jme3.light.DirectionalLight
+import com.jme3.math.ColorRGBA
+import com.jme3.math.Vector3f
+import org.mmarini.scala.railways.model.GameParameters
+import com.jme3.math.Quaternion
+import com.jme3.scene.CameraNode
+import rx.lang.scala.Subscriber
+import com.jme3.scene.control.CameraControl.ControlDirection
+import org.mmarini.scala.railways.model.CameraViewpoint
+import org.mmarini.scala.railways.model.Train
+import org.mmarini.scala.railways.model.RightAngle
+import org.mmarini.scala.railways.model.Pif
+
+/**
+ * @author us00852
+ */
+object GameReactiveFlows extends LazyLogging {
+
+  val TrainCameraHeight = 5f
+  val TrainHeadCameraDistance = 10f
+  val TrainCameraToDistance = 1f
+  val TrainCameraPitch = RightAngle / 9
+
+  // ======================================================
+  // Observables
+  // ======================================================
+
+  /** Creates the parameters generators for options panel */
+  def gameParamsObs: Observable[GameParameters] = {
+    val obsOpt = for {
+      ctrl <- GameViewAdapter.optionsCtrlOpt
+    } yield {
+      val initObs = Observable.just(ctrl.parameters)
+      val parmsObs = for {
+        _ <- GameViewAdapter.optionsButtonsObs
+      } yield ctrl.parameters
+      initObs merge parmsObs
+    }
+    obsOpt.getOrElse(Observable.never)
+  }
+
+  /** Creates the initial game status triggered by the start of game screen */
+  def initialGameStatusObs: Observable[GameStatus] =
+    for {
+      (_, parms) <- trigger(GameViewAdapter.gameScreenObs.filter(_._1 == "start"), gameParamsObs)
+    } yield GameStatus(parms)
+
+  /** Creates the observable of viewpoints */
+  def viewpointObs: Observable[Seq[CameraViewpoint]] =
+    for { status <- initialGameStatusObs } yield status.stationStatus.topology.viewpoints
+
+  /** Creates the observable of game status transitions */
+  def gameTransitionsObs: Observable[GameStatus => GameStatus] = {
+    for { status <- initialGameStatusObs } yield (_: GameStatus) => status
+  }
+
+  /** Creates the game status observable */
+  lazy val gameStatusObs: Observable[GameStatus] = {
+    val opt = for {
+      c <- GameViewAdapter.optionsCtrlOpt
+    } yield stateFlow(GameStatus(c.parameters))(gameTransitionsObs)
+    opt.getOrElse(Observable.never)
+  }
+
+  /** Creates the observable  of backstage of scene loading */
+  def backstageObs: Observable[Spatial] = {
+    val bo = for {
+      status <- initialGameStatusObs
+    } yield Observable.from(backstage(status))
+    bo.flatten
+  }
+
+  /** Creates the observable of attach spatial */
+  def attachToRootObs: Observable[Spatial] = {
+    backstageObs
+  }
+
+  /** Creates the observable of station renderer */
+  lazy val stationRenderObsOpt = {
+    val txObs = for {
+      status <- gameStatusObs
+    } yield (renderer: StationRenderer) => renderer.change(status.stationStatus.blocks.values.toSet)
+    stateFlow(StationRenderer(Main.getAssetManager))(txObs)
+  }
+
+  /** Creates observable of camera selection */
+  def cameraSelectionObs: Observable[CameraViewpoint] =
+    for {
+      ((row, _), viewpoints) <- trigger(GameViewAdapter.cameraPanelObs, viewpointObs)
+    } yield viewpoints(row)
+
+  def trainFollowerObs: Observable[Train] =
+    Observable.never
+
+  /** Creates the observable of camera translation */
+  def cameraTranslationObs: Observable[Vector3f] = {
+    // Camera selected by panel
+    val cameraAtObs = for {
+      vp <- cameraSelectionObs
+    } yield vp.location
+
+    // Camera located at train
+    val cameraTrainOptObs = for {
+      train <- trainFollowerObs
+    } yield for {
+      location <- train.locationAt(TrainHeadCameraDistance)
+    } yield new Vector3f(
+      -location.getX,
+      TrainCameraHeight,
+      location.getY)
+
+    val cameraTrainObs = for {
+      locOpt <- cameraTrainOptObs
+      if (!locOpt.isEmpty)
+    } yield locOpt.get
+
+    cameraAtObs merge cameraTrainObs
+  }
+
+  /** Creates the observable of camera translation */
+  def cameraDirectionObs: Observable[Vector3f] = {
+    Observable.never
+  }
+
+  /** Creates the observable of camera translation */
+  def cameraSpeedObs: Observable[Float] = {
+    // Creates the observable of up command transitions
+    val upObs = for {
+      action <- GameViewAdapter.upCommandActionObs
+    } yield if (action.keyPressed) 1f else 0f
+
+    // Creates the observable of down command transitions
+    val downObs = for {
+      action <- GameViewAdapter.downCommandActionObs
+    } yield if (action.keyPressed) -1f else 0f
+
+    // Create observable of pressed visual buttons
+    val buttonsPressObs =
+      for {
+        ev <- GameViewAdapter.gameMouseClickedObs
+        if (Set("up", "down").contains(ev.getElement.getId))
+      } yield ev.getElement.getId match {
+        case "up" => 1f
+        case "down" => -1f
+        case _ => 0f
+      }
+    val buttonsReleaseObs =
+      for {
+        ev <- GameViewAdapter.gameMouseReleasedObs
+        if (Set("up", "down").contains(ev.getElement.getId))
+      } yield 0f
+
+    buttonsPressObs merge
+      buttonsReleaseObs merge
+      upObs merge
+      downObs
+  }
+
+  /** Creates the observable of camera translation */
+  def cameraRotationSpeedObs: Observable[Float] = {
+    // Creates the observable of left command transitions
+    val leftObs = for {
+      action <- GameViewAdapter.leftCommandActionObs
+    } yield if (action.keyPressed) -1f else 0f
+
+    // Creates the observable of left command transitions
+    val rightObs = for {
+      action <- GameViewAdapter.rightCommandActionObs
+    } yield if (action.keyPressed) 1f else 0f
+
+    // Create observable of pressed visual buttons
+    val buttonsPressObs =
+      for {
+        ev <- GameViewAdapter.gameMouseClickedObs
+        if (Set("left", "right").contains(ev.getElement.getId))
+      } yield ev.getElement.getId match {
+        case "left" => -1f
+        case "right" => 1f
+      }
+
+    val buttonsReleaseObs =
+      for {
+        ev <- GameViewAdapter.gameMouseReleasedObs
+        if (Set("left", "right").contains(ev.getElement.getId))
+      } yield 0f
+
+    buttonsPressObs merge
+      buttonsReleaseObs merge
+      leftObs merge
+      rightObs
+  }
+
+  /** Creates the observable of camera translation */
+  def cameraRotationObs: Observable[Float] = {
+    // Creates the observable of xMouse axis and right button
+    val xMouseButtonObs = for {
+      (analog, action) <- trigger(GameViewAdapter.xRelativeAxisObs,
+        GameViewAdapter.selectRightActionObs)
+    } yield (analog.position.getX, action.keyPressed)
+
+    // Filters the values of last two values with button press and
+    // transforms to camera status transition 
+    for {
+      seq <- history(xMouseButtonObs)(2)
+      if (seq.size > 1 && seq.forall(p => p._2))
+    } yield (seq(0)._1 - seq(1)._1) * Pif
+
+  }
+
+  // ======================================================
+  // Subscriptions
+  // ======================================================
+
+  /** Subscription to quit command */
+  def quitSub: Subscription = GameViewAdapter.quitSub(
+    GameViewAdapter.startButtonsObs.filter(_.getButton.getId == "quitButton"))
+
+  /** Subscribes for parameter changes to startParameters */
+  def startPanelSub: Subscription =
+    GameViewAdapter.startParmsSub(gameParamsObs)
+
+  /** Subscribes for camera viewpoint changes to camera panel */
+  def cameraPanelSub: Subscription =
+    GameViewAdapter.cameraPanelSub(
+      for {
+        viewpoints <- viewpointObs
+      } yield for {
+        v <- viewpoints
+      } yield v.id)
+
+  /** Subscribes for attach spatials to root */
+  def attachToRootSub: Subscription =
+    GameViewAdapter.attachToRootSub(attachToRootObs)
+
+  /** Subscribes for camera movements */
+  def cameraMovementSub = {
+    val (locObs, rotObs) = CameraUtils.createObservables(
+      GameViewAdapter.timeObs,
+      cameraSpeedObs,
+      cameraRotationSpeedObs,
+      cameraRotationObs,
+      GameViewAdapter.forwardAnalogObs,
+      GameViewAdapter.backwardAnalogObs,
+      cameraTranslationObs,
+      cameraDirectionObs)
+
+    CompositeSubscription(
+      cameraTranslationSub(locObs),
+      cameraRotationSub(rotObs))
+  }
+
+  /** Subscribes for camera translations */
+  def cameraTranslationSub(obs: Observable[Vector3f]): Subscription =
+    obs.subscribe(location => cameraNode.setLocalTranslation(location))
+
+  /** Subscribes for camera rotations */
+  def cameraRotationSub(obs: Observable[Quaternion]): Subscription =
+    obs.subscribe(rotation => cameraNode.setLocalRotation(rotation))
+
+  /** Composes all subscriptions */
+  def gameFlowSub = {
+
+    logger.debug("game control {}", GameViewAdapter.gameCtrlOpt)
+    logger.debug("game control screen {}", 
+        for {c<-GameViewAdapter.gameCtrlOpt} yield c.screenOpt)
+    
+    debugObservableSub("==>", GameViewAdapter.cameraCtrlObs)
+
+    CompositeSubscription(
+      startPanelSub,
+      cameraPanelSub,
+      attachToRootSub,
+      quitSub,
+      cameraMovementSub)
+  }
+}

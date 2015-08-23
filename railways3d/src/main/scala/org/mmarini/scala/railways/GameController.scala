@@ -30,8 +30,8 @@ import org.mmarini.scala.railways.model.WaitForPassengerTrain
 import org.mmarini.scala.railways.model.WaitingForTrackTrain
 import org.mmarini.scala.railways.model.GamePerformance
 import de.lessvoid.nifty.elements.render.TextRenderer
-import org.mmarini.scala.jmonkey.ScreenAdapter
-import org.mmarini.scala.jmonkey.NiftyUtil
+import org.mmarini.scala.jmonkey.ScreenObservables
+import org.mmarini.scala.jmonkey.NiftyObservables
 
 /**
  * Controls the game screen
@@ -40,28 +40,19 @@ import org.mmarini.scala.jmonkey.NiftyUtil
  * The generated game handles the user event and clocks tick updating the rootNode of application.
  */
 class GameController extends ScreenControllerAdapter
-    with ScreenAdapter
-    with NiftyUtil
+    with NiftyObservables
+    with ScreenObservables
     with MousePrimaryClickedObservable
     with MousePrimaryReleaseObservable
-    with ListBoxSelectionChangedObservable[String]
     with LazyLogging {
 
-  lazy val trainPopupOpt = createPopup("trainPopup")
+  private val trainPopupObs = createPopupObs("trainPopup").cache(1)
+  private val semPopupValue = createPopupObs("semPopup").cache(1)
 
-  lazy val semPopupOpt = createPopup("semPopup")
+  trainPopupObs.subscribe()
+  semPopupValue.subscribe()
 
-  def cameraCtrlOpt = controllerById("cameraPanel", classOf[CameraController])
-
-  def trainCtrlOpt = controllerById("trainPanel", classOf[TrainController])
-
-  private def msgCtrlOpt = controllerById("messagesPanel", classOf[MessageController])
-
-  /** Shows the messages in the messages list panel */
-  def showMsgs(msgs: Seq[TrainMessage]) {
-    for { ctrl <- msgCtrlOpt }
-      ctrl.show(for { msg <- msgs } yield msg.toString)
-  }
+  private def msgCtrlObs = controllerByIdObs("messagesPanel", classOf[MessageController])
 
   private def trainStatusString(train: Train): String = train match {
     case _: MovingTrain => f"${train.id}%s moving at ${(train.speed * 3.6).toInt}%d Km/h"
@@ -71,59 +62,48 @@ class GameController extends ScreenControllerAdapter
     case _: WaitingForTrackTrain => f"${train.id}%s waiting for semaphore"
     case _ => "???"
   }
+//
+//  def showSemaphorePopup(pos: Vector2f) {
+//    semPopupValue.valueObs.subscribe(s => showPopupAt(s, "semPane", pos))
+//  }
+//
+//  def showTrainPopup(pos: Vector2f) {
+//    trainPopupValue.valueObs.subscribe(s => showPopupAt(s, "semPane", pos))
+//  }
 
-  def showSemaphorePopup(pos: Vector2f) {
-    for (s <- semPopupOpt)
-      showPopupAt(s, "semPane", pos)
-  }
-
-  def showTrainPopup(pos: Vector2f) {
-    for (s <- trainPopupOpt)
-      showPopupAt(s, "trainPane", pos)
-  }
-
-  private def durationOpt = redererById("perf-duration", classOf[TextRenderer])
-  private def incomeTrainOpt = redererById("perf-arrivals", classOf[TextRenderer])
-  private def incomeTrainFreqOpt = redererById("perf-arrivals-freq", classOf[TextRenderer])
-
-  private def outcomeTrainOpt = redererById("perf-departures", classOf[TextRenderer])
-  private def outcomeTrainFreqOpt = redererById("perf-departures-freq", classOf[TextRenderer])
-  private def outcomeTrainPercOpt = redererById("perf-departures-perc", classOf[TextRenderer])
-  private def errorTrainOpt = redererById("perf-errors", classOf[TextRenderer])
-  private def errorTrainFreqOpt = redererById("perf-errors-freq", classOf[TextRenderer])
-  private def errorTrainPercOpt = redererById("perf-errors-perc", classOf[TextRenderer])
-
-  /** Shows the performance result */
-  def show(performance: GamePerformance) {
-    for (rend <- durationOpt)
-      rend.setText(f"${(performance.elapsedTime / 60).toInt}%d'")
-
-    for (rend <- incomeTrainOpt)
-      rend.setText(f"${performance.arrivals}%d trains")
-    for (rend <- incomeTrainFreqOpt)
-      rend.setText(f"${3600 * performance.arrivals / performance.elapsedTime}%.0f trains/h")
-
-    for (rend <- outcomeTrainOpt)
-      rend.setText(f"${performance.departures}%d trains")
-    for (rend <- outcomeTrainFreqOpt)
-      rend.setText(f"${performance.departures / performance.elapsedTime * 3600}%.0f trains/h")
-    for (rend <- outcomeTrainPercOpt)
-      rend.setText(
-        if (performance.arrivals > 0)
-          f"${100 * performance.departures / performance.arrivals}%d %%"
-        else
-          "0 %")
-
-    for (rend <- errorTrainOpt)
-      rend.setText(f"${performance.errors}%d trains")
-    for (rend <- errorTrainFreqOpt)
-      rend.setText(f"${3600 * performance.errors / performance.elapsedTime}%.0f trains/h")
-    for (rend <- errorTrainPercOpt)
-      rend.setText(
-        if (performance.departures > 0)
-          f"${100 * performance.errors / performance.departures}%d %%"
-        else
-          "0 %")
-  }
+//  private def durationObs = redererObs("perf-duration", classOf[TextRenderer])
+//  private def incomeTrainObs = redererObs("perf-arrivals", classOf[TextRenderer])
+//  private def incomeTrainFreqObs = redererObs("perf-arrivals-freq", classOf[TextRenderer])
+//
+//  private def outcomeTrainObs = redererObs("perf-departures", classOf[TextRenderer])
+//  private def outcomeTrainFreqObs = redererObs("perf-departures-freq", classOf[TextRenderer])
+//  private def outcomeTrainPercObs = redererObs("perf-departures-perc", classOf[TextRenderer])
+//  private def errorTrainObs = redererObs("perf-errors", classOf[TextRenderer])
+//  private def errorTrainFreqObs = redererObs("perf-errors-freq", classOf[TextRenderer])
+//  private def errorTrainPercObs = redererObs("perf-errors-perc", classOf[TextRenderer])
+//
+//  /** Shows the performance result */
+//  def show(performance: GamePerformance) {
+//    durationObs.subscribe(rend => rend.setText(f"${(performance.elapsedTime / 60).toInt}%d'"))
+//
+//    incomeTrainObs.subscribe(rend => rend.setText(f"${performance.arrivals}%d trains"))
+//    incomeTrainFreqObs.subscribe(rend => rend.setText(f"${3600 * performance.arrivals / performance.elapsedTime}%.0f trains/h"))
+//
+//    outcomeTrainObs.subscribe(rend => rend.setText(f"${performance.departures}%d trains"))
+//    outcomeTrainFreqObs.subscribe(rend => rend.setText(f"${performance.departures / performance.elapsedTime * 3600}%.0f trains/h"))
+//    outcomeTrainPercObs.subscribe(rend => rend.setText(
+//      if (performance.arrivals > 0)
+//        f"${100 * performance.departures / performance.arrivals}%d %%"
+//      else
+//        "0 %"))
+//
+//    errorTrainObs.subscribe(rend => rend.setText(f"${performance.errors}%d trains"))
+//    errorTrainFreqObs.subscribe(rend => rend.setText(f"${3600 * performance.errors / performance.elapsedTime}%.0f trains/h"))
+//    errorTrainPercObs.subscribe(rend => rend.setText(
+//      if (performance.departures > 0)
+//        f"${100 * performance.errors / performance.departures}%d %%"
+//      else
+//        "0 %"))
+//  }
 
 }

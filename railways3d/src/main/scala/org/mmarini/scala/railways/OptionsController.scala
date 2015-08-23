@@ -15,16 +15,14 @@ import de.lessvoid.nifty.screen.Screen
 import rx.lang.scala.Subject
 import org.mmarini.scala.jmonkey.ScreenControllerAdapter
 import de.lessvoid.nifty.screen.ScreenController
-import org.mmarini.scala.jmonkey.ScreenAdapter
+import org.mmarini.scala.jmonkey.ScreenObservables
+import rx.lang.scala.Observable
 
 /**
  * @author us00852
  *
  */
-class OptionsController extends ScreenControllerAdapter
-    with ScreenAdapter
-    with ButtonClickedObservable
-    with LazyLogging {
+object OptionsController {
 
   val FrequenceEnum = new Enumeration {
     val Easy, Medium, Difficult, Custom = Value
@@ -36,21 +34,7 @@ class OptionsController extends ScreenControllerAdapter
     val valueById = Map(Short.id -> 5 * 60f, Medium.id -> 10 * 60f, Long.id -> 30 * 6f)
   }
 
-  private def station = controlById("station", classOf[DropDown[String]])
-
-  private def level = controlById("level", classOf[DropDown[String]])
-
-  private def duration = controlById("duration", classOf[DropDown[String]])
-
-  private def autoLock = controlById("autoLock", classOf[CheckBox])
-
-  private def mute = controlById("mute", classOf[CheckBox])
-
-  private def volume = controlById("volume", classOf[Slider])
-
-  private val _confirmed = Subject[String]()
-
-  private val DefaultParms = GameParameters(
+  val DefaultParms = GameParameters(
     "Downville Station",
     "Facile",
     "Corto (5 min.)",
@@ -59,54 +43,70 @@ class OptionsController extends ScreenControllerAdapter
     true,
     false,
     0.5f)
+}
 
-  /**
-   *
-   */
-  override def bind(nifty: Nifty, screen: Screen) {
-    super.bind(nifty, screen)
+class OptionsController extends ScreenControllerAdapter
+    with ScreenObservables
+    with ButtonClickedObservable
+    with LazyLogging {
 
+  import OptionsController._
+
+  private def stationObs = controlByIdObs("station", classOf[DropDown[String]])
+
+  private def levelObs = controlByIdObs("level", classOf[DropDown[String]])
+
+  private def durationObs = controlByIdObs("duration", classOf[DropDown[String]])
+
+  private def autoLockObs = controlByIdObs("autoLock", classOf[CheckBox])
+
+  private def muteObs = controlByIdObs("mute", classOf[CheckBox])
+
+  private def volumeObs = controlByIdObs("volume", classOf[Slider])
+
+  stationObs.subscribe(ctrl => {
     for {
-      st <- station
       value <- List(
         "Downville Station",
         "Delta Crossing",
         "Jackville Terminal",
         "Passing Station")
-    } st.addItem(value)
-    station.foreach(_.selectItemByIndex(0))
+    } ctrl.addItem(value)
+    ctrl.selectItemByIndex(0)
+  })
 
+  levelObs.subscribe(ctrl => {
     for {
-      lev <- level
       value <- List(
         "Facile",
         "Medio", "Difficile",
         "Personalizzato")
-    } lev.addItem(value)
-    level.map(_.selectItemByIndex(0))
+    } ctrl.addItem(value)
+    ctrl.selectItemByIndex(0)
+  })
 
+  durationObs.subscribe(ctrl => {
     for {
-      dur <- duration
-      s <- List(
+      value <- List(
         "Corto (5 min.)",
         "Medio (15 min.)",
         "Lungo (30 min.)",
         "Personalizzato")
-    } dur.addItem(s)
-    duration.map(_.selectItemByIndex(0))
-  }
+    } ctrl.addItem(value)
+    ctrl.selectItemByIndex(0)
+  })
 
   /**
    *
    */
-  private def optParameters: Option[GameParameters] =
+  def readParametersObs: Observable[GameParameters] =
     for {
-      s <- station
-      l <- level
-      d <- duration
-      a <- autoLock
-      m <- mute
-      v <- volume
+      s <- stationObs
+      l <- levelObs
+      d <- durationObs
+      a <- autoLockObs
+      m <- muteObs
+      v <- volumeObs
     } yield GameParameters(
       stationName = s.getSelection,
       levelName = l.getSelection,
@@ -116,9 +116,5 @@ class OptionsController extends ScreenControllerAdapter
       autoLock = a.isChecked,
       mute = m.isChecked,
       volume = v.getValue / 100)
-
-  /**
-   *
-   */
-  def parameters: GameParameters = optParameters.getOrElse(DefaultParms)
 }
+
