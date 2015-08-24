@@ -3,8 +3,6 @@
  */
 package org.mmarini.scala.railways
 
-import org.mmarini.scala.jmonkey.ActionMapping
-import org.mmarini.scala.jmonkey.AnalogMapping
 import org.mmarini.scala.jmonkey.NiftyObservables
 import com.jme3.app.SimpleApplication
 import com.jme3.input.KeyInput

@@ -23,7 +23,6 @@ trait MousePrimaryReleaseObservable extends LazyLogging {
 
   @NiftyEventSubscriber(pattern = ".*")
   def select(id: String, event: NiftyMousePrimaryReleaseEvent) {
-    logger.debug("Mouse released on {}: {}", id, event)
     mousePrimaryReleaseSubj.onNext(event)
   }
 }

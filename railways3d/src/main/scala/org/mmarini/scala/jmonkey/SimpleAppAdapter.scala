@@ -7,17 +7,16 @@ import rx.lang.scala.Subject
 import de.lessvoid.nifty.NiftyEventAnnotationProcessor.Subscriber
 import rx.lang.scala.Observable
 import rx.lang.scala.Subscription
+import org.mmarini.scala.railways.ObservableFactory
 
 /**
  * @author us00852
  */
 class SimpleAppAdapter extends SimpleApplication {
 
-  val bindObs = Subject[(NiftyJmeDisplay)]()
+  private val bindObs = Subject[(NiftyJmeDisplay)]()
 
-  val niftyDisplayObs = bindObs.cache(1)
-
-  niftyDisplayObs.subscribe()
+  val niftyDisplayObs = ObservableFactory.storeValueObs(bindObs)
 
   def niftyObs: Observable[Nifty] = for { nd <- niftyDisplayObs } yield nd.getNifty
 

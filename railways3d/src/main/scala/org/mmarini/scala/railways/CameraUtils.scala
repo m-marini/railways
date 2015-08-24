@@ -1,6 +1,7 @@
 package org.mmarini.scala.railways
 
 import com.jme3.math.Quaternion
+
 import com.jme3.math.Vector3f
 import com.typesafe.scalalogging.LazyLogging
 import org.mmarini.scala.railways.model._
@@ -8,6 +9,7 @@ import scala.math.sin
 import scala.math.cos
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
+import ObservableFactory._
 
 /**
  * @author us00852
@@ -29,7 +31,7 @@ object CameraUtils extends LazyLogging {
     directionToObs: Observable[Vector3f]): (Observable[Vector3f], Observable[Quaternion]) = {
 
     val rotTimeTxObs = for {
-      (dt, speed) <- trigger(timeObs, rotationSpeedObs, Some(0f))
+      (dt, speed) <- trigger(timeObs, rotationSpeedObs)()(Some(0f))
       if (speed != 0 && dt != 0)
     } yield (direction: Vector3f) => rotateByTime(direction, speed, dt)
 
@@ -46,17 +48,17 @@ object CameraUtils extends LazyLogging {
     val dirSpeedObs: Observable[(Vector3f, Float)] = directionObs.combineLatest(speedObs)
 
     val moveTimeTxObs = for {
-      (dt, (direction, speed)) <- trigger(timeObs, dirSpeedObs, Some(Vector3f.UNIT_Z, 0f))
+      (dt, (direction, speed)) <- trigger(timeObs, dirSpeedObs)()(Some(Vector3f.UNIT_Z, 0f))
     } yield (location: Vector3f) => moveByTime(location, direction, speed, dt)
 
     val locAtTxObs = for { location <- locationAtObs } yield (_: Vector3f) => location
 
     val forwardTxObs = for {
-      (_, direction) <- trigger(stepForwardObs, directionObs, Some(Vector3f.UNIT_Z))
+      (_, direction) <- trigger(stepForwardObs, directionObs)()(Some(Vector3f.UNIT_Z))
     } yield (location: Vector3f) => step(location, direction)
 
     val backwardTxObs = for {
-      (_, direction) <- trigger(stepBackwordObs, directionObs, Some(Vector3f.UNIT_Z))
+      (_, direction) <- trigger(stepBackwordObs, directionObs)()(Some(Vector3f.UNIT_Z))
     } yield (location: Vector3f) => step(location, direction.negate())
 
     val locationObs = stateFlow(Vector3f.ZERO)(moveTimeTxObs merge

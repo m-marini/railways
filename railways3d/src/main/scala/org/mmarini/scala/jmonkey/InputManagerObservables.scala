@@ -6,6 +6,21 @@ import com.jme3.input.controls.AnalogListener
 import rx.lang.scala.Subscription
 import rx.lang.scala.Observer
 import com.jme3.input.controls.ActionListener
+import com.jme3.math.Vector2f
+
+/** */
+
+trait PositionMapping {
+  def position: Vector2f
+}
+
+trait Mapping {
+  def name: String
+  def tpf: Float
+}
+
+case class ActionMapping(name: String, keyPressed: Boolean, position: Vector2f, tpf: Float) extends Mapping with PositionMapping
+case class AnalogMapping(name: String, value: Float, position: Vector2f, tpf: Float) extends Mapping with PositionMapping
 
 /**
  * @author us00852

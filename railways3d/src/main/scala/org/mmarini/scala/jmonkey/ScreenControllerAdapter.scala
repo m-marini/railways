@@ -15,6 +15,7 @@ import de.lessvoid.nifty.controls.ButtonClickedEvent
 import com.typesafe.scalalogging.LazyLogging
 import de.lessvoid.nifty.elements.render.ElementRenderer
 import de.lessvoid.nifty.controls.Controller
+import org.mmarini.scala.railways.ObservableFactory
 
 /**
  * @author us00852
@@ -22,15 +23,13 @@ import de.lessvoid.nifty.controls.Controller
  */
 class ScreenControllerAdapter extends ScreenController with LazyLogging {
 
-  val bindObs = Subject[(Nifty, Screen)]()
+  private val bindObs = Subject[(Nifty, Screen)]()
 
-  private val cache = bindObs.first.cache(1)
+  private val cacheObs = ObservableFactory.storeValueObs(bindObs)
 
-  cache.subscribe()
+  def niftyObs: Observable[Nifty] = for (x <- cacheObs) yield x._1
 
-  def niftyObs: Observable[Nifty] = for (x <- cache) yield x._1
-
-  def screenObs: Observable[Screen] = for (x <- cache) yield x._2
+  def screenObs: Observable[Screen] = for (x <- cacheObs) yield x._2
 
   val screenEventObs = Subject[(String, ScreenControllerAdapter)]()
 

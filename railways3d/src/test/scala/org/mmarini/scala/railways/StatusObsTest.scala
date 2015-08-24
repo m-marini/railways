@@ -4,6 +4,7 @@
 package org.mmarini.scala.railways
 
 import org.scalatest.PropSpec
+
 import org.scalatest.Matchers
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.prop.PropertyChecks
@@ -16,6 +17,8 @@ import org.mockito.Matchers._
 import scala.concurrent.Promise
 import rx.lang.scala.Subject
 import rx.lang.scala.Subscription
+import ObservableFactory._
+
 
 /** Test */
 class StatusObsTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {

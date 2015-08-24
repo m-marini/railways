@@ -1,6 +1,7 @@
 package org.mmarini.scala.railways
 
 import org.mmarini.scala.jmonkey.MousePrimaryReleaseObservable
+
 import org.mmarini.scala.jmonkey.ScreenControllerAdapter
 import org.mmarini.scala.jmonkey.ScreenControllerAdapter
 import com.jme3.scene.Spatial
@@ -11,6 +12,7 @@ import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
 import de.lessvoid.nifty.elements.events.NiftyMousePrimaryReleaseEvent
 import com.jme3.scene.CameraNode
 import com.jme3.scene.control.CameraControl.ControlDirection
+import ObservableFactory._
 
 /**
  * Gathers all the elements of game view in terms of controllers, observables and subscriptions
@@ -51,28 +53,13 @@ object GameViewAdapter {
 
   def endGameCtrlObs = Main.screenControllerByIdObs[EndGameController]("end-game-screen")
 
-  def cameraCtrlObs = {
-    val opt = for { c <- gameCtrlObs } yield c.controllerByIdObs("cameraPanel", classOf[CameraController])
-    opt.flatten
-  }
+  lazy val cameraCtrlObs = onFirstFlattenObs(gameCtrlObs)(_.controllerByIdObs("cameraPanel", classOf[CameraController]))
 
-  def startButtonsObs: Observable[ButtonClickedEvent] =
-    for {
-      c <- startCtrlObs
-      ev <- c.buttonClickedObs
-    } yield ev
+  lazy val startButtonsObs: Observable[ButtonClickedEvent] = onFirstFlattenObs(startCtrlObs)(_.buttonClickedObs)
 
-  def optionsButtonsObs: Observable[ButtonClickedEvent] =
-    for {
-      c <- optionsCtrlObs
-      ev <- c.buttonClickedObs
-    } yield ev
+  lazy val optionsButtonsObs: Observable[ButtonClickedEvent] = onFirstFlattenObs(optionsCtrlObs)(_.buttonClickedObs)
 
-  def endGameButtonsObs: Observable[ButtonClickedEvent] =
-    for {
-      c <- endGameCtrlObs
-      ev <- c.buttonClickedObs
-    } yield ev
+  lazy val endGameButtonsObs: Observable[ButtonClickedEvent] = onFirstFlattenObs(endGameCtrlObs)(_.buttonClickedObs)
 
   //  def trainPanelObs: Observable[(Int, Int)] = {
   //    val opt = for {
@@ -81,39 +68,22 @@ object GameViewAdapter {
   //    opt.getOrElse(Observable.never)
   //  }
 
-  def cameraPanelObs: Observable[(Int, Int)] = {
-    val opt = for {
-      c <- cameraCtrlObs
-    } yield c.selectionObsOpt
-    opt.flatten
-  }
+  lazy val cameraPanelObs: Observable[(Int, Int)] = onFirstFlattenObs(cameraCtrlObs)(_.selectionObsOpt)
 
-  def gameScreenObs: Observable[(String, ScreenControllerAdapter)] = {
-    val opt = for { c <- gameCtrlObs } yield c.screenEventObs
-    opt.flatten
-  }
+  lazy val gameScreenObs: Observable[(String, ScreenControllerAdapter)] = onFirstFlattenObs(gameCtrlObs)(_.screenEventObs)
 
   def xRelativeAxisObs = Main.mouseRelativeObs("xAxis")
 
-  def gameMouseClickedObs: Observable[NiftyMousePrimaryClickedEvent] = {
-    val opt = for { c <- gameCtrlObs } yield c.mousePrimaryClickedObs
-    opt.flatten
-  }
+  lazy val  gameMouseClickedObs: Observable[NiftyMousePrimaryClickedEvent] = onFirstFlattenObs(gameCtrlObs)(_.mousePrimaryClickedObs)
 
-  def gameMouseReleasedObs: Observable[NiftyMousePrimaryReleaseEvent] = {
-    val opt = for { c <- gameCtrlObs } yield c.mousePrimaryReleaseObs
-    opt.flatten
-  }
+  lazy val  gameMouseReleasedObs: Observable[NiftyMousePrimaryReleaseEvent] = onFirstFlattenObs(gameCtrlObs)(_.mousePrimaryReleaseObs)
 
-  val cameraNodeObs = {
-    val camNodeObs = for { _ <- niftyObs } yield {
-      val camNode = new CameraNode("Motion cam", Main.getCamera)
-      camNode.setControlDir(ControlDirection.SpatialToCamera)
-      camNode.setEnabled(true)
-      camNode
-    }
-    camNodeObs.first.cache(1)
-  }
+  val cameraNodeObs = onFirstObs(niftyObs)(_ => {
+    val camNode = new CameraNode("Motion cam", Main.getCamera)
+    camNode.setControlDir(ControlDirection.SpatialToCamera)
+    camNode.setEnabled(true)
+    camNode
+  })
 
   def timeObs: Observable[Float] = Main.timeObs
 

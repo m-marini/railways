@@ -32,10 +32,6 @@ libraryDependencies += "org.bushe" % "eventbus" % "1.4"
 
 libraryDependencies += "io.reactivex" %% "rxscala" % "0.23.0"
 
-libraryDependencies += "io.reactivex" % "rxswing" % "0.21.0"
-
-libraryDependencies +=  "org.json4s" %% "json4s-jackson" % "3.2.11"
-
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % Test
 
 libraryDependencies += "org.scalamock" %% "scalamock-core" % "3.1.2" % Test

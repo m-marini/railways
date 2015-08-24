@@ -12,17 +12,16 @@ import com.typesafe.scalalogging.LazyLogging
 import rx.lang.scala.Subject
 import rx.lang.scala.Observable
 import de.lessvoid.nifty.controls.NiftyControl
+import org.mmarini.scala.railways.ObservableFactory
 
 /**
  * @author us00852
  */
 class ControllerAdapter extends Controller with LazyLogging {
 
-  val bindObs = Subject[(Nifty, Screen, Element)]()
+  private val bindObs = Subject[(Nifty, Screen, Element)]()
 
-  private val cacheObs = bindObs.first.cache(1)
-
-  cacheObs.subscribe()
+  private val cacheObs = ObservableFactory.storeValueObs(bindObs)
 
   def niftyObs: Observable[Nifty] = for { x <- cacheObs } yield x._1
 
@@ -39,22 +38,18 @@ class ControllerAdapter extends Controller with LazyLogging {
     bindObs.onNext(n, s, e)
     bindObs.onCompleted()
     controllerEventObs.onNext("bind", this)
-    logger.debug("Controller bound to {}", e)
   }
 
   /** Initializes this pop up */
   override def init(p: Properties, a: Attributes) {
-    logger.debug("Controller initialized")
     controllerEventObs.onNext("init", this)
   }
 
   override def onStartScreen {
-    logger.debug("Controller {} on screen", this)
     controllerEventObs.onNext("start", this)
   }
 
   override def onFocus(f: Boolean) {
-    logger.debug("Controller {} on focus {}", this, f.toString)
     controllerEventObs.onNext("focus", this)
   }
 

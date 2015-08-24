@@ -23,7 +23,6 @@ trait MousePrimaryClickedObservable extends LazyLogging {
 
   @NiftyEventSubscriber(pattern = ".*")
   def select(id: String, event: NiftyMousePrimaryClickedEvent) {
-    logger.debug("Mouse clicked on {}: {}", id, event)
     mousePrimaryClickedSubj.onNext(event)
   }
 }
