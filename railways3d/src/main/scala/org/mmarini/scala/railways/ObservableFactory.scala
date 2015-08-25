@@ -50,7 +50,7 @@ object ObservableFactory {
    * Creates an observable that emits the value created at
    * first emission of observable since first subscription
    */
-  def onFirstObs[T, R](t: Observable[T])(f: T => R): Observable[R] = {
+  def onFirstObs[T, R](t: Observable[T])(f: T => R = (x: T) => x): Observable[R] = {
     val fo = for { t <- t.take(1) } yield f(t)
     val fc = storeValueObs(fo)
     fc

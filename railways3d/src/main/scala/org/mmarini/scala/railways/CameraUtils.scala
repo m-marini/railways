@@ -35,31 +35,30 @@ object CameraUtils extends LazyLogging {
       if (speed != 0 && dt != 0)
     } yield (direction: Vector3f) => rotateByTime(direction, speed, dt)
 
-    val dirToTxObs = for {
-      dir <- directionToObs
-    } yield (_: Vector3f) => dir
+    val dirToTxObs = for { dir <- directionToObs } yield (_: Vector3f) => dir
 
-    val rotObs = for {
-      angle <- rotateObs
-    } yield (direction: Vector3f) => rotate(direction, angle)
+    val rotObs = for { angle <- rotateObs } yield (direction: Vector3f) => rotate(direction, angle)
 
     val directionObs = stateFlow(Vector3f.UNIT_Z)(rotTimeTxObs merge dirToTxObs merge rotObs)
 
     val dirSpeedObs: Observable[(Vector3f, Float)] = directionObs.combineLatest(speedObs)
 
-    val moveTimeTxObs = for {
-      (dt, (direction, speed)) <- trigger(timeObs, dirSpeedObs)()(Some(Vector3f.UNIT_Z, 0f))
-    } yield (location: Vector3f) => moveByTime(location, direction, speed, dt)
+    //[Float, (Vector3f, Float), Vector3f => Vector3f]
+    val moveTimeTxObs = trigger(timeObs, dirSpeedObs)(
+      (dt: Float, x: (Vector3f, Float)) => x match {
+        case (direction, speed) => (location: Vector3f) => moveByTime(location, direction, speed, dt)
+      })(
+        Some(Vector3f.UNIT_Z, 0f))
 
     val locAtTxObs = for { location <- locationAtObs } yield (_: Vector3f) => location
 
-    val forwardTxObs = for {
-      (_, direction) <- trigger(stepForwardObs, directionObs)()(Some(Vector3f.UNIT_Z))
-    } yield (location: Vector3f) => step(location, direction)
+    val forwardTxObs = trigger(stepForwardObs, directionObs)(
+      (_, direction) => (location: Vector3f) => step(location, direction))(
+        Some(Vector3f.UNIT_Z))
 
-    val backwardTxObs = for {
-      (_, direction) <- trigger(stepBackwordObs, directionObs)()(Some(Vector3f.UNIT_Z))
-    } yield (location: Vector3f) => step(location, direction.negate())
+    val backwardTxObs = trigger(stepForwardObs, directionObs)(
+      (_, direction) => (location: Vector3f) => step(location, direction.negate))(
+        Some(Vector3f.UNIT_Z))
 
     val locationObs = stateFlow(Vector3f.ZERO)(moveTimeTxObs merge
       locAtTxObs merge

@@ -25,6 +25,7 @@ object GameViewAdapter {
 
   def niftyObs = Main.niftyObs
 
+
   // ===================================================================
   // Controllers
   // ===================================================================
@@ -44,14 +45,13 @@ object GameViewAdapter {
   // ===================================================================
   // Observables
   // ===================================================================
+  def startCtrlObs = onFirstObs(Main.screenControllerByIdObs[StartController]("start"))()
 
-  def startCtrlObs = Main.screenControllerByIdObs[StartController]("start")
+  def optionsCtrlObs = onFirstObs(Main.screenControllerByIdObs[OptionsController]("opts-screen"))()
 
-  def optionsCtrlObs = Main.screenControllerByIdObs[OptionsController]("opts-screen")
+  def gameCtrlObs = onFirstObs(Main.screenControllerByIdObs[GameController]("game-screen"))()
 
-  def gameCtrlObs = Main.screenControllerByIdObs[GameController]("game-screen")
-
-  def endGameCtrlObs = Main.screenControllerByIdObs[EndGameController]("end-game-screen")
+  def endGameCtrlObs = onFirstObs(Main.screenControllerByIdObs[EndGameController]("end-game-screen"))()
 
   lazy val cameraCtrlObs = onFirstFlattenObs(gameCtrlObs)(_.controllerByIdObs("cameraPanel", classOf[CameraController]))
 
@@ -74,9 +74,9 @@ object GameViewAdapter {
 
   def xRelativeAxisObs = Main.mouseRelativeObs("xAxis")
 
-  lazy val  gameMouseClickedObs: Observable[NiftyMousePrimaryClickedEvent] = onFirstFlattenObs(gameCtrlObs)(_.mousePrimaryClickedObs)
+  lazy val gameMouseClickedObs: Observable[NiftyMousePrimaryClickedEvent] = onFirstFlattenObs(gameCtrlObs)(_.mousePrimaryClickedObs)
 
-  lazy val  gameMouseReleasedObs: Observable[NiftyMousePrimaryReleaseEvent] = onFirstFlattenObs(gameCtrlObs)(_.mousePrimaryReleaseObs)
+  lazy val gameMouseReleasedObs: Observable[NiftyMousePrimaryReleaseEvent] = onFirstFlattenObs(gameCtrlObs)(_.mousePrimaryReleaseObs)
 
   val cameraNodeObs = onFirstObs(niftyObs)(_ => {
     val camNode = new CameraNode("Motion cam", Main.getCamera)

@@ -1,6 +1,7 @@
 package org.mmarini.scala.railways
 
 import rx.lang.scala.Observable
+
 import rx.lang.scala.subscriptions.CompositeSubscription
 import rx.lang.scala.Subscription
 import org.mmarini.scala.railways.model.GameStatus
@@ -25,9 +26,7 @@ import org.mmarini.scala.railways.model.RightAngle
 import org.mmarini.scala.railways.model.Pif
 import org.mmarini.scala.railways.model.GameParameters
 import org.mmarini.scala.railways.model.GameParameters
-import ObservableFactory.trigger
-import ObservableFactory.stateFlow
-import ObservableFactory.history
+import ObservableFactory._
 
 /**
  * @author us00852
@@ -44,23 +43,23 @@ object GameReactiveFlows extends LazyLogging {
   // ======================================================
 
   /** Creates the parameters generators from options panel */
-  def gameParamsObs: Observable[GameParameters] = {
-    val parmsObs = for {
-      ctrl <- GameViewAdapter.optionsCtrlObs
-    } yield {
+  lazy val gameParamsObs: Observable[GameParameters] =
+    onFirstObs(GameViewAdapter.optionsCtrlObs)(ctrl => {
       val parmsObs = for {
         _ <- GameViewAdapter.optionsButtonsObs
-      } yield ctrl.readParametersObs
-      Observable.just(OptionsController.DefaultParms) merge (parmsObs.flatten)
-    }
-    parmsObs.flatten
-  }
+        parms <- ctrl.readParametersObs
+      } yield parms
+      parmsObs
+    }).flatten
+
+  trace("==> gameParamsObs {}", gameParamsObs)
 
   /** Creates the initial game status triggered by the start of game screen */
   def initialGameStatusObs: Observable[GameStatus] =
-    for {
-      (_, parms) <- ObservableFactory.trigger(GameViewAdapter.gameScreenObs.filter(_._1 == "start"), gameParamsObs)()()
-    } yield GameStatus(parms)
+    trigger(
+      GameViewAdapter.gameScreenObs.filter(_._1 == "start"),
+      gameParamsObs)(
+        (_, parms) => GameStatus(parms))()
 
   /** Creates the observable of viewpoints */
   def viewpointObs: Observable[Seq[CameraViewpoint]] =
@@ -68,9 +67,8 @@ object GameReactiveFlows extends LazyLogging {
 
   /** Creates observable of camera selection */
   def cameraSelectionObs: Observable[CameraViewpoint] =
-    for {
-      ((row, _), viewpoints) <- trigger(GameViewAdapter.cameraPanelObs, viewpointObs)()()
-    } yield viewpoints(row)
+    trigger(GameViewAdapter.cameraPanelObs, viewpointObs)(
+      (idx, viewpoints) => viewpoints(idx._1))()
 
   /** Creates the observable  of backstage of scene loading */
   def backstageObs: Observable[Spatial] = {
@@ -86,23 +84,18 @@ object GameReactiveFlows extends LazyLogging {
     Observable.just((s: GameStatus) => s) merge initialGameTxObs
   }
 
-  trace("==> gameTransitionsObs {}", gameTransitionsObs)
-
   /** Creates the game status observable */
   lazy val gameStatusObs: Observable[GameStatus] = {
     val opt = for {
-      init <- initialGameStatusObs.first
+      init <- initialGameStatusObs.take(1)
     } yield {
-      logger.debug("==> create game status")
       val s = stateFlow(init)(gameTransitionsObs)
       s
     }
-    val cache = opt.first.cache(1)
+    val cache = opt.take(1).cache(1)
     cache.subscribe()
     cache.flatten
   }
-
-  trace("==> gameStatusObs {}", gameStatusObs)
 
   /** Creates the observable of station renderer */
   lazy val stationRenderObs = {
@@ -252,10 +245,10 @@ object GameReactiveFlows extends LazyLogging {
   /** Creates the observable of camera translation */
   def cameraRotationObs: Observable[Float] = {
     // Creates the observable of xMouse axis and right button
-    val xMouseButtonObs = for {
-      (analog, action) <- trigger(GameViewAdapter.xRelativeAxisObs,
-        GameViewAdapter.selectRightActionObs)()()
-    } yield (analog.position.getX, action.keyPressed)
+    val xMouseButtonObs =
+      trigger(GameViewAdapter.xRelativeAxisObs,
+        GameViewAdapter.selectRightActionObs)(
+          (analog, action) => (analog.position.getX, action.keyPressed))()
 
     // Filters the values of last two values with button press and
     // transforms to camera status transition 
