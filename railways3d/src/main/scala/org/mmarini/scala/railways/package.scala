@@ -8,7 +8,6 @@ package org.mmarini.scala
  *
  */
 import rx.lang.scala.Observable
-
 import rx.lang.scala.Subject
 import rx.lang.scala.Subscription
 import rx.lang.scala.Observer
@@ -29,16 +28,12 @@ import com.jme3.input.InputManager
 import de.lessvoid.nifty.controls.ListBoxSelectionChangedEvent
 import com.typesafe.scalalogging.LazyLogging
 import scala.util.Random
+import org.slf4j.Marker
 
 /** */
 package object railways extends LazyLogging {
 
   val OrientationAxis = Vector3f.UNIT_Y
-
-  def trace[T](msg: String = "", obs: Observable[T]) = obs.subscribe(
-    x => logger.debug("{} onNext({})", msg, x.toString),
-    e => logger.error(msg, e),
-    () => logger.debug("{} onComplete()", msg))
 
   /** Shuffles a sequence */
   def shuffle[T](seq: IndexedSeq[T])(random: Random): IndexedSeq[T] = {

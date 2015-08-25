@@ -44,15 +44,13 @@ object GameReactiveFlows extends LazyLogging {
 
   /** Creates the parameters generators from options panel */
   lazy val gameParamsObs: Observable[GameParameters] =
-    onFirstObs(GameViewAdapter.optionsCtrlObs)(ctrl => {
+    onFirstFlattenObs(GameViewAdapter.optionsCtrlObs)(ctrl => {
       val parmsObs = for {
         _ <- GameViewAdapter.optionsButtonsObs
         parms <- ctrl.readParametersObs
       } yield parms
-      parmsObs
-    }).flatten
-
-  trace("==> gameParamsObs {}", gameParamsObs)
+      Observable.just(OptionsController.DefaultParms) merge parmsObs
+    })
 
   /** Creates the initial game status triggered by the start of game screen */
   def initialGameStatusObs: Observable[GameStatus] =
@@ -86,16 +84,18 @@ object GameReactiveFlows extends LazyLogging {
 
   /** Creates the game status observable */
   lazy val gameStatusObs: Observable[GameStatus] = {
-    val opt = for {
-      init <- initialGameStatusObs.take(1)
-    } yield {
-      val s = stateFlow(init)(gameTransitionsObs)
-      s
-    }
-    val cache = opt.take(1).cache(1)
-    cache.subscribe()
-    cache.flatten
+    val opt =
+      for {
+        init <- initialGameStatusObs.take(1)
+      } yield {
+        val go = stateFlow(init)(gameTransitionsObs)
+        trace("==> new gameStatusObs", go)
+        go
+      }
+    storeValueObs(opt).flatten
   }
+
+  trace("==> new gameStatusObs", gameStatusObs)
 
   /** Creates the observable of station renderer */
   lazy val stationRenderObs = {

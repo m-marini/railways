@@ -7,6 +7,8 @@ import com.jme3.collision.CollisionResult
 import com.jme3.math.Ray
 import com.jme3.collision.CollisionResults
 import com.jme3.math.Vector2f
+import org.mockito.cglib.proxy.LazyLoader
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * @author us00852
@@ -26,7 +28,16 @@ case class AnalogMapping(name: String, value: Float, position: Vector2f, tpf: Fl
 
 case class RayMapping(ray: Ray, mousePos: Vector2f)
 
-object ObservableFactory {
+object ObservableFactory extends LazyLogging {
+
+  def trace[T](msg: String = "", obs: Observable[T]) = {
+    val tag = s"Obs-${obs.hashCode.toHexString.takeRight(4)}"
+    logger.debug("{}: {} trace started", tag, msg)
+    obs.subscribe(
+      x => logger.debug("{}: {} onNext({})", tag, msg, x.toString),
+      e => logger.error(s"$tag: $msg", e),
+      () => logger.debug("{}: {} onComplete()", tag, msg))
+  }
 
   /**
    * Creates an observable that emits just the last value of  a variable
@@ -34,14 +45,23 @@ object ObservableFactory {
    * The first value will be emitted with sampled observable the further values are immediate
    */
   def storeValueObs[T](a: Observable[T]): Observable[T] = {
+    val subj = Subject[T]
     var value: Option[T] = None
-    a.subscribe(x => { value = Option(x) })
+
+    a.subscribe(
+      x => {
+        value = Option(x)
+        subj.onNext(x)
+      },
+      ex => subj.onError(ex),
+      () => subj.onCompleted)
 
     Observable.create(obsr => {
-      if (value.isEmpty) {
-        a.take(1).subscribe(obsr)
+      val v = value
+      if (v.isEmpty) {
+        subj.take(1).subscribe(obsr)
       } else {
-        Observable.just(value.get).subscribe(obsr)
+        Observable.just(v.get).subscribe(obsr)
       }
     })
   }
@@ -60,11 +80,8 @@ object ObservableFactory {
    * Creates an observable that emits the values
    * first observable emitted by observable since first subscription
    */
-  def onFirstFlattenObs[T, R](t: Observable[T])(f: T => Observable[R]): Observable[R] = {
-    val fo = for { t <- t.take(1) } yield f(t)
-    val fc = storeValueObs(fo.flatten)
-    fc
-  }
+  def onFirstFlattenObs[T, R](t: Observable[T])(f: T => Observable[R]): Observable[R] =
+    onFirstObs(t)(f).flatten
 
   /**
    * Creates an observable that emits the value created when
