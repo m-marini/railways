@@ -12,7 +12,6 @@ import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
 import de.lessvoid.nifty.elements.events.NiftyMousePrimaryReleaseEvent
 import com.jme3.scene.CameraNode
 import com.jme3.scene.control.CameraControl.ControlDirection
-import ObservableFactory._
 
 /**
  * Gathers all the elements of game view in terms of controllers, observables and subscriptions
@@ -24,7 +23,6 @@ import ObservableFactory._
 object GameViewAdapter {
 
   def niftyObs = Main.niftyObs
-
 
   // ===================================================================
   // Controllers
@@ -45,13 +43,13 @@ object GameViewAdapter {
   // ===================================================================
   // Observables
   // ===================================================================
-  def startCtrlObs = onFirstObs(Main.screenControllerByIdObs[StartController]("start"))()
+  lazy val startCtrlObs = Main.screenControllerByIdObs[StartController]("start").latest
 
-  def optionsCtrlObs = onFirstObs(Main.screenControllerByIdObs[OptionsController]("opts-screen"))()
+  lazy val optionsCtrlObs = Main.screenControllerByIdObs[OptionsController]("opts-screen").latest
 
-  def gameCtrlObs = onFirstObs(Main.screenControllerByIdObs[GameController]("game-screen"))()
+  lazy val gameCtrlObs = Main.screenControllerByIdObs[GameController]("game-screen").latest
 
-  def endGameCtrlObs = onFirstObs(Main.screenControllerByIdObs[EndGameController]("end-game-screen"))()
+  lazy val endGameCtrlObs = Main.screenControllerByIdObs[EndGameController]("end-game-screen").latest
 
   lazy val cameraCtrlObs = onFirstFlattenObs(gameCtrlObs)(_.controllerByIdObs("cameraPanel", classOf[CameraController]))
 

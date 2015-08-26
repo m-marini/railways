@@ -25,7 +25,7 @@ class ScreenControllerAdapter extends ScreenController with LazyLogging {
 
   private val bindObs = Subject[(Nifty, Screen)]()
 
-  private val cacheObs = ObservableFactory.storeValueObs(bindObs)
+  private val cacheObs = bindObs.latest
 
   def niftyObs: Observable[Nifty] = for (x <- cacheObs) yield x._1
 
@@ -33,25 +33,25 @@ class ScreenControllerAdapter extends ScreenController with LazyLogging {
 
   val screenEventObs = Subject[(String, ScreenControllerAdapter)]()
 
-  logger.debug("Screen controller created")
+//  logger.debug("Screen controller created")
 
   /**   */
   override def bind(nifty: Nifty, screen: Screen) {
+//    logger.debug("Screen controller bound to {}", screen)
     screenEventObs.onNext("bind", this)
     bindObs.onNext((nifty, screen))
     bindObs.onCompleted()
-    logger.debug("Screen controller bound to {}", screen)
   }
 
   /**  */
   override def onStartScreen {
-    logger.debug("Screen controller {} on start screen", this)
+//    logger.debug("Screen controller {} on start screen", this)
     screenEventObs.onNext("start", this)
   }
 
   /** */
   override def onEndScreen {
-    logger.debug("Screen controller {} on end screen", this)
+//    logger.debug("Screen controller {} on end screen", this)
     screenEventObs.onNext("end", this)
   }
 }

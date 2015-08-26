@@ -16,7 +16,7 @@ class SimpleAppAdapter extends SimpleApplication {
 
   private val bindObs = Subject[(NiftyJmeDisplay)]()
 
-  val niftyDisplayObs = ObservableFactory.storeValueObs(bindObs)
+  val niftyDisplayObs = bindObs.latest
 
   def niftyObs: Observable[Nifty] = for { nd <- niftyDisplayObs } yield nd.getNifty
 

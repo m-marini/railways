@@ -33,6 +33,134 @@ import org.slf4j.Marker
 /** */
 package object railways extends LazyLogging {
 
+  implicit class ObservableFactory[T](subject: Observable[T]) extends LazyLogging {
+
+    def hash(o: Any) = o.hashCode.toHexString.takeRight(4)
+
+    /** Creates an observable that emits a sequence of last n values emitted */
+    def history(length: Int): Observable[Seq[T]] =
+      subject.scan(Seq[T]())(
+        (seq, current) => {
+          val tail = seq.take(length - 1)
+          current +: tail
+        })
+
+    /**
+     * Creates an observable that emits just the last value of  a variable
+     * since creation instant
+     * The first value will be emitted with sampled observable the further values are immediate
+     */
+    def latest: Observable[T] = {
+      var value: Observable[T] = subject.take(1)
+      subject.subscribe(x => value = Observable.just(x),
+        ex => value = Observable.error(ex),
+        () => {})
+      Observable.defer(value)
+    }
+
+    def traced(id: String): Observable[T] = {
+      var ct = 0
+      Observable.create[T](obsr => {
+        ct = ct + 1
+        val traceId = s"${hash(subject)}.$ct.${hash(obsr)} $id"
+        logger.debug("{} subscribe", traceId)
+        val sub = subject.subscribe(
+          x => {
+            logger.debug("{} onNext {}", traceId, String.valueOf(x))
+            obsr.onNext(x)
+          },
+          e => {
+            logger.error("$traceId error", traceId, e)
+            obsr.onError(e)
+          },
+          () => {
+            logger.debug("{}on Completed", traceId)
+            obsr.onCompleted
+          })
+        Subscription {
+          logger.debug("{} unsubscribe", traceId)
+          sub.unsubscribe()
+        }
+      })
+    }
+
+    def trace(msg: String = "") = traced(msg).subscribe
+
+    /**
+     * Creates an observable that emits the value created at
+     * first emission of observable since first subscription
+     */
+    def onFirstObs[R](f: T => R = (x: T) => x): Observable[R] = {
+      val fo = for { t <- subject.take(1) } yield f(t)
+      val fc = fo.latest
+      fc
+    }
+
+    /**
+     * Creates an observable that emits the values
+     * first observable emitted by observable since first subscription
+     */
+    def onFirstFlattenObs[R](f: T => Observable[R]): Observable[R] =
+      onFirstObs(f).flatten
+
+    /**
+     * Creates an observable that emits the value composed by trigger observable and
+     * previous value of sampling observable
+     * or optional default values if no previous value available
+     */
+    def withLatest[S, R](other: Observable[S])(implicit f: (T, S) => R = (t: T, s: S) => (t, s)): Observable[R] = {
+      val latestSample = other.latest
+      val x = for { t <- subject } yield for { v <- latestSample } yield f(t, v)
+      x.flatten
+    }
+  }
+
+  implicit class StateFlowFactory[T](subject: Observable[T => T]) {
+    /** State flow */
+    def statusFlow(init: Observable[T]): Observable[T] = {
+      var s: Option[T] = None
+      init.take(1).subscribe(x => { s = Option(x) })
+      val subj = Subject[T]
+      subject.dropUntil(init).subscribe(
+        f => {
+          s = for { sv <- s } yield {
+            val s1 = f(sv)
+            subj.onNext(s1)
+            s1
+          }
+        },
+        ex => subj.onError(ex),
+        () => subj.onCompleted)
+      subj
+    }
+
+    /** State flow */
+    def statusFlow(init: T): Observable[T] =
+      statusFlow(Observable.just(init))
+  }
+  /** Returns the observable of pick ray */
+  //  def pickRay(o: Observable[PositionMapping]): Observable[RayMapping] =
+  //    for { _ <- o } yield {
+  //      val mousePos = app.getInputManager.getCursorPosition
+  //      val cam = app.getCamera
+  //      val pos = cam.getWorldCoordinates(new Vector2f(mousePos), 0f).clone()
+  //      val dir = cam.getWorldCoordinates(new Vector2f(mousePos), 1f).subtractLocal(pos).normalizeLocal()
+  //      RayMapping(new Ray(pos, dir), new Vector2f(mousePos))
+  //    }
+  //
+  //  /** Returns the observable of pick object */
+  //  def pickCollision(shootables: Node)(o: Observable[RayMapping]): Observable[(CollisionResult, RayMapping)] = {
+  //    val collisions = for { rayMapping <- o } yield {
+  //      val results = new CollisionResults()
+  //      shootables.collideWith(rayMapping.ray, results)
+  //      (results, rayMapping)
+  //    }
+  //    for {
+  //      (cr, ray) <- collisions
+  //      if (cr.size() > 0)
+  //    } yield (cr.getClosestCollision(), ray)
+  //  }
+
   val OrientationAxis = Vector3f.UNIT_Y
 
   /** Shuffles a sequence */

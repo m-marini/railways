@@ -21,7 +21,7 @@ class ControllerAdapter extends Controller with LazyLogging {
 
   private val bindObs = Subject[(Nifty, Screen, Element)]()
 
-  private val cacheObs = ObservableFactory.storeValueObs(bindObs)
+  private val cacheObs = bindObs.latest
 
   def niftyObs: Observable[Nifty] = for { x <- cacheObs } yield x._1
 
@@ -31,7 +31,7 @@ class ControllerAdapter extends Controller with LazyLogging {
 
   val controllerEventObs = Subject[(String, ControllerAdapter)]()
 
-  logger.debug("Controller created")
+  //  logger.debug("Controller created")
 
   /** Binds this pop up */
   override def bind(n: Nifty, s: Screen, e: Element, p: Properties, a: Attributes) {

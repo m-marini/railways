@@ -89,13 +89,16 @@ object GameReactiveFlows extends LazyLogging {
         init <- initialGameStatusObs.take(1)
       } yield {
         val go = stateFlow(init)(gameTransitionsObs)
-        trace("==> new gameStatusObs", go)
+        trace("==> gameStatusObs creation ", go)
         go
       }
     storeValueObs(opt).flatten
   }
 
-  trace("==> new gameStatusObs", gameStatusObs)
+  trace("==> initialGameStatusObs", initialGameStatusObs)
+  trace("==> gameTransitionsObs", gameTransitionsObs)
+  trace("==> gameParamsObs", gameParamsObs)
+  trace("==> gameStatusObs", gameStatusObs)
 
   /** Creates the observable of station renderer */
   lazy val stationRenderObs = {

@@ -9,7 +9,6 @@ import scala.math.sin
 import scala.math.cos
 import rx.lang.scala.Observable
 import rx.lang.scala.Subject
-import ObservableFactory._
 
 /**
  * @author us00852
@@ -31,7 +30,7 @@ object CameraUtils extends LazyLogging {
     directionToObs: Observable[Vector3f]): (Observable[Vector3f], Observable[Quaternion]) = {
 
     val rotTimeTxObs = for {
-      (dt, speed) <- trigger(timeObs, rotationSpeedObs)()(Some(0f))
+      (dt, speed) <- timeObs.withLatest(0f +: rotationSpeedObs)
       if (speed != 0 && dt != 0)
     } yield (direction: Vector3f) => rotateByTime(direction, speed, dt)
 
@@ -39,31 +38,30 @@ object CameraUtils extends LazyLogging {
 
     val rotObs = for { angle <- rotateObs } yield (direction: Vector3f) => rotate(direction, angle)
 
-    val directionObs = stateFlow(Vector3f.UNIT_Z)(rotTimeTxObs merge dirToTxObs merge rotObs)
+    val directionObs =
+      (rotTimeTxObs merge dirToTxObs merge rotObs).statusFlow(Vector3f.UNIT_Z)
 
     val dirSpeedObs: Observable[(Vector3f, Float)] = directionObs.combineLatest(speedObs)
 
     //[Float, (Vector3f, Float), Vector3f => Vector3f]
-    val moveTimeTxObs = trigger(timeObs, dirSpeedObs)(
+    val moveTimeTxObs = timeObs.withLatest((Vector3f.UNIT_Z, 0f) +: dirSpeedObs)(
       (dt: Float, x: (Vector3f, Float)) => x match {
         case (direction, speed) => (location: Vector3f) => moveByTime(location, direction, speed, dt)
-      })(
-        Some(Vector3f.UNIT_Z, 0f))
+      })
 
     val locAtTxObs = for { location <- locationAtObs } yield (_: Vector3f) => location
 
-    val forwardTxObs = trigger(stepForwardObs, directionObs)(
-      (_, direction) => (location: Vector3f) => step(location, direction))(
-        Some(Vector3f.UNIT_Z))
+    val forwardTxObs = stepForwardObs.withLatest(Vector3f.UNIT_Z +: directionObs)(
+      (_, direction) => (location: Vector3f) => step(location, direction))
 
-    val backwardTxObs = trigger(stepForwardObs, directionObs)(
-      (_, direction) => (location: Vector3f) => step(location, direction.negate))(
-        Some(Vector3f.UNIT_Z))
+    val backwardTxObs = stepBackwordObs.withLatest(Vector3f.UNIT_Z +: directionObs)(
+      (_, direction) => (location: Vector3f) => step(location, direction.negate))
 
-    val locationObs = stateFlow(Vector3f.ZERO)(moveTimeTxObs merge
-      locAtTxObs merge
-      forwardTxObs merge
-      backwardTxObs)
+    val locationObs =
+      (moveTimeTxObs merge
+        locAtTxObs merge
+        forwardTxObs merge
+        backwardTxObs).statusFlow(Vector3f.ZERO)
 
     val rotationObs = for { dir <- directionObs } yield rotation(dir)
 
