@@ -1,15 +1,19 @@
 package org.mmarini.scala.jmonkey
 
-import com.typesafe.scalalogging.LazyLogging
-import de.lessvoid.nifty.Nifty
 import scala.util.Try
-import de.lessvoid.nifty.elements.Element
+
+import org.mmarini.scala.railways.OptionObservableFactory
+
 import com.jme3.math.Vector2f
+import com.typesafe.scalalogging.LazyLogging
+
+import de.lessvoid.nifty.Nifty
+import de.lessvoid.nifty.elements.Element
+import de.lessvoid.nifty.screen.Screen
+import de.lessvoid.nifty.screen.ScreenController
 import de.lessvoid.nifty.tools.SizeValue
 import rx.lang.scala.Observable
 import rx.lang.scala.Subscription
-import de.lessvoid.nifty.screen.ScreenController
-import de.lessvoid.nifty.screen.Screen
 
 /**
  * @author us00852
@@ -23,13 +27,13 @@ trait NiftyObservables extends LazyLogging {
   /** */
   def screenByIdObs(id: String): Observable[Screen] = {
     val obs = for { n <- niftyObs } yield Option(n.getScreen(id))
-    for (opt <- obs if (!opt.isEmpty)) yield opt.get
+    obs.optionFlatten
   }
 
   /** */
   def screenControllerByIdObs[T <: ScreenController](id: String): Observable[T] = {
     val obs = for { scr <- screenByIdObs(id) } yield Option(scr.getScreenController().asInstanceOf[T])
-    for (opt <- obs if (!opt.isEmpty)) yield opt.get
+    obs.optionFlatten
   }
 
   /** Create a popup instance */

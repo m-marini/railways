@@ -26,7 +26,6 @@ import org.mmarini.scala.railways.model.RightAngle
 import org.mmarini.scala.railways.model.Pif
 import org.mmarini.scala.railways.model.GameParameters
 import org.mmarini.scala.railways.model.GameParameters
-import ObservableFactory._
 
 /**
  * @author us00852
@@ -44,32 +43,32 @@ object GameReactiveFlows extends LazyLogging {
 
   /** Creates the parameters generators from options panel */
   lazy val gameParamsObs: Observable[GameParameters] =
-    onFirstFlattenObs(GameViewAdapter.optionsCtrlObs)(ctrl => {
+    GameViewAdapter.optionsCtrlObs.map(ctrl => {
       val parmsObs = for {
         _ <- GameViewAdapter.optionsButtonsObs
         parms <- ctrl.readParametersObs
       } yield parms
-      Observable.just(OptionsController.DefaultParms) merge parmsObs
-    })
+      OptionsController.DefaultParms +: parmsObs
+    }).flatten
 
   /** Creates the initial game status triggered by the start of game screen */
-  def initialGameStatusObs: Observable[GameStatus] =
-    trigger(
-      GameViewAdapter.gameScreenObs.filter(_._1 == "start"),
-      gameParamsObs)(
-        (_, parms) => GameStatus(parms))()
+  lazy val initialGameStatusObs: Observable[GameStatus] =
+    GameViewAdapter.gameScreenObs.filter(_._1 == "start").
+      withLatest(gameParamsObs)(
+        (_, parms) => GameStatus(parms))
 
   /** Creates the observable of viewpoints */
-  def viewpointObs: Observable[Seq[CameraViewpoint]] =
+  lazy val viewpointObs: Observable[Seq[CameraViewpoint]] =
     for { status <- initialGameStatusObs } yield status.stationStatus.topology.viewpoints
 
   /** Creates observable of camera selection */
-  def cameraSelectionObs: Observable[CameraViewpoint] =
-    trigger(GameViewAdapter.cameraPanelObs, viewpointObs)(
-      (idx, viewpoints) => viewpoints(idx._1))()
+  lazy val cameraSelectionObs: Observable[CameraViewpoint] =
+    GameViewAdapter.cameraPanelObs.
+      withLatest(viewpointObs)(
+        (idx, viewpoints) => viewpoints(idx._1))
 
   /** Creates the observable  of backstage of scene loading */
-  def backstageObs: Observable[Spatial] = {
+  lazy val backstageObs: Observable[Spatial] = {
     val bo = for {
       status <- initialGameStatusObs
     } yield Observable.from(backstage(status))
@@ -77,39 +76,30 @@ object GameReactiveFlows extends LazyLogging {
   }
 
   /** Creates the observable of game status transitions */
-  def gameTransitionsObs: Observable[GameStatus => GameStatus] = {
+  lazy val gameTransitionsObs: Observable[GameStatus => GameStatus] = {
     val initialGameTxObs = for { status <- initialGameStatusObs } yield (_: GameStatus) => status
     Observable.just((s: GameStatus) => s) merge initialGameTxObs
   }
 
   /** Creates the game status observable */
-  lazy val gameStatusObs: Observable[GameStatus] = {
-    val opt =
-      for {
-        init <- initialGameStatusObs.take(1)
-      } yield {
-        val go = stateFlow(init)(gameTransitionsObs)
-        trace("==> gameStatusObs creation ", go)
-        go
-      }
-    storeValueObs(opt).flatten
-  }
+  lazy val gameStatusObs: Observable[GameStatus] =
+    gameTransitionsObs.statusFlow(initialGameStatusObs.take(1))
 
-  trace("==> initialGameStatusObs", initialGameStatusObs)
-  trace("==> gameTransitionsObs", gameTransitionsObs)
-  trace("==> gameParamsObs", gameParamsObs)
-  trace("==> gameStatusObs", gameStatusObs)
+  initialGameStatusObs.trace("==> initialGameStatusObs")
+  gameTransitionsObs.trace("==> gameTransitionsObs")
+  gameParamsObs.trace("==> gameParamsObs")
+  gameStatusObs.trace("==> gameStatusObs")
 
   /** Creates the observable of station renderer */
   lazy val stationRenderObs = {
     val txObs = for {
       status <- gameStatusObs
     } yield (renderer: StationRenderer) => renderer.change(status.stationStatus.blocks.values.toSet)
-    stateFlow(StationRenderer(Main.getAssetManager))(txObs).share
+    txObs.statusFlow(StationRenderer(Main.getAssetManager))
   }
 
   /** Creates the observable of attach spatial */
-  def attachToRootObs: Observable[Spatial] = {
+  lazy val attachToRootObs: Observable[Spatial] = {
     backstageObs
     val stationAttacheObs = for {
       stationRend <- stationRenderObs
@@ -119,7 +109,7 @@ object GameReactiveFlows extends LazyLogging {
   }
 
   /** Creates the observable of attach spatial */
-  def detachFromRootObs: Observable[Spatial] = {
+  lazy val detachFromRootObs: Observable[Spatial] = {
     val stationDetachObs = for {
       stationRend <- stationRenderObs
       spatial <- Observable.from(stationRend.detached)
@@ -127,11 +117,11 @@ object GameReactiveFlows extends LazyLogging {
     stationDetachObs
   }
 
-  def trainFollowerObs: Observable[Train] =
+  lazy val trainFollowerObs: Observable[Train] =
     Observable.never
 
   /** Creates the observable of camera translation */
-  def cameraTranslationObs: Observable[Vector3f] = {
+  lazy val cameraTranslationObs: Observable[Vector3f] = {
     // Camera selected by panel
     val cameraAtObs = for {
       vp <- cameraSelectionObs
@@ -156,7 +146,7 @@ object GameReactiveFlows extends LazyLogging {
   }
 
   /** Creates the observable of camera translation */
-  def cameraDirectionObs: Observable[Vector3f] = {
+  lazy val cameraDirectionObs: Observable[Vector3f] = {
     val cameraDirObsOpt = for {
       vp <- cameraSelectionObs
     } yield vp.direction
@@ -178,7 +168,7 @@ object GameReactiveFlows extends LazyLogging {
   }
 
   /** Creates the observable of camera translation */
-  def cameraSpeedObs: Observable[Float] = {
+  lazy val cameraSpeedObs: Observable[Float] = {
     // Creates the observable of up command transitions
     val upObs = for {
       action <- GameViewAdapter.upCommandActionObs
@@ -212,7 +202,7 @@ object GameReactiveFlows extends LazyLogging {
   }
 
   /** Creates the observable of camera translation */
-  def cameraRotationSpeedObs: Observable[Float] = {
+  lazy val cameraRotationSpeedObs: Observable[Float] = {
     // Creates the observable of left command transitions
     val leftObs = for {
       action <- GameViewAdapter.leftCommandActionObs
@@ -246,23 +236,22 @@ object GameReactiveFlows extends LazyLogging {
   }
 
   /** Creates the observable of camera translation */
-  def cameraRotationObs: Observable[Float] = {
+  lazy val cameraRotationObs: Observable[Float] = {
     // Creates the observable of xMouse axis and right button
     val xMouseButtonObs =
-      trigger(GameViewAdapter.xRelativeAxisObs,
-        GameViewAdapter.selectRightActionObs)(
-          (analog, action) => (analog.position.getX, action.keyPressed))()
+      (GameViewAdapter.xRelativeAxisObs withLatest GameViewAdapter.selectRightActionObs)(
+        (analog, action) => (analog.position.getX, action.keyPressed))
 
     // Filters the values of last two values with button press and
     // transforms to camera status transition 
     for {
-      seq <- history(xMouseButtonObs)(2)
+      seq <- xMouseButtonObs.history(2)
       if (seq.size > 1 && seq.forall(p => p._2))
     } yield (seq(0)._1 - seq(1)._1) * Pif
 
   }
 
-  def cameraMovementObs =
+  lazy val cameraMovementObs =
     CameraUtils.createObservables(
       GameViewAdapter.timeObs,
       cameraSpeedObs,
@@ -272,8 +261,6 @@ object GameReactiveFlows extends LazyLogging {
       GameViewAdapter.backwardAnalogObs,
       cameraTranslationObs,
       cameraDirectionObs)
-
-  //  trace("==> rotation", cameraMovementObs._1)
 
   // ======================================================
   // Subscriptions

@@ -43,21 +43,21 @@ object GameViewAdapter {
   // ===================================================================
   // Observables
   // ===================================================================
-  lazy val startCtrlObs = Main.screenControllerByIdObs[StartController]("start").latest
+  lazy val startCtrlObs: Observable[StartController] = Main.screenControllerByIdObs[StartController]("start").latest
 
-  lazy val optionsCtrlObs = Main.screenControllerByIdObs[OptionsController]("opts-screen").latest
+  lazy val optionsCtrlObs: Observable[OptionsController] = Main.screenControllerByIdObs[OptionsController]("opts-screen").latest
 
-  lazy val gameCtrlObs = Main.screenControllerByIdObs[GameController]("game-screen").latest
+  lazy val gameCtrlObs: Observable[GameController] = Main.screenControllerByIdObs[GameController]("game-screen").latest
 
   lazy val endGameCtrlObs = Main.screenControllerByIdObs[EndGameController]("end-game-screen").latest
 
-  lazy val cameraCtrlObs = onFirstFlattenObs(gameCtrlObs)(_.controllerByIdObs("cameraPanel", classOf[CameraController]))
+  lazy val cameraCtrlObs = gameCtrlObs.map(_.controllerByIdObs("cameraPanel", classOf[CameraController])).flatten.latest
 
-  lazy val startButtonsObs: Observable[ButtonClickedEvent] = onFirstFlattenObs(startCtrlObs)(_.buttonClickedObs)
+  lazy val startButtonsObs: Observable[ButtonClickedEvent] = startCtrlObs.map(_.buttonClickedObs).flatten
 
-  lazy val optionsButtonsObs: Observable[ButtonClickedEvent] = onFirstFlattenObs(optionsCtrlObs)(_.buttonClickedObs)
+  lazy val optionsButtonsObs: Observable[ButtonClickedEvent] = optionsCtrlObs.map(_.buttonClickedObs).flatten
 
-  lazy val endGameButtonsObs: Observable[ButtonClickedEvent] = onFirstFlattenObs(endGameCtrlObs)(_.buttonClickedObs)
+  lazy val endGameButtonsObs: Observable[ButtonClickedEvent] = endGameCtrlObs.map(_.buttonClickedObs).flatten
 
   //  def trainPanelObs: Observable[(Int, Int)] = {
   //    val opt = for {
@@ -66,36 +66,36 @@ object GameViewAdapter {
   //    opt.getOrElse(Observable.never)
   //  }
 
-  lazy val cameraPanelObs: Observable[(Int, Int)] = onFirstFlattenObs(cameraCtrlObs)(_.selectionObsOpt)
+  lazy val cameraPanelObs: Observable[(Int, Int)] = cameraCtrlObs.map(_.selectionObsOpt).flatten
 
-  lazy val gameScreenObs: Observable[(String, ScreenControllerAdapter)] = onFirstFlattenObs(gameCtrlObs)(_.screenEventObs)
+  lazy val gameScreenObs: Observable[(String, ScreenControllerAdapter)] = gameCtrlObs.map(_.screenEventObs).flatten
 
-  def xRelativeAxisObs = Main.mouseRelativeObs("xAxis")
+  lazy val xRelativeAxisObs = Main.mouseRelativeObs("xAxis")
 
-  lazy val gameMouseClickedObs: Observable[NiftyMousePrimaryClickedEvent] = onFirstFlattenObs(gameCtrlObs)(_.mousePrimaryClickedObs)
+  lazy val gameMouseClickedObs: Observable[NiftyMousePrimaryClickedEvent] = gameCtrlObs.map(_.mousePrimaryClickedObs).flatten
 
-  lazy val gameMouseReleasedObs: Observable[NiftyMousePrimaryReleaseEvent] = onFirstFlattenObs(gameCtrlObs)(_.mousePrimaryReleaseObs)
+  lazy val gameMouseReleasedObs: Observable[NiftyMousePrimaryReleaseEvent] = gameCtrlObs.map(_.mousePrimaryReleaseObs).flatten
 
-  val cameraNodeObs = onFirstObs(niftyObs)(_ => {
+  val cameraNodeObs = niftyObs.map(_ => {
     val camNode = new CameraNode("Motion cam", Main.getCamera)
     camNode.setControlDir(ControlDirection.SpatialToCamera)
     camNode.setEnabled(true)
     camNode
-  })
+  }).latest
 
   def timeObs: Observable[Float] = Main.timeObs
 
-  def selectActionObs = Main.actionObservable("select")
-  def selectMidActionObs = Main.actionObservable("selectMid")
-  def selectRightActionObs = Main.actionObservable("selectRight")
-  def upCommandActionObs = Main.actionObservable("upCmd")
-  def downCommandActionObs = Main.actionObservable("downCmd")
-  def leftCommandActionObs = Main.actionObservable("leftCmd")
-  def rightCommandActionObs = Main.actionObservable("rightCmd")
+  lazy val selectActionObs = Main.actionObservable("select")
+  lazy val selectMidActionObs = Main.actionObservable("selectMid")
+  lazy val selectRightActionObs = Main.actionObservable("selectRight")
+  lazy val upCommandActionObs = Main.actionObservable("upCmd")
+  lazy val downCommandActionObs = Main.actionObservable("downCmd")
+  lazy val leftCommandActionObs = Main.actionObservable("leftCmd")
+  lazy val rightCommandActionObs = Main.actionObservable("rightCmd")
 
-  def xAxisAnalogObs = Main.analogObservable("xAxis")
-  def forwardAnalogObs = Main.analogObservable("forwardCmd")
-  def backwardAnalogObs = Main.analogObservable("backwardCmd")
+  lazy val xAxisAnalogObs = Main.analogObservable("xAxis")
+  lazy val forwardAnalogObs = Main.analogObservable("forwardCmd")
+  lazy val backwardAnalogObs = Main.analogObservable("backwardCmd")
 
   // ===================================================================
   // Subscriptions

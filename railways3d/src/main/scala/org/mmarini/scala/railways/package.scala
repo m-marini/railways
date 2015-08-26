@@ -138,6 +138,12 @@ package object railways extends LazyLogging {
     def statusFlow(init: T): Observable[T] =
       statusFlow(Observable.just(init))
   }
+
+  implicit class OptionObservableFactory[T](subject: Observable[Option[T]]) {
+    def optionFlatten: Observable[T] =
+      subject.filterNot(_.isEmpty).map(_.get)
+  }
+
   /** Returns the observable of pick ray */
   //  def pickRay(o: Observable[PositionMapping]): Observable[RayMapping] =
   //    for { _ <- o } yield {

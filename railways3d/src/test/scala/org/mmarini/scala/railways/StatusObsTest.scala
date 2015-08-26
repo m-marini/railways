@@ -17,8 +17,6 @@ import org.mockito.Matchers._
 import scala.concurrent.Promise
 import rx.lang.scala.Subject
 import rx.lang.scala.Subscription
-import ObservableFactory._
-
 
 /** Test */
 class StatusObsTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
@@ -31,7 +29,7 @@ class StatusObsTest extends PropSpec with Matchers with PropertyChecks with Mock
 
     val trans = Subject[Int => Int]
 
-    val a = stateFlow(0)(trans)
+    val a = trans.statusFlow(0)
 
     val f = mock[Mocker]
     val obsr1 = Observer(f.onNext)
@@ -45,7 +43,7 @@ class StatusObsTest extends PropSpec with Matchers with PropertyChecks with Mock
     val obsr2 = Observer(g.onNext)
 
     a.subscribe(obsr2)
-    
+
     import org.mockito.Mockito._
     trans.onNext(x => x + 1)
 
