@@ -32,7 +32,7 @@ object TerrainBuilder extends LazyLogging {
       val terrain = new TerrainQuad("my terrain", PatchSize, QuadSize, map)
       terrain.setMaterial(loadTerrainMaterial(assetManager).get)
       terrain.setLocalScale(4f, 0.5f, 4f)
-//      terrain.setLocalTranslation(0f, -256f, 0f)
+      //      terrain.setLocalTranslation(0f, -256f, 0f)
 
       /** 5. The LOD (level of detail) depends on were the camera is: */
       terrain.addControl(new TerrainLodControl(terrain, camera))

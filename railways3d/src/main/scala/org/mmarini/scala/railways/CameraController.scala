@@ -20,8 +20,7 @@ import rx.lang.scala.Observable
  * It exposes a game start observer that creates a game for each event
  * The generated game handles the user event and clocks tick updating the rootNode of application.
  */
-class CameraController extends ControllerAdapter
-    with TableController
+class CameraController extends TableController
     with LazyLogging {
 
   override def cellStyle = (_, col) => if (col == 0) "image.camera-selection" else "text.camera-name"

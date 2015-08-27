@@ -32,4 +32,4 @@ trait TrackBlock {
       case Some((_, _, list)) => list
       case _ => IndexedSeq()
     }
-}   
+}

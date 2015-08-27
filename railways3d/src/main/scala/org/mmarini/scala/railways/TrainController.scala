@@ -18,8 +18,7 @@ import rx.lang.scala.Subscription
  * It exposes a game start observer that creates a game for each event
  * The generated game handles the user event and clocks tick updating the rootNode of application.
  */
-class TrainController extends ControllerAdapter
-    with TableController
+class TrainController extends TableController
     with LazyLogging {
 
   override val headerOpt = Some(IndexedSeq(

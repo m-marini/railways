@@ -33,4 +33,4 @@ object PlatformBlock {
         (1, 0, IndexedSeq[Track](backward))))
     PlatformBlock(id, trans, group, routes)
   }
-}   
+}

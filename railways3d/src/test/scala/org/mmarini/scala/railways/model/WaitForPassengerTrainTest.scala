@@ -20,19 +20,19 @@ class WaitForPassengerTrainTest extends PropSpec with Matchers with PropertyChec
       (timeout: Float, dt: Float) =>
         {
           whenever(dt >= timeout) {
-//            val route = mock[TrainRoute]
-//            val train = WaitForPassengerTrain("train", 2, route, 0f, timeout)
-//            val status = mock[GameStatus]
-//            when(status.putTrain(null)).thenReturn(status)
-//
-//            status.putTrain(train) shouldBe (status)
-//            
-//            verify(status).putTrain(train)
-//            
-//            val next = train.tick(dt, status);
-//            
-//
-//            next shouldBe a[StoppedTrain]
+            //            val route = mock[TrainRoute]
+            //            val train = WaitForPassengerTrain("train", 2, route, 0f, timeout)
+            //            val status = mock[GameStatus]
+            //            when(status.putTrain(null)).thenReturn(status)
+            //
+            //            status.putTrain(train) shouldBe (status)
+            //            
+            //            verify(status).putTrain(train)
+            //            
+            //            val next = train.tick(dt, status);
+            //            
+            //
+            //            next shouldBe a[StoppedTrain]
           }
         }
     }
@@ -43,12 +43,12 @@ class WaitForPassengerTrainTest extends PropSpec with Matchers with PropertyChec
       (timeout: Float, dt: Float) =>
         {
           whenever(dt < timeout) {
-//            val train = WaitForPassengerTrain("train", 2, TrainRoute(IndexedSeq.empty), 0f, timeout)
-//            val status = mock[GameStatus]
-//            val next = train.tick(dt, status);
-//
-//            next shouldBe a[WaitForPassengerTrain]
-//            next should have('timeout(0f))
+            //            val train = WaitForPassengerTrain("train", 2, TrainRoute(IndexedSeq.empty), 0f, timeout)
+            //            val status = mock[GameStatus]
+            //            val next = train.tick(dt, status);
+            //
+            //            next shouldBe a[WaitForPassengerTrain]
+            //            next should have('timeout(0f))
           }
         }
     }

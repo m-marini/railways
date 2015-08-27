@@ -24,7 +24,7 @@ trait ButtonClickedObservable extends LazyLogging {
   /** Converts the buttons press event into button id observable */
   @NiftyEventSubscriber(pattern = ".*")
   def select(id: String, event: ButtonClickedEvent) {
-//    logger.debug("Button clicked at {}: {}", id, event)
+    //    logger.debug("Button clicked at {}: {}", id, event)
     buttonClickedSubj.onNext(event)
   }
 }

@@ -1,6 +1,7 @@
 package org.mmarini.scala.railways
 
 import rx.lang.scala.Observable
+
 import rx.lang.scala.subscriptions.CompositeSubscription
 import rx.lang.scala.Subscription
 import org.mmarini.scala.railways.model.GameStatus
@@ -34,6 +35,9 @@ import org.mmarini.scala.jmonkey.ScreenControllerAdapter
 import de.lessvoid.nifty.screen.ScreenController
 import de.lessvoid.nifty.screen.Screen
 import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
+import org.mmarini.scala.jmonkey.TableController
+import scala.collection.mutable.IndexedSeq
+import org.mmarini.scala.jmonkey._
 
 /**
  * @author us00852
@@ -52,42 +56,131 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
   import GameReactiveEngine._
 
+  // ======================================================
+  // Subscriptions
+  // ======================================================
+
+  /** Composes all subscriptions */
+  def gameFlowSub =
+    CompositeSubscription(
+      screenNavigationSub,
+      startPanelSub,
+      cameraPanelSub,
+      detachFromRootSub,
+      attachToRootSub,
+      cameraMovementSub,
+      translateSpatialSub,
+      rotateSpatialSub,
+      setUserDataSpatialSub,
+      msgPanelSub,
+      performancePanelSub,
+      quitAppSub)
+
+  /** Subscription to gotoScreen */
+  private def screenNavigationSub: Subscription = screenNavigationObs.subscribe(nifty.gotoScreen _)
+
+  //  def endGamePerfSub(obs: Observable[GamePerformance]): Subscription = obs.subscribe(
+  //    performance => for (c <- endGameCtrlOpt) yield c.show(performance))
+  //
+  //  def performancePanelSub(obs: Observable[GamePerformance]): Subscription = obs.subscribe(
+  //    performance => for { c <- gameCtrlOpt } yield c.show(performance))
+  //
+  //  def msgsPanelSub(obs: Observable[Iterable[String]]): Subscription = obs.subscribe(
+  //    msgs => for { c <- msgCtrlOpt } yield c.show(msgs))
+  //
+  //  def cameraPanelSub(obs: Observable[Seq[String]]): Subscription = obs.subscribe()
+  //  //    names => for { c <- cameraCtrlOpt } c.show(names))
+  //
+  //  def trainPanelSub(obs: Observable[IndexedSeq[IndexedSeq[String]]]): Subscription = obs.subscribe(
+  //    cells => for { c <- trainCtrlOpt } c.setCells(cells))
+
+  /** Subscription to quit command */
+  private def quitAppSub: Subscription =
+    startButtonsObs.filter(_.getButton.getId == "quitButton").subscribe { _ => Main.stop }
+
+  /** Subscribes for parameter changes to startParameters */
+  private def startPanelSub: Subscription =
+    gameParamsObs.subscribe(parms => startCtrl.show(parms))
+
+  /** Subscribes for camera viewpoint changes to camera panel */
+  private def cameraPanelSub: Subscription =
+    (cameraCtrlObs combineLatest viewpointObs).subscribe(_ match {
+      case (ctrl, viewpoints) =>
+        val cells = for { v <- viewpoints } yield { IndexedSeq("", v.id) }
+        ctrl.setCell(cells.toIndexedSeq)
+    })
+
+  /** Subscribes for attach spatials to root */
+  private def attachToRootSub: Subscription = Main.attachToRootSub(attachToRootObs)
+
+  /** Subscribes for attach spatials to root */
+  private def detachFromRootSub: Subscription = Main.detachFromRootSub(detachFromRootObs)
+
+  /** Subscribes for camera movements */
+  private def cameraMovementSub = {
+    val (locObs, rotObs) = cameraMovementObs
+    CompositeSubscription(
+      locObs.subscribe(location => cameraNode.setLocalTranslation(location)),
+      rotObs.subscribe(rotation => cameraNode.setLocalRotation(rotation)))
+  }
+
+  /** Subscribes for performance change to panel */
+  private def performancePanelSub = performanceObs.subscribe(gameCtrl.show _)
+
+  /** Subscribes for translations of spatials */
+  private def translateSpatialSub = translateSpatialObs.subscribe(_ match {
+    case (spatial, translation) => spatial.setLocalTranslation(translation)
+  })
+
+  /** Subscribes for rotations of spatials */
+  private def rotateSpatialSub = rotateSpatialObs.subscribe(_ match {
+    case (spatial, rotation) => spatial.setLocalRotation(rotation)
+  })
+
+  /** Subscribes for user data settings of spatials */
+  private def setUserDataSpatialSub = setUserDataSpatialObs.subscribe(_ match {
+    case (spatial, key, value) => spatial.setUserData(key, value)
+  })
+
+  /** Subscribes for messages panel content */
+  private def msgPanelSub = messagePaneObs.subscribe(_ match {
+    case (ctrl, cells) => ctrl.setCell(cells)
+  })
+
   // ===================================================================
   // Functions
   // ===================================================================
-  /** */
-  def screenById(id: String): Option[Screen] = Option(nifty.getScreen(id))
 
-  /** */
-  def screenControllerById[T <: ScreenController](id: String): Option[T] =
-    for {
-      scr <- screenById(id)
-      ctrl <- Option(scr.getScreenController().asInstanceOf[T])
-    } yield ctrl
+  private lazy val startCtrl: StartController = nifty.screenControllerById[StartController]("start")
 
-  lazy val startCtrl: StartController = screenControllerById[StartController]("start").get
+  private lazy val optionsCtrl: OptionsController = nifty.screenControllerById[OptionsController]("opts-screen")
 
-  lazy val optionsCtrl: OptionsController = screenControllerById[OptionsController]("opts-screen").get
+  private lazy val gameCtrl: GameController = nifty.screenControllerById[GameController]("game-screen")
 
-  lazy val gameCtrl: GameController = screenControllerById[GameController]("game-screen").get
+  private lazy val endGameCtrl: EndGameController = nifty.screenControllerById[EndGameController]("end-game-screen")
 
-  lazy val endGameCtrl: EndGameController = screenControllerById[EndGameController]("end-game-screen").get
+  /** Creates sky */
+  private lazy val sky = {
+    // Load sky
+    val SkyboxIndex = Seq("east", "west", "north", "south", "up", "down")
+    val assetManager = Main.getAssetManager
+    val skyTry = Try {
+      val imgs = for {
+        idx <- SkyboxIndex
+      } yield assetManager.loadTexture(s"Textures/sky/desert_${idx}.png")
+      SkyFactory.createSky(assetManager, imgs(0), imgs(1), imgs(2), imgs(3), imgs(4), imgs(5))
+    }
 
-  // ===================================================================
-  // Controllers
-  // ===================================================================
+    for { e <- skyTry.failed } logger.error(e.getMessage, e)
+    skyTry.toOption.toSeq
+  }
 
-  def trainCtrlOpt = None
-  //  for {
-  //    gc <- gameCtrlOpt
-  //    ctrl <- gc.controllerById("trainPanel", classOf[TrainController])
-  //  } yield ctrl
-
-  def msgCtrlOpt = None
-  //    for {
-  //    gc <- gameCtrlOpt
-  //    ctrl <- gc.controllerById("messagesPanel", classOf[MessageController])
-  //  } yield ctrl
+  /** Creates the backstage */
+  private def backstage(status: GameStatus): Seq[Spatial] = {
+    // Creates the terrain builder
+    val terrainTry = TerrainBuilder.build(Main.getAssetManager, Main.getCamera)
+    sky ++ terrainTry.toOption
+  }
 
   // ===================================================================
   // Observables
@@ -106,12 +199,6 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       if (btnScreenMap.contains(ev.getButton.getId))
     } yield btnScreenMap(ev.getButton.getId)
 
-    // Option selection
-    val optsConfirmObs = for {
-      ev <- optionsButtonsObs
-      if (ev.getButton.getId == "ok")
-    } yield "start"
-
     val endGameScreenObs = for { x <- endGameButtonsObs } yield "start"
 
     btnStartNavObs merge
@@ -119,7 +206,15 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       endGameScreenObs
   }
 
+  // Option selection
+  val optsConfirmObs = for {
+    ev <- optionsButtonsObs
+    if (ev.getButton.getId == "ok")
+  } yield "start"
+
   lazy val cameraCtrlObs: Observable[CameraController] = gameCtrl.controllerByIdObs("cameraPanel", classOf[CameraController])
+
+  lazy val messagesCtrlObs: Observable[TableController] = gameCtrl.controllerByIdObs("messagesPanel", classOf[TableController])
 
   lazy val startButtonsObs: Observable[ButtonClickedEvent] = startCtrl.buttonClickedObs
 
@@ -205,8 +300,16 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
   /** Creates the observable of game status transitions */
   lazy val gameTransitionsObs: Observable[GameStatus => GameStatus] = {
-    val initialGameTxObs = for { status <- initialGameStatusObs } yield (_: GameStatus) => status
-    Observable.just((s: GameStatus) => s) merge initialGameTxObs
+
+    val initialGameTxObs = for { status <- initialGameStatusObs }
+      yield (_: GameStatus) => status
+
+    val timeGameTxObs = for { time <- timeObs.dropUntil(initialGameStatusObs) }
+      yield (status: GameStatus) => status.tick(time)
+
+    Observable.just((s: GameStatus) => s) merge
+      initialGameTxObs merge
+      timeGameTxObs
   }
 
   /** Creates the game status observable */
@@ -214,9 +317,9 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     gameTransitionsObs.statusFlow(initialGameStatusObs.take(1))
 
   initialGameStatusObs.trace("==> initialGameStatusObs")
-  gameTransitionsObs.trace("==> gameTransitionsObs")
   gameParamsObs.trace("==> gameParamsObs")
-  gameStatusObs.trace("==> gameStatusObs")
+  //  gameTransitionsObs.trace("==> gameTransitionsObs")
+  //  gameStatusObs.trace("==> gameStatusObs")
 
   /** Creates the observable of station renderer */
   lazy val stationRenderObs = {
@@ -233,7 +336,10 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       stationRend <- stationRenderObs
       spatial <- Observable.from(stationRend.attached)
     } yield spatial
-    backstageObs merge stationAttacheObs
+
+    backstageObs merge
+      stationAttacheObs merge
+      vehicleAttachObs
   }
 
   /** Creates the observable of attach spatial */
@@ -242,7 +348,9 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       stationRend <- stationRenderObs
       spatial <- Observable.from(stationRend.detached)
     } yield spatial
-    stationDetachObs
+
+    stationDetachObs merge
+      vehicleDetachObs
   }
 
   lazy val trainFollowerObs: Observable[Train] =
@@ -363,8 +471,8 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       rightObs
   }
 
-  /** Creates the observable of camera translation */
-  lazy val cameraRotationObs: Observable[Float] = {
+  /** Creates the observable of camera rotation */
+  private lazy val cameraRotationObs: Observable[Float] = {
     // Creates the observable of xMouse axis and right button
     val xMouseButtonObs =
       (xRelativeAxisObs withLatest selectRightActionObs)(
@@ -379,7 +487,8 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
   }
 
-  lazy val cameraMovementObs =
+  /** Creates the observable of camera movements */
+  private lazy val cameraMovementObs =
     CameraUtils.createObservables(
       timeObs,
       cameraSpeedObs,
@@ -390,95 +499,68 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       cameraTranslationObs,
       cameraDirectionObs)
 
-  // ======================================================
-  // Subscriptions
-  // ======================================================
+  /** Creates the observable of performance changes */
+  private lazy val performanceObs = gameStatusObs.map(_.performance)
 
-  /** Subscription to gotoScreen */
-  def screenNavigationSub: Subscription = screenNavigationObs.subscribe(nifty.gotoScreen _)
+  /** Creates the observable of vehicles renderer */
+  private lazy val vehicleRenderObs = {
 
-  //  def endGamePerfSub(obs: Observable[GamePerformance]): Subscription = obs.subscribe(
-  //    performance => for (c <- endGameCtrlOpt) yield c.show(performance))
-  //
-  //  def performancePanelSub(obs: Observable[GamePerformance]): Subscription = obs.subscribe(
-  //    performance => for { c <- gameCtrlOpt } yield c.show(performance))
-  //
-  //  def msgsPanelSub(obs: Observable[Iterable[String]]): Subscription = obs.subscribe(
-  //    msgs => for { c <- msgCtrlOpt } yield c.show(msgs))
-  //
-  //  def cameraPanelSub(obs: Observable[Seq[String]]): Subscription = obs.subscribe()
-  //  //    names => for { c <- cameraCtrlOpt } c.show(names))
-  //
-  //  def trainPanelSub(obs: Observable[IndexedSeq[IndexedSeq[String]]]): Subscription = obs.subscribe(
-  //    cells => for { c <- trainCtrlOpt } c.setCells(cells))
+    // Creates vehicle renderer transitions
+    val vehicleRenderTxObs = for {
+      status <- gameStatusObs
+    } yield (renderer: VehicleRenderer) => renderer(status.vehicles)
 
-  /** Subscription to quit command */
-  private def quitAppSub: Subscription =
-    startButtonsObs.filter(_.getButton.getId == "quitButton").subscribe { _ => Main.stop }
-
-  /** Subscribes for parameter changes to startParameters */
-  private def startPanelSub: Subscription =
-    gameParamsObs.subscribe(parms => startCtrl.show(parms))
-
-  /** Subscribes for camera viewpoint changes to camera panel */
-  private def cameraPanelSub: Subscription =
-    (cameraCtrlObs combineLatest viewpointObs).subscribe(_ match {
-      case (ctrl, viewpoints) =>
-        val cells = for { v <- viewpoints } yield { IndexedSeq("", v.id) }
-        ctrl.setCell(cells.toIndexedSeq)
-    })
-
-  /** Subscribes for attach spatials to root */
-  private def attachToRootSub: Subscription = Main.attachToRootSub(attachToRootObs)
-
-  /** Subscribes for attach spatials to root */
-  private def detachFromRootSub: Subscription = Main.detachFromRootSub(detachFromRootObs)
-
-  /** Subscribes for camera movements */
-  private def cameraMovementSub = {
-    val (locObs, rotObs) = cameraMovementObs
-
-    CompositeSubscription(
-      locObs.subscribe(location => cameraNode.setLocalTranslation(location)),
-      rotObs.subscribe(rotation => cameraNode.setLocalRotation(rotation)))
+    vehicleRenderTxObs.statusFlow(VehicleRenderer(Main.getAssetManager))
   }
 
-  /** Composes all subscriptions */
-  def gameFlowSub = {
-    CompositeSubscription(
-      screenNavigationSub,
-      startPanelSub,
-      cameraPanelSub,
-      detachFromRootSub,
-      attachToRootSub,
-      cameraMovementSub,
-      quitAppSub)
-  }
+  /** Creates the observable of vehicles detach */
+  private lazy val vehicleDetachObs = for {
+    render <- vehicleRenderObs
+    veichle <- Observable.from(render.detached)
+  } yield veichle
 
-  // ======================================================
-  // Function
-  // ======================================================
+  /** Creates the observable of vehicles attach */
+  private lazy val vehicleAttachObs = for {
+    render <- vehicleRenderObs
+    veichle <- Observable.from(render.attached)
+  } yield veichle
 
-  /** Creates sky */
-  private lazy val sky = {
-    // Load sky
-    val SkyboxIndex = Seq("east", "west", "north", "south", "up", "down")
-    val assetManager = Main.getAssetManager
-    val skyTry = Try {
-      val imgs = for {
-        idx <- SkyboxIndex
-      } yield assetManager.loadTexture(s"Textures/sky/desert_${idx}.png")
-      SkyFactory.createSky(assetManager, imgs(0), imgs(1), imgs(2), imgs(3), imgs(4), imgs(5))
-    }
+  /** Creates the observable of vehicle translations */
+  private lazy val vehicleTranslateObs = for {
+    render <- vehicleRenderObs
+    (vehicle, spatial) <- Observable.from(render.vehicleSpatialsSet)
+  } yield (spatial, new Vector3f(-vehicle.location.getX, 0, vehicle.location.getY))
 
-    for { e <- skyTry.failed } logger.error(e.getMessage, e)
-    skyTry.toOption.toSeq
-  }
+  /** Creates the observable of vehicles rotations */
+  private lazy val vehicleRotateObs = for {
+    render <- vehicleRenderObs
+    (vehicle, spatial) <- Observable.from(render.vehicleSpatialsSet)
+  } yield (spatial, new Quaternion().fromAngleNormalAxis(vehicle.orientation, OrientationAxis))
 
-  /** Create the backstage */
-  private def backstage(status: GameStatus): Seq[Spatial] = {
-    // Creates the terrain builder
-    val terrainTry = TerrainBuilder.build(Main.getAssetManager, Main.getCamera)
-    sky ++ terrainTry.toOption
-  }
+  /** Creates the observable of vehicle user data settings */
+  private lazy val vehicleSetDataObs = for {
+    render <- vehicleRenderObs
+    (vehicle, spatial) <- Observable.from(render.vehicleSpatialsSet)
+  } yield (spatial, "id", s"train ${vehicle.id}")
+
+  /** Creates the observable of spatial translations */
+  private lazy val translateSpatialObs = vehicleTranslateObs
+
+  /** Creates the observable of spatial rotations */
+  private lazy val rotateSpatialObs = vehicleRotateObs
+
+  /** Creates the observable of spatial user data setting */
+  private lazy val setUserDataSpatialObs: Observable[(Spatial, String, String)] = Observable.empty
+
+  /** Creates the observable of messages */
+  private lazy val messageObs = for {
+    status <- gameStatusObs
+    msg <- Observable.from(status.messages)
+  } yield msg
+
+  /** Creates the observable of message panel content */
+  private lazy val messagePaneObs = for {
+    ctrl <- messagesCtrlObs
+    msgs <- messageObs.history(10)
+  } yield (ctrl, msgs.map(m => IndexedSeq(m.toString)).toIndexedSeq)
 }

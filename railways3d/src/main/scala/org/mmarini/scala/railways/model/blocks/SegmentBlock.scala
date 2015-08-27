@@ -32,4 +32,4 @@ object SegmentBlock {
         (1, 0, IndexedSeq[Track](backward))))
     SegmentBlock(id, trans, group, routes)
   }
-}   
+}

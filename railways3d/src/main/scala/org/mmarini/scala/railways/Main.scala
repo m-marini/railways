@@ -3,7 +3,7 @@
  */
 package org.mmarini.scala.railways
 
-import org.mmarini.scala.jmonkey.NiftyObservables
+import org.mmarini.scala.jmonkey.NiftyDecorator
 import com.jme3.app.SimpleApplication
 import com.jme3.input.KeyInput
 import com.jme3.input.MouseInput
@@ -34,6 +34,8 @@ import com.jme3.light.AmbientLight
 import scala.util.Try
 import com.jme3.math.ColorRGBA
 import org.mmarini.scala.jmonkey.AnalogMapping
+import org.mmarini.scala.jmonkey.NiftyObservables
+import org.mmarini.scala.jmonkey.InputManagerObservables
 
 /**
  *

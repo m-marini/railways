@@ -20,14 +20,18 @@ import rx.lang.scala.Subscription
  *
  * @author us00852
  */
-trait TableController extends MousePrimaryClickedObservable
-    with NiftyObservables
-    with ScreenObservables {
-
-  def elementObs: Observable[Element]
+object TableController {
 
   val DefaultColumnElementStyle = "panel.table-column"
   val DefaultCellStyle = "nifty-label"
+
+}
+class TableController extends ControllerAdapter
+    with MousePrimaryClickedObservable
+    with NiftyObservables
+    with ScreenObservables {
+
+  import TableController._
 
   /** */
   def headerOpt: Option[Int => String] = None

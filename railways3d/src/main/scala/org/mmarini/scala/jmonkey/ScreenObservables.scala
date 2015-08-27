@@ -17,23 +17,19 @@ trait ScreenObservables {
   def screenObs: Observable[Screen]
 
   /** Returns a nifty control observable*/
-  def controlByIdObs[T <: NiftyControl](id: String, clazz: Class[T]): Observable[T] = {
-    val obs = for { screen <- screenObs } yield Option(screen.findNiftyControl(id, clazz))
-    obs.optionFlatten
-  }
+  def controlByIdObs[T <: NiftyControl](id: String, clazz: Class[T]): Observable[T] =
+    for (Some(ctrl) <- screenObs.map(_.controlByIdOpt(id, clazz))) yield ctrl
 
   /** Returns a nifty element observable */
-  def elementByIdObs(id: String): Observable[Element] = {
-    val obs = for { s <- screenObs } yield Option(s.findElementByName(id))
-    obs.optionFlatten
-  }
+  def elementByIdObs(id: String): Observable[Element] =
+    for (Some(element) <- screenObs.map(_.elementByIdOpt(id))) yield element
 
   /** */
   def redererByIdObs[T <: ElementRenderer](id: String, clazz: Class[T]): Observable[T] =
-    for { el <- elementByIdObs(id) } yield el.getRenderer(clazz)
+    for (Some(renderer) <- screenObs.map(_.redererByIdOpt(id, clazz))) yield renderer
 
   /** */
   def controllerByIdObs[T <: Controller](id: String, clazz: Class[T]): Observable[T] =
-    for { el <- elementByIdObs(id) } yield el.getControl(clazz)
+    for (Some(ctrl) <- screenObs.map(_.controllerByIdOpt(id, clazz))) yield ctrl
 
 }

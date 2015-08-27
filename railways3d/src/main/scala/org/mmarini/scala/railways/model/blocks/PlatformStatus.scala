@@ -20,7 +20,7 @@ case class PlatformStatus(
     else
       PlatformStatus(block, trainId, lockedJunctions.updated(j, true))
   }
-  
+
   /** Toogles the status of block for a given index of status handler */
   override def unlock = (j) => {
     require(j == 0 || j == 1)

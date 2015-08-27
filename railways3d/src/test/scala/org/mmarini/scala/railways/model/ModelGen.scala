@@ -4,7 +4,7 @@ import org.scalacheck.Gen
 import com.jme3.math.Vector2f
 
 /**
- * 
+ *
  * @author us00852
  */
 object ModelGen {
