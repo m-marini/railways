@@ -33,6 +33,7 @@ import com.jme3.light.DirectionalLight
 import com.jme3.light.AmbientLight
 import scala.util.Try
 import com.jme3.math.ColorRGBA
+import org.mmarini.scala.jmonkey.AnalogMapping
 
 /**
  *
@@ -56,7 +57,7 @@ object Main extends SimpleAppAdapter
     setDisplayFps(false)
     flyCam.setEnabled(false)
 
-    // Read your XML and initialize your custom ScreenController
+    // Loads XML and initializes start screen
     try {
       nifty.fromXml("Interface/start.xml", "start")
       nifty.addXml("Interface/opts.xml")
@@ -66,18 +67,20 @@ object Main extends SimpleAppAdapter
       case ex: Exception => logger.error(ex.getMessage, ex)
     }
 
+    // Attaches the input devices mapping
     attachMapping
 
+    // Create scene lighting
     val lt = lightsTry
     for { e <- lt.failed } logger.error(e.getMessage, e)
     for {
       lightSeq <- lt
       light <- lightSeq
     } getRootNode.addLight(light)
-  })
 
-  val sub1 = GameReactiveFlows.gameFlowSub
-  val sub2 = ScreenNavigation.gotoScreenSub
+    // Loads and binds the reactive engine of game
+    val sub = new GameReactiveEngine(nifty).gameFlowSub
+  })
 
   /** Creates ambient light */
   private def ambientLightTry = Try {

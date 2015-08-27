@@ -87,23 +87,6 @@ package object railways extends LazyLogging {
     def trace(msg: String = "") = traced(msg).subscribe
 
     /**
-     * Creates an observable that emits the value created at
-     * first emission of observable since first subscription
-     */
-    def onFirstObs[R](f: T => R = (x: T) => x): Observable[R] = {
-      val fo = for { t <- subject.take(1) } yield f(t)
-      val fc = fo.latest
-      fc
-    }
-
-    /**
-     * Creates an observable that emits the values
-     * first observable emitted by observable since first subscription
-     */
-    def onFirstFlattenObs[R](f: T => Observable[R]): Observable[R] =
-      onFirstObs(f).flatten
-
-    /**
      * Creates an observable that emits the value composed by trigger observable and
      * previous value of sampling observable
      * or optional default values if no previous value available
@@ -123,11 +106,12 @@ package object railways extends LazyLogging {
       val subj = Subject[T]
       subject.dropUntil(init).subscribe(
         f => {
-          s = for { sv <- s } yield {
-            val s1 = f(sv)
-            subj.onNext(s1)
-            s1
-          }
+          // Computes new status
+          val s1 = s.map(f)
+          // Stores new status
+          s = s1
+          // emits new status
+          s1.foreach(subj.onNext)
         },
         ex => subj.onError(ex),
         () => subj.onCompleted)

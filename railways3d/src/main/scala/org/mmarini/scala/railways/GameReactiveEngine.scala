@@ -1,7 +1,6 @@
 package org.mmarini.scala.railways
 
 import rx.lang.scala.Observable
-
 import rx.lang.scala.subscriptions.CompositeSubscription
 import rx.lang.scala.Subscription
 import org.mmarini.scala.railways.model.GameStatus
@@ -26,34 +25,163 @@ import org.mmarini.scala.railways.model.RightAngle
 import org.mmarini.scala.railways.model.Pif
 import org.mmarini.scala.railways.model.GameParameters
 import org.mmarini.scala.railways.model.GameParameters
+import de.lessvoid.nifty.Nifty
+import org.mmarini.scala.jmonkey.AnalogMapping
+import de.lessvoid.nifty.controls.ButtonClickedEvent
+import org.mmarini.scala.jmonkey.ActionMapping
+import de.lessvoid.nifty.elements.events.NiftyMousePrimaryReleaseEvent
+import org.mmarini.scala.jmonkey.ScreenControllerAdapter
+import de.lessvoid.nifty.screen.ScreenController
+import de.lessvoid.nifty.screen.Screen
+import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
 
 /**
  * @author us00852
  */
-object GameReactiveFlows extends LazyLogging {
+
+object GameReactiveEngine extends LazyLogging {
 
   val TrainCameraHeight = 5f
   val TrainHeadCameraDistance = 10f
   val TrainCameraToDistance = 1f
   val TrainCameraPitch = RightAngle / 9
 
+}
+
+class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
+
+  import GameReactiveEngine._
+
+  // ===================================================================
+  // Functions
+  // ===================================================================
+  /** */
+  def screenById(id: String): Option[Screen] = Option(nifty.getScreen(id))
+
+  /** */
+  def screenControllerById[T <: ScreenController](id: String): Option[T] =
+    for {
+      scr <- screenById(id)
+      ctrl <- Option(scr.getScreenController().asInstanceOf[T])
+    } yield ctrl
+
+  lazy val startCtrl: StartController = screenControllerById[StartController]("start").get
+
+  lazy val optionsCtrl: OptionsController = screenControllerById[OptionsController]("opts-screen").get
+
+  lazy val gameCtrl: GameController = screenControllerById[GameController]("game-screen").get
+
+  lazy val endGameCtrl: EndGameController = screenControllerById[EndGameController]("end-game-screen").get
+
+  // ===================================================================
+  // Controllers
+  // ===================================================================
+
+  def trainCtrlOpt = None
+  //  for {
+  //    gc <- gameCtrlOpt
+  //    ctrl <- gc.controllerById("trainPanel", classOf[TrainController])
+  //  } yield ctrl
+
+  def msgCtrlOpt = None
+  //    for {
+  //    gc <- gameCtrlOpt
+  //    ctrl <- gc.controllerById("messagesPanel", classOf[MessageController])
+  //  } yield ctrl
+
+  // ===================================================================
+  // Observables
+  // ===================================================================
+
+  /** Observable of goto screen */
+  lazy val screenNavigationObs = {
+    // start-screen selection
+    val btnScreenMap = Map(
+      "optionsButton" -> "opts-screen",
+      "startButton" -> "game-screen")
+
+    // Start-screen
+    val btnStartNavObs = for {
+      ev <- startButtonsObs
+      if (btnScreenMap.contains(ev.getButton.getId))
+    } yield btnScreenMap(ev.getButton.getId)
+
+    // Option selection
+    val optsConfirmObs = for {
+      ev <- optionsButtonsObs
+      if (ev.getButton.getId == "ok")
+    } yield "start"
+
+    val endGameScreenObs = for { x <- endGameButtonsObs } yield "start"
+
+    btnStartNavObs merge
+      optsConfirmObs merge
+      endGameScreenObs
+  }
+
+  lazy val cameraCtrlObs: Observable[CameraController] = gameCtrl.controllerByIdObs("cameraPanel", classOf[CameraController])
+
+  lazy val startButtonsObs: Observable[ButtonClickedEvent] = startCtrl.buttonClickedObs
+
+  lazy val optionsButtonsObs: Observable[ButtonClickedEvent] = optionsCtrl.buttonClickedObs
+
+  lazy val endGameButtonsObs: Observable[ButtonClickedEvent] = endGameCtrl.buttonClickedObs
+
+  //  def trainPanelObs: Observable[(Int, Int)] = {
+  //    val opt = for {
+  //      c <- trainCtrlOpt
+  //    } yield c.selectionObs
+  //    opt.getOrElse(Observable.never)
+  //  }
+
+  lazy val cameraPanelObs: Observable[(Int, Int)] = cameraCtrlObs.map(_.selectionObsOpt).flatten
+
+  lazy val gameScreenObs: Observable[(String, ScreenControllerAdapter)] = gameCtrl.screenEventObs
+
+  lazy val xRelativeAxisObs: Observable[AnalogMapping] = Main.mouseRelativeObs("xAxis")
+
+  lazy val gameMouseClickedObs: Observable[NiftyMousePrimaryClickedEvent] = gameCtrl.mousePrimaryClickedObs
+
+  lazy val gameMouseReleasedObs: Observable[NiftyMousePrimaryReleaseEvent] = gameCtrl.mousePrimaryReleaseObs
+
+  lazy val cameraNode: CameraNode = {
+    val camNode = new CameraNode("Motion cam", Main.getCamera)
+    camNode.setControlDir(ControlDirection.SpatialToCamera)
+    camNode.setEnabled(true)
+    camNode
+  }
+
+  def timeObs: Observable[Float] = Main.timeObs
+
+  lazy val selectActionObs: Observable[ActionMapping] = Main.actionObservable("select")
+  lazy val selectMidActionObs: Observable[ActionMapping] = Main.actionObservable("selectMid")
+  lazy val selectRightActionObs: Observable[ActionMapping] = Main.actionObservable("selectRight")
+  lazy val upCommandActionObs: Observable[ActionMapping] = Main.actionObservable("upCmd")
+  lazy val downCommandActionObs: Observable[ActionMapping] = Main.actionObservable("downCmd")
+  lazy val leftCommandActionObs: Observable[ActionMapping] = Main.actionObservable("leftCmd")
+  lazy val rightCommandActionObs: Observable[ActionMapping] = Main.actionObservable("rightCmd")
+
+  lazy val xAxisAnalogObs: Observable[AnalogMapping] = Main.analogObservable("xAxis")
+  lazy val forwardAnalogObs: Observable[AnalogMapping] = Main.analogObservable("forwardCmd")
+  lazy val backwardAnalogObs: Observable[AnalogMapping] = Main.analogObservable("backwardCmd")
+
   // ======================================================
   // Observables
   // ======================================================
 
   /** Creates the parameters generators from options panel */
-  lazy val gameParamsObs: Observable[GameParameters] =
-    GameViewAdapter.optionsCtrlObs.map(ctrl => {
-      val parmsObs = for {
-        _ <- GameViewAdapter.optionsButtonsObs
-        parms <- ctrl.readParametersObs
-      } yield parms
-      OptionsController.DefaultParms +: parmsObs
-    }).flatten
+  lazy val gameParamsObs: Observable[GameParameters] = {
+    val parmsObs = for {
+      _ <- optionsButtonsObs
+      parm <- optionsCtrl.readParametersObs
+    } yield parm
+    OptionsController.DefaultParms +: parmsObs
+  }
 
   /** Creates the initial game status triggered by the start of game screen */
   lazy val initialGameStatusObs: Observable[GameStatus] =
-    GameViewAdapter.gameScreenObs.filter(_._1 == "start").
+    gameScreenObs.
+      filter(_._1 == "start").
       withLatest(gameParamsObs)(
         (_, parms) => GameStatus(parms))
 
@@ -63,7 +191,7 @@ object GameReactiveFlows extends LazyLogging {
 
   /** Creates observable of camera selection */
   lazy val cameraSelectionObs: Observable[CameraViewpoint] =
-    GameViewAdapter.cameraPanelObs.
+    cameraPanelObs.
       withLatest(viewpointObs)(
         (idx, viewpoints) => viewpoints(idx._1))
 
@@ -72,7 +200,7 @@ object GameReactiveFlows extends LazyLogging {
     val bo = for {
       status <- initialGameStatusObs
     } yield Observable.from(backstage(status))
-    GameViewAdapter.cameraNodeObs merge bo.flatten
+    cameraNode +: bo.flatten
   }
 
   /** Creates the observable of game status transitions */
@@ -171,18 +299,18 @@ object GameReactiveFlows extends LazyLogging {
   lazy val cameraSpeedObs: Observable[Float] = {
     // Creates the observable of up command transitions
     val upObs = for {
-      action <- GameViewAdapter.upCommandActionObs
+      action <- upCommandActionObs
     } yield if (action.keyPressed) 1f else 0f
 
     // Creates the observable of down command transitions
     val downObs = for {
-      action <- GameViewAdapter.downCommandActionObs
+      action <- downCommandActionObs
     } yield if (action.keyPressed) -1f else 0f
 
     // Create observable of pressed visual buttons
     val buttonsPressObs =
       for {
-        ev <- GameViewAdapter.gameMouseClickedObs
+        ev <- gameMouseClickedObs
         if (Set("up", "down").contains(ev.getElement.getId))
       } yield ev.getElement.getId match {
         case "up" => 1f
@@ -191,7 +319,7 @@ object GameReactiveFlows extends LazyLogging {
       }
     val buttonsReleaseObs =
       for {
-        ev <- GameViewAdapter.gameMouseReleasedObs
+        ev <- gameMouseReleasedObs
         if (Set("up", "down").contains(ev.getElement.getId))
       } yield 0f
 
@@ -205,18 +333,18 @@ object GameReactiveFlows extends LazyLogging {
   lazy val cameraRotationSpeedObs: Observable[Float] = {
     // Creates the observable of left command transitions
     val leftObs = for {
-      action <- GameViewAdapter.leftCommandActionObs
+      action <- leftCommandActionObs
     } yield if (action.keyPressed) -1f else 0f
 
     // Creates the observable of left command transitions
     val rightObs = for {
-      action <- GameViewAdapter.rightCommandActionObs
+      action <- rightCommandActionObs
     } yield if (action.keyPressed) 1f else 0f
 
     // Create observable of pressed visual buttons
     val buttonsPressObs =
       for {
-        ev <- GameViewAdapter.gameMouseClickedObs
+        ev <- gameMouseClickedObs
         if (Set("left", "right").contains(ev.getElement.getId))
       } yield ev.getElement.getId match {
         case "left" => -1f
@@ -225,7 +353,7 @@ object GameReactiveFlows extends LazyLogging {
 
     val buttonsReleaseObs =
       for {
-        ev <- GameViewAdapter.gameMouseReleasedObs
+        ev <- gameMouseReleasedObs
         if (Set("left", "right").contains(ev.getElement.getId))
       } yield 0f
 
@@ -239,7 +367,7 @@ object GameReactiveFlows extends LazyLogging {
   lazy val cameraRotationObs: Observable[Float] = {
     // Creates the observable of xMouse axis and right button
     val xMouseButtonObs =
-      (GameViewAdapter.xRelativeAxisObs withLatest GameViewAdapter.selectRightActionObs)(
+      (xRelativeAxisObs withLatest selectRightActionObs)(
         (analog, action) => (analog.position.getX, action.keyPressed))
 
     // Filters the values of last two values with button press and
@@ -253,12 +381,12 @@ object GameReactiveFlows extends LazyLogging {
 
   lazy val cameraMovementObs =
     CameraUtils.createObservables(
-      GameViewAdapter.timeObs,
+      timeObs,
       cameraSpeedObs,
       cameraRotationSpeedObs,
       cameraRotationObs,
-      GameViewAdapter.forwardAnalogObs,
-      GameViewAdapter.backwardAnalogObs,
+      forwardAnalogObs,
+      backwardAnalogObs,
       cameraTranslationObs,
       cameraDirectionObs)
 
@@ -266,61 +394,65 @@ object GameReactiveFlows extends LazyLogging {
   // Subscriptions
   // ======================================================
 
+  /** Subscription to gotoScreen */
+  def screenNavigationSub: Subscription = screenNavigationObs.subscribe(nifty.gotoScreen _)
+
+  //  def endGamePerfSub(obs: Observable[GamePerformance]): Subscription = obs.subscribe(
+  //    performance => for (c <- endGameCtrlOpt) yield c.show(performance))
+  //
+  //  def performancePanelSub(obs: Observable[GamePerformance]): Subscription = obs.subscribe(
+  //    performance => for { c <- gameCtrlOpt } yield c.show(performance))
+  //
+  //  def msgsPanelSub(obs: Observable[Iterable[String]]): Subscription = obs.subscribe(
+  //    msgs => for { c <- msgCtrlOpt } yield c.show(msgs))
+  //
+  //  def cameraPanelSub(obs: Observable[Seq[String]]): Subscription = obs.subscribe()
+  //  //    names => for { c <- cameraCtrlOpt } c.show(names))
+  //
+  //  def trainPanelSub(obs: Observable[IndexedSeq[IndexedSeq[String]]]): Subscription = obs.subscribe(
+  //    cells => for { c <- trainCtrlOpt } c.setCells(cells))
+
   /** Subscription to quit command */
-  private def quitSub: Subscription = GameViewAdapter.quitSub(
-    GameViewAdapter.startButtonsObs.filter(_.getButton.getId == "quitButton"))
+  private def quitAppSub: Subscription =
+    startButtonsObs.filter(_.getButton.getId == "quitButton").subscribe { _ => Main.stop }
 
   /** Subscribes for parameter changes to startParameters */
   private def startPanelSub: Subscription =
-    (GameViewAdapter.startCtrlObs combineLatest gameParamsObs).subscribe(
-      _ match { case (ctrl, parms) => ctrl.show(parms) })
+    gameParamsObs.subscribe(parms => startCtrl.show(parms))
 
   /** Subscribes for camera viewpoint changes to camera panel */
   private def cameraPanelSub: Subscription =
-    (GameViewAdapter.cameraCtrlObs combineLatest viewpointObs).subscribe(_ match {
+    (cameraCtrlObs combineLatest viewpointObs).subscribe(_ match {
       case (ctrl, viewpoints) =>
         val cells = for { v <- viewpoints } yield { IndexedSeq("", v.id) }
         ctrl.setCell(cells.toIndexedSeq)
     })
 
   /** Subscribes for attach spatials to root */
-  private def attachToRootSub: Subscription =
-    GameViewAdapter.attachToRootSub(attachToRootObs)
+  private def attachToRootSub: Subscription = Main.attachToRootSub(attachToRootObs)
 
   /** Subscribes for attach spatials to root */
-  private def detachFromRootSub: Subscription =
-    GameViewAdapter.detachFromRootSub(detachFromRootObs)
+  private def detachFromRootSub: Subscription = Main.detachFromRootSub(detachFromRootObs)
 
   /** Subscribes for camera movements */
   private def cameraMovementSub = {
     val (locObs, rotObs) = cameraMovementObs
 
     CompositeSubscription(
-      cameraTranslationSub(locObs),
-      cameraRotationSub(rotObs))
+      locObs.subscribe(location => cameraNode.setLocalTranslation(location)),
+      rotObs.subscribe(rotation => cameraNode.setLocalRotation(rotation)))
   }
-
-  /** Subscribes for camera translations */
-  private def cameraTranslationSub(obs: Observable[Vector3f]): Subscription =
-    (obs combineLatest GameViewAdapter.cameraNodeObs).subscribe(_ match {
-      case (location, cameraNode) => cameraNode.setLocalTranslation(location)
-    })
-
-  /** Subscribes for camera rotations */
-  private def cameraRotationSub(obs: Observable[Quaternion]): Subscription =
-    (obs combineLatest GameViewAdapter.cameraNodeObs).subscribe(_ match {
-      case (rotation, cameraNode) => cameraNode.setLocalRotation(rotation)
-    })
 
   /** Composes all subscriptions */
   def gameFlowSub = {
     CompositeSubscription(
+      screenNavigationSub,
       startPanelSub,
       cameraPanelSub,
       detachFromRootSub,
       attachToRootSub,
       cameraMovementSub,
-      quitSub)
+      quitAppSub)
   }
 
   // ======================================================

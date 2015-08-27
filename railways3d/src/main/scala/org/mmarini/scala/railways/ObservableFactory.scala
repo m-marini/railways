@@ -13,16 +13,16 @@ import com.typesafe.scalalogging.LazyLogging
  * @author us00852
  */
 
-trait PositionMapping {
-  def position: Vector2f
-}
-
-trait Mapping {
-  def name: String
-  def tpf: Float
-}
-
-case class ActionMapping(name: String, keyPressed: Boolean, position: Vector2f, tpf: Float) extends Mapping with PositionMapping
-case class AnalogMapping(name: String, value: Float, position: Vector2f, tpf: Float) extends Mapping with PositionMapping
+//trait PositionMapping {
+//  def position: Vector2f
+//}
+//
+//trait Mapping {
+//  def name: String
+//  def tpf: Float
+//}
+//
+//case class ActionMapping(name: String, keyPressed: Boolean, position: Vector2f, tpf: Float) extends Mapping with PositionMapping
+//case class AnalogMapping(name: String, value: Float, position: Vector2f, tpf: Float) extends Mapping with PositionMapping
 
 case class RayMapping(ray: Ray, mousePos: Vector2f)

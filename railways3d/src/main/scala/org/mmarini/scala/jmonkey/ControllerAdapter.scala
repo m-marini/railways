@@ -13,21 +13,20 @@ import rx.lang.scala.Subject
 import rx.lang.scala.Observable
 import de.lessvoid.nifty.controls.NiftyControl
 import org.mmarini.scala.railways.ObservableFactory
+import rx.lang.scala.subjects.AsyncSubject
 
 /**
  * @author us00852
  */
 class ControllerAdapter extends Controller with LazyLogging {
 
-  private val bindObs = Subject[(Nifty, Screen, Element)]()
+  private val bindObs = AsyncSubject[(Nifty, Screen, Element)]()
 
-  private val cacheObs = bindObs.latest
+  def niftyObs: Observable[Nifty] = for { x <- bindObs } yield x._1
 
-  def niftyObs: Observable[Nifty] = for { x <- cacheObs } yield x._1
+  def screenObs: Observable[Screen] = for { x <- bindObs } yield x._2
 
-  def screenObs: Observable[Screen] = for { x <- cacheObs } yield x._2
-
-  def elementObs: Observable[Element] = for { x <- cacheObs } yield x._3
+  def elementObs: Observable[Element] = for { x <- bindObs } yield x._3
 
   val controllerEventObs = Subject[(String, ControllerAdapter)]()
 
