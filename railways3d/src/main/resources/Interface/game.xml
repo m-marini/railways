@@ -121,7 +121,7 @@
 
 							<text text="Duration" style="text.performance-title" />
 							<panel childLayout="horizontal">
-								<image filename="Interface/arrival-train.png" style="image.perfomance-icon" />
+								<image filename="Interface/crono.png" style="image.perfomance-icon" />
 								<panel style="panel.performance-content">
 									<text id="perf-duration" style="text.performance-value" />
 								</panel>

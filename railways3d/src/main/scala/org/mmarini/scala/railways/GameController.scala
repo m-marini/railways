@@ -26,14 +26,6 @@ class GameController extends ScreenControllerAdapter
     with MousePrimaryReleaseObservable
     with LazyLogging {
 
-  //  private def trainStatusString(train: Train): String = train match {
-  //    case _: MovingTrain => f"${train.id}%s moving at ${(train.speed * 3.6).toInt}%d Km/h"
-  //    case _: StoppingTrain => f"${train.id}%s brackingt at ${(train.speed * 3.6).toInt}%d Km/h"
-  //    case _: StoppedTrain => f"${train.id}%s stopped"
-  //    case _: WaitForPassengerTrain => f"${train.id}%s waiting for passenger"
-  //    case _: WaitingForTrackTrain => f"${train.id}%s waiting for semaphore"
-  //    case _ => "???"
-  //  }
   //
   //  def showSemaphorePopup(pos: Vector2f) {
   //    semPopupValue.valueObs.subscribe(s => showPopupAt(s, "semPane", pos))

@@ -38,6 +38,7 @@ import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
 import org.mmarini.scala.jmonkey.TableController
 import scala.collection.mutable.IndexedSeq
 import org.mmarini.scala.jmonkey._
+import scala.math.round
 
 /**
  * @author us00852
@@ -65,13 +66,14 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     CompositeSubscription(
       screenNavigationSub,
       startPanelSub,
-      cameraPanelSub,
       detachFromRootSub,
       attachToRootSub,
       cameraMovementSub,
       translateSpatialSub,
       rotateSpatialSub,
       setUserDataSpatialSub,
+      cameraPanelSub,
+      trainsPanelSub,
       msgPanelSub,
       performancePanelSub,
       quitAppSub)
@@ -81,18 +83,6 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
   //  def endGamePerfSub(obs: Observable[GamePerformance]): Subscription = obs.subscribe(
   //    performance => for (c <- endGameCtrlOpt) yield c.show(performance))
-  //
-  //  def performancePanelSub(obs: Observable[GamePerformance]): Subscription = obs.subscribe(
-  //    performance => for { c <- gameCtrlOpt } yield c.show(performance))
-  //
-  //  def msgsPanelSub(obs: Observable[Iterable[String]]): Subscription = obs.subscribe(
-  //    msgs => for { c <- msgCtrlOpt } yield c.show(msgs))
-  //
-  //  def cameraPanelSub(obs: Observable[Seq[String]]): Subscription = obs.subscribe()
-  //  //    names => for { c <- cameraCtrlOpt } c.show(names))
-  //
-  //  def trainPanelSub(obs: Observable[IndexedSeq[IndexedSeq[String]]]): Subscription = obs.subscribe(
-  //    cells => for { c <- trainCtrlOpt } c.setCells(cells))
 
   /** Subscription to quit command */
   private def quitAppSub: Subscription =
@@ -143,7 +133,12 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   })
 
   /** Subscribes for messages panel content */
-  private def msgPanelSub = messagePaneObs.subscribe(_ match {
+  private def msgPanelSub = messagePanelObs.subscribe(_ match {
+    case (ctrl, cells) => ctrl.setCell(cells)
+  })
+
+  /** Subscribes for messages panel content */
+  private def trainsPanelSub = trainsPanelObs.subscribe(_ match {
     case (ctrl, cells) => ctrl.setCell(cells)
   })
 
@@ -181,6 +176,14 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     val terrainTry = TerrainBuilder.build(Main.getAssetManager, Main.getCamera)
     sky ++ terrainTry.toOption
   }
+  //  private def trainStatusString(train: Train): String = train match {
+  //    case _: MovingTrain => f"${train.id}%s moving at ${(train.speed * 3.6).toInt}%d Km/h"
+  //    case _: StoppingTrain => f"${train.id}%s brackingt at ${(train.speed * 3.6).toInt}%d Km/h"
+  //    case _: StoppedTrain => f"${train.id}%s stopped"
+  //    case _: WaitForPassengerTrain => f"${train.id}%s waiting for passenger"
+  //    case _: WaitingForTrackTrain => f"${train.id}%s waiting for semaphore"
+  //    case _ => "???"
+  //  }
 
   // ===================================================================
   // Observables
@@ -213,6 +216,8 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   } yield "start"
 
   lazy val cameraCtrlObs: Observable[CameraController] = gameCtrl.controllerByIdObs("cameraPanel", classOf[CameraController])
+
+  lazy val trainsCtrlObs: Observable[TrainController] = gameCtrl.controllerByIdObs("trainPanel", classOf[TrainController])
 
   lazy val messagesCtrlObs: Observable[TableController] = gameCtrl.controllerByIdObs("messagesPanel", classOf[TableController])
 
@@ -559,8 +564,27 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   } yield msg
 
   /** Creates the observable of message panel content */
-  private lazy val messagePaneObs = for {
+  private lazy val messagePanelObs = for {
     ctrl <- messagesCtrlObs
     msgs <- messageObs.history(10)
   } yield (ctrl, msgs.map(m => IndexedSeq(m.toString)).toIndexedSeq)
+
+  /** Creates the observer of train sequence */
+  private lazy val trainsSeqObs = for { status <- gameStatusObs } yield status.trains.toIndexedSeq
+
+  /** Creates the observer of train panel content */
+  private lazy val trainsPanelObs =
+    for {
+      ctrl <- trainsCtrlObs
+      trains <- trainsSeqObs
+    } yield {
+      val cells = for { t <- trains.toIndexedSeq }
+        yield IndexedSeq(
+        t.id.toUpperCase,
+        t.exitId.toUpperCase,
+        "---",
+        f"${round(3.6f * t.speed).toInt}%d")
+      (ctrl, cells)
+    }
+
 }
