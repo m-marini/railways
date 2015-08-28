@@ -17,9 +17,10 @@ import org.mmarini.scala.railways.model.tracks.Track
 /** Test */
 class MovingTrainTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
 
+  val MaxTrainLength = 4
   property("transitTrack of MovingTrainTest should be all train tracks") {
     forAll(
-      (Gen.chooseNum(2, 4), "size"),
+      (Gen.chooseNum(2, MaxTrainLength), "size"),
       (chooseLength, "location")) {
         (size: Int, location: Float) =>
           {

@@ -35,7 +35,7 @@ case class VehicleRenderer(
     // Extracts vehicle identifiers
     val vehicleIds = vehicles.map(_.id)
 
-    // Splits the cache into keep/remove spatials 
+    // Splits the cache into keep/remove spatials
     val (keepCache, removeCache) = vehicleSpatialsSet.partition(entry => vehicleIds.contains(entry._1.id))
 
     val spatialById = (for {

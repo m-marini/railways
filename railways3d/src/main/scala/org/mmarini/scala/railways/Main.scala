@@ -81,7 +81,7 @@ object Main extends SimpleAppAdapter
     } getRootNode.addLight(light)
 
     // Loads and binds the reactive engine of game
-    val sub = new GameReactiveEngine(nifty).gameFlowSub
+    val sub = new GameReactiveEngine(nifty).subscribeForGameFlow
   })
 
   /** Creates ambient light */

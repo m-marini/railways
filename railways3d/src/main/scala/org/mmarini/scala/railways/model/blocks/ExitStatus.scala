@@ -12,55 +12,46 @@ case class ExitStatus(
     locked: Boolean = false) extends SingleBlockStatus {
 
   /** */
-  override def lock = (j) => {
+  override def lock: Int => BlockStatus = (j) => {
     require(j == 0)
-    if (locked)
-      this
-    else
-      ExitStatus(block, trainId, true)
+    if (locked) this else ExitStatus(block, trainId, true)
   }
 
   /** */
-  override def unlock = (j) => {
+  override def unlock: Int => BlockStatus = (j) => {
     require(j == 0)
-    if (locked)
-      ExitStatus(block, trainId, false)
-    else
-      this
+    if (locked) ExitStatus(block, trainId, false) else this
   }
 
   /** Returns None */
-  override def junctionFrom = (j) => {
+  override def junctionFrom: Int => Option[Int] = (j) => {
     require(j == 0)
     Some(1)
   }
 
   /** Returns the transit train in a junction */
-  override def transitTrain = j => {
+  override def transitTrain: Int => Option[String] = j => {
     require(j == 0)
     trainId
   }
 
   /** Creates a new block status applying trainId to a junction. */
-  override def apply(junction: Int, trainId: Option[String]) = {
+  override def apply(junction: Int, trainId: Option[String]): BlockStatus = {
     require(junction == 0)
-    if (trainId != this.trainId)
-      ExitStatus(block, trainId)
-    else
-      this
+    if (trainId != this.trainId) ExitStatus(block, trainId) else this
   }
 
   /** Returns the status with no transit train */
   override def noTrainStatus: BlockStatus = if (trainId.isEmpty) this else ExitStatus(block, None, locked)
 
   /** Returns true if the junction is clear. */
-  override def isClear = (j) => {
+  override def isClear: Int => Boolean = (j) => {
     require(j == 0)
     !locked && transitTrain(j).isEmpty
   }
 
   /** Returns the current identifiers of elements and the selection identifiers */
-  override def elementIds =
+  override def elementIds: Set[BlockElementIds] =
     if (isClear(0)) {
       Set(BlockElementIds(s"$id green", "Textures/blocks/sem-green.blend", Some(s"junction $id 0")))
     } else {

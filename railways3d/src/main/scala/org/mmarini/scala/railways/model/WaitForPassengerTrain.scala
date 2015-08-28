@@ -21,10 +21,10 @@ case class WaitForPassengerTrain(
     with LazyLogging {
 
   /** Creates the new train status apply a new route */
-  override def apply(route: TrainRoute, location: Float) = WaitForPassengerTrain(id, size, route, location, timeout, exitId)
+  override def apply(route: TrainRoute, location: Float): Train = WaitForPassengerTrain(id, size, route, location, timeout, exitId)
 
   /** Computes the next status after an elapsed time tick */
-  override def tick(time: Float, gameStatus: GameStatus) =
+  override def tick(time: Float, gameStatus: GameStatus): (Option[Train], Seq[TrainMessage]) =
     if (timeout - time > 0) {
       (Some(
         WaitForPassengerTrain(id, size, route, location, timeout - time, exitId)),
@@ -37,5 +37,5 @@ case class WaitForPassengerTrain(
     }
 
   /** Returns true if train has loaded passengers at platform */
-  override def loaded = true
+  override def loaded: Boolean = true
 }

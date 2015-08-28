@@ -20,7 +20,7 @@ case class LeftCurveTrack(center: Vector2f, radius: Float, begin: Float, length:
   def angle(distance: Float): Float = -distance / radius
 
   /** Returns the backward track of this */
-  override def backward = Some(RightCurveTrack(center, radius, begin + angle(length), length))
+  override def backward: Option[Track] = Some(RightCurveTrack(center, radius, begin + angle(length), length))
 
   /** Creates a segment track applying the transformation */
   def apply(tran: Transform2d): LeftCurveTrack = LeftCurveTrack(tran(center), radius, tran(begin), length)

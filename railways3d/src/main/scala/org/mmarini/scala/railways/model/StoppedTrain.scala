@@ -26,16 +26,14 @@ case class StoppedTrain(
   override def apply(route: TrainRoute, location: Float): Train = StoppedTrain(id, size, loaded, route, location, exitId)
 
   /** Computes the next status after an elapsed time tick */
-  def tick(time: Float, gameStatus: GameStatus) = (Some(this), Seq())
+  def tick(time: Float, gameStatus: GameStatus): (Option[Train], Seq[TrainMessage]) = (Some(this), Seq())
 
   /** Creates toogle status */
-  override def start = {
-    logger.debug("Go train {}", id)
+  override def start: Train =
     MovingTrain(id, size, loaded, route, location, 0f, exitId)
-  }
 
   /** Creates the reverse train */
-  override def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)) = {
+  override def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)): Option[Train] = {
     val Some((headTrack, headLocation)) = route.trackLocationAt(location)
     for {
       (trackTail, _) <- trackTailLocation if (!trackTail.isInstanceOf[EntryTrack])

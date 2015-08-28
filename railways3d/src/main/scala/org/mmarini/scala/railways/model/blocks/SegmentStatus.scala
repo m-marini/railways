@@ -14,30 +14,32 @@ case class SegmentStatus(
     extends SingleBlockStatus with LockableStatus {
 
   /** Toogles the status of block for a given index of status handler */
-  override def lock = (j) => {
+  override def lock: Int => BlockStatus = (j) => {
     require(j == 0 || j == 1)
-    if (lockedJunctions(j))
+    if (lockedJunctions(j)) {
       this
-    else
+    } else {
       SegmentStatus(block, trainId, lockedJunctions.updated(j, true))
+    }
   }
 
   /** Toogles the status of block for a given index of status handler */
-  override def unlock = (j) => {
+  override def unlock: Int => BlockStatus = (j) => {
     require(j == 0 || j == 1)
-    if (lockedJunctions(j))
+    if (lockedJunctions(j)) {
       SegmentStatus(block, trainId, lockedJunctions.updated(j, false))
-    else
+    } else {
       this
+    }
   }
 
   /** Toogles the status of block for a given index of status handler */
-  override def lockTrack = (j) => {
+  override def lockTrack: Int => BlockStatus = (j) => {
     require(j == 0 || j == 1)
     SegmentStatus(block, trainId, IndexedSeq(true, true))
   }
 
-  override def unlockTrack = (j) => {
+  override def unlockTrack: Int => BlockStatus = (j) => {
     require(j == 0 || j == 1)
     SegmentStatus(block, trainId, IndexedSeq(false, false))
   }
@@ -46,25 +48,26 @@ case class SegmentStatus(
   override val junctionFrom = IndexedSeq(Option(1), Option(0))
 
   /** Returns the transit train in a junction */
-  override def transitTrain = j => {
+  override def transitTrain: Int => Option[String] = j => {
     require(j == 0 || j == 1)
     trainId
   }
 
   /** Creates a new block status applying trainId to a junction. */
-  override def apply(junction: Int, trainId: Option[String]) = {
+  override def apply(junction: Int, trainId: Option[String]): BlockStatus = {
     require(junction == 0 || junction == 1)
-    if (trainId != this.trainId)
+    if (trainId != this.trainId) {
       SegmentStatus(block, trainId, lockedJunctions)
-    else
+    } else {
       this
+    }
   }
 
   /** Returns the status with no transit train */
-  override def noTrainStatus = if (trainId.isEmpty) this else SegmentStatus(block, None, lockedJunctions)
+  override def noTrainStatus: BlockStatus = if (trainId.isEmpty) this else SegmentStatus(block, None, lockedJunctions)
 
   /** Returns the current identifiers of elements and the selection identifiers */
-  override def elementIds = {
+  override def elementIds: Set[BlockElementIds] = {
     val track = BlockElementIds(s"$id", "Textures/blocks/seg-track.blend", Some(s"track $id 0"))
     val jElements = for (junction <- 0 to 1) yield if (isClear(junction)) {
       BlockElementIds(

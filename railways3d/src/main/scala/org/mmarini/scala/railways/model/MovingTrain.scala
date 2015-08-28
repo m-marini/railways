@@ -34,7 +34,7 @@ case class MovingTrain(
     MovingTrain(id, size, loaded, route, location, speed, exitId)
 
   /** Computes the next status after an elapsed time tick */
-  override def tick(time: Float, gameStatus: GameStatus) = {
+  override def tick(time: Float, gameStatus: GameStatus): (Option[Train], Seq[TrainMessage]) = {
     // Computes the target speed by braking space
     val stopLocation = route.length - MinDistance
     val dist = max(stopLocation - location, 0)
@@ -66,7 +66,7 @@ case class MovingTrain(
   }
 
   /** Creates the reverse train */
-  override def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)) =
+  override def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)): Option[Train] =
     if (speed == 0) {
       val Some((headTrack, headLocation)) = route.trackLocationAt(location)
       for {
@@ -81,7 +81,7 @@ case class MovingTrain(
     }
 
   /** Creates toogle status */
-  override def stop =
+  override def stop: Train =
     StoppingTrain(id, size, loaded, route, location, speed, exitId)
 }
 

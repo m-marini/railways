@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package org.mmarini.scala.railways.model.blocks
 
 import org.mmarini.scala.railways.model.tracks.Track

@@ -23,34 +23,37 @@ case class SwitchStatus(
       None,
       Some(0)))
 
-  override def statusIndex = if (diverging) 1 else 0
+  override def statusIndex: Int = if (diverging) 1 else 0
 
-  override def toogleStatus = (j) => {
+  override def toogleStatus: Int => BlockStatus = (j) => {
     require(j >= 0 && j <= 2)
-    if (trainId.isEmpty)
+    if (trainId.isEmpty) {
       SwitchStatus(block, trainId, lockedJunctions, !diverging)
-    else
+    } else {
       this
+    }
   }
 
-  override def lock = (j) => {
+  override def lock: Int => BlockStatus = (j) => {
     require(j >= 0 && j <= 2)
-    if (lockedJunctions(j))
+    if (lockedJunctions(j)) {
       this
-    else
+    } else {
       SwitchStatus(block, trainId, lockedJunctions.updated(j, true), diverging)
+    }
   }
 
-  override def unlock = (j) => {
+  override def unlock: Int => BlockStatus = (j) => {
     require(j >= 0 && j <= 2)
-    if (lockedJunctions(j))
+    if (lockedJunctions(j)) {
       SwitchStatus(block, trainId, lockedJunctions.updated(j, false), diverging)
-    else
+    } else {
       this
+    }
   }
 
   /** Toogles the status of block for a given index of status handler */
-  override def lockTrack = (j) => {
+  override def lockTrack: Int => BlockStatus = (j) => {
     require(j >= 0 && j <= 2)
     SwitchStatus(
       block = block,
@@ -60,7 +63,7 @@ case class SwitchStatus(
   }
 
   /** Toogles the status of block for a given index of status handler */
-  override def unlockTrack = (j) => {
+  override def unlockTrack: Int => BlockStatus = (j) => {
     require(j >= 0 && j <= 2)
     SwitchStatus(
       block = block,
@@ -70,17 +73,17 @@ case class SwitchStatus(
   }
 
   /** Returns the end junction given the entry */
-  override def junctionFrom = junctions(statusIndex)
+  override def junctionFrom: Int => Option[Int] = junctions(statusIndex)
 
   /** Returns the transit train in a junction */
-  override def transitTrain = j => j match {
+  override def transitTrain: Int => Option[String] = j => j match {
     case 0 => trainId
     case 1 => if (diverging) None else trainId
     case 2 => if (diverging) trainId else None
   }
 
   /** Creates a new block status applying trainId to a junction. */
-  override def apply(junction: Int, trainId: Option[String]) = (diverging, junction) match {
+  override def apply(junction: Int, trainId: Option[String]): BlockStatus = (diverging, junction) match {
     case (false, 0) if (trainId != this.trainId) => SwitchStatus(block, trainId, lockedJunctions, diverging)
     case (false, 1) if (trainId != this.trainId) => SwitchStatus(block, trainId, lockedJunctions, diverging)
     case (true, 0) if (trainId != this.trainId) => SwitchStatus(block, trainId, lockedJunctions, diverging)
@@ -89,21 +92,22 @@ case class SwitchStatus(
   }
 
   /** Returns the status with no transit train */
-  override def noTrainStatus = if (trainId.isEmpty) this else SwitchStatus(block, None, lockedJunctions, diverging)
+  override def noTrainStatus: BlockStatus = if (trainId.isEmpty) this else SwitchStatus(block, None, lockedJunctions, diverging)
 
   /** Create a block status with a given locked junction */
-  override def autolock = (j) =>
-    if (lockedJunctions(j))
+  override def autolock: Int => BlockStatus = (j) =>
+    if (lockedJunctions(j)) {
       this
-    else
+    } else {
       SwitchStatus(
         block = block,
         trainId = trainId,
         lockedJunctions = IndexedSeq(true, true, true),
         diverging = diverging)
+    }
 
   /** Returns the current identifiers of elements and the selection identifiers */
-  override def elementIds = {
+  override def elementIds: Set[BlockElementIds] = {
     val dir = if (block.isInstanceOf[LeftHandSwitchBlock]) "l" else "r"
     val st = if (diverging) "div" else "str"
     val jElements = for (junction <- 0 to 2) yield if (isClear(junction)) {

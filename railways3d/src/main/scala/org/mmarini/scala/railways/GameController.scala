@@ -26,16 +26,6 @@ class GameController extends ScreenControllerAdapter
     with MousePrimaryReleaseObservable
     with LazyLogging {
 
-  //
-  //  def showSemaphorePopup(pos: Vector2f) {
-  //    semPopupValue.valueObs.subscribe(s => showPopupAt(s, "semPane", pos))
-  //  }
-  //
-  //  def showTrainPopup(pos: Vector2f) {
-  //    trainPopupValue.valueObs.subscribe(s => showPopupAt(s, "semPane", pos))
-  //  }
-
-  //
   private lazy val durationObs = redererByIdObs("perf-duration", classOf[TextRenderer])
   private lazy val incomeTrainObs = redererByIdObs("perf-arrivals", classOf[TextRenderer])
   private lazy val incomeTrainFreqObs = redererByIdObs("perf-arrivals-freq", classOf[TextRenderer])

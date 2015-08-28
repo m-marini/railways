@@ -35,7 +35,9 @@ package object railways extends LazyLogging {
 
   implicit class ObservableFactory[T](subject: Observable[T]) extends LazyLogging {
 
-    def hash(o: Any) = o.hashCode.toHexString.takeRight(4)
+    val HashLength = 4
+
+    def hash(o: Any): String = o.hashCode.toHexString.takeRight(HashLength)
 
     /** Creates an observable that emits a sequence of last n values emitted */
     def history(length: Int): Observable[Seq[T]] =
@@ -84,7 +86,9 @@ package object railways extends LazyLogging {
       })
     }
 
-    def trace(msg: String = "") = traced(msg).subscribe
+    def trace(msg: String = "") {
+      traced(msg).subscribe
+    }
 
     /**
      * Creates an observable that emits the value composed by trigger observable and

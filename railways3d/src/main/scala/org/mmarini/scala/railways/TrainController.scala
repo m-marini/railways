@@ -27,17 +27,18 @@ class TrainController extends TableController
     "At",
     "Km/h"))
 
-  override def headerStyle = (_) => "text.light-panel-head"
+  override def headerStyle: Int => String = (_) => "text.light-panel-head"
 
-  override val columnStyle = IndexedSeq(
+  override val columnStyle: Int => String = IndexedSeq(
     "panel.train-id",
     "panel.train-to",
     "panel.train-at",
     "panel.train-speed")
 
-  override def cellStyle = (_, col) => if (col == 3)
+  override def cellStyle: (Int, Int) => String = (_, col) => if (col == 3) {
     "text.selectable-light-panel-right"
-  else
+  } else {
     "text.selectable-light-panel"
+  }
 
 }

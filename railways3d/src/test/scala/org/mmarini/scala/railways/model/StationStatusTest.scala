@@ -17,7 +17,6 @@ import org.mmarini.scala.railways.model.blocks.BlockStatus
 import org.mmarini.scala.railways.model.blocks.Block
 import org.mmarini.scala.railways.model.blocks.SegmentStatus
 import org.mmarini.scala.railways.model.blocks.SegmentBlock
-import sun.org.mozilla.javascript.internal.ast.Yield
 import org.mmarini.scala.railways.model.blocks.SegmentStatus
 import org.mmarini.scala.railways.model.blocks.SegmentStatus
 import org.mmarini.scala.railways.model.blocks.EntryBlock

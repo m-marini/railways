@@ -26,7 +26,7 @@ class StartController extends ScreenControllerAdapter
     with LazyLogging {
 
   /** Returns the game parameter observer */
-  def show(parms: GameParameters) = {
+  def show(parms: GameParameters) {
     redererByIdObs("station", classOf[TextRenderer]).subscribe(r => r.setText(parms.stationName))
     redererByIdObs("level", classOf[TextRenderer]).subscribe(r => r.setText(parms.levelName))
     redererByIdObs("duration", classOf[TextRenderer]).subscribe(r => r.setText(parms.durationName))

@@ -44,49 +44,28 @@ class EndGameController extends ScreenControllerAdapter
   private def outcomeTrainPercObs = redererByIdObs("outcome-train-perc", classOf[TextRenderer])
 
   /** Shows the performance result */
-  def show(performanceObs: Observable[GamePerformance]): Subscription =
-    CompositeSubscription(
-      (durationObs combineLatest performanceObs).subscribe(_ match {
-        case (rend, performance) =>
-          rend.setText(f"${(performance.elapsedTime / 60).toInt}%d '")
-      }),
-      (errorTrainObs combineLatest performanceObs).subscribe(_ match {
-        case (rend, performance) =>
-          rend.setText(f"${performance.errors}%d trains")
-      }),
-      (errorTrainFreqObs combineLatest performanceObs).subscribe(_ match {
-        case (rend, performance) =>
-          rend.setText(f"${performance.errors / performance.elapsedTime * 3600}%g trains/h")
-      }),
-      (errorTrainPercObs combineLatest performanceObs).subscribe(_ match {
-        case (rend, performance) => rend.setText(
-          if (performance.departures > 0)
-            f"${performance.errors * 100 / performance.departures}%d %%"
-          else
-            "0 %")
-      }),
-      (outcomeTrainObs combineLatest performanceObs).subscribe(_ match {
-        case (rend, performance) =>
-          rend.setText(f"${performance.departures}%d trains")
-      }),
-      (outcomeTrainFreqObs combineLatest performanceObs).subscribe(_ match {
-        case (rend, performance) =>
-          rend.setText(f"${performance.departures / performance.elapsedTime * 3600}%g trains/h")
-      }),
-      (outcomeTrainPercObs combineLatest performanceObs).subscribe(_ match {
-        case (rend, performance) =>
-          rend.setText(
-            if (performance.arrivals > 0)
-              f"${performance.departures * 100 / performance.arrivals}%d %%"
-            else
-              "0 %")
-      }),
-      (incomeTrainObs combineLatest performanceObs).subscribe(_ match {
-        case (rend, performance) =>
-          rend.setText(f"${performance.arrivals}%d %%")
-      }),
-      (incomeTrainFreqObs combineLatest performanceObs).subscribe(_ match {
-        case (rend, performance) =>
-          rend.setText(f"${performance.arrivals / performance.elapsedTime * 3600}%g trains/h")
+  def show(performance: GamePerformance) {
+    durationObs.subscribe(_.setText(f"${(performance.elapsedTime / 60).toInt}%d '"))
+
+    errorTrainObs.subscribe(_.setText(f"${performance.errors}%d trains"))
+    errorTrainFreqObs.subscribe(_.setText(f"${performance.errors / performance.elapsedTime * 3600}%g trains/h"))
+    errorTrainPercObs.subscribe(_.setText(
+      if (performance.departures > 0) {
+        f"${performance.errors * 100 / performance.departures}%d %%"
+      } else {
+        "0 %"
       }))
+
+    outcomeTrainObs.subscribe(_.setText(f"${performance.departures}%d trains"))
+    outcomeTrainFreqObs.subscribe(_.setText(f"${performance.departures / performance.elapsedTime * 3600}%g trains/h"))
+    outcomeTrainPercObs.subscribe(_.setText(
+      if (performance.arrivals > 0) {
+        f"${performance.departures * 100 / performance.arrivals}%d %%"
+      } else {
+        "0 %"
+      }))
+
+    incomeTrainObs.subscribe(_.setText(f"${performance.arrivals}%d %%"))
+    incomeTrainFreqObs.subscribe(_.setText(f"${performance.arrivals / performance.elapsedTime * 3600}%g trains/h"))
+  }
 }

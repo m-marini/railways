@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package org.mmarini.scala.railways.model
 
 import org.scalacheck.Gen

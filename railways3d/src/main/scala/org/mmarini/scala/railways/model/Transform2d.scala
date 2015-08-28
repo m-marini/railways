@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package org.mmarini.scala.railways.model
 
 import com.jme3.math.Vector2f
@@ -16,11 +19,13 @@ case class Transform2d(translate: Vector2f, orientation: Float) {
   /** Transforms an angle */
   def apply(x: Float): Float = {
     val y = x + orientation
-    if (y > Pif)
+    if (y > Pif) {
       y - Pi2f
-    else if (y < -Pif)
+    } else if (y < -Pif) {
       y + Pi2f
-    else y
+    } else {
+      y
+    }
   }
 }
 

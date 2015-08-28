@@ -19,5 +19,5 @@ import com.typesafe.scalalogging.LazyLogging
 class MessageController extends TableController
     with LazyLogging {
 
-  override def cellStyle = (_, _) => "text.message"
+  override def cellStyle: (Int, Int) => String = (_, _) => "text.message"
 }

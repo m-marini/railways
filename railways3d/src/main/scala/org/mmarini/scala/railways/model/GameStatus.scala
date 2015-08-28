@@ -44,6 +44,9 @@ case class GameStatus(
     completed: Boolean = false,
     messages: Seq[TrainMessage] = Seq()) extends LazyLogging {
 
+  val LowestTrainId = 100
+  val TrainIdCount = 900
+
   def quit: GameStatus = GameStatus(
     parameters = parameters,
     stationStatus = stationStatus,
@@ -97,15 +100,16 @@ case class GameStatus(
 
   /** Clears all messages */
   private def clearMessages: GameStatus =
-    if (messages.isEmpty)
+    if (messages.isEmpty) {
       this
-    else
+    } else {
       new GameStatus(parameters = parameters,
         stationStatus = stationStatus,
         random = random,
         trains = trains,
         performance = performance,
         completed = completed)
+    }
 
   /** Add a message */
   private def +(msg: TrainMessage): GameStatus =
@@ -119,9 +123,9 @@ case class GameStatus(
 
   /** Add a sequence of messages */
   private def ++(msgs: Seq[TrainMessage]): GameStatus =
-    if (msgs.isEmpty)
+    if (msgs.isEmpty) {
       this
-    else
+    } else {
       new GameStatus(parameters = parameters,
         stationStatus = stationStatus,
         random = random,
@@ -129,7 +133,7 @@ case class GameStatus(
         performance = performance,
         completed = completed,
         messages = messages ++ msgs)
-
+    }
   /** Generates the next status simulating a time elapsing */
   def tick(time: Float): GameStatus = {
     // Generates status changes for each train e returns the final status
@@ -174,7 +178,7 @@ case class GameStatus(
 
   /** Creates a train id */
   private def createTrainId: String =
-    s"Exp-${random.nextInt(900) + 100}"
+    s"Exp-${random.nextInt(TrainIdCount) + LowestTrainId}"
 
   /** Chooses randomly an item */
   private def chooseOneOf[T](seq: IndexedSeq[T]): Option[T] =

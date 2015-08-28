@@ -31,24 +31,25 @@ case class WaitingForTrackTrain(
     with LazyLogging {
 
   /** Creates the new train status apply a new route */
-  override def apply(route: TrainRoute, location: Float) =
+  override def apply(route: TrainRoute, location: Float): Train =
     WaitingForTrackTrain(id, size, loaded, route, location, exitId)
 
   /** Computes the next status after an elapsed time tick */
-  override def tick(time: Float, gameStatus: GameStatus) = {
+  override def tick(time: Float, gameStatus: GameStatus): (Option[Train], Seq[TrainMessage]) = {
     // Computes the target speed by braking space
     val stopLocation = route.length - MinDistance
     val dist = max(stopLocation - location, 0)
-    if (dist > MinDistance * 2)
+    if (dist > MinDistance * 2) {
       (Some(
         MovingTrain(id, size, loaded, route, location, 0f, exitId)),
         Seq(TrainStartedMsg(id)))
-    else
+    } else {
       (Some(this), Seq())
+    }
   }
 
   /** Creates the reverse train */
-  override def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)) = {
+  override def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)): Option[Train] = {
     val Some((headTrack, headLocation)) = route.trackLocationAt(location)
     for {
       (trackTail, _) <- trackTailLocation if (!trackTail.isInstanceOf[EntryTrack])
@@ -59,6 +60,6 @@ case class WaitingForTrackTrain(
   }
 
   /** Creates toogle status */
-  override def stop =
+  override def stop: Train =
     StoppedTrain(id, size, loaded, route, location, exitId)
 }

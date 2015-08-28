@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package org.mmarini.scala.jmonkey
 
 import rx.lang.scala.Observable
@@ -26,6 +29,7 @@ object TableController {
   val DefaultCellStyle = "nifty-label"
 
 }
+
 class TableController extends ControllerAdapter
     with MousePrimaryClickedObservable
     with NiftyObservables
@@ -66,17 +70,13 @@ class TableController extends ControllerAdapter
 
   private var colElements = IndexedSeq[Element]()
 
-  // change the image
-  /** */
-  private def resize(nifty: Nifty,
+  /** Resizes the columns of table */
+  private def resizeColumns(m: Int,
+    nifty: Nifty,
     screen: Screen,
-    parent: Element,
-    n: Int,
-    m: Int): IndexedSeq[Element] = {
-    val pid = Option(parent.getId).getOrElse(parent.hashCode().toString())
+    parent: Element): IndexedSeq[Element] = {
     val m0 = colElements.size
-    val headerSize = headerOpt.size
-    val colElements1 = if (m0 == m) {
+    if (m0 == m) {
       colElements
     } else if (m0 > m) {
       // Removes old columns
@@ -93,7 +93,15 @@ class TableController extends ControllerAdapter
         b.build(nifty, screen, parent)
       }
     }
+  }
 
+  /** Resizes the rows of table */
+  private def resizeRows(colElements1: IndexedSeq[Element],
+    n: Int,
+    nifty: Nifty,
+    screen: Screen,
+    parent: Element): IndexedSeq[Element] = {
+    val headerSize = headerOpt.size
     val hb = new TextBuilder
     for {
       (colElement, colIdx) <- colElements1 zipWithIndex
@@ -111,6 +119,7 @@ class TableController extends ControllerAdapter
         hb.build(nifty, screen, colElement)
       }
 
+      val pid = Option(parent.getId).getOrElse(parent.hashCode().toString())
       val n0 = cellElems.size
       val nn = n + headerSize
       if (n0 > nn) {
@@ -133,7 +142,17 @@ class TableController extends ControllerAdapter
     colElements1
   }
 
-  /** */
+  /** Resizes all table */
+  private def resize(nifty: Nifty,
+    screen: Screen,
+    parent: Element,
+    n: Int,
+    m: Int): IndexedSeq[Element] =
+    resizeRows(
+      resizeColumns(m, nifty, screen, parent),
+      n, nifty, screen, parent)
+
+  /** Sets cell content */
   private def setCells(nifty: Nifty,
     screen: Screen,
     parent: Element,
