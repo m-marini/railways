@@ -63,6 +63,7 @@ object CameraReactiveEngine extends LazyLogging {
 class CameraReactiveEngine(
     timeObs: => Observable[Float],
     cameraSelectionObs: => Observable[CameraViewpoint],
+    followedTrainObs: Observable[Train],
     upCommandActionObs: => Observable[ActionMapping],
     downCommandActionObs: => Observable[ActionMapping],
     leftCommandActionObs: => Observable[ActionMapping],
@@ -122,9 +123,6 @@ class CameraReactiveEngine(
     (locationObs, rotationObs)
   }
 
-  private lazy val trainFollowerObs: Observable[Train] =
-    Observable.never
-
   /** Creates the observable of camera translation */
   private lazy val translationObs: Observable[Vector3f] = {
     // Camera selected by panel
@@ -134,7 +132,7 @@ class CameraReactiveEngine(
 
     // Camera located at train
     val cameraTrainOptObs = for {
-      train <- trainFollowerObs
+      train <- followedTrainObs
     } yield for {
       location <- train.locationAt(TrainHeadCameraDistance)
     } yield new Vector3f(
@@ -157,7 +155,7 @@ class CameraReactiveEngine(
     } yield vp.direction
 
     val cameraTrainOptObs = for {
-      train <- trainFollowerObs
+      train <- followedTrainObs
     } yield for {
       angle <- train.directionAt(TrainHeadCameraDistance, TrainCameraToDistance)
     } yield new Quaternion().

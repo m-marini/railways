@@ -46,6 +46,15 @@ import com.jme3.math.Vector2f
 import de.lessvoid.nifty.elements.Element
 import de.lessvoid.nifty.controls.dynamic.PopupCreator
 import rx.lang.scala.subjects.AsyncSubject
+import org.mmarini.scala.railways.model.TrainMessage
+import org.mmarini.scala.railways.model.TrainEnteredMsg
+import org.mmarini.scala.railways.model.TrainExitedMsg
+import org.mmarini.scala.railways.model.TrainStartedMsg
+import org.mmarini.scala.railways.model.TrainReloadedMsg
+import org.mmarini.scala.railways.model.TrainExitedMsg
+import org.mmarini.scala.railways.model.TrainStoppedMsg
+import org.mmarini.scala.railways.model.TrainWaitForReloadMsg
+import org.mmarini.scala.railways.model.TrainWaitForTrackMsg
 
 /**
  * @author us00852
@@ -203,6 +212,17 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     findParentLoop(nodeOpt)
   }
 
+  private def messageText(msg: TrainMessage): String = msg match {
+    case TrainEnteredMsg(id) => s"$id is arriving"
+    case TrainExitedMsg(id) => s"$id is departing"
+    case TrainStartedMsg(id) => s"$id started"
+    case TrainReloadedMsg(id) => s"$id reloaded"
+    case TrainStoppedMsg(id) => s"$id stopped"
+    case TrainWaitForReloadMsg(id) => s"$id is waiting for reloading"
+    case TrainWaitForTrackMsg(id) => s"$id is waiting for semaphore"
+    case _ => msg.toString()
+  }
+
   // ===================================================================
   // Decompositions
   // ===================================================================
@@ -218,6 +238,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   private lazy val cameraReactiveEngine = new CameraReactiveEngine(
     timeObs,
     cameraSelectionObs,
+    followedTrainObs,
     upCommandActionObs,
     downCommandActionObs,
     leftCommandActionObs,
@@ -348,12 +369,11 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
       // Creates train command transition
       val trainTxOptObs = for {
-        ctrl <- trainPopupCtrlObs
-        (ev, (_, "train" +: trainId +: _)) <- ctrl.mousePrimaryClickedObs withLatest pickedObjectIdObs
-      } yield ev.getElement.getId match {
-        case "startTrain" => Some((status: GameStatus) => status.startTrain(trainId))
-        case "stopTrain" => Some((status: GameStatus) => status.stopTrain(trainId))
-        case "reverseTrain" => Some((status: GameStatus) => status.reverseTrain(trainId))
+        cmdParms <- trainCmdObs
+      } yield cmdParms match {
+        case ("startTrain", trainId) => Some((status: GameStatus) => status.startTrain(trainId))
+        case ("stopTrain", trainId) => Some((status: GameStatus) => status.stopTrain(trainId))
+        case ("reverseTrain", trainId) => Some((status: GameStatus) => status.reverseTrain(trainId))
         case _ => None
       }
       val trainTxObs = for (Some(f) <- trainTxOptObs) yield f
@@ -486,7 +506,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   private lazy val messagePanelObs = for {
     ctrl <- messagesCtrlObs
     msgs <- messageObs.history(PanelMaxMessageCount)
-  } yield (ctrl, msgs.map(m => IndexedSeq(m.toString)).toIndexedSeq)
+  } yield (ctrl, msgs.map(m => IndexedSeq(messageText(m))).toIndexedSeq)
 
   /** Creates the observer of train sequence */
   private lazy val trainsSeqObs = for { status <- gameStatusObs } yield status.trains.toIndexedSeq
@@ -528,19 +548,21 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     for { Some((pos, id)) <- objParmsObs } yield (pos, id)
   }
 
+  /** Creates the observable of train pop up */
   private lazy val trainPopupObs = {
     val subj = AsyncSubject[Element]
     gameCtrl.niftyObs.map(_.createPopup("trainPopup")).subscribe(subj)
     subj
   }
 
+  /** Creates the observable of semaphore pop up */
   private lazy val semPopupObs = {
     val subj = AsyncSubject[Element]
     gameCtrl.niftyObs.map(_.createPopup("semPopup")).subscribe(subj)
     subj
   }
 
-  /** Creates observable of show popup panels */
+  /** Creates observable of show pop up panels */
   private lazy val showPopupObs: Observable[(Element, String, Vector2f)] = {
     /** Subscribes for pop up panels */
     val optObs = for {
@@ -556,8 +578,42 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     for (Some(data) <- optObs) yield data
   }
 
+  /** Creates the observable of train pop up controller */
   private lazy val trainPopupCtrlObs = trainPopupObs.map(_.getControl(classOf[PopupController]))
 
+  /** Creates the observable of semaphore pop up controller */
   private lazy val semPopupCtrlObs = semPopupObs.map(_.getControl(classOf[PopupController]))
+
+  /** Creates the observable of train command by pop up menu */
+  val trainCmdObs = for {
+    popup <- trainPopupObs
+    ctrl = popup.getControl(classOf[PopupController])
+    (ev, (_, "train" +: trainId +: _)) <- ctrl.mousePrimaryClickedObs withLatest pickedObjectIdObs
+  } yield (ev.getElement.getId, trainId)
+
+  /** Creates observable of followed train */
+  private lazy val followedTrainObs = {
+    // Creates the observable for train pop up command triggering
+    val cmdPopupTrainObsOpt = for {
+      ("cameraTrain", trainId) <- trainCmdObs
+    } yield Option(trainId)
+
+    /** Creates the observable of train selected on train panel */
+    val selectedTrainObs = for {
+      ctrl <- trainsCtrlObs
+      ((row, _), trains) <- ctrl.selectionObsOpt withLatest trainsSeqObs
+    } yield Some(trains(row).id)
+
+    /** Generate the observable of no followed train */
+    val clearTrainObs = cameraSelectionObs.map(_ => None)
+
+    /** Merges all the observables */
+    val followedTrainIdObs = cmdPopupTrainObsOpt merge clearTrainObs merge selectedTrainObs
+
+    val trainOptObs = for {
+      (gameStatus, Some(trainId)) <- gameStatusObs withLatest followedTrainIdObs
+    } yield gameStatus.trains.find(trainId == _.id)
+    for (Some(train) <- trainOptObs) yield train
+  }
 
 }
