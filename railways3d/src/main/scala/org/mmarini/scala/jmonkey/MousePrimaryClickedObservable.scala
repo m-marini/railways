@@ -16,7 +16,7 @@ import de.lessvoid.nifty.elements.events.NiftyMousePrimaryClickedEvent
  */
 trait MousePrimaryClickedObservable extends LazyLogging {
 
-  private val mousePrimaryClickedSubj = Subject[NiftyMousePrimaryClickedEvent]()
+  private val mousePrimaryClickedSubj = Subject[NiftyMousePrimaryClickedEvent]
 
   /** Return the selection button id observable */
   def mousePrimaryClickedObs: Observable[NiftyMousePrimaryClickedEvent] = mousePrimaryClickedSubj

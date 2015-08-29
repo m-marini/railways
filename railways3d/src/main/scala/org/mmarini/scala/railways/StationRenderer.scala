@@ -30,18 +30,17 @@ import org.mmarini.scala.railways.model.blocks.BlockElementIds
 import org.mmarini.scala.railways.model.Transform2d
 
 /**
- * Handles the events of simulation coming from user or clock ticks
+ * Keeps the set of [[Spatial]] to be attached to the scene,
+ * the set of [[Spatial]] to be detached from the scene.
  *
- * Each event generates a change of rendered model 3d.
- * The model is kept in this Game
- *
- * This Game constructor initializes the game status
+ * The cache keeps the Spatial loaded by id
  */
 case class StationRenderer(
     assetManager: AssetManager,
     cache: Map[String, Option[Spatial]] = Map(),
     attached: Set[Spatial] = Set(),
-    detached: Set[Spatial] = Set()) extends LazyLogging {
+    detached: Set[Spatial] = Set(),
+    visible: Set[String] = Set()) extends LazyLogging {
 
   private def load(ids: BlockElementIds, trans: Transform2d) = Try {
     val spat = assetManager.loadModel(ids.templateId).clone
@@ -53,37 +52,46 @@ case class StationRenderer(
 
   /** Changes the view of station */
   def change(blocks: Set[BlockStatus]): StationRenderer = {
-    val newSpatials = for {
-      blockStatus <- blocks
-      ids <- blockStatus.elementIds
-      if (!cache.contains(ids.elementId))
-    } yield {
-      val spatialTry = load(ids, blockStatus.block.trans)
-      for { ex <- spatialTry.failed } logger.error(ex.getMessage, ex)
-      (ids.elementId, spatialTry.toOption)
-    }
 
-    val newCache = cache ++ newSpatials
+    // blockStatus 1 ---> elementsIds [0*] --> blockElementId --> elementId
+    //                                                        --> templateId
+    //                                                        --> selectionId
 
+    // Creates the set visible id
     val ids = for {
       blockStatus <- blocks
       id <- blockStatus.elementIds
     } yield id.elementId
 
+    // Extracts the rendering block set of the spatial not yet loaded
+    val newSpatials = for {
+      blockStatus <- blocks
+      ids <- blockStatus.elementIds
+      if (!cache.contains(ids.elementId))
+      spatialTry = load(ids, blockStatus.block.trans)
+    } yield {
+      for { ex <- spatialTry.failed } logger.error(ex.getMessage, ex)
+      (ids.elementId, spatialTry.toOption)
+    }
+    // Adds the new spatial to the cache
+    val newCache = cache ++ newSpatials
+
     val detached = for {
-      (id, spatialOpt) <- cache
+      id <- visible
       if (!ids.contains(id))
-      spatial <- spatialOpt
+      spatial <- newCache(id)
     } yield spatial
 
     val attached = for {
       id <- ids
+      if (!visible.contains(id))
       spatial <- newCache(id)
     } yield spatial
 
     StationRenderer(assetManager,
       newCache,
       attached,
-      detached.toSet)
+      detached,
+      ids)
   }
 }

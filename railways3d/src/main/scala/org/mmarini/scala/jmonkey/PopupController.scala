@@ -4,6 +4,7 @@
 package org.mmarini.scala.jmonkey
 
 import de.lessvoid.nifty.controls.Controller
+
 import de.lessvoid.nifty.screen.Screen
 import de.lessvoid.nifty.screen.ScreenController
 import de.lessvoid.nifty.Nifty
@@ -15,6 +16,7 @@ import com.typesafe.scalalogging.LazyLogging
 import rx.lang.scala.Subject
 import rx.lang.scala.Observable
 import de.lessvoid.nifty.controls.NiftyControl
+import org.mmarini.scala.railways.ObservableFactory
 
 /**
  * @author us00852
@@ -26,8 +28,13 @@ class PopupController extends ControllerAdapter
 
   /** Close this popup */
   def closePopup {
-    val o = niftyObs combineLatest elementObs
-    o.subscribe(x => x._1.closePopup(x._2.getId))
+    val obs = for {
+      nifty <- niftyObs
+      element <- elementObs
+    } yield () => {
+      nifty.closePopup(element.getId)
+    }
+    obs.subscribe(f => f())
   }
 
 }

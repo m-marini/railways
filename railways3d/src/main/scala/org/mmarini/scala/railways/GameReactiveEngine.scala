@@ -45,6 +45,7 @@ import scala.math.round
 import com.jme3.math.Vector2f
 import de.lessvoid.nifty.elements.Element
 import de.lessvoid.nifty.controls.dynamic.PopupCreator
+import rx.lang.scala.subjects.AsyncSubject
 
 /**
  * @author us00852
@@ -106,7 +107,8 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     performanceObs.subscribe(gameCtrl.show _)
 
     showPopupObs.subscribe(_ match {
-      case (popup, panelId, position) => nifty.showPopupAt(popup, panelId, position)
+      case (popup, panelId, position) =>
+        nifty.showPopupAt(popup, panelId, position)
     })
   }
 
@@ -125,14 +127,21 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
     /** Subscribes for user data settings of spatials */
     setUserDataSpatialObs.subscribe(_ match {
-      case (spatial, key, value) => spatial.setUserData(key, value)
+      case (spatial, key, value) =>
+        spatial.setUserData(key, value)
     })
 
     /** Subscribes for attach spatials to root */
-    Main.detachFromRootSub(detachFromRootObs)
+    detachFromRootObs.subscribe(spatial => {
+      //      logger.debug("detach {}", spatial)
+      Main.getRootNode.detachChild(spatial)
+    })
 
     /** Subscribes for attach spatials to root */
-    Main.attachToRootSub(attachToRootObs)
+    attachToRootObs.subscribe(spatial => {
+      //      logger.debug("attach {}", spatial)
+      Main.getRootNode.attachChild(spatial)
+    })
   }
 
   // ===================================================================
@@ -146,10 +155,6 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   private lazy val gameCtrl: GameController = nifty.screenControllerById[GameController]("game-screen")
 
   private lazy val endGameCtrl: EndGameController = nifty.screenControllerById[EndGameController]("end-game-screen")
-
-  private lazy val trainPopup = nifty.createPopup("trainPopup")
-
-  private lazy val semPopup = nifty.createPopup("semPopup")
 
   /** Creates sky */
   private lazy val sky = {
@@ -202,6 +207,13 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   // Decompositions
   // ===================================================================
 
+  private lazy val cameraNode: CameraNode = {
+    val camNode = new CameraNode("Motion cam", Main.getCamera)
+    camNode.setControlDir(ControlDirection.SpatialToCamera)
+    camNode.setEnabled(true)
+    camNode
+  }
+
   /** Creates the camera reactive engine */
   private lazy val cameraReactiveEngine = new CameraReactiveEngine(
     timeObs,
@@ -222,7 +234,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   // ===================================================================
 
   /** Observable of goto screen */
-  lazy val screenNavigationObs = {
+  private lazy val screenNavigationObs = {
     // start-screen selection
     val btnScreenMap = Map(
       "optionsButton" -> "opts-screen",
@@ -242,56 +254,49 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   }
 
   // Option selection
-  val optsConfirmObs = for {
+  private val optsConfirmObs = for {
     ev <- optionsButtonsObs
     if (ev.getButton.getId == "ok")
   } yield "start"
 
-  lazy val cameraCtrlObs: Observable[CameraController] = gameCtrl.controllerByIdObs("cameraPanel", classOf[CameraController])
+  private lazy val cameraCtrlObs: Observable[CameraController] = gameCtrl.controllerByIdObs("cameraPanel", classOf[CameraController])
 
-  lazy val trainsCtrlObs: Observable[TrainController] = gameCtrl.controllerByIdObs("trainPanel", classOf[TrainController])
+  private lazy val trainsCtrlObs: Observable[TrainController] = gameCtrl.controllerByIdObs("trainPanel", classOf[TrainController])
 
-  lazy val messagesCtrlObs: Observable[TableController] = gameCtrl.controllerByIdObs("messagesPanel", classOf[TableController])
+  private lazy val messagesCtrlObs: Observable[TableController] = gameCtrl.controllerByIdObs("messagesPanel", classOf[TableController])
 
-  lazy val startButtonsObs: Observable[ButtonClickedEvent] = startCtrl.buttonClickedObs
+  private lazy val startButtonsObs: Observable[ButtonClickedEvent] = startCtrl.buttonClickedObs
 
-  lazy val optionsButtonsObs: Observable[ButtonClickedEvent] = optionsCtrl.buttonClickedObs
+  private lazy val optionsButtonsObs: Observable[ButtonClickedEvent] = optionsCtrl.buttonClickedObs
 
-  lazy val endGameButtonsObs: Observable[ButtonClickedEvent] = endGameCtrl.buttonClickedObs
+  private lazy val endGameButtonsObs: Observable[ButtonClickedEvent] = endGameCtrl.buttonClickedObs
 
-  lazy val cameraPanelObs: Observable[(Int, Int)] = cameraCtrlObs.map(_.selectionObsOpt).flatten
+  private lazy val cameraPanelObs: Observable[(Int, Int)] = cameraCtrlObs.map(_.selectionObsOpt).flatten
 
-  lazy val gameScreenObs: Observable[(String, ScreenControllerAdapter)] = gameCtrl.screenEventObs
+  private lazy val gameScreenObs: Observable[(String, ScreenControllerAdapter)] = gameCtrl.screenEventObs
 
-  lazy val xRelativeAxisObs: Observable[AnalogMapping] = Main.mouseRelativeObs("xAxis")
+  private lazy val xRelativeAxisObs: Observable[AnalogMapping] = Main.mouseRelativeObs("xAxis")
 
-  lazy val gameMouseClickedObs: Observable[NiftyMousePrimaryClickedEvent] = gameCtrl.mousePrimaryClickedObs
+  private lazy val gameMouseClickedObs: Observable[NiftyMousePrimaryClickedEvent] = gameCtrl.mousePrimaryClickedObs
 
-  lazy val gameMouseReleasedObs: Observable[NiftyMousePrimaryReleaseEvent] = gameCtrl.mousePrimaryReleaseObs
+  private lazy val gameMouseReleasedObs: Observable[NiftyMousePrimaryReleaseEvent] = gameCtrl.mousePrimaryReleaseObs
 
-  lazy val cameraNode: CameraNode = {
-    val camNode = new CameraNode("Motion cam", Main.getCamera)
-    camNode.setControlDir(ControlDirection.SpatialToCamera)
-    camNode.setEnabled(true)
-    camNode
-  }
+  private def timeObs: Observable[Float] = Main.timeObs
 
-  def timeObs: Observable[Float] = Main.timeObs
+  private lazy val selectActionObs: Observable[ActionMapping] = Main.actionObservable("select")
+  private lazy val selectMidActionObs: Observable[ActionMapping] = Main.actionObservable("selectMid")
+  private lazy val selectRightActionObs: Observable[ActionMapping] = Main.actionObservable("selectRight")
+  private lazy val upCommandActionObs: Observable[ActionMapping] = Main.actionObservable("upCmd")
+  private lazy val downCommandActionObs: Observable[ActionMapping] = Main.actionObservable("downCmd")
+  private lazy val leftCommandActionObs: Observable[ActionMapping] = Main.actionObservable("leftCmd")
+  private lazy val rightCommandActionObs: Observable[ActionMapping] = Main.actionObservable("rightCmd")
 
-  lazy val selectActionObs: Observable[ActionMapping] = Main.actionObservable("select")
-  lazy val selectMidActionObs: Observable[ActionMapping] = Main.actionObservable("selectMid")
-  lazy val selectRightActionObs: Observable[ActionMapping] = Main.actionObservable("selectRight")
-  lazy val upCommandActionObs: Observable[ActionMapping] = Main.actionObservable("upCmd")
-  lazy val downCommandActionObs: Observable[ActionMapping] = Main.actionObservable("downCmd")
-  lazy val leftCommandActionObs: Observable[ActionMapping] = Main.actionObservable("leftCmd")
-  lazy val rightCommandActionObs: Observable[ActionMapping] = Main.actionObservable("rightCmd")
-
-  lazy val xAxisAnalogObs: Observable[AnalogMapping] = Main.analogObservable("xAxis")
-  lazy val forwardAnalogObs: Observable[AnalogMapping] = Main.analogObservable("forwardCmd")
-  lazy val backwardAnalogObs: Observable[AnalogMapping] = Main.analogObservable("backwardCmd")
+  private lazy val xAxisAnalogObs: Observable[AnalogMapping] = Main.analogObservable("xAxis")
+  private lazy val forwardAnalogObs: Observable[AnalogMapping] = Main.analogObservable("forwardCmd")
+  private lazy val backwardAnalogObs: Observable[AnalogMapping] = Main.analogObservable("backwardCmd")
 
   /** Creates the parameters generators from options panel */
-  lazy val gameParamsObs: Observable[GameParameters] = {
+  private lazy val gameParamsObs: Observable[GameParameters] = {
     val parmsObs = for {
       _ <- optionsButtonsObs
       parm <- optionsCtrl.readParametersObs
@@ -300,24 +305,24 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   }
 
   /** Creates the initial game status triggered by the start of game screen */
-  lazy val initialGameStatusObs: Observable[GameStatus] =
+  private lazy val initialGameStatusObs: Observable[GameStatus] =
     gameScreenObs.
       filter(_._1 == "start").
       withLatest(gameParamsObs)(
         (_, parms) => GameStatus(parms))
 
   /** Creates the observable of viewpoints */
-  lazy val viewpointObs: Observable[Seq[CameraViewpoint]] =
+  private lazy val viewpointObs: Observable[Seq[CameraViewpoint]] =
     for { status <- initialGameStatusObs } yield status.stationStatus.topology.viewpoints
 
   /** Creates observable of camera selection */
-  lazy val cameraSelectionObs: Observable[CameraViewpoint] =
+  private lazy val cameraSelectionObs: Observable[CameraViewpoint] =
     cameraPanelObs.
       withLatest(viewpointObs)(
         (idx, viewpoints) => viewpoints(idx._1))
 
   /** Creates the observable  of backstage of scene loading */
-  lazy val backstageObs: Observable[Spatial] = {
+  private lazy val backstageObs: Observable[Spatial] = {
     val bo = for {
       status <- initialGameStatusObs
     } yield Observable.from(backstage(status))
@@ -325,7 +330,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   }
 
   /** Creates the game status observable */
-  lazy val gameStatusObs: Observable[GameStatus] = {
+  private lazy val gameStatusObs: Observable[GameStatus] = {
     /** Creates the observable of game status transitions */
     val gameTransitionsObs: Observable[GameStatus => GameStatus] = {
 
@@ -341,12 +346,10 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
           (_, Seq("handler", id, handler)) <- pickedObjectIdObs
         } yield (status: GameStatus) => status.toogleBlockStatus(id)(handler.toInt)
 
-      // Creates selection of train pop up commands
-      val trainPopupCtrl = Option(trainPopup.findControl(trainPopup.getId, classOf[PopupController])).get
-
       // Creates train command transition
       val trainTxOptObs = for {
-        (ev, (_, Seq("train", trainId))) <- trainPopupCtrl.mousePrimaryClickedObs withLatest pickedObjectIdObs
+        ctrl <- trainPopupCtrlObs
+        (ev, (_, "train" +: trainId +: _)) <- ctrl.mousePrimaryClickedObs withLatest pickedObjectIdObs
       } yield ev.getElement.getId match {
         case "startTrain" => Some((status: GameStatus) => status.startTrain(trainId))
         case "stopTrain" => Some((status: GameStatus) => status.stopTrain(trainId))
@@ -355,18 +358,37 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       }
       val trainTxObs = for (Some(f) <- trainTxOptObs) yield f
 
+      // Creates the observable for junction
+      val semTxOptObs = for {
+        ctrl <- semPopupCtrlObs
+        (ev, (_, objType +: objId +: idxStr +: _)) <- ctrl.mousePrimaryClickedObs withLatest pickedObjectIdObs
+        idx = idxStr.toInt
+      } yield (ev.getElement.getId, objType) match {
+        case ("clear", "junction") =>
+          Some((status: GameStatus) => status.unlockJunction(objId)(idx))
+        case ("lock", "junction") =>
+          Some((status: GameStatus) => status.lockJunction(objId)(idx))
+        case ("clear", "track") =>
+          Some((status: GameStatus) => status.unlockTrack(objId)(idx))
+        case ("lock", "track") =>
+          Some((status: GameStatus) => status.lockTrack(objId)(idx))
+        case _ => None
+      }
+      val semTxObs = for (Some(f) <- semTxOptObs) yield f
+
       Observable.just((s: GameStatus) => s) merge
         initialGameTxObs merge
         timeGameTxObs merge
         blockToogleTxObs merge
-        trainTxObs
+        trainTxObs merge
+        semTxObs
     }
 
     gameTransitionsObs.statusFlow(initialGameStatusObs.take(1))
   }
 
   /** Creates the observable of station renderer */
-  lazy val stationRenderObs = {
+  private lazy val stationRenderObs = {
     val txObs = for {
       status <- gameStatusObs
     } yield (renderer: StationRenderer) => renderer.change(status.stationStatus.blocks.values.toSet)
@@ -374,7 +396,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   }
 
   /** Creates the observable of attach spatial */
-  lazy val attachToRootObs: Observable[Spatial] = {
+  private lazy val attachToRootObs: Observable[Spatial] = {
     backstageObs
     val stationAttacheObs = for {
       stationRend <- stationRenderObs
@@ -387,7 +409,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   }
 
   /** Creates the observable of attach spatial */
-  lazy val detachFromRootObs: Observable[Spatial] = {
+  private lazy val detachFromRootObs: Observable[Spatial] = {
     val stationDetachObs = for {
       stationRend <- stationRenderObs
       spatial <- Observable.from(stationRend.detached)
@@ -451,7 +473,8 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   private lazy val rotateSpatialObs = vehicleRotateObs
 
   /** Creates the observable of spatial user data setting */
-  private lazy val setUserDataSpatialObs: Observable[(Spatial, String, String)] = Observable.empty
+  private lazy val setUserDataSpatialObs: Observable[(Spatial, String, String)] =
+    vehicleSetDataObs
 
   /** Creates the observable of messages */
   private lazy val messageObs = for {
@@ -505,13 +528,36 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     for { Some((pos, id)) <- objParmsObs } yield (pos, id)
   }
 
+  private lazy val trainPopupObs = {
+    val subj = AsyncSubject[Element]
+    gameCtrl.niftyObs.map(_.createPopup("trainPopup")).subscribe(subj)
+    subj
+  }
+
+  private lazy val semPopupObs = {
+    val subj = AsyncSubject[Element]
+    gameCtrl.niftyObs.map(_.createPopup("semPopup")).subscribe(subj)
+    subj
+  }
+
   /** Creates observable of show popup panels */
-  private lazy val showPopupObs: Observable[(Element, String, Vector2f)] =
+  private lazy val showPopupObs: Observable[(Element, String, Vector2f)] = {
     /** Subscribes for pop up panels */
-    pickedObjectIdObs.map {
-      case (pos, "track" +: _) => (semPopup, "semPane", pos)
-      case (pos, "junction" +: _) => (semPopup, "semPane", pos)
-      case (pos, "train" +: _) => (trainPopup, "semPane", pos)
+    val optObs = for {
+      trainPopup <- trainPopupObs
+      semPopup <- semPopupObs
+      pickedObj <- pickedObjectIdObs
+    } yield pickedObj match {
+      case (pos, "track" +: _) => Some((semPopup, "semPane", pos))
+      case (pos, "junction" +: _) => Some((semPopup, "semPane", pos))
+      case (pos, "train" +: _) => Some((trainPopup, "trainPane", pos))
+      case _ => None
     }
+    for (Some(data) <- optObs) yield data
+  }
+
+  private lazy val trainPopupCtrlObs = trainPopupObs.map(_.getControl(classOf[PopupController]))
+
+  private lazy val semPopupCtrlObs = semPopupObs.map(_.getControl(classOf[PopupController]))
 
 }

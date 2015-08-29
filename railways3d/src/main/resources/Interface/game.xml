@@ -6,59 +6,6 @@
 	<useStyles filename="Interface/style.xml" />
 	<useControls filename="nifty-default-controls.xml" />
 
-	<!-- Train Pop Up -->
-
-	<!-- Pop up panel with the buttons to action trains -->
-
-	<popup id="trainPopup" childLayout="absolute-inside"
-		controller="org.mmarini.scala.jmonkey.PopupController">
-		<interact onClick="closePopup()" onSecondaryClick="closePopup()"
-			onTertiaryClick="closePopup()" />
-		<effect>
-			<onStartScreen name="fade" length="200" />
-			<onEndScreen name="fade" start="#f" end="#0" length="200" />
-		</effect>
-		<panel id="trainPane" x="100" y="300" childLayout="vertical">
-			<panel childLayout="horizontal">
-				<image id="startTrain" filename="Interface/start.png"
-					visibleToMouse="true" margin="5px">
-				</image>
-				<image id="stopTrain" filename="Interface/stop.png"
-					visibleToMouse="true" margin="5px">
-				</image>
-			</panel>
-			<panel childLayout="horizontal">
-				<image id="reverseTrain" filename="Interface/reverse.png"
-					visibleToMouse="true" margin="5px">
-				</image>
-				<image id="cameraTrain" filename="Interface/camera.png"
-					visibleToMouse="true" margin="5px">
-				</image>
-			</panel>
-		</panel>
-	</popup>
-
-	<!-- Semaphore Pop Up -->
-
-	<!-- Pop up panel with the buttons to action semaphores an tracks -->
-
-	<popup id="semPopup" childLayout="absolute-inside"
-		controller="org.mmarini.scala.jmonkey.PopupController">
-		<interact onClick="closePopup()" onSecondaryClick="closePopup()"
-			onTertiaryClick="closePopup()" />
-		<effect>
-			<onStartScreen name="fade" length="200" />
-			<onEndScreen name="fade" start="#f" end="#0" length="200" />
-		</effect>
-		<panel id="semPane" x="100" y="300" childLayout="vertical"
-			backgroundColor="#0008">
-			<image id="clear" filename="Interface/sem-green.png"
-				visibleToMouse="true" />
-			<image id="lock" filename="Interface/sem-red.png"
-				visibleToMouse="true" />
-		</panel>
-	</popup>
-
 	<screen id="game-screen" controller="org.mmarini.scala.railways.GameController">
 
 		<!-- Control Tab Panel -->

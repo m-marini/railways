@@ -28,7 +28,6 @@ import rx.lang.scala.subscriptions.CompositeSubscription
 import de.lessvoid.nifty.screen.ScreenController
 import org.mmarini.scala.jmonkey.SimpleAppAdapter
 import org.mmarini.scala.jmonkey.InputManagerObservables
-import org.mmarini.scala.jmonkey.RootNodeObservables
 import com.jme3.light.DirectionalLight
 import com.jme3.light.AmbientLight
 import scala.util.Try
@@ -42,7 +41,6 @@ import org.mmarini.scala.jmonkey.InputManagerObservables
  */
 object Main extends SimpleAppAdapter
     with NiftyObservables
-    with RootNodeObservables
     with InputManagerObservables
     with LazyLogging {
   val Width = 1200
@@ -64,6 +62,7 @@ object Main extends SimpleAppAdapter
       nifty.fromXml("Interface/start.xml", "start")
       nifty.addXml("Interface/opts.xml")
       nifty.addXml("Interface/game.xml")
+      nifty.addXml("Interface/popups.xml")
       nifty.addXml("Interface/endGame.xml")
     } catch {
       case ex: Exception => logger.error(ex.getMessage, ex)

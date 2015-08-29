@@ -25,11 +25,11 @@ class ControllerAdapter extends Controller with LazyLogging {
 
   private val bindObs = AsyncSubject[(Nifty, Screen, Element)]()
 
-  def niftyObs: Observable[Nifty] = for { x <- bindObs } yield x._1
+  def niftyObs: Observable[Nifty] = for { (nifty, _, _) <- bindObs } yield nifty
 
-  def screenObs: Observable[Screen] = for { x <- bindObs } yield x._2
+  def screenObs: Observable[Screen] = for { (_, screen, _) <- bindObs } yield screen
 
-  def elementObs: Observable[Element] = for { x <- bindObs } yield x._3
+  def elementObs: Observable[Element] = for { (_, _, element) <- bindObs } yield element
 
   val controllerEventObs = Subject[(String, ControllerAdapter)]()
 
