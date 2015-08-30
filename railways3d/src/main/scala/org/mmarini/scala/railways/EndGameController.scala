@@ -15,6 +15,8 @@ import org.mmarini.scala.jmonkey.ScreenControllerAdapter
 import org.mmarini.scala.jmonkey.ScreenObservables
 import rx.lang.scala.Subscription
 import rx.lang.scala.subscriptions.CompositeSubscription
+import org.mmarini.scala.jmonkey.MousePrimaryClickedObservable
+import java.util.ResourceBundle
 
 /**
  * @author us00852
@@ -23,6 +25,7 @@ import rx.lang.scala.subscriptions.CompositeSubscription
 class EndGameController extends ScreenControllerAdapter
     with ScreenObservables
     with ButtonClickedObservable
+    with MousePrimaryClickedObservable
     with LazyLogging {
 
   private def durationObs = redererByIdObs("duration", classOf[TextRenderer])
@@ -43,29 +46,29 @@ class EndGameController extends ScreenControllerAdapter
 
   private def outcomeTrainPercObs = redererByIdObs("outcome-train-perc", classOf[TextRenderer])
 
+  val bundle = Main.bundle
+
   /** Shows the performance result */
   def show(performance: GamePerformance) {
-    durationObs.subscribe(_.setText(f"${(performance.elapsedTime / 60).toInt}%d '"))
 
-    errorTrainObs.subscribe(_.setText(f"${performance.errors}%d trains"))
-    errorTrainFreqObs.subscribe(_.setText(f"${performance.errors / performance.elapsedTime * 3600}%g trains/h"))
-    errorTrainPercObs.subscribe(_.setText(
-      if (performance.departures > 0) {
-        f"${performance.errors * 100 / performance.departures}%d %%"
-      } else {
-        "0 %"
-      }))
+    val incomeTrainFreq = if (performance.elapsedTime != 0) 3600 * performance.arrivals / performance.elapsedTime else 0
+    val outcomeTrainFreq = if (performance.elapsedTime != 0) 3600 * performance.departures / performance.elapsedTime else 0
+    val outcomeTrainPerc = if (performance.arrivals > 0) 100 * performance.departures / performance.arrivals else 0
+    val errorTrainFreq = if (performance.elapsedTime != 0) 3600 * performance.errors / performance.elapsedTime else 0
+    val errorTrainPerc = if (performance.departures > 0) 100 * performance.errors / performance.departures else 0
+    val min = (performance.elapsedTime / 60).toInt
+    val sec = (performance.elapsedTime - min * 60).toInt
 
-    outcomeTrainObs.subscribe(_.setText(f"${performance.departures}%d trains"))
-    outcomeTrainFreqObs.subscribe(_.setText(f"${performance.departures / performance.elapsedTime * 3600}%g trains/h"))
-    outcomeTrainPercObs.subscribe(_.setText(
-      if (performance.arrivals > 0) {
-        f"${performance.departures * 100 / performance.arrivals}%d %%"
-      } else {
-        "0 %"
-      }))
+    durationObs.subscribe(_.setText(bundle("durationFormat").format(min, sec)))
+    incomeTrainObs.subscribe(rend => rend.setText(bundle("trainCountFormat").format(performance.arrivals)))
+    incomeTrainFreqObs.subscribe(rend => rend.setText(bundle("trainFreqFormat").format(incomeTrainFreq)))
 
-    incomeTrainObs.subscribe(_.setText(f"${performance.arrivals}%d %%"))
-    incomeTrainFreqObs.subscribe(_.setText(f"${performance.arrivals / performance.elapsedTime * 3600}%g trains/h"))
+    outcomeTrainObs.subscribe(rend => rend.setText(bundle("trainCountFormat").format(performance.departures)))
+    outcomeTrainFreqObs.subscribe(rend => rend.setText(bundle("trainFreqFormat").format(outcomeTrainFreq)))
+    outcomeTrainPercObs.subscribe(rend => rend.setText(bundle("trainPercFormat").format(outcomeTrainPerc)))
+
+    errorTrainObs.subscribe(rend => rend.setText(bundle("trainCountFormat").format(performance.errors)))
+    errorTrainFreqObs.subscribe(rend => rend.setText(bundle("trainFreqFormat").format(errorTrainFreq)))
+    errorTrainPercObs.subscribe(rend => rend.setText(bundle("trainPercFormat").format(errorTrainPerc)))
   }
 }

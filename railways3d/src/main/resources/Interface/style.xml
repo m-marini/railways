@@ -14,13 +14,23 @@
 			align="center" />
 	</style>
 	<style id="image.bluPanel">
-		<attributes filename="Interface/panel.png" height="80"
+		<attributes filename="img/panel.png" height="80"
 			width="300" imageMode="resize:13,3,13,13,13,3,13,3,13,3,13,13" />
+	</style>
+
+	<!-- Styles of button panel -->
+	<style id="text.button">
+		<attributes font="Fonts/UbuntuMedium.fnt" color="#ffff"
+			align="center" />
+	</style>
+	<style id="image.button">
+		<attributes filename="img/button.png" height="80"
+			width="300" imageMode="resize:20,23,20,20,20,23,20,8,20,23,20,20" />
 	</style>
 
 	<!-- Styles of camera selection panel -->
 	<style id="image.camera-selection">
-		<attributes filename="Interface/camera.png" height="32px"
+		<attributes filename="img/camera.png" height="32px"
 			padding="2px,5px" visibleToMouse="true" />
 	</style>
 	<style id="text.camera-name">
@@ -113,26 +123,43 @@
 		<attributes width="64px" height="64px" />
 	</style>
 	<style id="image.left">
-		<attributes filename="Interface/arrows.png" width="64px"
+		<attributes filename="img/arrows.png" width="64px"
 			height="64px" imageMode="subImage:0,0,64,64" visibleToMouse="true" />
 	</style>
 	<style id="image.right">
-		<attributes filename="Interface/arrows.png" width="64px"
+		<attributes filename="img/arrows.png" width="64px"
 			height="64px" imageMode="subImage:64,0,64,64" visibleToMouse="true" />
 	</style>
 	<style id="image.up">
-		<attributes filename="Interface/arrows.png" width="64px"
+		<attributes filename="img/arrows.png" width="64px"
 			height="64px" imageMode="subImage:0,64,64,64" visibleToMouse="true" />
 	</style>
 	<style id="image.down">
-		<attributes filename="Interface/arrows.png" width="64px"
+		<attributes filename="img/arrows.png" width="64px"
 			height="64px" imageMode="subImage:64,64,64,64" visibleToMouse="true" />
 	</style>
 
 	<style id="image.quit">
-		<attributes filename="Interface/quit.png" width="32px"
+		<attributes filename="img/quit.png" width="32px"
 			height="32px" visibleToMouse="true" />
 	</style>
 
+
+	<!-- Styles of end game panel -->
+	<style id="panel.end-game-content">
+		<attributes childLayout="vertical" padding="10px" />
+	</style>
+	<style id="image.end-game-icon">
+		<attributes width="64px" height="64px" valign="center"
+			padding="5px" />
+	</style>
+	<style id="text.end-game-title">
+		<attributes font="Fonts/UbuntuMedium.fnt" color="#ffff"
+			textHAlign="left" valign="center" />
+	</style>
+	<style id="text.end-game-value">
+		<attributes font="Fonts/UbuntuMedium.fnt" color="#ffff"
+			textHAlign="left" valign="center" />
+	</style>
 
 </nifty-styles>

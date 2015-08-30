@@ -14,17 +14,17 @@ case class GamePerformance(
 
   /** Adds a value to the enteredTrainCount */
   def addElapsedTime(dt: Float): GamePerformance =
-    GamePerformance(arrivals, departures, errors, elapsedTime + dt)
+    if (dt != 0) GamePerformance(arrivals, departures, errors, elapsedTime + dt) else this
 
   /** Adds a value to the enteredTrainCount */
   def addArrivals(x: Int): GamePerformance =
-    GamePerformance(arrivals + x, departures, errors, elapsedTime)
+    if (x != 0) GamePerformance(arrivals + x, departures, errors, elapsedTime) else this
 
   /** Adds a value to the rightRoutedTrainCount */
   def addErrors(x: Int): GamePerformance =
-    GamePerformance(arrivals, departures, errors + x, elapsedTime)
+    if (x != 0) GamePerformance(arrivals, departures, errors + x, elapsedTime) else this
 
   /** Adds a value to the exitedTrainCount */
   def addDepartures(x: Int): GamePerformance =
-    GamePerformance(arrivals, departures + x, errors, elapsedTime)
+    if (x != 0) GamePerformance(arrivals, departures + x, errors, elapsedTime) else this
 }

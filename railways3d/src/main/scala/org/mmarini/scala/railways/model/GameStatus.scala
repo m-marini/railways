@@ -137,30 +137,31 @@ case class GameStatus(
   /** Generates the next status simulating a time elapsing */
   def tick(time: Float): GameStatus = {
     // Generates status changes for each train e returns the final status
-    val trainTickStatus = trains.foldLeft(this.clearMessages)((status, train) =>
+    val trainTickStatus = trains.foldLeft(clearMessages)((status, train) =>
       // Processes single train
       train.tick(time, status) match {
         case (Some(train), msgs) => status.putTrain(train) ++ msgs
         case (None, msgs) => {
           val errorCountOpt = for {
             (track, _) <- train.trackTailLocation
-            (block, _) <- stationStatus.extractJunctions(track)
+            (block, _) <- status.stationStatus.extractJunctions(track)
           } yield if (block.id != train.exitId) 1 else 0
-          val newPerf = performance.
+          val newPerf = status.performance.
             addErrors(errorCountOpt.getOrElse(0)).
             addDepartures(1)
-          status.removeTrain(train).setPerformance(newPerf) ++ msgs
+          val s = status.removeTrain(train).setPerformance(newPerf) ++ msgs
+          s
         }
       })
 
-    val entries = shuffle(stationStatus.entryBlocks.filter(_.trainId.isEmpty))(random)
+    val entries = shuffle(trainTickStatus.stationStatus.entryBlocks.filter(_.trainId.isEmpty))(random)
     //   TODO     val n = min(poisson(time * parameters.trainFrequence), entries.size)
     val n = min(poisson(time), entries.size)
 
     if (n == 0) {
-      trainTickStatus.setPerformance(performance.addElapsedTime(time))
+      trainTickStatus.setPerformance(trainTickStatus.performance.addElapsedTime(time))
     } else {
-      val exitIds = for (e <- stationStatus.exitBlocks) yield e.id
+      val exitIds = for (e <- trainTickStatus.stationStatus.exitBlocks) yield e.id
       val newTrainStatus = (0 until n).foldLeft(trainTickStatus)(
         (status, i) => {
           val train = MovingTrain(
@@ -170,7 +171,7 @@ case class GameStatus(
             exitId = chooseOneOf(exitIds).get)
           status.putTrain(train) + TrainEnteredMsg(train.id)
         })
-      newTrainStatus.setPerformance(performance.
+      newTrainStatus.setPerformance(newTrainStatus.performance.
         addArrivals(n).
         addElapsedTime(time))
     }

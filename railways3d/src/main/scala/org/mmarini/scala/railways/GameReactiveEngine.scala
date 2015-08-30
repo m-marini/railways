@@ -57,6 +57,7 @@ import org.mmarini.scala.railways.model.TrainWaitForReloadMsg
 import org.mmarini.scala.railways.model.TrainWaitForTrackMsg
 import rx.lang.scala.Subject
 import com.jme3.scene.Node
+import java.util.ResourceBundle
 
 /**
  * @author us00852
@@ -76,6 +77,8 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
   import GameReactiveEngine._
 
+  val bundle = Main.bundle
+
   // ======================================================
   // Subscriptions
   // ======================================================
@@ -86,7 +89,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     screenNavigationObs.subscribe(nifty.gotoScreen _)
 
     /** Subscription to quit command */
-    startButtonsObs.filter(_.getButton.getId == "quitButton").subscribe { _ => Main.stop }
+    startCtrl.mousePrimaryClickedObs.filter(_.getElement.getId == "quitButton").subscribe { _ => Main.stop }
 
     /** Subscribes for parameter changes to startParameters */
     gameParamsObs.subscribe(parms => startCtrl.show(parms))
@@ -100,7 +103,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     /** Subscribes for camera viewpoint changes to camera panel */
     (cameraCtrlObs combineLatest viewpointObs).subscribe(_ match {
       case (ctrl, viewpoints) =>
-        val cells = for { v <- viewpoints } yield { IndexedSeq("", v.id) }
+        val cells = for { v <- viewpoints } yield { IndexedSeq("", cameraName(v.id)) }
         ctrl.setCell(cells.toIndexedSeq)
     })
 
@@ -219,16 +222,14 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     findParentLoop(nodeOpt)
   }
 
-  private def messageText(msg: TrainMessage): String = msg match {
-    case TrainEnteredMsg(id) => s"$id is arriving"
-    case TrainExitedMsg(id) => s"$id is departing"
-    case TrainStartedMsg(id) => s"$id started"
-    case TrainReloadedMsg(id) => s"$id reloaded"
-    case TrainStoppedMsg(id) => s"$id stopped"
-    case TrainWaitForReloadMsg(id) => s"$id is waiting for reloading"
-    case TrainWaitForTrackMsg(id) => s"$id is waiting for semaphore"
-    case _ => msg.toString()
-  }
+  private def messageText(msg: TrainMessage): String =
+    bundle(msg.getClass.getName).format(msg.trainId)
+
+  /** Returns the name of camera */
+  private def cameraName(id: String): String = bundle(s"camera.$id")
+
+  /** returns the name of block */
+  private def blockName(id: String): String = bundle(s"block.$id")
 
   // ===================================================================
   // Decompositions
@@ -270,11 +271,12 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
     // Start-screen
     val btnStartNavObs = for {
-      ev <- startButtonsObs
-      if (btnScreenMap.contains(ev.getButton.getId))
-    } yield btnScreenMap(ev.getButton.getId)
+      ev <- startCtrl.mousePrimaryClickedObs
+      if (btnScreenMap.contains(ev.getElement.getId))
+    } yield btnScreenMap(ev.getElement.getId)
 
-    val endGameScreenObs = for { _ <- endGameButtonsObs } yield "start"
+    //    val endGameScreenObs = for { _ <- endGameButtonsObs } yield "start"
+    val endGameScreenObs = for { _ <- endGameCtrl.mousePrimaryClickedObs } yield "start"
 
     val endGameGotoObs = for { _ <- performanceEndGameObs } yield "end-game-screen"
 
@@ -537,7 +539,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       val cells = for { t <- trains.toIndexedSeq }
         yield IndexedSeq(
         t.id.toUpperCase,
-        t.exitId.toUpperCase,
+        blockName(t.exitId).toUpperCase,
         "---",
         f"${round(3.6f * t.speed).toInt}%d")
       (ctrl, cells)

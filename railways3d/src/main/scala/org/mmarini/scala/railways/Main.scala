@@ -35,6 +35,8 @@ import com.jme3.math.ColorRGBA
 import org.mmarini.scala.jmonkey.AnalogMapping
 import org.mmarini.scala.jmonkey.NiftyObservables
 import org.mmarini.scala.jmonkey.InputManagerObservables
+import java.util.ResourceBundle
+import java.util.MissingResourceException
 
 /**
  *
@@ -45,6 +47,14 @@ object Main extends SimpleAppAdapter
     with LazyLogging {
   val Width = 1200
   val Height = 768
+
+  val bundle: String => String = (key) => {
+    try {
+      ResourceBundle.getBundle("Interface/game").getString(key)
+    } catch {
+      case t: MissingResourceException => s"<$key>"
+    }
+  }
 
   def mouseRelativeObs: String => Observable[AnalogMapping] = (k) =>
     for { e <- analogObservable(k) } yield {

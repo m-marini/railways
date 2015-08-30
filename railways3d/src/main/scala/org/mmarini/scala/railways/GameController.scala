@@ -9,10 +9,9 @@ import org.mmarini.scala.jmonkey.NiftyObservables
 import org.mmarini.scala.jmonkey.ScreenControllerAdapter
 import org.mmarini.scala.jmonkey.ScreenObservables
 import org.mmarini.scala.railways.model.GamePerformance
-
 import com.typesafe.scalalogging.LazyLogging
-
 import de.lessvoid.nifty.elements.render.TextRenderer
+import java.util.ResourceBundle
 /**
  * Controls the game screen
  *
@@ -37,6 +36,8 @@ class GameController extends ScreenControllerAdapter
   private lazy val errorTrainFreqObs = redererByIdObs("perf-errors-freq", classOf[TextRenderer])
   private lazy val errorTrainPercObs = redererByIdObs("perf-errors-perc", classOf[TextRenderer])
 
+  val bundle = Main.bundle
+
   /** Shows the performance result */
   def show(performance: GamePerformance) {
 
@@ -48,18 +49,16 @@ class GameController extends ScreenControllerAdapter
     val min = (performance.elapsedTime / 60).toInt
     val sec = (performance.elapsedTime - min * 60).toInt
 
-    durationObs.subscribe(_.setText(f"$min%d min $sec%d sec "))
+    durationObs.subscribe(_.setText(bundle("durationFormat").format(min, sec)))
+    incomeTrainObs.subscribe(rend => rend.setText(bundle("trainCountFormat").format(performance.arrivals)))
+    incomeTrainFreqObs.subscribe(rend => rend.setText(bundle("trainFreqFormat").format(incomeTrainFreq)))
 
-    incomeTrainObs.subscribe(rend => rend.setText(f"${performance.arrivals}%d trains"))
-    incomeTrainFreqObs.subscribe(rend => rend.setText(f"$incomeTrainFreq%.0f trains/h"))
+    outcomeTrainObs.subscribe(rend => rend.setText(bundle("trainCountFormat").format(performance.departures)))
+    outcomeTrainFreqObs.subscribe(rend => rend.setText(bundle("trainFreqFormat").format(outcomeTrainFreq)))
+    outcomeTrainPercObs.subscribe(rend => rend.setText(bundle("trainPercFormat").format(outcomeTrainPerc)))
 
-    outcomeTrainObs.subscribe(rend => rend.setText(f"${performance.departures}%d trains"))
-    outcomeTrainFreqObs.subscribe(rend => rend.setText(f"$outcomeTrainFreq%.0f trains/h"))
-    outcomeTrainPercObs.subscribe(rend => rend.setText(f"$outcomeTrainPerc%d %%"))
-
-    errorTrainObs.subscribe(rend => rend.setText(f"${performance.errors}%d trains"))
-    errorTrainFreqObs.subscribe(rend => rend.setText(f"$errorTrainFreq%.0f trains/h"))
-    errorTrainPercObs.subscribe(rend => rend.setText(f"$errorTrainPerc%d %%"))
-
+    errorTrainObs.subscribe(rend => rend.setText(bundle("trainCountFormat").format(performance.errors)))
+    errorTrainFreqObs.subscribe(rend => rend.setText(bundle("trainFreqFormat").format(errorTrainFreq)))
+    errorTrainPercObs.subscribe(rend => rend.setText(bundle("trainPercFormat").format(errorTrainPerc)))
   }
 }

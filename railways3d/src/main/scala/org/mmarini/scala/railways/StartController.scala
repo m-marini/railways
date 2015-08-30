@@ -15,6 +15,7 @@ import rx.lang.scala.Subscription
 import rx.lang.scala.Observable
 import org.mmarini.scala.jmonkey.ScreenObservables
 import rx.lang.scala.subscriptions.CompositeSubscription
+import org.mmarini.scala.jmonkey.MousePrimaryClickedObservable
 
 /**
  * @author us00852
@@ -23,6 +24,7 @@ import rx.lang.scala.subscriptions.CompositeSubscription
 class StartController extends ScreenControllerAdapter
     with ScreenObservables
     with ButtonClickedObservable
+    with MousePrimaryClickedObservable
     with LazyLogging {
 
   /** Returns the game parameter observer */

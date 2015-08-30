@@ -7,7 +7,7 @@
 	<useControls filename="nifty-default-controls.xml" />
 	<screen id="opts-screen" controller="org.mmarini.scala.railways.OptionsController">
 		<layer backgroundColor="#000f" childLayout="center">
-			<image filename="Interface/treni.jpg" width="100%" height="100%" />
+			<image filename="img/treni.jpg" width="100%" height="100%" />
 		</layer>
 		<layer backgroundColor="#fff7" childLayout="center" />
 		<layer childLayout="center">

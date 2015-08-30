@@ -17,16 +17,16 @@
 				<panel childLayout="horizontal"
 					controller="org.mmarini.scala.railways.TabbedController">
 					<panel id="cameraTab" style="panel.selectedTab">
-						<image filename="Interface/camera1.png" style="image.tab-panel" />
+						<image filename="img/camera1.png" style="image.tab-panel" />
 					</panel>
 					<panel id="trainTab" style="panel.unselectedTab">
-						<image filename="Interface/treno.png" style="image.tab-panel" />
+						<image filename="img/treno.png" style="image.tab-panel" />
 					</panel>
 					<panel id="messageTab" style="panel.unselectedTab">
-						<image filename="Interface/messages.png" style="image.tab-panel" />
+						<image filename="img/messages.png" style="image.tab-panel" />
 					</panel>
 					<panel id="performanceTab" style="panel.unselectedTab">
-						<image filename="Interface/perform.png" style="image.tab-panel" />
+						<image filename="img/perform.png" style="image.tab-panel" />
 					</panel>
 				</panel>
 
@@ -66,17 +66,17 @@
 					<panel id="performancePanel" childLayout="vertical" visible="false">
 						<panel childLayout="vertical" backgroundColor="#888f" width="*">
 
-							<text text="Duration" style="text.performance-title" />
+							<text text="${bundle.durationLabel}" style="text.performance-title" />
 							<panel childLayout="horizontal">
-								<image filename="Interface/crono.png" style="image.perfomance-icon" />
+								<image filename="img/crono.png" style="image.perfomance-icon" />
 								<panel style="panel.performance-content">
 									<text id="perf-duration" style="text.performance-value" />
 								</panel>
 							</panel>
 
-							<text text="Arrivals" style="text.performance-title" />
+							<text text="${bundle.arrivalsLabel}" style="text.performance-title" />
 							<panel childLayout="horizontal">
-								<image filename="Interface/arrival-train.png" style="image.perfomance-icon" />
+								<image filename="img/arrival-train.png" style="image.perfomance-icon" />
 								<panel style="panel.performance-content">
 									<text id="perf-arrivals" text="?" style="text.performance-value" />
 									<text id="perf-arrivals-freq" text="?"
@@ -84,9 +84,9 @@
 								</panel>
 							</panel>
 
-							<text text="Departures" style="text.performance-title" />
+							<text text="${bundle.departuresLabel}" style="text.performance-title" />
 							<panel childLayout="horizontal">
-								<image filename="Interface/departure-train.png" style="image.perfomance-icon" />
+								<image filename="img/departure-train.png" style="image.perfomance-icon" />
 								<panel style="panel.performance-content">
 									<text id="perf-departures" text="?" style="text.performance-value" />
 									<text id="perf-departures-freq" text="?"
@@ -96,9 +96,9 @@
 								</panel>
 							</panel>
 
-							<text text="Errors" style="text.performance-title" />
+							<text text="${bundle.errorsLabel}" style="text.performance-title" />
 							<panel childLayout="horizontal">
-								<image filename="Interface/error-train.png" style="image.perfomance-icon" />
+								<image filename="img/error-train.png" style="image.perfomance-icon" />
 								<panel style="panel.performance-content">
 									<text id="perf-errors" text="?" style="text.performance-value" />
 									<text id="perf-errors-freq" text="?" style="text.performance-value" />
