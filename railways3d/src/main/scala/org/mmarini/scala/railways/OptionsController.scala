@@ -40,6 +40,7 @@ object OptionsController {
     "Corto (5 min.)",
     FrequenceEnum.valueById(0),
     DurationEnum.valueById(0),
+    //    10,
     true,
     false,
     0.5f)

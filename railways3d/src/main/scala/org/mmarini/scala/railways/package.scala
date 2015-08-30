@@ -104,27 +104,35 @@ package object railways extends LazyLogging {
 
   implicit class StateFlowFactory[T](subject: Observable[T => T]) {
     /** State flow */
-    def statusFlow(init: Observable[T]): Observable[T] = {
-      var s: Option[T] = None
-      init.take(1).subscribe(x => { s = Option(x) })
+    def statusFlowWithInitObs(init: Observable[T], isEnd: T => Boolean = _ => false): Observable[T] = {
+      var subj = Subject[Observable[T]]
+      init.subscribe(
+        init => {
+          val sm = subject.statusFlow(init, isEnd)
+          subj.onNext(sm)
+        },
+        ex => subj.onError(ex),
+        () => subj.onCompleted)
+      subj.flatten
+    }
+
+    /** State flow */
+    def statusFlow(init: T, isEnd: T => Boolean = _ => false): Observable[T] = {
+      var s = init
       val subj = Subject[T]
-      subject.dropUntil(init).subscribe(
+      subject.takeWhile(_ => !isEnd(s)) subscribe (
         f => {
           // Computes new status
-          val s1 = s.map(f)
+          val s1 = f(s)
           // Stores new status
           s = s1
           // emits new status
-          s1.foreach(subj.onNext)
+          subj.onNext(s1)
         },
         ex => subj.onError(ex),
         () => subj.onCompleted)
       subj
     }
-
-    /** State flow */
-    def statusFlow(init: T): Observable[T] =
-      statusFlow(Observable.just(init))
   }
 
   implicit class OptionObservableFactory[T](subject: Observable[Option[T]]) {

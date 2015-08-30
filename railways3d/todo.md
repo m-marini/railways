@@ -1,6 +1,5 @@
 # To do
 
-  * Bug: Fine gioco + start ricrea i modelli doppi
   * Movimento camera su un punto dello sfondo (click) 
   * Vista camera esterna treno con click su pannelli messaggi / train
   * Modelli 3D finali

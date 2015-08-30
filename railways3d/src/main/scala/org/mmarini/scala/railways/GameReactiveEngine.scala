@@ -55,6 +55,8 @@ import org.mmarini.scala.railways.model.TrainExitedMsg
 import org.mmarini.scala.railways.model.TrainStoppedMsg
 import org.mmarini.scala.railways.model.TrainWaitForReloadMsg
 import org.mmarini.scala.railways.model.TrainWaitForTrackMsg
+import rx.lang.scala.Subject
+import com.jme3.scene.Node
 
 /**
  * @author us00852
@@ -141,16 +143,21 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     })
 
     /** Subscribes for attach spatials to root */
-    detachFromRootObs.subscribe(spatial => {
-      //      logger.debug("detach {}", spatial)
-      Main.getRootNode.detachChild(spatial)
+    detachObs.subscribe(_ match {
+      case (node, spatial) =>
+        node.detachChild(spatial)
     })
 
+    detachAllObs.subscribe(_.detachAllChildren)
+
     /** Subscribes for attach spatials to root */
-    attachToRootObs.subscribe(spatial => {
-      //      logger.debug("attach {}", spatial)
-      Main.getRootNode.attachChild(spatial)
+    attachObs.subscribe(_ match {
+      case (node, spatial) =>
+        //        logger.debug("attach {} to {}", spatial, node)
+        node.attachChild(spatial)
     })
+
+    performanceEndGameObs.subscribe(performance => endGameCtrl.show(performance))
   }
 
   // ===================================================================
@@ -267,11 +274,14 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       if (btnScreenMap.contains(ev.getButton.getId))
     } yield btnScreenMap(ev.getButton.getId)
 
-    val endGameScreenObs = for { x <- endGameButtonsObs } yield "start"
+    val endGameScreenObs = for { _ <- endGameButtonsObs } yield "start"
+
+    val endGameGotoObs = for { _ <- performanceEndGameObs } yield "end-game-screen"
 
     btnStartNavObs merge
       optsConfirmObs merge
-      endGameScreenObs
+      endGameScreenObs merge
+      endGameGotoObs
   }
 
   // Option selection
@@ -344,10 +354,10 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
   /** Creates the observable  of backstage of scene loading */
   private lazy val backstageObs: Observable[Spatial] = {
-    val bo = for {
+    for {
       status <- initialGameStatusObs
-    } yield Observable.from(backstage(status))
-    cameraNode +: bo.flatten
+      spatial <- Observable.from(cameraNode +: backstage(status))
+    } yield spatial
   }
 
   /** Creates the game status observable */
@@ -355,10 +365,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     /** Creates the observable of game status transitions */
     val gameTransitionsObs: Observable[GameStatus => GameStatus] = {
 
-      val initialGameTxObs = for { status <- initialGameStatusObs }
-        yield (_: GameStatus) => status
-
-      val timeGameTxObs = for { time <- timeObs.dropUntil(initialGameStatusObs) }
+      val timeGameTxObs = for { time <- timeObs }
         yield (status: GameStatus) => status.tick(time)
 
       // Creates block change state events
@@ -396,48 +403,58 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       }
       val semTxObs = for (Some(f) <- semTxOptObs) yield f
 
-      Observable.just((s: GameStatus) => s) merge
-        initialGameTxObs merge
-        timeGameTxObs merge
+      val quitTxObs = for {
+        ev <- gameMouseClickedObs
+        if (ev.getElement.getId == "quit")
+      } yield (status: GameStatus) => status.quit
+
+      timeGameTxObs merge
         blockToogleTxObs merge
         trainTxObs merge
-        semTxObs
+        semTxObs merge
+        quitTxObs
     }
 
-    gameTransitionsObs.statusFlow(initialGameStatusObs.take(1))
+    gameTransitionsObs.statusFlowWithInitObs(initialGameStatusObs, _.isFinished)
   }
 
   /** Creates the observable of station renderer */
   private lazy val stationRenderObs = {
-    val txObs = for {
+    val gameTxObs = for {
       status <- gameStatusObs
     } yield (renderer: StationRenderer) => renderer.change(status.stationStatus.blocks.values.toSet)
-    txObs.statusFlow(StationRenderer(Main.getAssetManager))
+    val cleanTxObs = performanceEndGameObs.map(_ => (renderer: StationRenderer) => renderer.change(Set()))
+    (gameTxObs merge cleanTxObs).statusFlow(StationRenderer(Main.getAssetManager))
   }
 
   /** Creates the observable of attach spatial */
-  private lazy val attachToRootObs: Observable[Spatial] = {
-    backstageObs
+  private lazy val attachObs: Observable[(Node, Spatial)] = {
+    val bObs = backstageObs.map((Main.getRootNode, _))
+
     val stationAttacheObs = for {
       stationRend <- stationRenderObs
       spatial <- Observable.from(stationRend.attached)
     } yield spatial
 
-    backstageObs merge
+    (backstageObs merge
       stationAttacheObs merge
-      vehicleAttachObs
+      vehicleAttachObs).map((Main.getRootNode, _))
   }
 
   /** Creates the observable of attach spatial */
-  private lazy val detachFromRootObs: Observable[Spatial] = {
+  private lazy val detachObs: Observable[(Node, Spatial)] = {
     val stationDetachObs = for {
       stationRend <- stationRenderObs
       spatial <- Observable.from(stationRend.detached)
     } yield spatial
 
-    stationDetachObs merge
-      vehicleDetachObs
+    (stationDetachObs merge
+      vehicleDetachObs).map((Main.getRootNode, _))
   }
+
+  /** Creates the observable of attach spatial */
+  private lazy val detachAllObs: Observable[Node] =
+    performanceEndGameObs.map(_ => Main.getRootNode)
 
   /** Creates the observable of camera movements */
   private lazy val (cameraTranslationObs, cameraRotationObs) = cameraReactiveEngine.cameraMovementObs
@@ -616,4 +633,6 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     for (Some(train) <- trainOptObs) yield train
   }
 
+  /** Creates the observable of performance when game ends */
+  private lazy val performanceEndGameObs = gameStatusObs.filter(_.isFinished).map(_.performance)
 }
