@@ -16,7 +16,7 @@ import scala.math.tan
 /**
  * The Downville station
  */
-case object Downville extends Topology {
+case object Litton extends Topology {
 
   private val platform1 = PlatformBlock("platform1", -SegmentLength * 5.5f, 0, RightAngle)
   private val platform2 = PlatformBlock("platform2", -SegmentLength * 5.5f, TrackGap, RightAngle)

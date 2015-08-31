@@ -18,7 +18,7 @@ class GameStatusTest extends PropSpec with Matchers with PropertyChecks {
   property("The time of next game status after elapsed time should be added by elapsed time") {
     val s = GameStatus(
       parameters = GameParameters(),
-      stationStatus = StationStatus(Downville, Set[BlockStatus]()),
+      stationStatus = StationStatus(Litton, Set[BlockStatus]()),
       random = new Random(),
       trains = Set.empty,
       performance = GamePerformance())

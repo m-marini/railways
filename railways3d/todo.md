@@ -1,8 +1,7 @@
 # To do
 
-  * Modello semaforo
-  * Bug: reverse non funziona
   * spia di stato treni (giallo=stop, rosso= waiting sem, giallo lampeggiante=waiting passenger)
+  * Bug: reverse non funziona
   * Modelli 3D finali
   * Costruzione delle stazioni
   * Movimento camera su un punto dello sfondo (click) 

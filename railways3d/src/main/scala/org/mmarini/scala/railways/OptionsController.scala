@@ -35,7 +35,7 @@ object OptionsController {
   }
 
   val DefaultParms = GameParameters(
-    "Downville Station",
+    "Litton",
     "Facile",
     "Corto (5 min.)",
     FrequenceEnum.valueById(0),
@@ -68,10 +68,11 @@ class OptionsController extends ScreenControllerAdapter
   stationObs.subscribe(ctrl => {
     for {
       value <- List(
-        "Downville Station",
+        "Litton",
+        "Downville",
         "Delta Crossing",
         "Jackville Terminal",
-        "Passing Station")
+        "Passing")
     } ctrl.addItem(value)
     ctrl.selectItemByIndex(0)
   })

@@ -39,7 +39,7 @@ trait Topology {
 
 /** A factory of [[Topology]] */
 object Topology {
-  private val topologies = Map[String, Topology]("Downville Station" -> Downville).withDefaultValue(Downville)
+  private val topologies = Map[String, Topology]("Litton Station" -> Litton).withDefaultValue(Litton)
 
   /** Returns the topology of a named station */
   def apply(id: String): Topology = topologies(id)
