@@ -3,32 +3,27 @@
  */
 package org.mmarini.scala.railways.model
 
-import scala.IndexedSeq
+import scala.annotation.migration
 import scala.math.exp
 import scala.math.min
 import scala.util.Random
-import com.jme3.math.Vector2f
-import com.typesafe.scalalogging.LazyLogging
-import org.mmarini.scala.railways.model.tracks.SegmentTrack
-import org.mmarini.scala.railways.model.tracks.RightCurveTrack
-import org.mmarini.scala.railways.model.tracks.PlatformTrack
-import org.mmarini.scala.railways.model.tracks.LeftCurveTrack
+
+import org.mmarini.scala.railways.model.blocks.Block
+import org.mmarini.scala.railways.model.blocks.BlockStatus
+import org.mmarini.scala.railways.model.blocks.EntryBlock
+import org.mmarini.scala.railways.model.blocks.EntryStatus
 import org.mmarini.scala.railways.model.blocks.ExitBlock
+import org.mmarini.scala.railways.model.blocks.ExitStatus
 import org.mmarini.scala.railways.model.blocks.LeftHandSwitchBlock
+import org.mmarini.scala.railways.model.blocks.PlatformBlock
+import org.mmarini.scala.railways.model.blocks.PlatformStatus
 import org.mmarini.scala.railways.model.blocks.RightHandSwitchBlock
 import org.mmarini.scala.railways.model.blocks.SegmentBlock
-import org.mmarini.scala.railways.model.blocks.Block
-import org.mmarini.scala.railways.model.blocks.EntryBlock
-import org.mmarini.scala.railways.model.blocks.PlatformBlock
-import org.mmarini.scala.railways.model.blocks.EntryStatus
-import org.mmarini.scala.railways.model.blocks.BlockStatus
-import org.mmarini.scala.railways.model.blocks.EntryStatus
 import org.mmarini.scala.railways.model.blocks.SegmentStatus
-import org.mmarini.scala.railways.model.blocks.PlatformStatus
 import org.mmarini.scala.railways.model.blocks.SwitchStatus
-import org.mmarini.scala.railways.model.blocks.ExitStatus
-import org.mmarini.scala.railways.model.blocks.EntryStatus
-import org.mmarini.scala.railways._
+import org.mmarini.scala.railways.shuffle
+
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * A set of game parameter, station [[Topology]], elapsed time and set of named [[BlockStatus]]
@@ -112,7 +107,7 @@ case class GameStatus(
     }
 
   /** Add a message */
-  private def +(msg: TrainMessage): GameStatus =
+  private def add(msg: TrainMessage): GameStatus =
     new GameStatus(parameters = parameters,
       stationStatus = stationStatus,
       random = random,
@@ -122,7 +117,7 @@ case class GameStatus(
       messages = messages :+ msg)
 
   /** Add a sequence of messages */
-  private def ++(msgs: Seq[TrainMessage]): GameStatus =
+  private def add(msgs: Seq[TrainMessage]): GameStatus =
     if (msgs.isEmpty) {
       this
     } else {
@@ -140,7 +135,7 @@ case class GameStatus(
     val trainTickStatus = trains.foldLeft(clearMessages)((status, train) =>
       // Processes single train
       train.tick(time, status) match {
-        case (Some(train), msgs) => status.putTrain(train) ++ msgs
+        case (Some(train), msgs) => status.putTrain(train) add msgs
         case (None, msgs) => {
           val errorCountOpt = for {
             (track, _) <- train.trackTailLocation
@@ -149,7 +144,7 @@ case class GameStatus(
           val newPerf = status.performance.
             addErrors(errorCountOpt.getOrElse(0)).
             addDepartures(1)
-          val s = status.removeTrain(train).setPerformance(newPerf) ++ msgs
+          val s = status.removeTrain(train).setPerformance(newPerf) add msgs
           s
         }
       })
@@ -168,8 +163,9 @@ case class GameStatus(
             id = createTrainId,
             size = random.nextInt(MaxTrainSize - MinTrainSize) + MinTrainSize,
             entry = entries(i),
-            exitId = chooseOneOf(exitIds).get)
-          status.putTrain(train) + TrainEnteredMsg(train.id)
+            exitId = chooseOneOf(exitIds).get,
+            status.performance.elapsedTime)
+          status.putTrain(train) add TrainEnteredMsg(train.id)
         })
       newTrainStatus.setPerformance(newTrainStatus.performance.
         addArrivals(n).
@@ -265,6 +261,13 @@ case class GameStatus(
     } yield putTrain(revTrain)
     x.getOrElse(this)
   }
+
+  /** Locate the block of train head location */
+  def trainHeadBlock(train: Train): Option[BlockStatus] =
+    for {
+      (track, _) <- train.trackLocation(0)
+      block <- stationStatus.blocks.values.find(_.contains(track))
+    } yield block
 }
 
 /** A factory of [[GameStatus]] */

@@ -19,6 +19,11 @@ import rx.lang.scala.Subscription
 /** Test */
 class StatusObsTest extends PropSpec with Matchers with PropertyChecks with MockitoSugar {
 
+  val Idx4 = 4
+  val Idx10 = 10
+  val Idx11 = 11
+  val Idx12 = 12
+
   trait Mocker {
     def onNext(x: Int): Unit
     def onError(x: Throwable): Unit
@@ -111,7 +116,7 @@ class StatusObsTest extends PropSpec with Matchers with PropertyChecks with Mock
     trans.onNext(x => x + 1)
     trans.onNext(x => x + 1)
 
-    init.onNext(10)
+    init.onNext(Idx10)
     init.onCompleted
 
     trans.onNext(x => x + 1)
@@ -122,9 +127,9 @@ class StatusObsTest extends PropSpec with Matchers with PropertyChecks with Mock
     verify(f).onNext(1)
     verify(f).onNext(2)
     verify(f).onNext(3)
-    verify(f).onNext(4)
-    verify(f).onNext(11)
-    verify(f).onNext(12)
+    verify(f).onNext(Idx4)
+    verify(f).onNext(Idx11)
+    verify(f).onNext(Idx12)
     verify(f).onCompleted
 
     verifyNoMoreInteractions(f)
@@ -146,7 +151,7 @@ class StatusObsTest extends PropSpec with Matchers with PropertyChecks with Mock
     trans.onNext(x => x + 1)
     trans.onNext(x => x + 1)
 
-    init.onNext(10)
+    init.onNext(Idx10)
     init.onCompleted
 
     trans.onNext(x => x + 1)
@@ -156,8 +161,8 @@ class StatusObsTest extends PropSpec with Matchers with PropertyChecks with Mock
 
     verify(f).onNext(1)
     verify(f).onNext(2)
-    verify(f).onNext(11)
-    verify(f).onNext(12)
+    verify(f).onNext(Idx11)
+    verify(f).onNext(Idx12)
     verify(f).onCompleted
 
     verifyNoMoreInteractions(f)

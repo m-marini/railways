@@ -16,23 +16,43 @@ case class WaitForPassengerTrain(
   route: TrainRoute,
   location: Float,
   timeout: Float,
-  exitId: String) extends Train
+  exitId: String,
+  creationTime: Float) extends Train
     with NoMoveTrain
     with LazyLogging {
 
   /** Creates the new train status apply a new route */
-  override def apply(route: TrainRoute, location: Float): Train = WaitForPassengerTrain(id, size, route, location, timeout, exitId)
+  override def apply(route: TrainRoute, location: Float): Train = WaitForPassengerTrain(
+    id = id,
+    size = size,
+    route = route,
+    location = location,
+    timeout = timeout,
+    exitId = exitId,
+    creationTime = creationTime)
 
   /** Computes the next status after an elapsed time tick */
   override def tick(time: Float, gameStatus: GameStatus): (Option[Train], Seq[TrainMessage]) =
     if (timeout - time > 0) {
-      (Some(
-        WaitForPassengerTrain(id, size, route, location, timeout - time, exitId)),
+      (Some(WaitForPassengerTrain(
+        id = id,
+        size = size,
+        route = route,
+        location = location,
+        timeout = timeout - time,
+        exitId = exitId,
+        creationTime = creationTime)),
         Seq())
     } else {
       logger.debug(s"$id stopped")
-      (Some(
-        StoppedTrain(id, size, true, route, location, exitId)),
+      (Some(StoppedTrain(
+        id = id,
+        size = size,
+        loaded = true,
+        route = route,
+        location = location,
+        exitId = exitId,
+        creationTime = creationTime)),
         Seq(TrainReloadedMsg(id)))
     }
 

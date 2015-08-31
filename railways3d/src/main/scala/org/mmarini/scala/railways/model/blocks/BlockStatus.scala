@@ -36,6 +36,9 @@ trait BlockStatus {
   /** Create a block status with a given locked junction */
   def autolock: Int => BlockStatus = (_) => this
 
+  /** Returns true if blocks contains the given track */
+  def contains(track: Track): Boolean = block.contains(track)
+
   /**
    * Creates a new block status applying trainId to a junction.
    * The new status has to reflect the properties of blocked junctions on the given busy tracks

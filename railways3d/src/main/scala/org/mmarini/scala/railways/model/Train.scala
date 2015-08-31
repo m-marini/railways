@@ -40,6 +40,8 @@ trait Train {
   /** Returns the stop status */
   def stop: Train = this
 
+  def creationTime: Float
+
   /** Returns true if train has loaded passengers at platform */
   def loaded: Boolean
 
@@ -62,8 +64,12 @@ trait Train {
   def apply(route: TrainRoute, location: Float): Train
 
   /** Computes the track location of tail */
+  def trackLocation(distance: Float): Option[(Track, Float)] =
+    route.trackLocationAt(location + distance)
+
+  /** Computes the track location of tail */
   def trackTailLocation: Option[(Track, Float)] =
-    route.trackLocationAt(location - length)
+    trackLocation(-length)
 
   /** Returns train length */
   val length = size * CoachLength

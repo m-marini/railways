@@ -58,6 +58,11 @@ import org.mmarini.scala.railways.model.TrainWaitForTrackMsg
 import rx.lang.scala.Subject
 import com.jme3.scene.Node
 import java.util.ResourceBundle
+import org.mmarini.scala.railways.model.MovingTrain
+import org.mmarini.scala.railways.model.StoppedTrain
+import org.mmarini.scala.railways.model.WaitingForTrackTrain
+import org.mmarini.scala.railways.model.WaitForPassengerTrain
+import org.mmarini.scala.railways.model.StoppingTrain
 
 /**
  * @author us00852
@@ -71,6 +76,8 @@ object GameReactiveEngine extends LazyLogging {
   val TrainCameraPitch = RightAngle / 9
 
   val PanelMaxMessageCount = 10
+
+  val TrainSortingDefaultPriority = 10
 }
 
 class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
@@ -78,6 +85,13 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   import GameReactiveEngine._
 
   val bundle = Main.bundle
+
+  /** Train status classes sorted by priority */
+  private val classPriorityMap = Seq[Class[_ <: Train]](
+    classOf[StoppedTrain],
+    classOf[WaitingForTrackTrain],
+    classOf[WaitForPassengerTrain],
+    classOf[StoppingTrain]).zipWithIndex.toMap
 
   // ======================================================
   // Subscriptions
@@ -349,10 +363,13 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     for { status <- initialGameStatusObs } yield status.stationStatus.topology.viewpoints
 
   /** Creates observable of camera selection */
-  private lazy val cameraSelectionObs: Observable[CameraViewpoint] =
-    cameraPanelObs.
+  private lazy val cameraSelectionObs: Observable[CameraViewpoint] = {
+    val defaultViewObs = viewpointObs.map(_(0))
+    val selectionObs = cameraPanelObs.
       withLatest(viewpointObs)(
         (idx, viewpoints) => viewpoints(idx._1))
+    defaultViewObs merge selectionObs
+  }
 
   /** Creates the observable  of backstage of scene loading */
   private lazy val backstageObs: Observable[Spatial] = {
@@ -528,7 +545,29 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   } yield (ctrl, msgs.map(m => IndexedSeq(messageText(m))).toIndexedSeq)
 
   /** Creates the observer of train sequence */
-  private lazy val trainsSeqObs = for { status <- gameStatusObs } yield status.trains.toIndexedSeq
+  private lazy val trainsSeqObs = for {
+    status <- gameStatusObs
+  } yield {
+    val trains = status.trains.toIndexedSeq.sortWith(
+      (a, b) => {
+        val aIdx = classPriorityMap.getOrElse(a.getClass, TrainSortingDefaultPriority)
+        val bIdx = classPriorityMap.getOrElse(b.getClass, TrainSortingDefaultPriority)
+        if (aIdx < bIdx) {
+          true
+        } else if (aIdx > bIdx) {
+          false
+        } else if (a.creationTime < b.creationTime) {
+          true
+        } else if (a.creationTime > b.creationTime) {
+          false
+        } else {
+          a.id < b.id
+        }
+      })
+    for {
+      train <- trains
+    } yield (train, status.trainHeadBlock(train))
+  }
 
   /** Creates the observer of train panel content */
   private lazy val trainsPanelObs =
@@ -536,11 +575,11 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       ctrl <- trainsCtrlObs
       trains <- trainsSeqObs
     } yield {
-      val cells = for { t <- trains.toIndexedSeq }
+      val cells = for { (t, blockOpt) <- trains }
         yield IndexedSeq(
         t.id.toUpperCase,
         blockName(t.exitId).toUpperCase,
-        "---",
+        blockOpt.map(block => blockName(block.id)).getOrElse("---"),
         f"${round(3.6f * t.speed).toInt}%d")
       (ctrl, cells)
     }
@@ -621,7 +660,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     val selectedTrainObs = for {
       ctrl <- trainsCtrlObs
       ((row, _), trains) <- ctrl.selectionObsOpt withLatest trainsSeqObs
-    } yield Some(trains(row).id)
+    } yield Some(trains(row)._1.id)
 
     /** Generate the observable of no followed train */
     val clearTrainObs = cameraSelectionObs.map(_ => None)

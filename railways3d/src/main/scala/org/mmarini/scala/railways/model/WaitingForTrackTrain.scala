@@ -26,13 +26,21 @@ case class WaitingForTrackTrain(
   loaded: Boolean,
   route: TrainRoute,
   location: Float,
-  exitId: String) extends Train
+  exitId: String,
+  creationTime: Float) extends Train
     with NoMoveTrain
     with LazyLogging {
 
   /** Creates the new train status apply a new route */
   override def apply(route: TrainRoute, location: Float): Train =
-    WaitingForTrackTrain(id, size, loaded, route, location, exitId)
+    WaitingForTrackTrain(
+      id = id,
+      size = size,
+      loaded = loaded,
+      route = route,
+      location = location,
+      exitId = exitId,
+      creationTime = creationTime)
 
   /** Computes the next status after an elapsed time tick */
   override def tick(time: Float, gameStatus: GameStatus): (Option[Train], Seq[TrainMessage]) = {
@@ -40,8 +48,14 @@ case class WaitingForTrackTrain(
     val stopLocation = route.length - MinDistance
     val dist = max(stopLocation - location, 0)
     if (dist > MinDistance * 2) {
-      (Some(
-        MovingTrain(id, size, loaded, route, location, 0f, exitId)),
+      (Some(MovingTrain(id = id,
+        size = size,
+        loaded = loaded,
+        route = route,
+        location = location,
+        speed = 0f,
+        exitId = exitId,
+        creationTime = creationTime)),
         Seq(TrainStartedMsg(id)))
     } else {
       (Some(this), Seq())
@@ -55,11 +69,24 @@ case class WaitingForTrackTrain(
       (trackTail, _) <- trackTailLocation if (!trackTail.isInstanceOf[EntryTrack])
     } yield {
       val (revRoute, revLocation) = createReverseRoute(headTrack, headLocation, id)
-      MovingTrain(id, size, loaded, revRoute, revLocation + length, 0f, exitId)
+      MovingTrain(id = id,
+        size = size,
+        loaded = loaded,
+        route = revRoute,
+        location = revLocation + length,
+        speed = 0f,
+        exitId = exitId,
+        creationTime = creationTime)
     }
   }
 
   /** Creates toogle status */
-  override def stop: Train =
-    StoppedTrain(id, size, loaded, route, location, exitId)
+  override def stop: Train = StoppedTrain(
+    id = id,
+    size = size,
+    loaded = loaded,
+    route = route,
+    location = location,
+    exitId = exitId,
+    creationTime = creationTime)
 }

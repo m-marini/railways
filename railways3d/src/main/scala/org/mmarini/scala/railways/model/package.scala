@@ -15,7 +15,7 @@ import org.mmarini.scala.railways.model.blocks.Block
 
 /** */
 package object model {
-  val BoardingTime = 1f
+  val BoardingTime = 60f
 
   val Pif = Pi.toFloat
   val Pi2f = (2 * Pi).toFloat

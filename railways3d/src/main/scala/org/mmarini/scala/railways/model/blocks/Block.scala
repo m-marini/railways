@@ -25,4 +25,6 @@ trait Block {
   /** Returns the track list for a junction */
   def tracksForJunction: Int => Int => IndexedSeq[Track]
 
+  /** Returns true f block contains the given track */
+  def contains(track: Track): Boolean
 }

@@ -18,19 +18,34 @@ case class StoppedTrain(
   loaded: Boolean,
   route: TrainRoute,
   location: Float,
-  exitId: String) extends Train
+  exitId: String,
+  creationTime: Float) extends Train
     with NoMoveTrain
     with LazyLogging {
 
   /** Creates the new train status apply a new route */
-  override def apply(route: TrainRoute, location: Float): Train = StoppedTrain(id, size, loaded, route, location, exitId)
+  override def apply(route: TrainRoute, location: Float): Train = StoppedTrain(
+    id = id,
+    size = size,
+    loaded = loaded,
+    route = route,
+    location = location,
+    exitId = exitId,
+    creationTime = creationTime)
 
   /** Computes the next status after an elapsed time tick */
   def tick(time: Float, gameStatus: GameStatus): (Option[Train], Seq[TrainMessage]) = (Some(this), Seq())
 
   /** Creates toogle status */
   override def start: Train =
-    MovingTrain(id, size, loaded, route, location, 0f, exitId)
+    MovingTrain(id = id,
+      size = size,
+      loaded = loaded,
+      route = route,
+      location = location,
+      speed = 0f,
+      exitId = exitId,
+      creationTime = creationTime)
 
   /** Creates the reverse train */
   override def reverse(createReverseRoute: (Track, Float, String) => (TrainRoute, Float)): Option[Train] = {
@@ -40,7 +55,14 @@ case class StoppedTrain(
     } yield {
       val (revRoute, revLocation) = createReverseRoute(headTrack, headLocation, id)
       logger.debug("Train {} reversed", id)
-      MovingTrain(id, size, loaded, revRoute, revLocation + length, 0f, exitId)
+      MovingTrain(id = id,
+        size = size,
+        loaded = loaded,
+        route = revRoute,
+        location = revLocation + length,
+        speed = 0f,
+        exitId = exitId,
+        creationTime = creationTime)
     }
   }
 }

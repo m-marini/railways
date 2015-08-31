@@ -32,4 +32,9 @@ trait TrackBlock {
       case Some((_, _, list)) => list
       case _ => IndexedSeq()
     }
+
+  /** Returns true if the Block contains the given track */
+  def contains(track: Track): Boolean =
+    trackGroups.exists(_.exists(_.contains(track)))
+
 }

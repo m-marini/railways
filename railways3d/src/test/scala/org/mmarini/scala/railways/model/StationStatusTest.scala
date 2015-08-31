@@ -83,7 +83,8 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
       location = route.length,
       speed = 0f,
       route = route,
-      exitId = "")
+      exitId = "",
+      creationTime = 0f)
 
     val (stationStatus, trains) = status.apply(Set[Train](train))
 
@@ -200,7 +201,8 @@ class StationStatusTest extends PropSpec with Matchers with PropertyChecks with 
       TrainRoute(track1 ++ track2),
       location = location,
       speed = 0f,
-      exitId = "")
+      exitId = "",
+      creationTime = 0f)
     val (route, dist) = status.findRoute(train)
     dist should equal(location)
     route.tracks should have size (2)
