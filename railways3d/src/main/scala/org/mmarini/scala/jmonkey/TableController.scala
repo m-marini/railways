@@ -59,6 +59,8 @@ class TableController extends ControllerAdapter
 
   val textSetter: (Element, String) => Unit = (elem, text) => elem.getRenderer(classOf[TextRenderer]).setText(text)
 
+  val styleSetter: (Element, String) => Unit = (elem, text) => elem.setStyle(text)
+
   val imageSetter: (Element, String) => Unit = (elem, text) =>
     for {
       nifty <- niftyObs

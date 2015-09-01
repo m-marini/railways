@@ -3,14 +3,13 @@
  */
 package org.mmarini.scala.railways
 
-import org.mmarini.scala.jmonkey.ControllerAdapter
-import org.mmarini.scala.railways.model.Train
-import com.typesafe.scalalogging.LazyLogging
-import de.lessvoid.nifty.builder.TextBuilder
-import de.lessvoid.nifty.elements.render.TextRenderer
+import scala.IndexedSeq
 import org.mmarini.scala.jmonkey.TableController
-import rx.lang.scala.Observable
-import rx.lang.scala.Subscription
+import com.typesafe.scalalogging.LazyLogging
+import de.lessvoid.nifty.builder.ElementBuilder
+import de.lessvoid.nifty.builder.ImageBuilder
+import de.lessvoid.nifty.builder.TextBuilder
+import de.lessvoid.nifty.elements.Element
 
 /**
  * Controls the game screen
@@ -22,6 +21,7 @@ class TrainController extends TableController
     with LazyLogging {
 
   override val headerOpt = Some(IndexedSeq(
+    "",
     "Train",
     "To",
     "At",
@@ -30,15 +30,20 @@ class TrainController extends TableController
   override def headerStyle: Int => String = (_) => "text.light-panel-head"
 
   override val columnStyle: Int => String = IndexedSeq(
+    "panel.train-light",
     "panel.train-id",
     "panel.train-to",
     "panel.train-at",
     "panel.train-speed")
 
-  override def cellStyle: (Int, Int) => String = (_, col) => if (col == 3) {
-    "text.selectable-light-panel-right"
-  } else {
-    "text.selectable-light-panel"
+  override def cellStyle: (Int, Int) => String = (_, col) => col match {
+    case 0 => "image.camera-selection"
+    case 4 => "text.selectable-light-panel-right"
+    case _ => "text.selectable-light-panel"
   }
+
+  override def builder: Int => ElementBuilder = (col) => { if (col == 0) new ImageBuilder else new TextBuilder }
+
+  override def setter: (Int, Int) => (Element, String) => Unit = (_, col) => { if (col == 0) styleSetter else textSetter }
 
 }

@@ -14,8 +14,8 @@
 			align="center" />
 	</style>
 	<style id="image.bluPanel">
-		<attributes filename="img/panel.png" height="80"
-			width="300" imageMode="resize:13,3,13,13,13,3,13,3,13,3,13,13" />
+		<attributes filename="img/panel.png" height="80" width="300"
+			imageMode="resize:13,3,13,13,13,3,13,3,13,3,13,13" />
 	</style>
 
 	<!-- Styles of button panel -->
@@ -24,8 +24,8 @@
 			align="center" />
 	</style>
 	<style id="image.button">
-		<attributes filename="img/button.png" height="80"
-			width="300" imageMode="resize:20,23,20,20,20,23,20,8,20,23,20,20" />
+		<attributes filename="img/button.png" height="80" width="300"
+			imageMode="resize:20,23,20,20,20,23,20,8,20,23,20,20" />
 	</style>
 
 	<!-- Styles of camera selection panel -->
@@ -58,6 +58,18 @@
 	</style>
 
 	<!-- Style of light panel -->
+	<style id="image.light-off">
+		<attributes filename="img/spie.png" width="16px" height="16px"
+			imageMode="subImage:0,0,16,16" visibleToMouse="true" />
+	</style>
+	<style id="image.light-yellow">
+		<attributes filename="img/spie.png" width="16px" height="16px"
+			imageMode="subImage:16,0,16,16" visibleToMouse="true" />
+	</style>
+	<style id="image.light-red">
+		<attributes filename="img/spie.png" width="16px" height="16px"
+			imageMode="subImage:32,0,16,16" visibleToMouse="true" />
+	</style>
 	<style id="text.light-panel-head">
 		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"
 			backgroundColor="#000f" margin="1px,5px" width="*" textHAlign="left" />
@@ -82,17 +94,20 @@
 	</style>
 
 	<!-- Styles of train panel -->
+	<style id="panel.train-light">
+		<attributes childLayout="vertical" width="20px" />
+	</style>
 	<style id="panel.train-id">
-		<attributes childLayout="vertical" width="25%" />
+		<attributes childLayout="vertical" width="86px" />
 	</style>
 	<style id="panel.train-to">
-		<attributes childLayout="vertical" width="32%" />
+		<attributes childLayout="vertical" width="112" />
 	</style>
 	<style id="panel.train-at">
-		<attributes childLayout="vertical" width="32%" />
+		<attributes childLayout="vertical" width="112" />
 	</style>
 	<style id="panel.train-speed">
-		<attributes childLayout="vertical" width="11%" />
+		<attributes childLayout="vertical" width="38" />
 	</style>
 
 	<!-- Styles of message panel -->
@@ -123,25 +138,25 @@
 		<attributes width="64px" height="64px" />
 	</style>
 	<style id="image.left">
-		<attributes filename="img/arrows.png" width="64px"
-			height="64px" imageMode="subImage:0,0,64,64" visibleToMouse="true" />
+		<attributes filename="img/arrows.png" width="64px" height="64px"
+			imageMode="subImage:0,0,64,64" visibleToMouse="true" />
 	</style>
 	<style id="image.right">
-		<attributes filename="img/arrows.png" width="64px"
-			height="64px" imageMode="subImage:64,0,64,64" visibleToMouse="true" />
+		<attributes filename="img/arrows.png" width="64px" height="64px"
+			imageMode="subImage:64,0,64,64" visibleToMouse="true" />
 	</style>
 	<style id="image.up">
-		<attributes filename="img/arrows.png" width="64px"
-			height="64px" imageMode="subImage:0,64,64,64" visibleToMouse="true" />
+		<attributes filename="img/arrows.png" width="64px" height="64px"
+			imageMode="subImage:0,64,64,64" visibleToMouse="true" />
 	</style>
 	<style id="image.down">
-		<attributes filename="img/arrows.png" width="64px"
-			height="64px" imageMode="subImage:64,64,64,64" visibleToMouse="true" />
+		<attributes filename="img/arrows.png" width="64px" height="64px"
+			imageMode="subImage:64,64,64,64" visibleToMouse="true" />
 	</style>
 
 	<style id="image.quit">
-		<attributes filename="img/quit.png" width="32px"
-			height="32px" visibleToMouse="true" />
+		<attributes filename="img/quit.png" width="32px" height="32px"
+			visibleToMouse="true" />
 	</style>
 
 

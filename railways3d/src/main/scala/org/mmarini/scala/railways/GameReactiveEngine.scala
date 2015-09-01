@@ -577,6 +577,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     } yield {
       val cells = for { (t, blockOpt) <- trains }
         yield IndexedSeq(
+        "image.light-off", // TODO image name
         t.id.toUpperCase,
         blockName(t.exitId).toUpperCase,
         blockOpt.map(block => blockName(block.id)).getOrElse("---"),

@@ -13,7 +13,7 @@
 		<!-- Tab panel with the controls of cameras, trains, messages, performance -->
 
 		<layer childLayout="vertical">
-			<panel width="360" align="right" childLayout="vertical">
+			<panel width="380px" align="right" childLayout="vertical">
 				<panel childLayout="horizontal"
 					controller="org.mmarini.scala.railways.TabbedController">
 					<panel id="cameraTab" style="panel.selectedTab">
