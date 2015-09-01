@@ -59,16 +59,20 @@
 
 	<!-- Style of light panel -->
 	<style id="image.light-off">
-		<attributes filename="img/spie.png" width="16px" height="16px"
-			imageMode="subImage:0,0,16,16" visibleToMouse="true" />
+		<attributes filename="img/spie.png" width="24px" height="8px"
+			imageMode="subImage:0,0,48,16" margin="5px,0px" visibleToMouse="true" />
+	</style>
+	<style id="image.light-green">
+		<attributes filename="img/spie.png" width="24px" height="8px"
+			imageMode="subImage:0,16,48,16" margin="5px,0px" visibleToMouse="true" />
 	</style>
 	<style id="image.light-yellow">
-		<attributes filename="img/spie.png" width="16px" height="16px"
-			imageMode="subImage:16,0,16,16" visibleToMouse="true" />
+		<attributes filename="img/spie.png" width="24px" height="8px"
+			imageMode="subImage:0,32,48,16" margin="5px,0px" visibleToMouse="true" />
 	</style>
 	<style id="image.light-red">
-		<attributes filename="img/spie.png" width="16px" height="16px"
-			imageMode="subImage:32,0,16,16" visibleToMouse="true" />
+		<attributes filename="img/spie.png" width="24px" height="8px"
+			imageMode="subImage:0,48,48,16" margin="5px,0px" visibleToMouse="true" />
 	</style>
 	<style id="text.light-panel-head">
 		<attributes font="Fonts/UbuntuSmall.fnt" color="#ffff"

@@ -20,6 +20,9 @@ import de.lessvoid.nifty.elements.Element
 class TrainController extends TableController
     with LazyLogging {
 
+  val LightColumn = 0
+  val SpeedColumn = 4
+
   override val headerOpt = Some(IndexedSeq(
     "",
     "Train",
@@ -37,13 +40,13 @@ class TrainController extends TableController
     "panel.train-speed")
 
   override def cellStyle: (Int, Int) => String = (_, col) => col match {
-    case 0 => "image.camera-selection"
-    case 4 => "text.selectable-light-panel-right"
+    case LightColumn => "image.camera-selection"
+    case SpeedColumn => "text.selectable-light-panel-right"
     case _ => "text.selectable-light-panel"
   }
 
-  override def builder: Int => ElementBuilder = (col) => { if (col == 0) new ImageBuilder else new TextBuilder }
+  override def builder: Int => ElementBuilder = (col) => { if (col == LightColumn) new ImageBuilder else new TextBuilder }
 
-  override def setter: (Int, Int) => (Element, String) => Unit = (_, col) => { if (col == 0) styleSetter else textSetter }
+  override def setter: (Int, Int) => (Element, String) => Unit = (_, col) => { if (col == LightColumn) styleSetter else textSetter }
 
 }

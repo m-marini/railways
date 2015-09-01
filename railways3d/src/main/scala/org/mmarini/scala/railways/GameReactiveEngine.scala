@@ -63,6 +63,9 @@ import org.mmarini.scala.railways.model.StoppedTrain
 import org.mmarini.scala.railways.model.WaitingForTrackTrain
 import org.mmarini.scala.railways.model.WaitForPassengerTrain
 import org.mmarini.scala.railways.model.StoppingTrain
+import org.mmarini.scala.railways.model.StoppedTrain
+import org.mmarini.scala.railways.model.WaitingForTrackTrain
+import org.mmarini.scala.railways.model.WaitForPassengerTrain
 
 /**
  * @author us00852
@@ -244,6 +247,14 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
   /** returns the name of block */
   private def blockName(id: String): String = bundle(s"block.$id")
+
+  /** Returns the style name of image of light for the given train status */
+  private def trainLightStyle(train: Train): String = train match {
+    case _: StoppedTrain => "image.light-red"
+    case _: WaitingForTrackTrain => "image.light-yellow"
+    case _: WaitForPassengerTrain => "image.light-green"
+    case _ => "image.light-off"
+  }
 
   // ===================================================================
   // Decompositions
@@ -575,13 +586,14 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       ctrl <- trainsCtrlObs
       trains <- trainsSeqObs
     } yield {
-      val cells = for { (t, blockOpt) <- trains }
-        yield IndexedSeq(
-        "image.light-off", // TODO image name
-        t.id.toUpperCase,
-        blockName(t.exitId).toUpperCase,
-        blockOpt.map(block => blockName(block.id)).getOrElse("---"),
-        f"${round(3.6f * t.speed).toInt}%d")
+      val cells = for { (t, blockOpt) <- trains } yield {
+        IndexedSeq(
+          trainLightStyle(t),
+          t.id.toUpperCase,
+          blockName(t.exitId).toUpperCase,
+          blockOpt.map(block => blockName(block.id)).getOrElse("---"),
+          f"${round(3.6f * t.speed).toInt}%d")
+      }
       (ctrl, cells)
     }
 
