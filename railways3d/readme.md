@@ -196,6 +196,142 @@ Sono previste 3 tipologie di selezione
   * `junction` permette di cambiare lo stato di blocco di una giunzione (libera o blocca il semaforo della giunzine)-
   * `track` permette di cambiare lo stato di blocco delle giunzioni alle estremità (libera o blocca tutta la tratta).
 
+# Come creare nuovi blocchi
+
+## Grafica
+
+## Modello
+
+Ogni blocco è costituito da due classi
+
+### Classe Block
+
+La classe che estends Block raccoglie gli elementi geometrici del blocco per qualsiasi configurazione possibile
+Per creare la classe si deve estendere la classe Block con TrackBlock che aggiunge funzionalità di gestione delle configurazione.
+
+    case class LineSwitchBlock(
+      id: String,
+      trans: Transform2d,
+      trackGroups: IndexedSeq[Set[Set[Track]]],
+      routes: IndexedSeq[Set[(Int, Int, IndexedSeq[Track])]])
+        extends Block
+        with TrackBlock
+
+Insieme alla classe deve essere implementato il companion object che crea effettivamente l'istanza
+
+    object LineSwitchBlock {
+
+      /** Creates a block */
+      def apply(id: String, x: Float, y: Float, orientation: Float): LineSwitchBlock = ...
+      
+    }
+
+Nel metodo `apply` devono essere creati tutte le tratte percorribili in tutte le possibili direzioni.
+Il campo `trackGroup` deve contenere una IndexedSeq il cui indice corrisponde alla configurazione;
+ogni entrata contiene l'insieme di gruppi indipendenti di tracciati, ogniuno con il proprio insieme di tracce.
+Il campo `routes` invece deve contenere luna IndexedSeq sempre per configurazione possibile dove ogni entrata
+contiene l'insieme di informazioni per colleagmento tra giunzioni in ogni direzione possibilie.
+
+Tips: E' utile definire delle variabili per ogni punto caratteristico dell blocco (intersezioni, centri degli archi).
+Nello stesso modo definire delle variabili per le tratte.
+
+Es.
+
+    0----A-------------B----2 
+          \           /
+           \         /
+            \       /
+    1--------C-----D--------3 
+
+trackGroup
+
+    ( (0A, AB, B2, 2B, BA, A0), (1C, CD, D3, 3D, DC, C1) ),
+    ( (0A, AC, CD, D3, 3D, DC, CA, A0) ),
+    ( (1C, CD, DB, B2, 2B, BD, DC, C1) ),
+    ( (0A, AC, CD, DB, B2, 2B, BD, DC, CA, A0) )
+    
+  routes
+  
+    ( (0, 2, (0A, AB, B2) ), (2, 0, (2B, BA, 0A) ), (1, 3, (1C, CD, D3) ), (3, 1, (3D, DC, C1) ) ),
+    ( (0, 3, (0A, AC, CD, D3) ), (3, 0, (3D, DC, CA, A0) ) ),
+    ( (1, 2, (1C, CD, DB, B2) ), (2, 1, (2B, BD, DC, C1) ) ),
+    ( (0, 2, (0A, AC, CD, DB, B2) ), (2, 0, (2B, BD, DC, CA, A0) ) )
+
+
+### Classe Status 
+
+La classe che estends BlockStatus raccoglie gli elementi di stato del blocco.
+Per creare la classe si deve estendere la classe BlockStatus con LockableStatus che aggiunge funzionalità di gestione del locking.
+
+
+    /** A Status */
+    case class XxxStatus(
+      block: SwitchBlock,
+      trainId: Option[String] = None,
+      lockedJunctions: IndexedSeq[Boolean] = (0 to n).map(_=>false) ,
+      statusIndex: Int)
+        extends IndexedBlockStatus
+        with LockableStatus
+        with LazyLogging
+
+
+La classe deve implementare i metodi:
+
+
+    override def elementIds: Set[BlockElementIds]
+
+Deve ritornare una serie di BlockElementIds per l'attuale status corrispondenti agli elementi grafici da visualizzare.
+I BlockElementIds associano un identificatore univoco dell'elemento grafico da renderizzare, il modello 3d da caricare ed infine la stringa di selezione dell'elemento grafico.
+
+
+    override def toogleStatus: Int => BlockStatus
+    
+Cambia lo stato di configurazione per un determinato handler (attivazione di un deviatoio).
+
+
+    override def lock: Int => BlockStatus = (j) => {
+      require(j >= 0 && j <= n)
+      if (lockedJunctions(j)) {
+        this
+      } else {
+        XxxStatus(block, trainId, lockedJunctions.updated(j, true), diverging)
+      }
+    }
+
+Blocca una giunzione
+
+
+    override def unlock: Int => BlockStatus = (j) => {
+      require(j >= 0 && j <= 2)
+      if (lockedJunctions(j)) {
+        XxxStatus(block, trainId, lockedJunctions.updated(j, false), diverging)
+      } else {
+        this
+      }
+    }
+   
+Sblocca una giunzione
+
+
+    override def lockTrack: Int => BlockStatus =
+    
+Blocca tutte le giunzioni del tracciato. Bisogna cercare le giunzioni di inizio e fine tracciato e bloccarle.
+
+
+    override def unlockTrack: Int => BlockStatus = (j) => {
+
+Sblocca tutte le giunzioni del tracciato. Bisogna cercare le giunzioni di inizio e fine tracciato e sbloccarle.
+
+
+    override def junctionFrom: Int => Option[Int] = junctions(statusIndex)
+    
+Ritorna la giunzione finale data quella iniziale
+
+
+
+
+
+
 ## Tratta
 
 ```

@@ -44,5 +44,5 @@ case class EntryStatus(
 
   /** Returns the current identifiers of elements and the selection identifiers */
   override val elementIds = Set(
-    BlockElementIds(id, "Textures/blocks/sem-red.blend", None))
+    BlockElementIds(id, "Textures/blocks/commons/sem-red.blend", None))
 }

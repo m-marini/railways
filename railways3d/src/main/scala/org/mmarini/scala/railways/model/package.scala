@@ -31,7 +31,7 @@ package object model {
   val CoachWidth = 3f;
 
   /** Track width */
-  val TrackWidth = 1.435f
+  val TrackGaudge = 1.435f
 
   /** Max train size */
   val MinTrainSize = 7
@@ -39,8 +39,8 @@ package object model {
   /** Max train size */
   val MaxTrainSize = 11
 
-  /** Segment * (1-cos(curve))/sin(curve) */
-  val TrackGap = 4.608f
+  /**  */
+  val TrackGap = 4f
 
   /** Length units of standard segment element (meters) */
   val SegmentLength = 35f

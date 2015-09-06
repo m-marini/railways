@@ -13,4 +13,5 @@ trait LockableStatus extends BlockStatus {
 
   /** Returns true if a junction is clear */
   override def isClear: (Int) => Boolean = (x) => !junctionFrom(x).isEmpty && !lockedJunctions(x) && transitTrain(x).isEmpty
+
 }

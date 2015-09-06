@@ -8,6 +8,7 @@
   * Vista camera esterna treno con click su pannelli messaggi / train
   * Spostamenti con camera motion
   * Classifica
+  * Ridisegno pannello opzioni
 
 
 # Done

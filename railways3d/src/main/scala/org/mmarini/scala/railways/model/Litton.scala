@@ -12,33 +12,41 @@ import org.mmarini.scala.railways.model.blocks.SegmentBlock
 import org.mmarini.scala.railways.model.blocks.EntryBlock
 import org.mmarini.scala.railways.model.blocks.PlatformBlock
 import scala.math.tan
+import org.mmarini.scala.railways.model.blocks.LineSwitchBlock
 
 /**
- * The Downville station
+ * The Litton station
+ * 
+ * P0 ---        P3 ---    --- P6 --- P8
+ *        P2 ---        P5      
+ * P1 ---        P4 ---    --- P7 --- P9
  */
 case object Litton extends Topology {
 
-  private val platform1 = PlatformBlock("platform1", -SegmentLength * 5.5f, 0, RightAngle)
-  private val platform2 = PlatformBlock("platform2", -SegmentLength * 5.5f, TrackGap, RightAngle)
+  
+  private val platform1 = PlatformBlock("platform1", -SegmentLength * 5.5f, TrackGap / 2, RightAngle)
+  private val platform2 = PlatformBlock("platform2", -SegmentLength * 5.5f, -TrackGap / 2, RightAngle)
 
-  private val entryDev = LeftHandSwitchBlock("entry-switch", -SegmentLength * 6.5f, 0, RightAngle)
-  private val exitDev = RightHandSwitchBlock("exit-switch", SegmentLength * 6.5f, 0, -RightAngle)
+  private val westEntry = EntryBlock("west-entry", -SegmentLength * 17.5f, TrackGap / 2, -RightAngle)
+  private val westExit = ExitBlock("west-exit", -SegmentLength * 17.5f, TrackGap / 2, -RightAngle)
+  private val eastEntry = EntryBlock("east-entry", SegmentLength * 17.5f, TrackGap / 2, RightAngle)
+  private val eastExit = ExitBlock("east-exit", SegmentLength * 17.5f, TrackGap / 2, RightAngle)
 
-  private val entry = EntryBlock("entry", -SegmentLength * 17.5f, 0, -RightAngle)
-  private val exit = ExitBlock("exit", SegmentLength * 17.5f, 0, RightAngle)
+  private val westEntryTrack = SegmentBlock("west-entry-track", -SegmentLength * 17.5f, 0, RightAngle)
+  private val westExitTrack = SegmentBlock("west-exit-track", -SegmentLength * 17.5f, 0, RightAngle)
+  private val eastEntryTrack = SegmentBlock("east-entry-track", SegmentLength * 17.5f, 0, -RightAngle)
+  private val eastExitTrack = SegmentBlock("east-exit-track", SegmentLength * 17.5f, 0, -RightAngle)
 
-  private val entryTrack = SegmentBlock("entry-track", -SegmentLength * 17.5f, 0, RightAngle)
-  private val exitTrack = SegmentBlock("exit-track", SegmentLength * 17.5f, 0, -RightAngle)
+  private val westSwitch = LineSwitchBlock("west-switch", 0f, 0f, 0f)
+  private val eastSwitch = LineSwitchBlock("east-switch", 0f, 0f, 0f)
 
   val junctions = Set(
-    (Endpoint(entry, 1), Endpoint(entryTrack, 0)),
-    (Endpoint(entryTrack, 1), Endpoint(entryDev, 0)),
-    (Endpoint(entryDev, 1), Endpoint(platform1, 0)),
-    (Endpoint(entryDev, 2), Endpoint(platform2, 0)),
-    (Endpoint(exitDev, 1), Endpoint(platform1, 1)),
-    (Endpoint(exitDev, 2), Endpoint(platform2, 1)),
-    (Endpoint(exitTrack, 1), Endpoint(exitDev, 0)),
-    (Endpoint(exit, 0), Endpoint(exitTrack, 0)))
+    (Endpoint(westEntry, 1), Endpoint(westEntryTrack, 0)),
+    (Endpoint(westEntryTrack, 1), Endpoint(westSwitch, 0)),
+    (Endpoint(westSwitch, 2), Endpoint(platform1, 0)),
+    (Endpoint(platform1, 1), Endpoint(eastSwitch, 0)),
+    (Endpoint(eastSwitch, 2), Endpoint(eastExitTrack, 0)),
+    (Endpoint(eastExitTrack, 1), Endpoint(eastExit, 0)))
 
   val landscapeRot = new Quaternion().fromAngleAxis(RightAngle / 2, Vector3f.UNIT_X);
   private val LandscapeDirection = new Vector3f(0, -1, 1).normalize()

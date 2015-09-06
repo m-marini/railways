@@ -68,16 +68,16 @@ case class SegmentStatus(
 
   /** Returns the current identifiers of elements and the selection identifiers */
   override def elementIds: Set[BlockElementIds] = {
-    val track = BlockElementIds(s"$id", "Textures/blocks/seg-track.blend", Some(s"track $id 0"))
+    val track = BlockElementIds(s"$id", "Textures/blocks/commons/seg-11-track.blend", Some(s"track $id 0"))
     val jElements = for (junction <- 0 to 1) yield if (isClear(junction)) {
       BlockElementIds(
         s"$id $junction green",
-        s"Textures/blocks/seg-green-$junction.blend",
+        s"Textures/blocks/commons/seg-11-$junction-green.blend",
         Some(s"junction $id $junction"))
     } else {
       BlockElementIds(
         s"$id $junction red",
-        s"Textures/blocks/seg-red-$junction.blend",
+        s"Textures/blocks/commons/seg-11-$junction-red.blend",
         Some(s"junction $id $junction"))
     }
     jElements.toSet + track

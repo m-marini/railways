@@ -15,27 +15,11 @@ import com.sun.activation.registries.LogSupport
 
 object Test extends LazyLogging {
   "Start"                                         //> res0: String("Start") = Start
-
-  def logSub[T](o: Observable[T]) = o.subscribe(
-    x => logger.debug(x.toString),
-    e => logger.error(e.getMessage, e),
-    () => logger.debug("onComplete"))             //> logSub: [T](o: rx.lang.scala.Observable[T])rx.lang.scala.Subscription
-
-
-  val a = Observable.create[Observable[Int]](o => {
-    for (i <- 1 to 3) { o.onNext(Observable.just(i)) }
-    o.onCompleted()
-    Subscription()
-  })                                              //> a  : rx.lang.scala.Observable[rx.lang.scala.Observable[Int]] = rx.lang.scala
-                                                  //| .JavaConversions$$anon$2@223017cd
-
-val b = a.flatten                                 //> b  : rx.lang.scala.Observable[Int] = rx.lang.scala.JavaConversions$$anon$2@6
-                                                  //| 41f89e1
-  logSub(b)                                       //> 12:27:13.494 [main] DEBUG Test$ - 1
-                                                  //| 12:27:13.497 [main] DEBUG Test$ - 2
-                                                  //| 12:27:13.497 [main] DEBUG Test$ - 3
-                                                  //| 12:27:13.497 [main] DEBUG Test$ - onComplete
-                                                  //| res1: rx.lang.scala.Subscription = rx.lang.scala.Subscription$$anon$2@37e67d
-                                                  //| 34
+  val x = 11                                      //> x  : Int = 11
+  
+  val bits = for (i <- 0 to 3) yield
+  x / (1<<i) % 2                                  //> bits  : scala.collection.immutable.IndexedSeq[Int] = Vector(1, 1, 0, 1)
+  
+  bits.reverse                                    //> res1: scala.collection.immutable.IndexedSeq[Int] = Vector(1, 0, 1, 1)
 }
                                                   

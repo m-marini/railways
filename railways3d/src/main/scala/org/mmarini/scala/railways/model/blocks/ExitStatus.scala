@@ -53,9 +53,9 @@ case class ExitStatus(
   /** Returns the current identifiers of elements and the selection identifiers */
   override def elementIds: Set[BlockElementIds] =
     if (isClear(0)) {
-      Set(BlockElementIds(s"$id green", "Textures/blocks/sem-green.blend", Some(s"junction $id 0")))
+      Set(BlockElementIds(s"$id green", "Textures/blocks/commons/sem-green.blend", Some(s"junction $id 0")))
     } else {
-      Set(BlockElementIds(s"$id red", "Textures/blocks/sem-red.blend", Some(s"junction $id 0")))
+      Set(BlockElementIds(s"$id red", "Textures/blocks/commons/sem-red.blend", Some(s"junction $id 0")))
     }
 
 }

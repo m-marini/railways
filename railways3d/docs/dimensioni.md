@@ -25,3 +25,8 @@ posizione 1954 mm a sx
 ## Raggio di curvatura
 
 67615 mm
+
+# Larghezza sagoma standard
+
+3150 mm
+
