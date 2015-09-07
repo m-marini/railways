@@ -40,7 +40,7 @@ class TrainController extends TableController
     "panel.train-speed")
 
   override def cellStyle: (Int, Int) => String = (_, col) => col match {
-    case LightColumn => "image.camera-selection"
+    case LightColumn => "image.light-off"
     case SpeedColumn => "text.selectable-light-panel-right"
     case _ => "text.selectable-light-panel"
   }

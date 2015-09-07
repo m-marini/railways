@@ -49,8 +49,8 @@ import scala.math.round
 
 object CameraReactiveEngine extends LazyLogging {
 
-  val TrainCameraHeight = 5f
-  val TrainHeadCameraDistance = 10f
+  val TrainCameraHeight = 3.5f
+  val TrainHeadCameraDistance = 3.5f
   val TrainCameraToDistance = 1f
   val TrainCameraPitch = RightAngle / 9
 

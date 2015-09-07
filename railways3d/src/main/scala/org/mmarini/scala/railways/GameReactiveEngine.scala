@@ -73,13 +73,7 @@ import org.mmarini.scala.railways.model.WaitForPassengerTrain
 
 object GameReactiveEngine extends LazyLogging {
 
-  val TrainCameraHeight = 5f
-  val TrainHeadCameraDistance = 10f
-  val TrainCameraToDistance = 1f
-  val TrainCameraPitch = RightAngle / 9
-
   val PanelMaxMessageCount = 10
-
   val TrainSortingDefaultPriority = 10
 }
 

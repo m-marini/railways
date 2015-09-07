@@ -15,7 +15,7 @@ import scala.math.tan
 import org.mmarini.scala.railways.model.blocks.LineSwitchBlock
 
 /**
- * The Downville station
+ * The Litton station
  *
  * P0 ---        P3 ---    --- P6 --- P8
  *        P2 ---        P5
@@ -91,6 +91,6 @@ case object Litton extends Topology {
     CameraViewpoint("west-switching-yard", new Vector3f(-P2x + CameraDistance, 5f, 0), East),
     CameraViewpoint("west-platform", new Vector3f(-P3x - CameraDistance, 5f, 0), West),
     CameraViewpoint("east-platform", new Vector3f(-P5x + CameraDistance, 5f, 0), East),
-    CameraViewpoint("east-switching-yard", new Vector3f(-P5x - CameraDistance, 5f, 0), West),
+    CameraViewpoint("east-switching-yard", new Vector3f(-P6x - CameraDistance, 5f, 0), West),
     CameraViewpoint("exit", new Vector3f(-P9x + CameraDistance, 5f, 0f), East))
 }

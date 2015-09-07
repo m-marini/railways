@@ -159,16 +159,25 @@ case class StationStatus(topology: Topology, blocks: Map[String, BlockStatus]) e
     }).
       toMap
 
-    val newBlocks = for {
-      ((block, junction), trainId) <- junctions
-    } yield {
-      val rb = resetBlocks(block.id)
+    val nb = junctions.foldLeft(resetBlocks)((blockMap, junctionInfo) => {
+      val ((block, junction), trainId) = junctionInfo
+      val rb = blockMap(block.id)
       val lockedBlock = if (block.isClear(junction)) rb.autolock(junction) else rb
-      lockedBlock(junction, Some(trainId))
-    }
+      val newBlock = lockedBlock(junction, Some(trainId))
+      blockMap + (newBlock.id -> newBlock)
+    })
 
-    val others = resetBlocks.values.filter(x => !newBlocks.exists(_.id == x.id))
-    StationStatus(topology, newBlocks ++ others)
+    StationStatus(topology, nb)
+
+    //    val newBlocks = for {
+    //      ((block, junction), trainId) <- junctions
+    //    } yield {
+    //      val rb = resetBlocks(block.id)
+    //      val lockedBlock = if (block.isClear(junction)) rb.autolock(junction) else rb
+    //      lockedBlock(junction, Some(trainId))
+    //    }
+    //
+    //    val others = resetBlocks.values.filter(x => !newBlocks.exists(_.id == x.id))
 
   }
 
