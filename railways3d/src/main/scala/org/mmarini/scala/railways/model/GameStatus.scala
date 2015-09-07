@@ -7,7 +7,6 @@ import scala.annotation.migration
 import scala.math.exp
 import scala.math.min
 import scala.util.Random
-
 import org.mmarini.scala.railways.model.blocks.Block
 import org.mmarini.scala.railways.model.blocks.BlockStatus
 import org.mmarini.scala.railways.model.blocks.EntryBlock
@@ -22,8 +21,9 @@ import org.mmarini.scala.railways.model.blocks.SegmentBlock
 import org.mmarini.scala.railways.model.blocks.SegmentStatus
 import org.mmarini.scala.railways.model.blocks.SwitchStatus
 import org.mmarini.scala.railways.shuffle
-
 import com.typesafe.scalalogging.LazyLogging
+import org.mmarini.scala.railways.model.blocks.LineSwitchStatus
+import org.mmarini.scala.railways.model.blocks.LineSwitchBlock
 
 /**
  * A set of game parameter, station [[Topology]], elapsed time and set of named [[BlockStatus]]
@@ -31,7 +31,7 @@ import com.typesafe.scalalogging.LazyLogging
  * Generates next status by handling the incoming events
  */
 case class GameStatus(
-    private val parameters: GameParameters,
+    val parameters: GameParameters,
     val stationStatus: StationStatus,
     private val random: Random,
     trains: Set[Train] = Set(),
@@ -271,9 +271,10 @@ case class GameStatus(
 }
 
 /** A factory of [[GameStatus]] */
-object GameStatus {
+object GameStatus extends LazyLogging {
   /** Create the initial game status */
   def apply(parms: GameParameters): GameStatus = {
+    logger.debug("Creating GameStatus ...")
     val t = Topology(parms.stationName)
     val states = (for {
       b <- t.blocks
@@ -295,5 +296,6 @@ object GameStatus {
     case x: SegmentBlock => SegmentStatus(x)
     case x: LeftHandSwitchBlock => SwitchStatus(x)
     case x: RightHandSwitchBlock => SwitchStatus(x)
+    case x: LineSwitchBlock => LineSwitchStatus(x)
   }
 }

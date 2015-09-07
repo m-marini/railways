@@ -17,7 +17,7 @@ import LineSwitchConfiguration._
 case class LineSwitchStatus(
   block: LineSwitchBlock,
   trainId: IndexedSeq[Option[String]] = (0 to 3).map(_ => None),
-  lockedJunctions: IndexedSeq[Boolean] = (0 to 3).map(_ => true),
+  lockedJunctions: IndexedSeq[Boolean] = (0 to 3).map(_ => false),
   statusIndex: Int = BothStraight.id)
     extends IndexedBlockStatus
     with LockableStatus
@@ -126,7 +126,7 @@ case class LineSwitchStatus(
   /** Returns the current identifiers of elements and the selection identifiers */
   override def elementIds: Set[BlockElementIds] = {
 
-    val semaphores = for (junction <- 0 to 4) yield if (isClear(junction)) {
+    val semaphores = for (junction <- 0 to 3) yield if (isClear(junction)) {
       BlockElementIds(
         s"$id $junction green",
         s"Textures/blocks/lineswitch/sem-$junction-green.blend",
@@ -138,17 +138,55 @@ case class LineSwitchStatus(
         Some(s"junction $id $junction"))
     }
 
-    val tracks = for (conf <- LineSwitchConfiguration.values) yield BlockElementIds(
-      s"$id ${conf.id}",
-      s"Textures/blocks/swi-track-${conf.id}.blend",
-      Some(s"track $id 0"))
+    val tracks = statusIndex match {
+      case 0 => Set(
+        BlockElementIds(
+          s"$id 0 l",
+          s"Textures/blocks/lineswitch/swi-tracks-0-l.blend",
+          Some(s"track $id 0")),
+        BlockElementIds(
+          s"$id 0 r",
+          s"Textures/blocks/lineswitch/swi-tracks-0-r.blend",
+          Some(s"track $id 1")),
+        BlockElementIds(
+          s"$id 0 x",
+          s"Textures/blocks/lineswitch/swi-tracks-0-x.blend",
+          None))
+      case 1 => Set(
+        BlockElementIds(
+          s"$id 1",
+          s"Textures/blocks/lineswitch/swi-tracks-1.blend",
+          Some(s"track $id 0")),
+        BlockElementIds(
+          s"$id 1 x",
+          s"Textures/blocks/lineswitch/swi-tracks-1-x.blend",
+          None))
+      case 2 => Set(
+        BlockElementIds(
+          s"$id 2",
+          s"Textures/blocks/lineswitch/swi-tracks-2.blend",
+          Some(s"track $id 1")),
+        BlockElementIds(
+          s"$id 2 x",
+          s"Textures/blocks/lineswitch/swi-tracks-2-x.blend",
+          None))
+      case _ => Set(
+        BlockElementIds(
+          s"$id 3",
+          s"Textures/blocks/lineswitch/swi-tracks-3.blend",
+          Some(s"track $id 0")),
+        BlockElementIds(
+          s"$id 3 x",
+          s"Textures/blocks/lineswitch/swi-tracks-3-x.blend",
+          None))
+    }
 
     val handlers = for (handler <- 0 to 1) yield BlockElementIds(
       s"$id ${statusIndex} $handler handler",
-      s"Textures/blocks/swi-hand-$handler-${statusIndex / (1 << handler) % 2}.blend",
+      s"Textures/blocks/lineswitch/swi-hand-$handler-${statusIndex / (1 << handler) % 2}.blend",
       Some(s"handler $id $handler"))
 
-    semaphores.toSet ++ tracks ++ handlers
+    semaphores.toSet ++ handlers ++ tracks
   }
 
 }

@@ -117,6 +117,8 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
 
     subscribeForSpatialManagement
 
+    performanceEndGameObs.subscribe(performance => endGameCtrl.show(performance))
+
     /** Subscribes for camera viewpoint changes to camera panel */
     (cameraCtrlObs combineLatest viewpointObs).subscribe(_ match {
       case (ctrl, viewpoints) =>
@@ -173,11 +175,10 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     /** Subscribes for attach spatials to root */
     attachObs.subscribe(_ match {
       case (node, spatial) =>
-        //        logger.debug("attach {} to {}", spatial, node)
+        logger.debug("attach {} to {}", spatial, node)
         node.attachChild(spatial)
     })
 
-    performanceEndGameObs.subscribe(performance => endGameCtrl.show(performance))
   }
 
   // ===================================================================
@@ -225,7 +226,8 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   private def backstage(status: GameStatus): Seq[Spatial] = {
     // Creates the terrain builder
     val terrainTry = TerrainBuilder.build(Main.getAssetManager, Main.getCamera)
-    sky ++ terrainTry.toOption
+    val s = Main.getAssetManager.loadModel(s"Textures/${status.parameters.stationName.toLowerCase}.blend").clone
+    sky ++ terrainTry.toOption :+ s
   }
 
   /** Finds first parent node by selector*/
@@ -363,11 +365,19 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   }
 
   /** Creates the initial game status triggered by the start of game screen */
-  private lazy val initialGameStatusObs: Observable[GameStatus] =
-    gameScreenObs.
+  private lazy val initialGameStatusObs: Observable[GameStatus] = {
+    val initObs = gameScreenObs.
       filter(_._1 == "start").
       withLatest(gameParamsObs)(
-        (_, parms) => GameStatus(parms))
+        (_, parms) => try {
+          GameStatus(parms)
+        } catch {
+          case t: Throwable =>
+            logger.error(t.getMessage, t)
+            throw t
+        })
+    initObs.share
+  }
 
   /** Creates the observable of viewpoints */
   private lazy val viewpointObs: Observable[Seq[CameraViewpoint]] =
@@ -396,21 +406,47 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     val gameTransitionsObs: Observable[GameStatus => GameStatus] = {
 
       val timeGameTxObs = for { time <- timeObs }
-        yield (status: GameStatus) => status.tick(time)
+        yield (status: GameStatus) => try {
+        status.tick(time)
+      } catch {
+        case t: Throwable =>
+          logger.error(t.getMessage, t)
+          throw t
+      }
 
       // Creates block change state events
       val blockToogleTxObs =
         for {
           (_, Seq("handler", id, handler)) <- pickedObjectIdObs
-        } yield (status: GameStatus) => status.toogleBlockStatus(id)(handler.toInt)
+        } yield (status: GameStatus) => try {
+          status.toogleBlockStatus(id)(handler.toInt)
+        } catch {
+          case t: Throwable =>
+            logger.error(t.getMessage, t)
+            throw t
+        }
 
       // Creates train command transition
       val trainTxOptObs = for {
         cmdParms <- trainCmdObs
       } yield cmdParms match {
-        case ("startTrain", trainId) => Some((status: GameStatus) => status.startTrain(trainId))
-        case ("stopTrain", trainId) => Some((status: GameStatus) => status.stopTrain(trainId))
-        case ("reverseTrain", trainId) => Some((status: GameStatus) => status.reverseTrain(trainId))
+        case ("startTrain", trainId) => Some((status: GameStatus) => try {
+          status.startTrain(trainId)
+        } catch {
+          case t: Throwable =>
+            logger.error(t.getMessage, t)
+            throw t
+        })
+        case ("stopTrain", trainId) => Some((status: GameStatus) => try { status.stopTrain(trainId) } catch {
+          case t: Throwable =>
+            logger.error(t.getMessage, t)
+            throw t
+        })
+        case ("reverseTrain", trainId) => Some((status: GameStatus) => try { status.reverseTrain(trainId) } catch {
+          case t: Throwable =>
+            logger.error(t.getMessage, t)
+            throw t
+        })
         case _ => None
       }
       val trainTxObs = for (Some(f) <- trainTxOptObs) yield f
@@ -452,7 +488,14 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
   private lazy val stationRenderObs = {
     val gameTxObs = for {
       status <- gameStatusObs
-    } yield (renderer: StationRenderer) => renderer.change(status.stationStatus.blocks.values.toSet)
+    } yield (renderer: StationRenderer) => try {
+      renderer.change(status.stationStatus.blocks.values.toSet)
+    } catch {
+      case t: Throwable =>
+        t.printStackTrace()
+        logger.error(t.getMessage, t)
+        throw t
+    }
     val cleanTxObs = performanceEndGameObs.map(_ => (renderer: StationRenderer) => renderer.change(Set()))
     (gameTxObs merge cleanTxObs).statusFlow(StationRenderer(Main.getAssetManager))
   }
@@ -591,7 +634,7 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
           trainLightStyle(t),
           t.id.toUpperCase,
           blockName(t.exitId).toUpperCase,
-          blockOpt.map(block => blockName(block.id)).getOrElse("---"),
+          blockOpt.map(block => blockName(block.id)).getOrElse("---").toUpperCase,
           f"${round(3.6f * t.speed).toInt}%d")
       }
       (ctrl, cells)

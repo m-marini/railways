@@ -192,13 +192,103 @@ Per ogni elemento di un blocco con il relativo stato sono definiti vari identifi
 
 Sono previste 3 tipologie di selezione
 
-  * `handler` permette di cambiare la configurazione di un blocco (es. deviatoio diretto o deviato).
-  * `junction` permette di cambiare lo stato di blocco di una giunzione (libera o blocca il semaforo della giunzine)-
-  * `track` permette di cambiare lo stato di blocco delle giunzioni alle estremità (libera o blocca tutta la tratta).
+  * `handler <id> <handler-index>` permette di cambiare la configurazione di un blocco (es. deviatoio diretto o deviato).
+  * `junction <id> junction-index>` permette di cambiare lo stato di blocco di una giunzione (libera o blocca il semaforo della giunzione)-
+  * `track <id> <junction-index>` permette di cambiare lo stato di blocco delle giunzioni alle estremità (libera o blocca tutta la tratta).
 
 # Come creare nuovi blocchi
 
 ## Grafica
+
+Per creare un nuovo blocco bisogna scomporre il blocco in più elementi dipendenti dalla configurazione,
+handlers e giunzioni.
+
+Creare il semaforo per ogni giunzione nei due stati possibili (bloccato e libero) e posizionarlo nei pressi della giunzone (1650 mm a sx del centro binaro e 2000 mm in avanti)
+
+Creare gli elementi degli handler nei vari stati possibili 
+
+Per i tracciati dei binari si consiglia di creare un elemento per ogni tracciato indipendente se gli handler sono meno di 3.
+
+Altrimenti è meglio creare una serie d elementi per ogni handler e per ogni tracciato possibile.
+
+### Esempio
+
+line switch (2 handler)
+
+    0----A-------------B----2 
+          \           /
+           \         /
+            \       /
+    1--------C-----D--------3 
+
+
+Viene scomposto in 
+
+#### swi-0-0-l
+
+    0----A------ 
+    
+#### swi-0-0-r
+    
+    1--------C-- 
+
+#### swi-0-0-x
+
+         A    
+          \
+           \
+            \
+             C
+
+#### swi-0-1
+
+    0----A 
+          \
+           \
+            \
+             C-- 
+
+
+#### swi-0-1-x
+
+         A------ 
+    
+    
+    
+    1--------C 
+
+
+#### swi-1-0-l
+
+    -------B----2 
+
+#### swi-1-0-r
+
+    ---D--------3 
+
+#### swi-1-0-x
+
+           B
+          /
+         /
+        /
+       D
+
+#### swi-1-1
+
+           B----2 
+          /
+         /
+        /
+    ---D
+     
+#### swi-1-1-x
+
+    -------B 
+    
+    
+    
+       D--------3
 
 ## Modello
 
