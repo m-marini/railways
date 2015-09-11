@@ -15,6 +15,8 @@ import org.mmarini.scala.railways.model.blocks.Block
 
 /** */
 package object model {
+  val CameraHeight = 5f
+  
   val BoardingTime = 60f
 
   val Pif = Pi.toFloat

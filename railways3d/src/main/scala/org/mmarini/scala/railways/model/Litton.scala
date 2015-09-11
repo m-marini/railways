@@ -63,20 +63,20 @@ case object Litton extends Topology {
   private val entryTrack = SegmentBlock("entry-track", -SegmentLength * 17.5f, 0, RightAngle)
   private val exitTrack = SegmentBlock("exit-track", SegmentLength * 17.5f, 0, -RightAngle)
 
-    val junctions = Set(
-      (Endpoint(westEntry, 1), Endpoint(westEntryTrack, 0)),
-      (Endpoint(westEntryTrack, 1), Endpoint(westSwitch, 0)),
-      (Endpoint(westSwitch, 2), Endpoint(platform2, 0)),
-      (Endpoint(platform2, 1), Endpoint(eastSwitch, 0)),
-      (Endpoint(eastSwitch, 2), Endpoint(eastExitTrack, 0)),
-      (Endpoint(eastExitTrack, 1), Endpoint(eastExit, 0)),
-  
-      (Endpoint(westExit, 0), Endpoint(westExitTrack, 0)),
-      (Endpoint(westExitTrack, 1), Endpoint(westSwitch, 1)),
-      (Endpoint(westSwitch, 3), Endpoint(platform1, 0)),
-      (Endpoint(platform1, 1), Endpoint(eastSwitch, 1)),
-      (Endpoint(eastSwitch, 3), Endpoint(eastEntryTrack, 0)),
-      (Endpoint(eastEntryTrack, 1), Endpoint(eastEntry, 1)))
+  val junctions = Set(
+    (Endpoint(westEntry, 1), Endpoint(westEntryTrack, 0)),
+    (Endpoint(westEntryTrack, 1), Endpoint(westSwitch, 0)),
+    (Endpoint(westSwitch, 2), Endpoint(platform2, 0)),
+    (Endpoint(platform2, 1), Endpoint(eastSwitch, 0)),
+    (Endpoint(eastSwitch, 2), Endpoint(eastExitTrack, 0)),
+    (Endpoint(eastExitTrack, 1), Endpoint(eastExit, 0)),
+
+    (Endpoint(westExit, 0), Endpoint(westExitTrack, 0)),
+    (Endpoint(westExitTrack, 1), Endpoint(westSwitch, 1)),
+    (Endpoint(westSwitch, 3), Endpoint(platform1, 0)),
+    (Endpoint(platform1, 1), Endpoint(eastSwitch, 1)),
+    (Endpoint(eastSwitch, 3), Endpoint(eastEntryTrack, 0)),
+    (Endpoint(eastEntryTrack, 1), Endpoint(eastEntry, 1)))
 
   private val YDir = tan(RightAngle / 9).toFloat
   private val LandscapeDirection = new Vector3f(0, -1, 1).normalize()
@@ -87,10 +87,10 @@ case object Litton extends Topology {
 
   val viewpoints = Seq[CameraViewpoint](
     CameraViewpoint("landscape", new Vector3f(0f, 400f, -400f), LandscapeDirection),
-    CameraViewpoint("entry", new Vector3f(-P0x + CameraDistance, 5f, 0), East),
-    CameraViewpoint("west-switching-yard", new Vector3f(-P2x + CameraDistance, 5f, 0), East),
-    CameraViewpoint("west-platform", new Vector3f(-P3x - CameraDistance, 5f, 0), West),
-    CameraViewpoint("east-platform", new Vector3f(-P5x + CameraDistance, 5f, 0), East),
-    CameraViewpoint("east-switching-yard", new Vector3f(-P6x - CameraDistance, 5f, 0), West),
-    CameraViewpoint("exit", new Vector3f(-P9x + CameraDistance, 5f, 0f), East))
+    CameraViewpoint("entry", new Vector3f(-P0x + CameraDistance, CameraHeight, 0), East),
+    CameraViewpoint("west-switching-yard", new Vector3f(-P2x + CameraDistance, CameraHeight, 0), East),
+    CameraViewpoint("west-platform", new Vector3f(-P3x - CameraDistance, CameraHeight, 0), West),
+    CameraViewpoint("east-platform", new Vector3f(-P5x + CameraDistance, CameraHeight, 0), East),
+    CameraViewpoint("east-switching-yard", new Vector3f(-P6x - CameraDistance, CameraHeight, 0), West),
+    CameraViewpoint("exit", new Vector3f(-P9x + CameraDistance, CameraHeight, 0f), East))
 }

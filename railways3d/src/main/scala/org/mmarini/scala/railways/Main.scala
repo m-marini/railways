@@ -37,6 +37,10 @@ import org.mmarini.scala.jmonkey.NiftyObservables
 import org.mmarini.scala.jmonkey.InputManagerObservables
 import java.util.ResourceBundle
 import java.util.MissingResourceException
+import com.jme3.asset.AssetEventListener
+import com.jme3.asset.AssetKey
+import com.jme3.asset.TextureKey
+import com.jme3.texture.Texture
 
 /**
  *
@@ -66,6 +70,24 @@ object Main extends SimpleAppAdapter
     setDisplayStatView(false)
     setDisplayFps(false)
     flyCam.setEnabled(false)
+
+    val asl = new AssetEventListener() {
+      override def assetLoaded(key: AssetKey[_]) {
+      }
+
+      override def assetRequested(key: AssetKey[_]) {
+        if (key.getExtension.equals("png") ||
+          key.getExtension.equals("jpg") ||
+          key.getExtension.equals("dds")) {
+          val tkey = key.asInstanceOf[TextureKey]
+          tkey.setAnisotropy(4)
+        }
+      }
+
+      override def assetDependencyNotFound(parentKey: AssetKey[_], dependentAssetKey: AssetKey[_]) {
+      }
+    };
+    assetManager.addAssetEventListener(asl);
 
     // Loads XML and initializes start screen
     try {

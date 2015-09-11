@@ -1,0 +1,11 @@
+Material pavement : Common/MatDefs/Light/Lighting.j3md {
+     MaterialParameters {
+         Shininess: 8.0
+         DiffuseMap: Repeat Textures/pavement1.jpg
+         UseMaterialColors : true
+         Ambient  : 0.0 0.0 0.0 1.0
+         Diffuse  : 0.8 0.8 0.7 1.0
+         Specular : 0.0 0.0 0.0 1.0
+         
+     }
+}

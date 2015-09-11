@@ -42,6 +42,7 @@ import org.mmarini.scala.jmonkey.TableController
 import scala.collection.mutable.IndexedSeq
 import org.mmarini.scala.jmonkey._
 import scala.math.round
+import scala.math.tan
 import com.jme3.math.Vector2f
 import de.lessvoid.nifty.elements.Element
 import de.lessvoid.nifty.controls.dynamic.PopupCreator
@@ -66,6 +67,8 @@ import org.mmarini.scala.railways.model.StoppingTrain
 import org.mmarini.scala.railways.model.StoppedTrain
 import org.mmarini.scala.railways.model.WaitingForTrackTrain
 import org.mmarini.scala.railways.model.WaitForPassengerTrain
+import org.mmarini.scala.railways.model.CameraViewpoint
+import org.mmarini.scala.railways.model.CameraHeight
 
 /**
  * @author us00852
@@ -216,12 +219,14 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     skyTry.toOption.toSeq
   }
 
+  /** Creates the terrain */
+  private lazy val terrainOpt = TerrainBuilder.build(Main.getAssetManager, Main.getCamera).toOption
+
   /** Creates the backstage */
   private def backstage(status: GameStatus): Seq[Spatial] = {
     // Creates the terrain builder
-    val terrainTry = TerrainBuilder.build(Main.getAssetManager, Main.getCamera)
     val s = Main.getAssetManager.loadModel(s"Textures/${status.parameters.stationName.toLowerCase}.blend").clone
-    sky ++ terrainTry.toOption :+ s
+    sky ++ terrainOpt :+ s
   }
 
   /** Finds first parent node by selector*/
@@ -383,7 +388,19 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     val selectionObs = cameraPanelObs.
       withLatest(viewpointObs)(
         (idx, viewpoints) => viewpoints(idx._1))
-    defaultViewObs merge selectionObs
+
+    val YDir = 0f //tan(RightAngle / 9).toFloat
+    val CameraDistance = 10f
+    val objParmsObs = for {
+      (collision, ray) <- pickedNoIdObs
+    } yield {
+      val contactPoint = collision.getContactPoint
+      val direction = ray.getDirection
+      val viewpoint = contactPoint.subtract(direction.mult(8f)).setY(2.5f)
+      val viewDir = direction.setY(0).normalize.setY(-YDir).normalize
+      CameraViewpoint("temp", viewpoint, viewDir)
+    }
+    defaultViewObs merge selectionObs merge objParmsObs
   }
 
   /** Creates the observable  of backstage of scene loading */
@@ -634,27 +651,30 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
       (ctrl, cells)
     }
 
-  /** Creates the observable of picked object by selection */
-  private lazy val pickedObjectIdObs = createPickedObjectParmsObs(selectActionObs)
-
-  /** Creates an observable of picked 3d model parameters */
-  private def createPickedObjectParmsObs(actionObs: Observable[ActionMapping]): Observable[(Vector2f, Seq[String])] = {
-    // Creates pick ray observable
-    val rayObs = actionObs.filter(_.keyPressed).pickRay(Main.getCamera)
+  /** Creates picked object with optional parameters observable */
+  private val objParmsObs = {
+    val rayObs = {
+      selectActionObs.filter(_.keyPressed).pickRay(Main.getCamera)
+    }
     // Creates collision observable
     val collisionObs = rayObs.pickCollision(Main.getRootNode)
     // Creates pick object parameters observable
-    val objParmsObs = for {
+    val objObs = for {
       (collision, ray, pm) <- collisionObs
     } yield {
-      for {
+      val idObjOpt = for {
         spat <- findParent(Option(collision.getGeometry), s => !Option(s.getUserData("id")).isEmpty)
         data <- Option(spat.getUserData[String]("id"))
       } yield (pm.position, data.split(" ").toSeq)
+      (collision, ray, idObjOpt)
     }
-    // Filters non empty items
-    for { Some((pos, id)) <- objParmsObs } yield (pos, id)
+    objObs.share
   }
+
+  /** Creates the observable of picked object by selection */
+  private lazy val pickedObjectIdObs =
+    // Filters non empty items
+    for { (_, _, Some((pos, id))) <- objParmsObs } yield (pos, id)
 
   /** Creates the observable of train pop up */
   private lazy val trainPopupObs = {
@@ -662,6 +682,10 @@ class GameReactiveEngine(nifty: Nifty) extends LazyLogging {
     gameCtrl.niftyObs.map(_.createPopup("trainPopup")).subscribe(subj)
     subj
   }
+
+  private lazy val pickedNoIdObs =
+    // Filters non empty items
+    for { (collision, ray, None) <- objParmsObs } yield (collision, ray)
 
   /** Creates the observable of semaphore pop up */
   private lazy val semPopupObs = {

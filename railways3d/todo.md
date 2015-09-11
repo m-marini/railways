@@ -1,17 +1,15 @@
 # To do
 
   * Bug: reverse non funziona
-  * Movimento camera su un punto dello sfondo (click) 
-  * Texture Marciapiede
   * Cartello binari
-  * Cartello stazione
   * Cartello uscite
+  * Ridisegno pannello opzioni
   * Downville station
+  * Cartello stazione
   * Audio
   * Bubble info treno
   * Cambio viste con camera motion
   * Classifica
-  * Ridisegno pannello opzioni
   * Palo semaforo
   * Texture Binari
   * Pensiline binari
@@ -29,4 +27,6 @@
   * Carrozza
   * Marciapiede
   * Terrain mask for Litton
-    
+  * Movimento camera su un punto dello sfondo (click) 
+  * Texture Marciapiede
+  
