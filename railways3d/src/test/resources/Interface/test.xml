@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
+	<!-- +++++++++++++++++++++++++++++++++++++++ -->
+	<!-- start screen -->
+	<!-- +++++++++++++++++++++++++++++++++++++++ -->
+	<useStyles filename="nifty-default-styles.xml" />
+	<useStyles filename="Interface/style.xml" />
+	<useControls filename="nifty-default-controls.xml" />
+
+	<resourceBundle id="bundle" filename="Interface/game" />
+
+	<style id="image.bluPanel1">
+		<attributes filename="img/panel.png" height="60" width="60"
+			imageMode="resize:13,3,13,13,13,3,13,3,13,3,13,13" />
+	</style>
+
+	<screen id="start">
+		<layer backgroundColor="#fffc" childLayout="center">
+			<panel childLayout="horizontal">
+				<panel childLayout="vertical">
+					<panel childLayout="center">
+						<image style="image.bluPanel1" />
+						<text text="Ovest" style="text.bluPanel" />
+					</panel>
+				</panel>
+			</panel>
+		</layer>
+	</screen>
+</nifty>

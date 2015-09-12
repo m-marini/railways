@@ -1,8 +1,6 @@
 # To do
 
   * Bug: reverse non funziona
-  * Cartello binari
-  * Cartello uscite
   * Ridisegno pannello opzioni
   * Downville station
   * Cartello stazione
@@ -29,4 +27,6 @@
   * Terrain mask for Litton
   * Movimento camera su un punto dello sfondo (click) 
   * Texture Marciapiede
+  * Cartello binari
+  * Cartello uscite
   

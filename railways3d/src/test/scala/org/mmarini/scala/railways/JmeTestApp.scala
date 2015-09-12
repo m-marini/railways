@@ -57,61 +57,68 @@ object JmeTestApp extends SimpleAppAdapter
   val Width = 1200
   val Height = 768
   val Period = 3f
-
-  lazy val subjectObs = (for (_ <- niftyObs) yield {
-    logger.debug("Create subject")
-    assetManager.loadModel("Textures/fgn.blend").clone
-  }).share
-
-  subjectObs.subscribe(s => rootNode.attachChild(s))
-
-  lazy val timerTxObs = for (dt <- timeObs) yield { (t0: Float) =>
-    {
-      val t1 = t0 + dt
-      val t1mod = IEEEremainder(t1, Period).toFloat
-      t1mod
-    }
-  }
-  lazy val timerObs = timerTxObs.statusFlow(0f)
-
-  lazy val subjectMoveObs = timerObs.withLatest(subjectObs)((t, spatial) => {
-    val x = 10 * sin(t * 2 * Pi / Period).toFloat
-    val y = 10 * cos(t * 2 * Pi / Period).toFloat
-    (spatial, new Vector3f(x, 0, y))
-  })
-  //  subjectMoveObs.trace("move ")
-
-  subjectMoveObs.subscribe(_ match {
-    case (spatial, loc) => spatial.setLocalTranslation(loc)
-  })
-
-  subjectObs.subscribe(s => {
-    val chaseCam = new ChaseCamera(cam, s, inputManager)
-    chaseCam.setSmoothMotion(true)
-    chaseCam.setDefaultDistance(15f)
-    chaseCam.setTrailingEnabled(true)
-    chaseCam.setDragToRotate(true)
-    chaseCam.setRotationSpeed(1)
-  })
+//
+//  lazy val subjectObs = (for (_ <- niftyObs) yield {
+//    logger.debug("Create subject")
+//    assetManager.loadModel("Textures/fgn.blend").clone
+//  }).share
+//
+//  subjectObs.subscribe(s => rootNode.attachChild(s))
+//
+//  lazy val timerTxObs = for (dt <- timeObs) yield { (t0: Float) =>
+//    {
+//      val t1 = t0 + dt
+//      val t1mod = IEEEremainder(t1, Period).toFloat
+//      t1mod
+//    }
+//  }
+//  lazy val timerObs = timerTxObs.statusFlow(0f)
+//
+//  lazy val subjectMoveObs = timerObs.withLatest(subjectObs)((t, spatial) => {
+//    val x = 10 * sin(t * 2 * Pi / Period).toFloat
+//    val y = 10 * cos(t * 2 * Pi / Period).toFloat
+//    (spatial, new Vector3f(x, 0, y))
+//  })
+//  //  subjectMoveObs.trace("move ")
+//
+//  subjectMoveObs.subscribe(_ match {
+//    case (spatial, loc) => spatial.setLocalTranslation(loc)
+//  })
+//
+//  subjectObs.subscribe(s => {
+//    val chaseCam = new ChaseCamera(cam, s, inputManager)
+//    chaseCam.setSmoothMotion(true)
+//    chaseCam.setDefaultDistance(15f)
+//    chaseCam.setTrailingEnabled(true)
+//    chaseCam.setDragToRotate(true)
+//    chaseCam.setRotationSpeed(1)
+//  })
 
   niftyObs.subscribe(nifty => {
 
     flyCam.setEnabled(false)
     //    flyCam.setDragToRotate(true)
 
-    cam.setLocation(new Vector3f(0f, 3f, 10f))
-    val sunLight = new DirectionalLight
-    sunLight.setColor(ColorRGBA.White.mult(1.3f));
-    sunLight.setDirection(Vector3f.UNIT_XYZ.negate.normalizeLocal)
-    rootNode.addLight(sunLight)
+    // Loads XML and initializes start screen
+    try {
+      nifty.fromXml("Interface/test.xml", "start")
+    } catch {
+      case ex: Exception => logger.error(ex.getMessage, ex)
+    }
 
-    val sunLight1 = new DirectionalLight
-    sunLight1.setColor(ColorRGBA.White.mult(0.8f));
-    sunLight1.setDirection(new Vector3f(1f, -1f, 1f).normalizeLocal)
-    rootNode.addLight(sunLight1)
-
-    val s1 = assetManager.loadModel("Textures/bgn.blend").clone
-    rootNode.attachChild(s1)
+    //    cam.setLocation(new Vector3f(0f, 3f, 10f))
+//    val sunLight = new DirectionalLight
+//    sunLight.setColor(ColorRGBA.White.mult(1.3f));
+//    sunLight.setDirection(Vector3f.UNIT_XYZ.negate.normalizeLocal)
+//    rootNode.addLight(sunLight)
+//
+//    val sunLight1 = new DirectionalLight
+//    sunLight1.setColor(ColorRGBA.White.mult(0.8f));
+//    sunLight1.setDirection(new Vector3f(1f, -1f, 1f).normalizeLocal)
+//    rootNode.addLight(sunLight1)
+//
+//    val s1 = assetManager.loadModel("Textures/bgn.blend").clone
+//    rootNode.attachChild(s1)
 
     //    val mat = assetManager.loadMaterial("Materials/pavement.j3m")
     //
