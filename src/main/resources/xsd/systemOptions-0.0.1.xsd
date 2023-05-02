@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.mmarini.org/railways/systemOptions-0.0.1"
+	elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:so="http://www.mmarini.org/railways/systemOptions-0.0.1">
+
+
+    <xsd:element name="systemOptions" type="so:SystemOptionsType"></xsd:element>
+
+    <xsd:complexType name="SystemOptionsType">
+    	<xsd:attribute name="gain" type="xsd:float" use="required"></xsd:attribute>
+    	<xsd:attribute name="lookAndFeelClass" type="xsd:string" use="required"></xsd:attribute>
+    	<xsd:attribute name="mute" type="xsd:boolean" use="required"></xsd:attribute>
+    	<xsd:attribute name="timeSpeed" type="xsd:double" use="required"></xsd:attribute>
+    </xsd:complexType>
+</xsd:schema>
