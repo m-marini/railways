@@ -1,0 +1,36 @@
+---
+name: Downville
+direction: 0
+blocks:
+  platform:
+    type: org.mmarini.railways.blocks.Platforms
+    numPlatforms: 8
+    length: 8
+  eastSemaphores:
+    type: org.mmarini.railways.blocks.Semaphores
+    numSemaphores: 8
+  westSemaphores:
+    type: org.mmarini.railways.blocks.Semaphores
+    numSemaphores: 8
+  norton:
+    type: org.mmarini.railways.blocks.Wayout
+  sowert:
+    type: org.mmarini.railways.blocks.Wayout
+  newesel:
+    type: org.mmarini.railways.blocks.Wayout
+  southend:
+    type: org.mmarini.railways.blocks.Wayout
+  nortonSem:
+    type: org.mmarini.railways.blocks.Semaphores
+    numSemaphores: 2
+  sowertSem:
+    type: org.mmarini.railways.blocks.Semaphores
+    numSemaphores: 2
+  neweselSem:
+    type: org.mmarini.railways.blocks.Semaphores
+    numSemaphores: 2
+  southendSem:
+    type: org.mmarini.railways.blocks.Semaphores
+    numSemaphores: 2
+connections:
+  platform.

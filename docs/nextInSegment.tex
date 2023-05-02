@@ -1,0 +1,147 @@
+\section{Calcolo del punto di coda di una carrozza in un binario lineare}
+
+Siano $(x,y)$ le coordinate della testa della carrozza,
+$l$ la lunghezza del binario,
+$(x_0,y_0)$ il punto iniziale del segmento e
+$\alpha$\ la direzione del segmento rispetto al nord.
+\\
+
+L'equazioni del segmento sono:  
+\begin{equation}
+  \label{eq:no1}
+  \begin{array}{l}
+    x=x_0+s\sin\alpha
+    \\
+    y=y_0-s\cos\alpha
+  \end{array}
+\end{equation}
+per
+\begin{eqnarray}
+  \label{eq:no2}
+  s\ge 0
+  \\
+  \label{eq:no3}
+  s\le l
+\end{eqnarray}
+
+Sia ora un punto $P=(x_p,y_p)$, calcoliamo le coordinate dei punti,
+appartenenti al segmento, distanti $d$ dal punto $P$:
+\begin{displaymath}
+  \begin{array}{l}
+    d^2=(x-x_p)^2+(y-y_p)^2
+    \\
+    (x_0-x_p+s\sin\alpha)^2+(y_0-y_p-s\cos\alpha)^2-d^2=0
+    \\
+    s^2
+    +2s[(x_0-x_p)\sin\alpha-(y_0-y_p)\cos\alpha]
+    +(x_0-x_p)^2+(y_0-y_p)^2-d^2=0
+  \end{array}
+\end{displaymath}
+posto
+\begin{eqnarray}
+  b=[(x_0-x_p)\sin\alpha-(y_0-y_p)\cos\alpha]
+  \\
+  c=(x_0-x_p)^2+(y_0-y_p)^2-d^2
+\end{eqnarray}
+abbiamo
+\begin{displaymath}
+  s^2+2bs+c=0
+\end{displaymath}
+da cui
+\footnote{
+  Verifica
+  \begin{displaymath}
+    \begin{array}{l}
+      s^2=b^2+b^2-c\mp2b\sqrt{b^2-c}=2b^2-c\mp2b\sqrt{b^2-c}
+      \\
+      (2b^2-c\mp2b\sqrt{b^2-c})+2b(-b \pm\sqrt{b^2-c})+c=
+      \\
+      =2b^2-c\mp2b\sqrt{b^2-c}-2b^2\pm2b\sqrt{b^2-c}+c=0
+    \end{array}
+  \end{displaymath}
+}
+\begin{eqnarray}
+  \Delta=b^2-c
+  \\
+  \label{eq:no4}
+  s=-b\pm\sqrt\Delta
+\end{eqnarray}
+
+\section{Analisi}
+
+La (\ref{eq:no4}) ammette due soluzione
+\begin{eqnarray}
+  \label{eq:no5}
+  s=-b+\sqrt\Delta
+  \\
+  \label{eq:no6}
+  s=-b-\sqrt\Delta
+\end{eqnarray}
+
+Analizziamo le varie casistiche:
+
+\subsection{Per $\Delta=0$}
+
+Abbiamo allora una sola soluzione
+
+\begin{equation}
+  s=-b
+\end{equation}
+che per soddisfare la (\ref{eq:no2}) \`e necessario che $b \le 0$.
+
+Mentra per la (\ref{eq:no3}), che sostanzialmente \`e la condizione per
+verificare se il punto \`e contenuto nel segmento piuttosto che nella tratta
+sucessiva, abbiamo:
+\begin{equation}
+  b\ge-l
+\end{equation}
+
+\subsection{Per $\Delta>0$ e $b<0$}
+
+\paragraph{Condizioni per la soluzione (\ref{eq:no5})}
+Essendo $b$ negativo sicuramente dalla (\ref{eq:no5}) $s$ \`e positivo e
+quindi la (\ref{eq:no2}) \`e soddisfatta.
+
+Rimane per cui $-b+\sqrt\Delta\le l$ quindi
+\begin{equation}
+  \sqrt\Delta\le l+b
+\end{equation}
+
+\paragraph{Condizioni per la soluzione (\ref{eq:no6})}
+
+Dalla (\ref{eq:no2}) abbiamo che $-b-\sqrt\Delta\ge 0$ e quindi
+\begin{displaymath}
+  \sqrt\Delta\le -b    
+\end{displaymath}
+
+Mentre per la (\ref{eq:no3}) abbiamo che $-b-\sqrt\Delta\le l$ da cui
+
+\begin{equation}
+  \sqrt\Delta\ge -b-l
+\end{equation}
+
+Nei casi reali l'ambiguit\`a si genera solo quando il punto di riferimento
+$P$ appartiene al segmento stesso e quindi il valore maggiore delle due
+soluzioni, la (\ref{eq:no5}), \`e il punto sucessivo nel segmento.
+
+L'altro caso di ambiguit\`a \`e causato da una tratta curva con
+raggio di curvatura minore della lunghezza della carrozza, caso che per le
+caratteristiche delle tratte curve e delle carrozze non \`e possibile.
+
+\subsection{Per $\Delta>0$ e $b\ge0$}
+
+Essendo $b$ positivo la (\ref{eq:no6}) non pu\`o soddisfare la
+(\ref{eq:no3}), quindi rimane valida solo la soulzione (\ref{eq:no5})
+alla condizione $-b+\sqrt\Delta\ge 0$ e
+quindi
+\begin{displaymath}
+  \sqrt\Delta\ge b
+\end{displaymath}
+e $-b+\sqrt\Delta\le l$
+ovvero
+\begin{equation}
+  \sqrt\Delta\le b+l      
+\end{equation}
+
+Riassumento quindi l'unica soluzione realmente valida rimane la
+(\ref{eq:no5}) alla verifica della condizione imposta dalla (\ref{eq:no3}).

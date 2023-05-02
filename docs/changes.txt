@@ -1,0 +1,64 @@
+$Id: changes.txt,v 1.2 2006/10/06 20:32:19 marco Exp $
+
+Anomalia stato semafori
+Data :2006.10.06
+Versione: 1.2.5
+	Durante il transito nelle sezione con nodi cross deviator anche i semafori
+	non coinvolti vanno in rosso
+
+Anomalia autolock semafori:
+Data :2006.10.06
+Versione: 1.2.5
+	In autolocking mode durante il transito nelle sezione con nodi cross deviator anche i semafori
+	non coinvolti vanno in lock
+
+Anomalia lock semafori:
+Data :2006.10.06
+Versione: 1.2.5
+	Il lock manuale dei cross deviator non blocca i semafori
+
+Ridurre all'essenziale le librerie spring
+
+CrossDeviator non blocca i semafori durante il transito.
+
+CrossDeviator non reagisce al lock dello scambio e nemmeno al cambio di stato
+
+Il cambio di stato sulle linee non agisce sullo stato di lock dei deviatori.
+
+Allungare i percorsi di entrata laterali in Jackson
+
+Allungare i percorsi di raccordo sulle linee in doppia (NE,E,SW,W)
+
+Inserire nella Hall of Fame il nome della stazione
+
+Allungare la durata del gioco breve a 15 minuti
+
+Aumentare il numero di entry nella Hall of Fame
+
+Blocco iniziale/da pulsante di blocco di tutti i percorsi con deviatori
+
+Stato iniziale dei deviatori
+
+Deviatore invertito in Delta Crossing
+
+Nuove stazioni
+5 linee e 10 binari passante e terminale
+con alto parallelismo
+
+Gestione Look & Feel
+
+Selezione della partita:
+
+Durata della partita: 10, 30, 60 min, custom.
+Difficoltà (Frequenza dei treni).
+Tipo stazione.
+
+Sezione Hall of Fame
+Elenco migliori per prestazione.
+La prestazione è determinata dal numero di treni correttamente instradati per ora.
+Quando il gioco termina viene visualizzato il pannello
+riepilogativo del gioco e se le prestazioni rietrano
+nella hall of fame viene richiesto il nome del giocatore
+per storicizzarlo e visualizzarlo.
+
+Inserire pausa di scarico/carico in stazione
