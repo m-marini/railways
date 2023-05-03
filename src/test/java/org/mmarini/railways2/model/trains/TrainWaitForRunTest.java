@@ -82,14 +82,14 @@ class TrainWaitForRunTest {
         Train train = Train.create("train2", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, true, 0))
                 .setSpeed(0)
-                .setState(Train.State.WAITING_FOR_RUN_STATE);
+                .setState(Train.State.WAITING_FOR_RUN_TRAIN_STATE);
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
 
         Optional<Train> nextOpt = train.waitingForRun(new SimulationContext(status, DT));
 
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.WAITING_FOR_RUN_STATE, next.getState());
+        assertEquals(Train.State.WAITING_FOR_RUN_TRAIN_STATE, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), locatedAt(ab, true, 0));
     }

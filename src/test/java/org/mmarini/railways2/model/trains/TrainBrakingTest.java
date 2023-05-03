@@ -83,14 +83,14 @@ class TrainBrakingTest {
         double speed = MAX_SPEED / 8;
         Train train = Train.create("train2", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, true, 0))
-                .setState(Train.State.BRAKING_STATE)
+                .setState(Train.State.BRAKING_TRAIN_STATE)
                 .setSpeed(speed);
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
 
         Optional<Train> nextOpt = train.braking(new SimulationContext(status, DT));
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.BRAKING_STATE, next.getState());
+        assertEquals(Train.State.BRAKING_TRAIN_STATE, next.getState());
         assertEquals(DEACCELERATION * DT + speed, next.getSpeed());
         assertThat(next.getLocation(), locatedAt(ab, true, speed * DT));
     }
@@ -104,14 +104,14 @@ class TrainBrakingTest {
         double distance = 496; // edge length=500m, moving distance=3.6m, distance = 500-4 = 496m
         Train train = Train.create("train2", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, false, distance))
-                .setState(Train.State.BRAKING_STATE);
+                .setState(Train.State.BRAKING_TRAIN_STATE);
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
 
         Optional<Train> nextOpt = train.braking(new SimulationContext(status, DT));
 
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.BRAKING_STATE, next.getState());
+        assertEquals(Train.State.BRAKING_TRAIN_STATE, next.getState());
         assertEquals(MAX_SPEED + DEACCELERATION * DT, next.getSpeed());
         assertThat(next.getLocation(), locatedAt(ab, false, distance + DT * MAX_SPEED));
     }
@@ -125,14 +125,14 @@ class TrainBrakingTest {
         double distance = 497; // edge length=500m, moving distance=3.6m, distance = 500-3 = 497m
         Train train = Train.create("train2", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, false, distance))
-                .setState(Train.State.BRAKING_STATE);
+                .setState(Train.State.BRAKING_TRAIN_STATE);
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
 
         Optional<Train> nextOpt = train.braking(new SimulationContext(status, DT));
 
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.WAITING_FOR_RUN_STATE, next.getState());
+        assertEquals(Train.State.WAITING_FOR_RUN_TRAIN_STATE, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), locatedAt(ab, false, ab.getLength()));
     }

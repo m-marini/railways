@@ -103,11 +103,12 @@ public class SimulationContext {
      * Returns true if next track within the limit distance is clear
      * The next track is clear any signal within the limit distance is clear
      *
-     * @param location      the location
-     * @param limitDistance the limit distance (m)
+     * @param location       the location
+     * @param limitDistance  the limit distance (m)
+     * @param stopForLoading true if train should stop for loading
      */
-    public boolean isNextTracksClear(OrientedLocation location, double limitDistance) {
-        return status.isNextTracksClear(location, limitDistance);
+    public boolean isNextTracksClear(OrientedLocation location, double limitDistance, boolean stopForLoading) {
+        return status.isNextTracksClear(location, limitDistance, stopForLoading);
     }
 
     /**

@@ -83,7 +83,7 @@ class TrainWaitingForSignalLockedTest {
         Train train = Train.create("train", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, true, ab.getLength()))
                 .setSpeed(0)
-                .setState(Train.State.WAITING_FOR_SIGNAL_STATE);
+                .setState(Train.State.WAITING_FOR_SIGNAL_TRAIN_STATE);
 
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
 
@@ -91,7 +91,7 @@ class TrainWaitingForSignalLockedTest {
 
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.RUNNING_FAST_STATE, next.getState());
+        assertEquals(Train.State.RUNNING_TRAIN_STATE, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), locatedAt(ab, true, ab.getLength()));
     }
@@ -105,7 +105,7 @@ class TrainWaitingForSignalLockedTest {
         Train train = Train.create("train", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, true, ab.getLength()))
                 .setSpeed(0)
-                .setState(Train.State.WAITING_FOR_SIGNAL_STATE);
+                .setState(Train.State.WAITING_FOR_SIGNAL_TRAIN_STATE);
         Train train1 = Train.create("train1", 1, arrival, destination)
                 .setLocation(new OrientedLocation(bc, true, bc.getLength()));
 
@@ -115,7 +115,7 @@ class TrainWaitingForSignalLockedTest {
 
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.WAITING_FOR_SIGNAL_STATE, next.getState());
+        assertEquals(Train.State.WAITING_FOR_SIGNAL_TRAIN_STATE, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), locatedAt(ab, true, ab.getLength()));
     }

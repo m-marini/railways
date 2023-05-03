@@ -135,8 +135,8 @@ class StationStatus2SignalsTest {
         Edge ab = stationMap.getEdge("ab");
         OrientedLocation location = new OrientedLocation(ab, false, 100);
 
-        assertTrue(status.isNextTracksClear(location, 100));
-        assertFalse(status.isNextTracksClear(location, 101));
+        assertTrue(status.isNextTracksClear(location, 100, false));
+        assertFalse(status.isNextTracksClear(location, 101, false));
     }
 
     @Test
@@ -146,8 +146,8 @@ class StationStatus2SignalsTest {
         Edge cd = stationMap.getEdge("cd");
         OrientedLocation location = new OrientedLocation(cd, false, 100);
 
-        assertTrue(status.isNextTracksClear(location, 100));
-        assertTrue(status.isNextTracksClear(location, 101));
+        assertTrue(status.isNextTracksClear(location, 100, false));
+        assertTrue(status.isNextTracksClear(location, 101, false));
     }
 
     @Test
@@ -161,8 +161,8 @@ class StationStatus2SignalsTest {
 
         OrientedLocation location = new OrientedLocation(cd, true, 100);
 
-        assertTrue(status.isNextTracksClear(location, 100));
-        assertFalse(status.isNextTracksClear(location, 101));
+        assertTrue(status.isNextTracksClear(location, 100, false));
+        assertFalse(status.isNextTracksClear(location, 101, false));
     }
 
     @Test
@@ -178,8 +178,8 @@ class StationStatus2SignalsTest {
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
         OrientedLocation location = new OrientedLocation(ab, true, 100);
 
-        assertFalse(status.isNextTracksClear(location, 301));
-        assertTrue(status.isNextTracksClear(location, 300));
+        assertFalse(status.isNextTracksClear(location, 301, false));
+        assertTrue(status.isNextTracksClear(location, 300, false));
     }
 
     @Test
@@ -189,7 +189,7 @@ class StationStatus2SignalsTest {
         Edge ab = stationMap.getEdge("ab");
         OrientedLocation location = new OrientedLocation(ab, true, 100);
 
-        assertTrue(status.isNextTracksClear(location, 200));
+        assertTrue(status.isNextTracksClear(location, 200, false));
     }
 
     @Test
@@ -204,7 +204,18 @@ class StationStatus2SignalsTest {
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
         OrientedLocation location = new OrientedLocation(ab, true, 100);
 
-        assertFalse(status.isNextTracksClear(location, 200));
-        assertTrue(status.isNextTracksClear(location, 100));
+        assertFalse(status.isNextTracksClear(location, 200, false));
+        assertTrue(status.isNextTracksClear(location, 100, false));
+    }
+
+    @Test
+    void isNextTrackClearStopAtPlatform() {
+        Edge bc = stationMap.getEdge("bc");
+        StationStatus status = StationStatus.create(stationMap, routes, List.of());
+
+        OrientedLocation location = new OrientedLocation(bc, true, 100);
+
+        assertTrue(status.isNextTracksClear(location, 100, true));
+        assertFalse(status.isNextTracksClear(location, 101, true));
     }
 }
