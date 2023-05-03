@@ -87,7 +87,7 @@ class StationStatus2SignalsTest {
         Exit d = routes.getRoute("d");
         Edge cd = stationMap.getEdge("cd");
         Train train = Train.create("train", 1, a, d)
-                .exit(d);
+                .exit(d, 0);
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
         OrientedLocation location = new OrientedLocation(cd, true, 0);
 
@@ -156,7 +156,7 @@ class StationStatus2SignalsTest {
         Exit d = routes.getRoute("d");
         Edge cd = stationMap.getEdge("cd");
         Train train = Train.create("train", 1, a, d)
-                .exit(d);
+                .exit(d, 0);
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
 
         OrientedLocation location = new OrientedLocation(cd, true, 100);

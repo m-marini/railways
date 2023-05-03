@@ -161,7 +161,7 @@ class StationStatusTest {
         Entry a = routes.getRoute("a");
         Exit c = routes.getRoute("c");
         Train train = Train.create("train", 1, a, c)
-                .exit(c);
+                .exit(c, 0);
         StationStatus status = create(stationMap, routes, List.of(train));
 
         Map<Exit, Train> trainByExit = status.getTrainByExit();
@@ -229,7 +229,7 @@ class StationStatusTest {
         Entry a = routes.getRoute("a");
         Exit c = routes.getRoute("c");
         Train train = Train.create("train", 1, a, c)
-                .exit(c);
+                .exit(c, 0);
         StationStatus status = create(stationMap, routes, List.of(train));
 
         assertFalse(status.isExitClear(c));

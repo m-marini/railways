@@ -32,6 +32,10 @@ public interface RailwayConstants extends XmlConstants {
     double FREQUENCE_TRAIN_SCALE = 1 / SPH;
 
     /**
+     * Exit distance (m)
+     */
+    double EXIT_DISTANCE = 3000;
+    /**
      * Constant to convert the KMH (Km/hour) to MS (meters/sec)
      */
     double KMH = 1 / 3.6;
