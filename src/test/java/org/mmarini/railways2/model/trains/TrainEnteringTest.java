@@ -80,7 +80,7 @@ class TrainEnteringTest {
 
         Optional<Train> next = train.entering(new SimulationContext(status, DT));
         assertTrue(next.isPresent());
-        assertThat(next.orElseThrow(), hasProperty("state", equalTo(Train.State.ENTERING_STATE)));
+        assertThat(next.orElseThrow(), hasProperty("state", equalTo(Train.State.ENTERING_TRAIN_STATE)));
         assertThat(next.orElseThrow(), hasProperty("arrivalTime", equalTo(1 + ENTRY_TIMEOUT)));
         assertThat(next.orElseThrow(), hasProperty("speed", equalTo(0D)));
     }
@@ -102,7 +102,7 @@ class TrainEnteringTest {
         assertTrue(nextOpt.isPresent());
 
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.ENTERING_STATE, next.getState());
+        assertEquals(Train.State.ENTERING_TRAIN_STATE, next.getState());
         assertEquals(ENTRY_TIMEOUT, next.getArrivalTime());
         assertEquals(0D, next.getSpeed());
     }
@@ -121,7 +121,7 @@ class TrainEnteringTest {
 
         Train next = nextOpt.orElseThrow();
         assertEquals(MAX_SPEED, next.getSpeed());
-        assertEquals(Train.State.RUNNING_FAST_STATE, next.getState());
+        assertEquals(Train.State.RUNNING_TRAIN_STATE, next.getState());
         assertThat(next.getLocation(), locatedAt(ab, true, DT * MAX_SPEED));
     }
 
@@ -134,7 +134,7 @@ class TrainEnteringTest {
 
         Optional<Train> next = train.entering(new SimulationContext(status, DT));
         assertTrue(next.isPresent());
-        assertThat(next.orElseThrow(), hasProperty("state", equalTo(Train.State.ENTERING_STATE)));
+        assertThat(next.orElseThrow(), hasProperty("state", equalTo(Train.State.ENTERING_TRAIN_STATE)));
         assertThat(next.orElseThrow(), hasProperty("speed", equalTo(MAX_SPEED)));
     }
 }

@@ -45,7 +45,7 @@ public interface TestFunctions {
                 isA(OrientedLocation.class),
                 hasProperty("edge", equalTo(edge)),
                 hasProperty("direct", equalTo(direct)),
-                hasProperty("distance", equalTo(distance))
+                hasProperty("distance", closeTo(distance, 10e-3))
         );
     }
 

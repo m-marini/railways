@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- Issue #3: Stop at platform for loading
 - Issue #4: Immutable geometry, routes, trains
 - Issue #7: Approaching train state
 - Issue #8: Braking train state

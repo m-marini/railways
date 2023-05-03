@@ -29,10 +29,7 @@
 package org.mmarini.railways2.model;
 
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.Edge;
-import org.mmarini.railways2.model.geometry.Node;
-import org.mmarini.railways2.model.geometry.OrientedLocation;
-import org.mmarini.railways2.model.geometry.StationMap;
+import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.route.*;
 import org.mmarini.railways2.model.trains.Train;
 
@@ -325,11 +322,13 @@ public class StationStatus {
     /**
      * Returns true if next track within the limit distance is clear
      * The next track is clear any signal within the limit distance is clear
+     * and the train should not stop for load
      *
-     * @param location      the location
-     * @param limitDistance the limit distance (m)
+     * @param location       the location
+     * @param limitDistance  the limit distance (m)
+     * @param stopForLoading true if train shoud stop for load
      */
-    public boolean isNextTracksClear(OrientedLocation location, double limitDistance) {
+    public boolean isNextTracksClear(OrientedLocation location, double limitDistance, boolean stopForLoading) {
         while (location != null) {
             // Checks for distance
             Edge edge = location.getEdge();
@@ -340,11 +339,12 @@ public class StationStatus {
             Route route = routes.getRoute(location.getTerminal().getId());
             if (route instanceof Exit) {
                 return isExitClear((Exit) route);
-            } else if (route instanceof Entry) {
-                return false;
-            } else if (route instanceof SectionTerminal && !isNextSignalClear(location)) {
+            } else if (route instanceof Entry
+                    || (route instanceof SectionTerminal && !isNextSignalClear(location))
+                    || (edge instanceof Platform && stopForLoading)) {
                 return false;
             }
+
             location = routes.getTerminalDirection(location)
                     .flatMap(RouteDirection::connectedDirection)
                     .flatMap(RouteDirection::getLocation)
