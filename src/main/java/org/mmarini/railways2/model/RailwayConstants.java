@@ -56,6 +56,11 @@ public interface RailwayConstants extends XmlConstants {
     double MAX_SPEED = 140. * KMH;
 
     /**
+     * Approach speed 1.8 Kmh
+     */
+    double APPROACH_SPEED = 0.5;
+
+    /**
      * The acceleration (meters / sec ^ 2) 400kN / 642t = 0.623
      */
     double ACCELERATION = 400. / 642.;
