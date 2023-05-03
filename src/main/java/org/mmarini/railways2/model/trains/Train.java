@@ -61,7 +61,7 @@ public class Train {
      * @param destination the destination exit
      */
     public static Train create(String id, int length, Entry arrival, Exit destination) {
-        return new Train(id, length, arrival, destination, false, MAX_SPEED, State.ENTERING_STATE, null, null, ENTRY_TIMEOUT, ENTRY_TIMEOUT);
+        return create(id, length, arrival, destination, 0);
     }
 
     /**
@@ -72,7 +72,7 @@ public class Train {
      * @param time        the time instant
      */
     public static Train create(String id, int length, Entry arrival, Exit destination, double time) {
-        return new Train(id, length, arrival, destination, false, MAX_SPEED, State.ENTERING_STATE, null, null, time + ENTRY_TIMEOUT, 0);
+        return new Train(id, length, arrival, destination, false, MAX_SPEED, State.ENTERING_STATE, null, null, time + ENTRY_TIMEOUT, 0, 0);
     }
 
     private final String id;
@@ -86,27 +86,29 @@ public class Train {
     private final State state;
     private final double arrivalTime;
     private final double loadedTime;
+    private final double exitDistance;
 
     /**
      * Creates the train
      *
-     * @param id          the train identifier
-     * @param length      length (# coaches)
-     * @param arrival     the entry node
-     * @param destination the exit node
-     * @param loaded      true if arrived
-     * @param speed       speed (m/s)
-     * @param state       the train state
-     * @param location    the train location
-     * @param exitingNode the exiting node
-     * @param arrivalTime the arrival time (instant of train at entry)
-     * @param loadedTime  the loaded time instant
+     * @param id           the train identifier
+     * @param length       length (# coaches)
+     * @param arrival      the entry node
+     * @param destination  the exit node
+     * @param loaded       true if arrived
+     * @param speed        speed (m/s)
+     * @param state        the train state
+     * @param location     the train location
+     * @param exitingNode  the exiting node
+     * @param arrivalTime  the arrival time (instant of train at entry)
+     * @param loadedTime   the loaded time instant
+     * @param exitDistance the exit distance
      */
     protected Train(String id, int length, Entry arrival, Exit destination,
                     boolean loaded, double speed,
                     State state,
                     OrientedLocation location, Exit exitingNode,
-                    double arrivalTime, double loadedTime) {
+                    double arrivalTime, double loadedTime, double exitDistance) {
         this.id = requireNonNull(id);
         this.arrival = requireNonNull(arrival);
         this.destination = requireNonNull(destination);
@@ -118,6 +120,7 @@ public class Train {
         this.exitingNode = exitingNode;
         this.arrivalTime = arrivalTime;
         this.loadedTime = loadedTime;
+        this.exitDistance = exitDistance;
     }
 
     Optional<Train> braking(SimulationContext context) {
@@ -162,14 +165,25 @@ public class Train {
     /**
      * Returns the train in exit state
      *
-     * @param exit exit node
+     * @param exit         exit node
+     * @param exitDistance the exit distance
      */
-    public Train exit(Exit exit) {
-        return setState(State.EXITING_STATE).setExitingNode(exit);
+    public Train exit(Exit exit, double exitDistance) {
+        return setState(State.EXITING_STATE).setExitingNode(exit).setExitDistance(exitDistance);
     }
 
-    Optional<Train> exiting(SimulationContext simulationContext) {
-        throw new NotImplementedException();
+    /**
+     * Returns the exiting train status after simulating a time interval
+     *
+     * @param context the simulation context
+     */
+    Optional<Train> exiting(SimulationContext context) {
+        double dt = context.getDt();
+        double newSpeed = speedPhysics(MAX_SPEED, dt);
+        double newExitDistance = exitDistance + speed * dt;
+        return (newExitDistance >= EXIT_DISTANCE + length * COACH_LENGTH) ?
+                Optional.empty() :
+                Optional.of(setExitDistance(newExitDistance).setSpeed(newSpeed));
     }
 
     /**
@@ -193,6 +207,19 @@ public class Train {
         return destination;
     }
 
+    public double getExitDistance() {
+        return exitDistance;
+    }
+
+    /**
+     * Returns the train with exit distance set
+     *
+     * @param exitDistance the exit distance (m)
+     */
+    public Train setExitDistance(double exitDistance) {
+        return exitDistance != this.exitDistance ? new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime, exitDistance) : this;
+    }
+
     /**
      * Returns the exiting node
      */
@@ -208,7 +235,7 @@ public class Train {
     public Train setExitingNode(Exit exitingNode) {
         return exitingNode.equals(this.exitingNode) ?
                 this :
-                new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime);
+                new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime, exitDistance);
     }
 
     /**
@@ -240,7 +267,7 @@ public class Train {
     public Train setLocation(OrientedLocation location) {
         return location.equals(this.location) ?
                 this :
-                new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime);
+                new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime, exitDistance);
     }
 
     /**
@@ -256,7 +283,7 @@ public class Train {
      * @param speed the speed (m/s)
      */
     public Train setSpeed(double speed) {
-        return speed != this.speed ? new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime) : this;
+        return speed != this.speed ? new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime, exitDistance) : this;
     }
 
     /**
@@ -274,7 +301,7 @@ public class Train {
     public Train setState(State state) {
         return state.equals(this.state) ?
                 this :
-                new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime);
+                new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime, exitDistance);
     }
 
     @Override
@@ -293,7 +320,7 @@ public class Train {
      * Returns true if the train is in EXITING or LEAVING state
      */
     public boolean isExiting() {
-        return state.equals(State.LEAVING_STATE) || state.equals(State.EXITING_STATE);
+        return state.equals(State.EXITING_STATE);
     }
 
     /**
@@ -311,20 +338,7 @@ public class Train {
     Train setLoaded(boolean loaded) {
         return loaded == this.loaded ?
                 this :
-                new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime);
-    }
-
-    /**
-     * Returns the train in leaving state
-     *
-     * @param time the time
-     */
-    public Train leave(double time) {
-        return setState(State.LEAVING_STATE);
-    }
-
-    private Optional<Train> leaving(SimulationContext simulationContext) {
-        throw new NotImplementedException();
+                new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime, exitDistance);
     }
 
     /**
@@ -404,7 +418,7 @@ public class Train {
     Train setLoadedTime(double loadedTime) {
         return loadedTime == this.loadedTime ?
                 this :
-                new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime);
+                new Train(id, length, arrival, destination, loaded, speed, state, location, exitingNode, arrivalTime, loadedTime, exitDistance);
     }
 
     /**
@@ -483,7 +497,6 @@ public class Train {
         public static final State RUNNING_FAST_STATE = new State("RUNNING_FAST", Train::runningFast);
         public static final State ENTERING_STATE = new State("ENTERING", Train::entering);
         public static final State EXITING_STATE = new State("EXITING", Train::exiting);
-        public static final State LEAVING_STATE = new State("LEAVING", Train::leaving);
         public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
         public static final State WAITING_FOR_RUN_STATE = new State("WAITING_FOR_RUN", Train::waitingForRun);
         public static final State LOADING_STATE = new State("LOADING", Train::loading);
