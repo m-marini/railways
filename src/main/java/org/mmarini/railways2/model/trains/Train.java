@@ -123,8 +123,15 @@ public class Train {
         this.exitDistance = exitDistance;
     }
 
+    /**
+     * Returns the braking train status after simulating a time interval
+     *
+     * @param context the simulation context
+     */
     Optional<Train> braking(SimulationContext context) {
-        throw new NotImplementedException();
+        return running(context, 0).map(t ->
+                (t.getState().equals(State.WAITING_FOR_SIGNAL_STATE)) ?
+                        t.stop() : t);
     }
 
     /**
@@ -370,11 +377,19 @@ public class Train {
     }
 
     /**
-     * Returns the running fast train status after simulating a time interval
+     * Returns the running train to speed status after simulating a time interval.
+     * The train will change status to:
+     * <ul>
+     * <li>WAITING_FOR_RUN in case of speed 0 or entry node reached</li>
+     * <li>WAITING_FOR SIGNAL in case of not clear signal reached</li>
+     * <li>RUNNING_MIN in case of platform approaching</li>
+     * <li>LOADING in case of platform reached</li>
+     * </ul>
      *
-     * @param context the simulation context
+     * @param context     the simulation context
+     * @param targetSpeed the target speed (m/s)
      */
-    Optional<Train> runningFast(SimulationContext context) {
+    Optional<Train> running(SimulationContext context, double targetSpeed) {
         // Calcolare la distanza del prossimo segnale di stop o la fermata al binario
         boolean clearTrack = context.isNextTracksClear(getLocation(), stopDistance());
         if (clearTrack) {
@@ -382,7 +397,7 @@ public class Train {
             double movement = speed * context.getDt();
             double newDistance = location.getDistance() + movement;
             Edge edge = location.getEdge();
-            double newSpeed = speedPhysics(MAX_SPEED, context.getDt());
+            double newSpeed = speedPhysics(targetSpeed, context.getDt());
             if (newDistance > edge.getLength()) {
                 // end of edge reached
                 double newDistance1 = newDistance - edge.getLength();
@@ -398,12 +413,29 @@ public class Train {
                 return Optional.of(setLocation(newLocation).setSpeed(newSpeed));
             }
         } else {
-            // Stop
-            double newSpeed = speedPhysics(0, context.getDt());
+            // brake train
             double newDistance = location.getDistance() + context.getDt() * speed;
-            OrientedLocation newLocation = location.setDistance(newDistance);
-            return Optional.of(setLocation(newLocation).setSpeed(newSpeed));
+            double edgeLength = location.getEdge().getLength();
+            if (newDistance >= edgeLength) {
+                // Stop train
+                OrientedLocation newLocation = location.setDistance(edgeLength);
+                return Optional.of(setSpeed(0).setState(State.WAITING_FOR_SIGNAL_STATE).setLocation(newLocation));
+            } else {
+                // decelerate train
+                double newSpeed = max(speedPhysics(0, context.getDt()), APPROACH_SPEED);
+                OrientedLocation newLocation = location.setDistance(newDistance);
+                return Optional.of(setLocation(newLocation).setSpeed(newSpeed));
+            }
         }
+    }
+
+    /**
+     * Returns the running fast train status after simulating a time interval
+     *
+     * @param context the simulation context
+     */
+    Optional<Train> runningFast(SimulationContext context) {
+        return running(context, MAX_SPEED);
     }
 
     private Optional<Train> runningMin(SimulationContext context) {
@@ -492,18 +524,12 @@ public class Train {
     }
 
     static class State {
-        public static final State BRAKING_STATE = new State("BRAKEING", Train::braking);
         public static final State RUNNING_MIN_STATE = new State("RUNNING_MIN", Train::runningMin);
-        public static final State RUNNING_FAST_STATE = new State("RUNNING_FAST", Train::runningFast);
-        public static final State ENTERING_STATE = new State("ENTERING", Train::entering);
         public static final State EXITING_STATE = new State("EXITING", Train::exiting);
-        public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
-        public static final State WAITING_FOR_RUN_STATE = new State("WAITING_FOR_RUN", Train::waitingForRun);
+        public static final State WAITING_FOR_RUN_STATE = new State("WAITING_FOR_RUN", Train::waitingForRun);        public static final State BRAKING_STATE = new State("BRAKEING", Train::braking);
         public static final State LOADING_STATE = new State("LOADING", Train::loading);
-
         private final String id;
         private final BiFunction<Train, SimulationContext, Optional<Train>> function;
-
         /**
          * Creates the state
          *
@@ -517,7 +543,7 @@ public class Train {
 
         Optional<Train> apply(Train train, SimulationContext context) {
             return function.apply(train, context);
-        }
+        }        public static final State RUNNING_FAST_STATE = new State("RUNNING_FAST", Train::runningFast);
 
         public String getId() {
             return id;
@@ -527,5 +553,16 @@ public class Train {
         public String toString() {
             return id;
         }
+
+
+
+        public static final State ENTERING_STATE = new State("ENTERING", Train::entering);
+
+
+
+
+        public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+
+
     }
 }

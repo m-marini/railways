@@ -49,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.TestFunctions.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 
-class TrainRunningFastTest {
+class TrainBrakingTest {
     static final double DT = 0.1;
     static RoutesConfig routes;
     static StationMap stationMap;
@@ -76,42 +76,23 @@ class TrainRunningFastTest {
     }
 
     @Test
-    void accelerate() {
+    void decelerate() {
         Entry arrival = routes.getRoute("a");
         Exit destination = routes.getRoute("c");
         Edge ab = stationMap.getEdge("ab");
         double speed = MAX_SPEED / 8;
         Train train = Train.create("train2", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, true, 0))
-                .setState(Train.State.RUNNING_FAST_STATE)
+                .setState(Train.State.BRAKING_STATE)
                 .setSpeed(speed);
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
 
-        Optional<Train> nextOpt = train.runningFast(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = train.braking(new SimulationContext(status, DT));
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.RUNNING_FAST_STATE, next.getState());
-        assertEquals(ACCELERATION * DT + speed, next.getSpeed());
+        assertEquals(Train.State.BRAKING_STATE, next.getState());
+        assertEquals(DEACCELERATION * DT + speed, next.getSpeed());
         assertThat(next.getLocation(), locatedAt(ab, true, speed * DT));
-    }
-
-    @Test
-    void runningClear() {
-        Entry arrival = routes.getRoute("a");
-        Exit destination = routes.getRoute("c");
-        Edge ab = stationMap.getEdge("ab");
-        Train train = Train.create("train2", 1, arrival, destination)
-                .setLocation(new OrientedLocation(ab, true, 0))
-                .setState(Train.State.RUNNING_FAST_STATE);
-        StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
-
-        Optional<Train> nextOpt = train.runningFast(new SimulationContext(status, DT));
-
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.RUNNING_FAST_STATE, next.getState());
-        assertEquals(MAX_SPEED, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt(ab, true, DT * MAX_SPEED));
     }
 
     @Test
@@ -123,14 +104,14 @@ class TrainRunningFastTest {
         double distance = 496; // edge length=500m, moving distance=3.6m, distance = 500-4 = 496m
         Train train = Train.create("train2", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, false, distance))
-                .setState(Train.State.RUNNING_FAST_STATE);
+                .setState(Train.State.BRAKING_STATE);
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
 
-        Optional<Train> nextOpt = train.runningFast(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = train.braking(new SimulationContext(status, DT));
 
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.RUNNING_FAST_STATE, next.getState());
+        assertEquals(Train.State.BRAKING_STATE, next.getState());
         assertEquals(MAX_SPEED + DEACCELERATION * DT, next.getSpeed());
         assertThat(next.getLocation(), locatedAt(ab, false, distance + DT * MAX_SPEED));
     }
@@ -144,47 +125,16 @@ class TrainRunningFastTest {
         double distance = 497; // edge length=500m, moving distance=3.6m, distance = 500-3 = 497m
         Train train = Train.create("train2", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, false, distance))
-                .setState(Train.State.RUNNING_FAST_STATE);
+                .setState(Train.State.BRAKING_STATE);
         StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
 
-        Optional<Train> nextOpt = train.runningFast(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = train.braking(new SimulationContext(status, DT));
 
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.State.WAITING_FOR_SIGNAL_STATE, next.getState());
+        assertEquals(Train.State.WAITING_FOR_RUN_STATE, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), locatedAt(ab, false, ab.getLength()));
     }
 
-    @Test
-    void speedPhysics0() {
-        Entry arrival = routes.getRoute("a");
-        Exit destination = routes.getRoute("c");
-        Train train = Train.create("train2", 1, arrival, destination).setSpeed(0);
-
-        assertEquals(0, train.speedPhysics(0, DT));
-        assertEquals(ACCELERATION * DT, train.speedPhysics(MAX_SPEED, DT));
-        assertEquals(0.05, train.speedPhysics(0.05, DT));
-    }
-
-    @Test
-    void speedPhysicsFast() {
-        Entry arrival = routes.getRoute("a");
-        Exit destination = routes.getRoute("c");
-        Train train = Train.create("train2", 1, arrival, destination);
-
-        assertEquals(MAX_SPEED + DEACCELERATION * DT, train.speedPhysics(0, DT));
-        assertEquals(MAX_SPEED, train.speedPhysics(MAX_SPEED, DT));
-        assertEquals(MAX_SPEED, train.speedPhysics(MAX_SPEED * 2, DT));
-        assertEquals(38.7, train.speedPhysics(38.7, DT));
-    }
-
-    @Test
-    void stopDistance() {
-        Entry arrival = routes.getRoute("a");
-        Exit destination = routes.getRoute("c");
-        Train train = Train.create("train2", 1, arrival, destination);
-
-        assertEquals(MAX_SPEED * MAX_SPEED / DEACCELERATION * -0.5, train.stopDistance());
-    }
 }

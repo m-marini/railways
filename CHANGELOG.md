@@ -10,5 +10,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - Issue #4 Immutable geometry, routes, trains
+- Issue #8: Braking train state
 - Issue #9: Exiting train state
 
