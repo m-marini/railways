@@ -124,6 +124,15 @@ public class Train {
     }
 
     /**
+     * Returns the approaching train status after simulating a time interval
+     *
+     * @param context the simulation context
+     */
+    Optional<Train> approaching(SimulationContext context) {
+        return running(context, APPROACH_SPEED);
+    }
+
+    /**
      * Returns the braking train status after simulating a time interval
      *
      * @param context the simulation context
@@ -438,10 +447,6 @@ public class Train {
         return running(context, MAX_SPEED);
     }
 
-    private Optional<Train> runningMin(SimulationContext context) {
-        throw new NotImplementedException();
-    }
-
     /**
      * Returns the train with loaded time set
      *
@@ -524,10 +529,10 @@ public class Train {
     }
 
     static class State {
-        public static final State RUNNING_MIN_STATE = new State("RUNNING_MIN", Train::runningMin);
+        public static final State APPROACHING_STATE = new State("RUNNING_MIN", Train::approaching);
         public static final State EXITING_STATE = new State("EXITING", Train::exiting);
-        public static final State WAITING_FOR_RUN_STATE = new State("WAITING_FOR_RUN", Train::waitingForRun);        public static final State BRAKING_STATE = new State("BRAKEING", Train::braking);
-        public static final State LOADING_STATE = new State("LOADING", Train::loading);
+        public static final State WAITING_FOR_RUN_STATE = new State("WAITING_FOR_RUN", Train::waitingForRun);
+        public static final State LOADING_STATE = new State("LOADING", Train::loading);        public static final State BRAKING_STATE = new State("BRAKEING", Train::braking);
         private final String id;
         private final BiFunction<Train, SimulationContext, Optional<Train>> function;
         /**
@@ -543,7 +548,7 @@ public class Train {
 
         Optional<Train> apply(Train train, SimulationContext context) {
             return function.apply(train, context);
-        }        public static final State RUNNING_FAST_STATE = new State("RUNNING_FAST", Train::runningFast);
+        }
 
         public String getId() {
             return id;
@@ -552,13 +557,14 @@ public class Train {
         @Override
         public String toString() {
             return id;
-        }
+        }        public static final State RUNNING_FAST_STATE = new State("RUNNING_FAST", Train::runningFast);
+
+
+
 
 
 
         public static final State ENTERING_STATE = new State("ENTERING", Train::entering);
-
-
 
 
         public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
