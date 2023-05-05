@@ -113,7 +113,7 @@ public class Signal extends AbstractRoute implements SectionTerminal {
      * @param locked0 true if locked
      */
     public Signal setLocked0(boolean locked0) {
-        return new Signal(node, locked0, locked1);
+        return locked0 != this.locked0 ? new Signal(node, locked0, locked1) : this;
     }
 
     /**
@@ -129,6 +129,23 @@ public class Signal extends AbstractRoute implements SectionTerminal {
      * @param locked1 true if locked
      */
     public Signal setLocked1(boolean locked1) {
-        return new Signal(node, locked0, locked1);
+        return locked1 != this.locked1 ? new Signal(node, locked0, locked1) : this;
+    }
+
+    /**
+     * Returns the signal with set locked in the specified direction
+     *
+     * @param index  the direction index
+     * @param locked true if locked
+     */
+    public Signal setLocked(int index, boolean locked) {
+        switch (index) {
+            case 0:
+                return setLocked0(locked);
+            case 1:
+                return setLocked1(locked);
+            default:
+                return this;
+        }
     }
 }

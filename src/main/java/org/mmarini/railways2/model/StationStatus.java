@@ -326,7 +326,7 @@ public class StationStatus {
      *
      * @param location       the location
      * @param limitDistance  the limit distance (m)
-     * @param stopForLoading true if train shoud stop for load
+     * @param stopForLoading true if train should stop for load
      */
     public boolean isNextTracksClear(OrientedLocation location, double limitDistance, boolean stopForLoading) {
         while (location != null) {
@@ -373,6 +373,15 @@ public class StationStatus {
      */
     boolean isSectionClear(Section section) {
         return train(section).isEmpty();
+    }
+
+    /**
+     * Returns the status with a changed route
+     *
+     * @param route the route
+     */
+    public StationStatus putRoute(Route route) {
+        return setRoutes(routes.putRoute(route));
     }
 
     /**

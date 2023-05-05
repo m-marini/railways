@@ -75,6 +75,7 @@ public class Train {
     public static Train create(String id, int length, Entry arrival, Exit destination, double time) {
         return new Train(id, length, arrival, destination, false, MAX_SPEED, State.ENTERING_TRAIN_STATE, null, null, time + ENTRY_TIMEOUT, 0, 0);
     }
+
     private final String id;
     private final boolean loaded;
     private final double speed;
@@ -87,6 +88,7 @@ public class Train {
     private final double arrivalTime;
     private final double loadedTime;
     private final double exitDistance;
+
     /**
      * Creates the train
      *
@@ -96,7 +98,7 @@ public class Train {
      * @param destination  the exit node
      * @param loaded       true if arrived
      * @param speed        speed (m/s)
-     * @param trainState        the train trainState
+     * @param trainState   the train trainState
      * @param location     the train location
      * @param exitingNode  the exiting node
      * @param arrivalTime  the arrival time (instant of train at entry)
@@ -152,7 +154,7 @@ public class Train {
                     .flatMap(RouteDirection::getLocation)
                     .map(e -> e.setDistance(distance))
                     .map(this::setLocation)
-                    .map(train -> train.setSpeed(speed).runFast())
+                    .map(train -> train.setSpeed(speed).run())
                     .or(() -> Optional.of(this));
         } else {
             // Train must stop at entry (entry busy)
@@ -371,7 +373,7 @@ public class Train {
     /**
      * Returns the train in run fast trainState
      */
-    private Train runFast() {
+    private Train run() {
         return setState(State.RUNNING_TRAIN_STATE);
     }
 
@@ -396,14 +398,17 @@ public class Train {
             double newDistance = location.getDistance() + movement;
             Edge edge = location.getEdge();
             double newSpeed = speedPhysics(targetSpeed, context.getDt());
-            if (newDistance > edge.getLength()) {
+            double edgeLength = edge.getLength();
+            if (newDistance > edgeLength) {
                 // end of edge reached
-                double newDistance1 = newDistance - edge.getLength();
-                Optional<OrientedLocation> newLocation = context.terminalDirection(location)
+                double newDistance1 = newDistance - edgeLength;
+                Optional<RouteDirection> routeDirection = context.terminalDirection(location);
+                routeDirection.ifPresent(context::lockSignal);
+                return routeDirection
                         .flatMap(RouteDirection::connectedDirection)
                         .flatMap(RouteDirection::getLocation)
-                        .map(ep -> ep.setDistance(newDistance1));
-                return newLocation.map(this::setLocation)
+                        .map(ep -> ep.setDistance(min(newDistance1, ep.getEdge().getLength())))
+                        .map(this::setLocation)
                         .map(train -> train.setSpeed(newSpeed))
                         .or(() -> Optional.of(this));
             } else {
@@ -523,11 +528,6 @@ public class Train {
         public static final State EXITING_TRAIN_STATE = new State("EXITING", Train::exiting);
         public static final State WAITING_FOR_RUN_TRAIN_STATE = new State("WAITING_FOR_RUN", Train::waitingForRun);
         public static final State LOADING_TRAIN_STATE = new State("LOADING", Train::loading);
-        public static final State RUNNING_TRAIN_STATE = new State("RUNNING", Train::running);
-        public static final State ENTERING_TRAIN_STATE = new State("ENTERING", Train::entering);
-        public static final State WAITING_FOR_SIGNAL_TRAIN_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
-        public static final State BRAKING_TRAIN_STATE = new State("BRAKEING", Train::braking);
-
         private final String id;
         private final BiFunction<Train, SimulationContext, Optional<Train>> function;
 
@@ -554,5 +554,18 @@ public class Train {
         public String toString() {
             return id;
         }
+
+        public static final State RUNNING_TRAIN_STATE = new State("RUNNING", Train::running);
+
+
+        public static final State ENTERING_TRAIN_STATE = new State("ENTERING", Train::entering);
+
+
+        public static final State WAITING_FOR_SIGNAL_TRAIN_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+
+
+        public static final State BRAKING_TRAIN_STATE = new State("BRAKEING", Train::braking);
+
+
     }
 }

@@ -44,8 +44,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mmarini.railways.TestFunctions.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 
@@ -96,6 +95,34 @@ class TrainRunningFastTest {
     }
 
     @Test
+    void runningAmongSections() {
+        Entry arrival = routes.getRoute("a");
+        Signal b = routes.getRoute("b");
+        Exit destination = routes.getRoute("c");
+        Edge ab = stationMap.getEdge("ab");
+        Edge bc = stationMap.getEdge("bc");
+        Train train = Train.create("train2", 1, arrival, destination)
+                .setLocation(new OrientedLocation(ab, true, ab.getLength() - 1))
+                .setState(Train.State.RUNNING_TRAIN_STATE);
+        StationStatus status = StationStatus.create(stationMap, routes, List.of(train));
+        assertFalse(b.isLocked0());
+        assertFalse(b.isLocked1());
+
+        SimulationContext context = new SimulationContext(status, DT);
+        Optional<Train> nextOpt = train.running(context);
+
+        assertTrue(nextOpt.isPresent());
+        Train next = nextOpt.orElseThrow();
+        assertEquals(Train.State.RUNNING_TRAIN_STATE, next.getState());
+        assertEquals(MAX_SPEED, next.getSpeed());
+        assertThat(next.getLocation(), locatedAt(bc, true, DT * MAX_SPEED - 1));
+
+        Signal b1 = context.getStatus().getRoutes().getRoute("b");
+        assertTrue(b1.isLocked0());
+        assertFalse(b1.isLocked1());
+    }
+
+    @Test
     void runningClear() {
         Entry arrival = routes.getRoute("a");
         Exit destination = routes.getRoute("c");
@@ -119,7 +146,6 @@ class TrainRunningFastTest {
         Entry arrival = routes.getRoute("a");
         Exit destination = routes.getRoute("c");
         Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
         double distance = 496; // edge length=500m, moving distance=3.6m, distance = 500-4 = 496m
         Train train = Train.create("train2", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, false, distance))
@@ -172,7 +198,6 @@ class TrainRunningFastTest {
         Entry arrival = routes.getRoute("a");
         Exit destination = routes.getRoute("c");
         Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
         double distance = 497; // edge length=500m, moving distance=3.6m, distance = 500-3 = 497m
         Train train = Train.create("train2", 1, arrival, destination)
                 .setLocation(new OrientedLocation(ab, false, distance))

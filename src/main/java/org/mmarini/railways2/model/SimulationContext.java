@@ -29,7 +29,9 @@
 package org.mmarini.railways2.model;
 
 import org.mmarini.railways2.model.geometry.OrientedLocation;
+import org.mmarini.railways2.model.route.Route;
 import org.mmarini.railways2.model.route.RouteDirection;
+import org.mmarini.railways2.model.route.Signal;
 import org.mmarini.railways2.model.trains.Train;
 
 import java.util.HashSet;
@@ -72,6 +74,13 @@ public class SimulationContext {
     }
 
     /**
+     * Returns the status
+     */
+    public StationStatus getStatus() {
+        return status;
+    }
+
+    /**
      * Returns the simulation time (s)
      */
     public double getTime() {
@@ -109,6 +118,19 @@ public class SimulationContext {
      */
     public boolean isNextTracksClear(OrientedLocation location, double limitDistance, boolean stopForLoading) {
         return status.isNextTracksClear(location, limitDistance, stopForLoading);
+    }
+
+    /**
+     * Locks the route direction if it is a Signal
+     *
+     * @param direction the direction
+     */
+    public void lockSignal(RouteDirection direction) {
+        Route route = direction.getRoute();
+        if (route instanceof Signal) {
+            Signal newRoute = ((Signal) route).setLocked(direction.getIndex(), true);
+            status = status.putRoute(newRoute);
+        }
     }
 
     /**
