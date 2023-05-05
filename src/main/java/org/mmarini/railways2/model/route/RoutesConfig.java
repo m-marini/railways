@@ -228,4 +228,15 @@ public class RoutesConfig {
         Route route = getRoute(location.getTerminal().getId());
         return route.getDirection(route.indexOf(location.getEdge()));
     }
+
+    /**
+     * Returns the route configuration with a changed route
+     *
+     * @param route the route
+     */
+    public RoutesConfig putRoute(Route route) {
+        Map<String, Route> newRoutes = new HashMap<>(routes);
+        newRoutes.put(route.getId(), route);
+        return new RoutesConfig(newRoutes);
+    }
 }
