@@ -39,7 +39,9 @@ import java.util.function.Function;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.TestFunctions.routeDirection;
+import static org.mmarini.railways.TestFunctions.section;
 
 class RoutesConfigJunctionTest {
 
@@ -78,14 +80,10 @@ class RoutesConfigJunctionTest {
         Edge bc = stationMap.getEdge("bc");
 
         Section section = conf.findSection(new RouteDirection(a, 0));
-        assertNotNull(section);
+        assertThat(section, section(new RouteDirection(a, 0), new RouteDirection(c, 0), ab, bc));
 
-        assertThat(section.getTerminals(), containsInAnyOrder(
-                routeDirection(a, 0),
-                routeDirection(c, 0)
-        ));
-
-        assertThat(section.getEdges(), containsInAnyOrder(ab, bc));
+        section = conf.findSection(new RouteDirection(c, 0));
+        assertThat(section, section(new RouteDirection(a, 0), new RouteDirection(c, 0), ab, bc));
     }
 
     @Test

@@ -33,18 +33,17 @@ import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.geometry.*;
 
 import java.awt.geom.Point2D;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.TestFunctions.routeDirection;
+import static org.mmarini.railways.TestFunctions.section;
 
-class RoutesConfigCrossSwitchTest {
+class RoutesConfigCrossRouteTest {
 
     static StationMap stationMap;
     static RoutesConfig conf;
@@ -52,8 +51,8 @@ class RoutesConfigCrossSwitchTest {
     /**
      * Station map
      * <pre>
-     * Entry(a) --ae-- CrossSwitch(e) --be-- Exit(b)
-     * Entry(c) --ce--                --de-- Exit(d)
+     * Entry(a) --ae-- CrossRoute(e) --be-- Exit(b)
+     * Entry(c) --ce--               --de-- Exit(d)
      * </pre>
      */
     @BeforeAll
@@ -69,24 +68,18 @@ class RoutesConfigCrossSwitchTest {
                 .addEdge(Track.builder("ce"), "c", "e")
                 .addEdge(Track.builder("de"), "d", "e")
                 .build();
-    }
-
-    void createSwitch(boolean direct) {
         Map<String, Function<Node, Route>> builders = Map.of(
                 "a", Entry::new,
                 "b", Entry::new,
                 "c", Exit::new,
                 "d", Exit::new,
-                "e", node -> new CrossSwitch(node, direct)
+                "e", CrossRoute::new
         );
         conf = RoutesConfig.create(stationMap, builders);
     }
 
-    /*
     @Test
-    void findSectionDeviated() {
-        createSwitch(false);
-
+    void findSection() {
         Route a = conf.getRoute("a");
         Route b = conf.getRoute("b");
         Route c = conf.getRoute("c");
@@ -97,55 +90,20 @@ class RoutesConfigCrossSwitchTest {
         Edge de = stationMap.getEdge("de");
 
         Section section = conf.findSection(new RouteDirection(a, 0));
-        assertNotNull(section);
+        assertThat(section, section(new RouteDirection(a, 0), new RouteDirection(b, 0), ae, be));
 
+        section = conf.findSection(new RouteDirection(b, 0));
+        assertThat(section, section(new RouteDirection(a, 0), new RouteDirection(b, 0), ae, be));
 
-        Collection<RouteDirection> terminals = section.getTerminals();
-        assertTrue(section.getTerminal0().isPresent());
-        assertThat(section.getTerminal0().orElseThrow(), routeDirection(a,0));
-        assertThat(section.getTerminal0().orElseThrow(), routeDirection(a,0));
-                containsInAnyOrder(
-                routeDirection(a, 0),
-                routeDirection(b, 0),
-                routeDirection(c, 0),
-                routeDirection(d, 0)
-        );
+        section = conf.findSection(new RouteDirection(c, 0));
+        assertThat(section, section(new RouteDirection(c, 0), new RouteDirection(d, 0), ce, de));
 
-        Collection<Edge> edges = section.getEdges();
-        assertThat(edges, containsInAnyOrder(ae, be, ce, de));
-    }
-
-    @Test
-    void findSectionDirect() {
-        createSwitch(true);
-
-        Route a = conf.getRoute("a");
-        Route b = conf.getRoute("b");
-        Route c = conf.getRoute("c");
-        Route d = conf.getRoute("d");
-        Edge ae = stationMap.getEdge("ae");
-        Edge be = stationMap.getEdge("be");
-        Edge ce = stationMap.getEdge("ce");
-        Edge de = stationMap.getEdge("de");
-
-        Section section = conf.findSection(new RouteDirection(a, 0));
-        assertNotNull(section);
-
-        Collection<RouteDirection> terminals = section.getTerminals();
-        assertThat(terminals, containsInAnyOrder(
-                routeDirection(a, 0),
-                routeDirection(b, 0),
-                routeDirection(c, 0),
-                routeDirection(d, 0)
-        ));
-
-        Collection<Edge> edges = section.getEdges();
-        assertThat(edges, containsInAnyOrder(ae, be, ce, de));
+        section = conf.findSection(new RouteDirection(d, 0));
+        assertThat(section, section(new RouteDirection(c, 0), new RouteDirection(d, 0), ce, de));
     }
 
     @Test
     void findSectionTerminalDirect() {
-        createSwitch(true);
         Route a = conf.getRoute("a");
         Route b = conf.getRoute("b");
         Route c = conf.getRoute("c");
@@ -170,5 +128,16 @@ class RoutesConfigCrossSwitchTest {
         assertThat(dirOpt.orElseThrow(), routeDirection(c, 0));
     }
 
-     */
+    @Test
+    void sections() {
+        Edge ae = stationMap.getEdge("ae");
+        Optional<Section> sectionOpt = conf.getSection(ae);
+        assertTrue(sectionOpt.isPresent());
+        Section sectionAB = sectionOpt.orElseThrow();
+
+        assertThat(sectionAB, hasProperty("crossingSections",
+                containsInAnyOrder(
+                        hasProperty("id", equalTo("ce"))
+                )));
+    }
 }

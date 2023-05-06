@@ -40,8 +40,10 @@ import java.util.function.Function;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.TestFunctions.routeDirection;
+import static org.mmarini.railways.TestFunctions.section;
 
 class RoutesConfigSignalTest {
 
@@ -96,24 +98,16 @@ class RoutesConfigSignalTest {
         Edge bc = stationMap.getEdge("bc");
 
         Section section = conf.findSection(new RouteDirection(a, 0));
-        assertNotNull(section);
+        assertThat(section, section(new RouteDirection(a, 0), new RouteDirection(b, 0), ab));
 
-        assertThat(section.getTerminals(), containsInAnyOrder(
-                routeDirection(a, 0),
-                routeDirection(b, 0)
-        ));
-
-        assertThat(section.getEdges(), containsInAnyOrder(ab));
+        section = conf.findSection(new RouteDirection(b, 0));
+        assertThat(section, section(new RouteDirection(a, 0), new RouteDirection(b, 0), ab));
 
         section = conf.findSection(new RouteDirection(c, 0));
-        assertNotNull(section);
+        assertThat(section, section(new RouteDirection(b, 1), new RouteDirection(c, 0), bc));
 
-        assertThat(section.getTerminals(), containsInAnyOrder(
-                routeDirection(b, 1),
-                routeDirection(c, 0)
-        ));
-
-        assertThat(section.getEdges(), containsInAnyOrder(bc));
+        section = conf.findSection(new RouteDirection(b, 1));
+        assertThat(section, section(new RouteDirection(b, 1), new RouteDirection(c, 0), bc));
     }
 
     @Test
@@ -153,28 +147,14 @@ class RoutesConfigSignalTest {
         Collection<Section> sessions = conf.getSections();
 
         assertThat(sessions, containsInAnyOrder(
-                allOf(
-                        hasProperty("terminals", containsInAnyOrder(
-                                routeDirection(a, 0),
-                                routeDirection(b, 0)
-                        )),
-                        hasProperty("edges", containsInAnyOrder(ab))
-                ),
-                allOf(
-                        hasProperty("terminals", containsInAnyOrder(
-                                routeDirection(b, 1),
-                                routeDirection(c, 0)
-                        )),
-                        hasProperty("edges", containsInAnyOrder(bc))
-                )
+                section(new RouteDirection(a, 0), new RouteDirection(b, 0), ab),
+                section(new RouteDirection(c, 0), new RouteDirection(b, 1), bc)
         ));
+        assertThat(conf.getSection(ab).orElseThrow().getCrossingSections(), empty());
     }
 
     @Test
     void sessionsByEdge() {
-        Route a = conf.getRoute("a");
-        Route b = conf.getRoute("b");
-        Route c = conf.getRoute("c");
         Edge ab = stationMap.getEdge("ab");
         Edge bc = stationMap.getEdge("bc");
 
