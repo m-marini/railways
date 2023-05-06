@@ -33,16 +33,16 @@ import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.geometry.*;
 
 import java.awt.geom.Point2D;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.isA;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.TestFunctions.routeDirection;
+import static org.mmarini.railways.TestFunctions.section;
 
 class RoutesConfigSwitchTest {
 
@@ -95,21 +95,20 @@ class RoutesConfigSwitchTest {
     void findSectionDeviated() {
         createSwitch(false);
         Route a = conf.getRoute("a");
+        Route c = conf.getRoute("c");
         Route d = conf.getRoute("d");
         Edge ab = stationMap.getEdge("ab");
+        Edge bc = stationMap.getEdge("bc");
         Edge bd = stationMap.getEdge("bd");
 
         Section section = conf.findSection(new RouteDirection(a, 0));
-        assertNotNull(section);
+        assertThat(section, section(new RouteDirection(a, 0), new RouteDirection(d, 0), ab, bd));
 
-        Collection<RouteDirection> terminals = section.getTerminals();
-        assertThat(terminals, containsInAnyOrder(
-                routeDirection(a, 0),
-                routeDirection(d, 0)
-        ));
+        section = conf.findSection(new RouteDirection(d, 0));
+        assertThat(section, section(new RouteDirection(a, 0), new RouteDirection(d, 0), ab, bd));
 
-        Collection<Edge> edges = section.getEdges();
-        assertThat(edges, containsInAnyOrder(ab, bd));
+        section = conf.findSection(new RouteDirection(c, 0));
+        assertThat(section, section(new RouteDirection(c, 0), null, bc));
     }
 
     @Test
@@ -117,20 +116,19 @@ class RoutesConfigSwitchTest {
         createSwitch(true);
         Route a = conf.getRoute("a");
         Route c = conf.getRoute("c");
+        Route d = conf.getRoute("d");
         Edge ab = stationMap.getEdge("ab");
         Edge bc = stationMap.getEdge("bc");
+        Edge bd = stationMap.getEdge("bd");
 
         Section section = conf.findSection(new RouteDirection(a, 0));
-        assertNotNull(section);
+        assertThat(section, section(new RouteDirection(a, 0), new RouteDirection(c, 0), ab, bc));
 
-        Collection<RouteDirection> terminals = section.getTerminals();
-        assertThat(terminals, containsInAnyOrder(
-                routeDirection(a, 0),
-                routeDirection(c, 0)
-        ));
+        section = conf.findSection(new RouteDirection(c, 0));
+        assertThat(section, section(new RouteDirection(a, 0), new RouteDirection(c, 0), ab, bc));
 
-        Collection<Edge> edges = section.getEdges();
-        assertThat(edges, containsInAnyOrder(ab, bc));
+        section = conf.findSection(new RouteDirection(d, 0));
+        assertThat(section, section(new RouteDirection(d, 0), null, bd));
     }
 
     @Test

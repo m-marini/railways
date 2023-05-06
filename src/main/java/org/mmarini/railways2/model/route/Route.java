@@ -71,6 +71,15 @@ public interface Route {
         }
     }
 
+    /**
+     * Returns the direction for a given edge.
+     *
+     * @param edge the edge
+     */
+    default Optional<RouteDirection> getDirection(Edge edge) {
+        return getDirection(indexOf(edge));
+    }
+
     default Stream<RouteDirection> getDirections() {
         return IntStream.range(0, getNumDirections())
                 .mapToObj(i -> new RouteDirection(this, i));

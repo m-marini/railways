@@ -37,6 +37,7 @@ import org.mmarini.railways2.model.geometry.StationMap;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 
@@ -72,6 +73,20 @@ public class RoutesConfig {
     }
 
     /**
+     * Creates the crossin section
+     */
+    private void createCrossingSections() {
+        for (Section section : sections) {
+            Collection<Section> crossingSections = section.getEdges().stream()
+                    .flatMap(this::getRouteDirections)
+                    .flatMap(dir -> getCrossingSection(dir).stream())
+                    .distinct()
+                    .collect(Collectors.toList());
+            section.setCrossingSections(crossingSections);
+        }
+    }
+
+    /**
      * Creates the sections
      */
     private Set<Section> createSections() {
@@ -81,10 +96,10 @@ public class RoutesConfig {
                 .flatMap(Route::getValidDirections).collect(Collectors.toSet());
         while (!fringe.isEmpty()) {
             RouteDirection dir = fringe.iterator().next();
-            fringe.remove(dir);
             Section section = findSection(dir);
             sections.add(section);
-            fringe.removeAll(section.getTerminals());
+            section.getTerminal0().ifPresent(fringe::remove);
+            section.getTerminal1().ifPresent(fringe::remove);
         }
         return sections;
     }
@@ -95,19 +110,35 @@ public class RoutesConfig {
      * @param terminal the terminal
      */
     Section findSection(RouteDirection terminal) {
-        Set<Edge> edges = new HashSet<>();
-        Set<RouteDirection> terminals = new HashSet<>();
-        Set<RouteDirection> fringe = new HashSet<>();
-        fringe.add(terminal);
-
-        if (terminal.getRoute() instanceof SectionTerminal) {
-            terminals.add(terminal);
+        if (!(terminal.getRoute() instanceof SectionTerminal)) {
+            throw new IllegalArgumentException(format("Route %s is not a section terminal", terminal.getRoute().getId()));
         }
-        while (!fringe.isEmpty()) {
+        Set<Edge> edges = new HashSet<>();
+        RouteDirection terminal0 = terminal;
+        RouteDirection terminal1 = null;
+        for (; ; ) {
+            terminal.getLocation().map(OrientedLocation::getEdge).ifPresent(edges::add);
+            Optional<RouteDirection> opposite = getOppositeDirection(terminal);
+            if (opposite.isEmpty()) {
+                // No opposite
+                break;
+            }
+            Optional<Route> oppositeRoute = opposite.map(RouteDirection::getRoute);
+            Optional<Route> terminal1Opt = oppositeRoute.filter(r -> r instanceof SectionTerminal);
+            if (terminal1Opt.isPresent()) {
+                // End section
+                terminal1 = opposite.orElseThrow();
+                break;
+            }
+            Optional<RouteDirection> nextOpt = opposite.flatMap(RouteDirection::connectedDirection);
+            if (nextOpt.isEmpty()) {
+                break;
+            }
+            terminal = nextOpt.orElseThrow();
+        }
+        /*
             // Get eligible route and remove from fringe
-            RouteDirection dir = fringe.iterator().next();
-            fringe.remove(dir);
-            dir.getLocation().ifPresent(point -> {
+            terminal0.getLocation().ifPresent(point -> {
                 Edge edge = point.getEdge();
                 if (!edges.contains(edge)) {
                     // If edge point exits and the edge not yet traversed
@@ -131,7 +162,9 @@ public class RoutesConfig {
                 }
             });
         }
-        return Section.create(terminals, edges);
+
+         */
+        return Section.create(terminal0, terminal1, edges);
     }
 
     /**
@@ -151,6 +184,20 @@ public class RoutesConfig {
                     .orElse(null);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Returns the crossing section of a route direction
+     *
+     * @param direction the direction
+     */
+    Optional<Section> getCrossingSection(RouteDirection direction) {
+        return (!(direction.getRoute() instanceof CrossRoute)) ?
+                Optional.empty() :
+                ((CrossRoute) direction.getRoute()).getCrossingDirection(direction.getIndex())
+                        .flatMap(RouteDirection::getLocation)
+                        .map(OrientedLocation::getEdge)
+                        .flatMap(this::getSection);
     }
 
     /**
@@ -181,6 +228,27 @@ public class RoutesConfig {
             throw new IllegalArgumentException(format("Route %s not found", id));
         }
         return route;
+    }
+
+    /**
+     * Returns the route of a node
+     *
+     * @param node the node
+     */
+    private Route getRoute(Node node) {
+        return getRoute(node.getId());
+    }
+
+    /**
+     * Returns the route directions of an edge
+     *
+     * @param edge
+     */
+    private Stream<RouteDirection> getRouteDirections(Edge edge) {
+        Route route1 = getRoute(edge.getNode1().getId());
+        return Stream.concat(
+                getRoute(edge.getNode0()).getDirection(edge).stream(),
+                route1.getDirection(edge).stream());
     }
 
     /**
@@ -215,6 +283,8 @@ public class RoutesConfig {
     public Collection<Section> getSections() {
         if (sections == null) {
             sections = createSections();
+            // Find crossing sections
+            createCrossingSections();
         }
         return sections;
     }

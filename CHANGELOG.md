@@ -15,4 +15,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #7: Approaching train state
 - Issue #8: Braking train state
 - Issue #9: Exiting train state
+- Issue #18: Change section discovery to handle crossing points
 

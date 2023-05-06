@@ -30,9 +30,7 @@ package org.mmarini.railways2.model.route;
 
 import org.mmarini.railways2.model.geometry.Edge;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 
@@ -45,29 +43,35 @@ public class Section {
     /**
      * Returns the section
      *
-     * @param terminals the terminals
+     * @param terminal0 one of the terminal of section
+     * @param terminal1 other terminal of section
      * @param edges     the edges
      */
-    public static Section create(Collection<RouteDirection> terminals, Collection<Edge> edges) {
+    public static Section create(RouteDirection terminal0, RouteDirection terminal1, Collection<Edge> edges) {
         String id = edges.stream().map(Edge::getId).min(String::compareTo).orElseThrow();
-        return new Section(id, terminals, edges);
+        return new Section(id, terminal0, terminal1, edges);
     }
 
     private final String id;
-    private final Collection<RouteDirection> terminals;
+    private final RouteDirection terminal0;
+    private final RouteDirection terminal1;
     private final Collection<Edge> edges;
+    private Collection<Section> crossingSections;
 
     /**
      * Creates a section
      *
      * @param id        the section identifier
-     * @param terminals the set of terminal
+     * @param terminal0 one of the terminal of section
+     * @param terminal1 other terminal of section
      * @param edges     the list of edges
      */
-    protected Section(String id, Collection<RouteDirection> terminals, Collection<Edge> edges) {
+    protected Section(String id, RouteDirection terminal0, RouteDirection terminal1, Collection<Edge> edges) {
         this.id = requireNonNull(id);
-        this.terminals = requireNonNull(terminals);
+        this.terminal0 = terminal0;
+        this.terminal1 = terminal1;
         this.edges = requireNonNull(edges);
+        this.crossingSections = List.of();
     }
 
     @Override
@@ -76,6 +80,23 @@ public class Section {
         if (o == null || getClass() != o.getClass()) return false;
         Section section = (Section) o;
         return id.equals(section.id);
+    }
+
+    /**
+     * Returns the collection of crossing sections
+     */
+    public Collection<Section> getCrossingSections() {
+        return crossingSections;
+    }
+
+    /**
+     * Returns the Section with the collection of crossing sections set
+     *
+     * @param crossingSections the crossing sectins
+     */
+    public Section setCrossingSections(Collection<Section> crossingSections) {
+        this.crossingSections = crossingSections;
+        return this;
     }
 
     /**
@@ -90,10 +111,17 @@ public class Section {
     }
 
     /**
-     * Returns the terminals
+     * Returns one of the terminal
      */
-    public Collection<RouteDirection> getTerminals() {
-        return terminals;
+    public Optional<RouteDirection> getTerminal0() {
+        return Optional.ofNullable(terminal0);
+    }
+
+    /**
+     * Returns the other terminal
+     */
+    public Optional<RouteDirection> getTerminal1() {
+        return Optional.ofNullable(terminal1);
     }
 
     @Override
@@ -105,7 +133,10 @@ public class Section {
     public String toString() {
         return new StringJoiner(", ", Section.class.getSimpleName() + "[", "]")
                 .add("id='" + id + "'")
+                .add("terminal0=" + terminal0)
+                .add("terminal1=" + terminal1)
                 .add("edges=" + edges)
                 .toString();
     }
+
 }

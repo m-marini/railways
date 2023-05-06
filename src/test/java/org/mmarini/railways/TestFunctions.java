@@ -31,8 +31,10 @@ import org.mmarini.railways2.model.geometry.Edge;
 import org.mmarini.railways2.model.geometry.OrientedLocation;
 import org.mmarini.railways2.model.route.Route;
 import org.mmarini.railways2.model.route.RouteDirection;
+import org.mmarini.railways2.model.route.Section;
 
 import java.awt.geom.Point2D;
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -71,6 +73,23 @@ public interface TestFunctions {
                 isA(RouteDirection.class),
                 hasProperty("route", equalTo(route)),
                 hasProperty("index", equalTo(index))
+        );
+    }
+
+    static Matcher<Object> section(RouteDirection terminal0, RouteDirection terminal1, Edge... edges) {
+        return allOf(
+                isA(Section.class),
+                anyOf(
+                        allOf(
+                                hasProperty("terminal0", equalTo(Optional.ofNullable(terminal0))),
+                                hasProperty("terminal1", equalTo(Optional.ofNullable(terminal1)))
+                        ),
+                        allOf(
+                                hasProperty("terminal0", equalTo(Optional.ofNullable(terminal1))),
+                                hasProperty("terminal1", equalTo(Optional.ofNullable(terminal0)))
+                        )
+                ),
+                hasProperty("edges", containsInAnyOrder(edges))
         );
     }
 
