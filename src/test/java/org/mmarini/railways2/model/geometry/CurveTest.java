@@ -224,33 +224,43 @@ class CurveTest {
 
     @Test
     void location90() {
-        Curve curve = new StationBuilder("station")
+        StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "curve")
                 .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
                 .addEdge(Curve.builder("curve", toRadians(90)), "a", "b")
-                .build()
-                .getEdge("curve");
+                .build();
+        Node a = stationMap.getNode("a");
+        Node b = stationMap.getNode("b");
+        Curve curve = stationMap.getEdge("curve");
 
-        assertThat(curve.getLocation(true, toRadians(30) * RADIUS),
+        assertThat(curve.getLocation(b, toRadians(60) * RADIUS),
                 pointCloseTo(RADIUS * sin(toRadians(30)), RADIUS - RADIUS * cos(toRadians(30)), 1e-3));
 
-        assertThat(curve.getLocation(false, toRadians(30) * RADIUS),
+        assertThat(curve.getLocation(a, toRadians(60) * RADIUS),
                 pointCloseTo(RADIUS * sin(toRadians(60)), RADIUS - RADIUS * cos(toRadians(60)), 1e-3));
     }
 
+    /*
+     *     --b
+     *   /
+     * a
+     */
     @Test
     void location_90() {
-        Curve curve = new StationBuilder("station")
+        StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "curve")
                 .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
                 .addEdge(Curve.builder("curve", toRadians(-90)), "a", "b")
-                .build()
-                .getEdge("curve");
+                .build();
+        Node a = stationMap.getNode("a");
+        Node b = stationMap.getNode("b");
 
-        assertThat(curve.getLocation(true, toRadians(30) * RADIUS),
+        Curve curve = stationMap.getEdge("curve");
+
+        assertThat(curve.getLocation(b, toRadians(60) * RADIUS),
                 pointCloseTo(RADIUS - RADIUS * cos(toRadians(30)), RADIUS * sin(toRadians(30)), 1e-3));
 
-        assertThat(curve.getLocation(false, toRadians(30) * RADIUS),
+        assertThat(curve.getLocation(a, toRadians(60) * RADIUS),
                 pointCloseTo(RADIUS - RADIUS * cos(toRadians(60)), RADIUS * sin(toRadians(60)), 1e-3));
     }
 

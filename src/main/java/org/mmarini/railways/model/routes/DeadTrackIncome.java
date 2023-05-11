@@ -99,7 +99,7 @@ public class DeadTrackIncome extends AbstractPointRoute implements NodeIncome {
 		log.error("Length        = " + ctxTrain.getLength());
 		log.error("Speed         = " + ctxTrain.getSpeed());
 		log.error("In            = " + ctxTrain.getElementLocation());
-		log.error("Route         = " + this);
+		log.error("SingleNodeRoute         = " + this);
 		log.error("Train route   = " + currentTrain);
 		log.error("Length        = " + currentTrain.getLength());
 		log.error("Speed         = " + currentTrain.getSpeed());

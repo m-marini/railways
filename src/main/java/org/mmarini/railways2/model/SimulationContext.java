@@ -28,15 +28,16 @@
 
 package org.mmarini.railways2.model;
 
-import org.mmarini.railways2.model.geometry.OrientedLocation;
-import org.mmarini.railways2.model.route.Route;
-import org.mmarini.railways2.model.route.RouteDirection;
-import org.mmarini.railways2.model.route.Signal;
-import org.mmarini.railways2.model.trains.Train;
+import org.mmarini.Tuple2;
+import org.mmarini.railways2.model.geometry.Direction;
+import org.mmarini.railways2.model.geometry.Node;
+import org.mmarini.railways2.model.routes.Route;
+import org.mmarini.railways2.model.routes.Signal;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Generates the new station status after a time interval.
@@ -45,6 +46,7 @@ import java.util.Set;
 public class SimulationContext {
     private final double dt;
     private final Set<Train> trains;
+    private final Set<Route> routes;
     private StationStatus status;
 
     /**
@@ -57,34 +59,46 @@ public class SimulationContext {
         this.status = status;
         this.dt = dt;
         this.trains = new HashSet<>(status.getTrains());
+        this.routes = new HashSet<>(status.getRoutes());
     }
 
     /**
-     * Returns the time interval
+     * Returns the simulation time interval
      */
     public double getDt() {
         return dt;
     }
 
     /**
-     * Returns the time ofter interval
+     * Returns the next exit for the given direction
+     *
+     * @param direction the entry direction
+     */
+    public Optional<Direction> getNextExit(Direction direction) {
+        return status.getExit(direction);
+    }
+
+    /**
+     * Returns the simulation time at next instant (s)
      */
     public double getNextTime() {
         return status.getTime() + dt;
     }
 
     /**
-     * Returns the status
+     * Returns the route of a node
+     *
+     * @param node the node
      */
-    public StationStatus getStatus() {
-        return status;
+    public Route getRoute(Node node) {
+        return status.getRoute(node);
     }
 
     /**
-     * Returns the simulation time (s)
+     * Returns the status of station
      */
-    public double getTime() {
-        return status.getTime();
+    public StationStatus getStatus() {
+        return status;
     }
 
     /**
@@ -99,77 +113,49 @@ public class SimulationContext {
     }
 
     /**
-     * Returns true if next signal is clear
-     * The next signal is clear if exits and the signal is not locked and the next section is clear
-     *
-     * @param location the location
-     */
-    public boolean isNextSignalClear(OrientedLocation location) {
-        return status.isNextSignalClear(location);
-    }
-
-    /**
-     * Returns true if next track within the limit distance is clear
-     * The next track is clear any signal within the limit distance is clear
-     *
-     * @param location       the location
-     * @param limitDistance  the limit distance (m)
-     * @param stopForLoading true if train should stop for loading
-     */
-    public boolean isNextTracksClear(OrientedLocation location, double limitDistance, boolean stopForLoading) {
-        return status.isNextTracksClear(location, limitDistance, stopForLoading);
-    }
-
-    /**
-     * Locks the route direction if it is a Signal
+     * Returns if the next track is clear
      *
      * @param direction the direction
      */
-    public void lockSignal(RouteDirection direction) {
-        Route route = direction.getRoute();
-        if (route instanceof Signal) {
-            Signal newRoute = ((Signal) route).setLocked(direction.getIndex(), true);
-            status = status.putRoute(newRoute);
-        }
+    public boolean isNextRouteClear(Direction direction) {
+        return status.isNextRouteClear(direction);
     }
 
     /**
-     * Put the train in the station status
+     * Returns true if next track is clear
+     * The next track is clear if any signals within the limit distance is clear
+     * and the train has to load at end of platform
      *
      * @param train the train
      */
-    private void putTrain(Train train) {
-        trains.add(train);
-        status = status.setTrains(trains);
+    public boolean isNextTracksClear(Train train) {
+        return status.isNextTracksClear(train);
     }
 
     /**
-     * Removes the train from status
+     * Locks the signal of the given direction
      *
-     * @param train the train
+     * @param direction the direction
      */
-    void removeTrain(Train train) {
-        trains.remove(train);
-        status = status.setTrains(trains);
-    }
-
-    public StationStatus simulate() {
-        for (Train train : status.getTrains()) {
-            train.tick(this)
-                    .ifPresentOrElse(
-                            this::putTrain,
-                            () -> this.removeTrain(train)
-                    );
-        }
-        return status.setTime(status.getTime() + dt);
-    }
-
-    /**
-     * Returns the terminal route direction of an edge point
-     *
-     * @param orientedLocation the edge point
-     */
-    public Optional<RouteDirection> terminalDirection(OrientedLocation orientedLocation) {
-        return status.terminalDirection(orientedLocation);
+    public void lockSignals(Direction direction) {
+        Optional<StationStatus> newStatus = status.getSection(direction.getEdge())
+                .map(section -> {
+                    Stream.of(section.getExit0(), section.getExit1())
+                            .flatMap(dir -> {
+                                // Finds the route terminal of section
+                                Route route = status.getRoute(dir.getOrigin());
+                                // Find the entry direction into the section
+                                Optional<Direction> entryOpt = route.getExit(dir.opposite()).map(Direction::opposite);
+                                return entryOpt.map(entry -> Tuple2.of(route, entry)).stream();
+                            })
+                            .filter(t -> t._1 instanceof Signal)
+                            .map(t -> ((Signal) t._1).lock(t._2))
+                            .forEach(signal -> {
+                                routes.remove(signal);
+                                routes.add(signal);
+                            });
+                    return status.setRoutes(routes);
+                });
+        status = newStatus.orElse(status);
     }
 }

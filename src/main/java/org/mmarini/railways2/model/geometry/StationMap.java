@@ -31,7 +31,6 @@ package org.mmarini.railways2.model.geometry;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -42,7 +41,7 @@ import static java.util.Objects.requireNonNull;
 public class StationMap {
     private final String id;
     private final Map<String, Node> nodeMap;
-    private final Map<String, Edge> edges;
+    private final Map<String, ? extends Edge> edges;
 
     /**
      * Creates the station map
@@ -53,9 +52,9 @@ public class StationMap {
     public StationMap(String id, Map<String, Node> nodeMap) {
         this.id = requireNonNull(id);
         this.nodeMap = requireNonNull(nodeMap);
-        edges = nodeMap.values().stream().flatMap(
-                        n -> Stream.of(n.getEdges())
-                ).distinct()
+        edges = nodeMap.values().stream()
+                .flatMap(node -> node.getEdges().stream())
+                .distinct()
                 .collect(Collectors.toMap(Edge::getId, Function.identity()));
     }
 
@@ -77,7 +76,7 @@ public class StationMap {
     /**
      * Returns the map of edges
      */
-    public Map<String, Edge> getEdges() {
+    public Map<String, ? extends Edge> getEdges() {
         return edges;
     }
 

@@ -28,23 +28,33 @@
 
 package org.mmarini.railways2.model.geometry;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.mmarini.railways.TestFunctions.pointCloseTo;
+import static org.mmarini.railways2.model.geometry.StationMapTest.createStation;
+import static org.mmarini.railways2.model.geometry.StationMapTest.stationMap;
 
 class PlatformTest {
+    @BeforeAll
+    static void beforAll() {
+        createStation();
+    }
+
     @Test
     void length() {
-        Platform track = StationMapTest.createStation().getEdge("bc");
+        Platform track = stationMap.getEdge("bc");
         assertThat(track.getLength(), closeTo(100, 1e-3));
     }
 
     @Test
     void location() {
-        Platform track = StationMapTest.createStation().getEdge("bc");
-        assertThat(track.getLocation(true, 60), pointCloseTo(160, 0, 1e-3));
-        assertThat(track.getLocation(false, 60), pointCloseTo(140, 0, 1e-3));
+        Platform track = stationMap.getEdge("bc");
+        Node b = stationMap.getNode("bNode");
+        Node c = stationMap.getNode("cNode");
+        assertThat(track.getLocation(c, 40), pointCloseTo(160, 0, 1e-3));
+        assertThat(track.getLocation(b, 40), pointCloseTo(140, 0, 1e-3));
     }
 }

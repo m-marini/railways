@@ -33,6 +33,7 @@ import org.mmarini.Tuple2;
 import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
@@ -45,7 +46,7 @@ public class StationBuilder {
     private final String id;
     private final Map<String, Node> nodes;
     private final Map<String, String[]> nodeEdges;
-    private final List<BiFunction<Node, Node, Edge>> edgeBuilders;
+    private final List<BiFunction<Node, Node, ? extends Edge>> edgeBuilders;
     private final List<String[]> edgeNodes;
 
 
@@ -119,7 +120,7 @@ public class StationBuilder {
 
         // Sets the node edges
         for (Node node : nodes.values()) {
-            Edge[] edges = Arrays.stream(nodeEdges.get(node.getId())).map(
+            List<Edge> edges = Arrays.stream(nodeEdges.get(node.getId())).map(
                     edgeId -> {
                         Edge edge = edgeMap.get(edgeId);
                         if (edge == null) {
@@ -127,7 +128,7 @@ public class StationBuilder {
                         }
                         return edge;
                     }
-            ).toArray(Edge[]::new);
+            ).collect(Collectors.toList());
             node.setEdges(edges);
         }
         return new StationMap(id, nodes);

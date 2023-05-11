@@ -28,6 +28,8 @@
 
 package org.mmarini.railways2.model.geometry;
 
+import org.mmarini.NotImplementedException;
+
 import java.awt.geom.Point2D;
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -35,6 +37,7 @@ import java.util.StringJoiner;
 /**
  * Stores the location and direction of movement in the edge
  */
+@Deprecated
 public class OrientedLocation {
     private final Edge edge;
     private final double distance;
@@ -87,8 +90,9 @@ public class OrientedLocation {
     /**
      * Returns the location of the edge point
      */
+    @Deprecated
     public Point2D getLocation() {
-        return edge.getLocation(direct, distance);
+        throw new NotImplementedException();
     }
 
     /**
@@ -102,7 +106,11 @@ public class OrientedLocation {
      * Returns origin index
      */
     public int getOriginIndex() {
+        throw new NotImplementedException();
+        /*
         return getOrigin().indexOf(edge);
+
+         */
     }
 
     /**

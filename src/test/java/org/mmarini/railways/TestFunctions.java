@@ -27,11 +27,10 @@ package org.mmarini.railways;
 
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
-import org.mmarini.railways2.model.geometry.Edge;
-import org.mmarini.railways2.model.geometry.OrientedLocation;
-import org.mmarini.railways2.model.route.Route;
-import org.mmarini.railways2.model.route.RouteDirection;
-import org.mmarini.railways2.model.route.Section;
+import org.mmarini.railways1.model.routes.RouteDirection;
+import org.mmarini.railways1.model.routes.SingleNodeRoute;
+import org.mmarini.railways2.model.geometry.*;
+import org.mmarini.railways2.model.routes.Section;
 
 import java.awt.geom.Point2D;
 import java.util.Optional;
@@ -42,11 +41,22 @@ import static org.hamcrest.Matchers.*;
 
 public interface TestFunctions {
 
+    @Deprecated
     static Matcher<Object> locatedAt(Edge edge, boolean direct, double distance) {
         return allOf(
                 isA(OrientedLocation.class),
                 hasProperty("edge", equalTo(edge)),
                 hasProperty("direct", equalTo(direct)),
+                hasProperty("distance", closeTo(distance, 10e-3))
+        );
+    }
+
+    static Matcher<Object> locatedAt(Edge edge, Node destination, double distance) {
+        return allOf(
+                isA(EdgeLocation.class),
+                hasProperty("direction", allOf(
+                        hasProperty("edge", equalTo(edge)),
+                        hasProperty("destination", equalTo(destination)))),
                 hasProperty("distance", closeTo(distance, 10e-3))
         );
     }
@@ -68,7 +78,7 @@ public interface TestFunctions {
         };
     }
 
-    static Matcher<Object> routeDirection(Route route, int index) {
+    static Matcher<Object> routeDirection(SingleNodeRoute route, int index) {
         return allOf(
                 isA(RouteDirection.class),
                 hasProperty("route", equalTo(route)),
@@ -76,9 +86,10 @@ public interface TestFunctions {
         );
     }
 
+    @Deprecated
     static Matcher<Object> section(RouteDirection terminal0, RouteDirection terminal1, Edge... edges) {
         return allOf(
-                isA(Section.class),
+                isA(org.mmarini.railways1.model.routes.Section.class),
                 anyOf(
                         allOf(
                                 hasProperty("terminal0", equalTo(Optional.ofNullable(terminal0))),
@@ -87,6 +98,24 @@ public interface TestFunctions {
                         allOf(
                                 hasProperty("terminal0", equalTo(Optional.ofNullable(terminal1))),
                                 hasProperty("terminal1", equalTo(Optional.ofNullable(terminal0)))
+                        )
+                ),
+                hasProperty("edges", containsInAnyOrder(edges))
+        );
+    }
+
+
+    static Matcher<Object> section(Direction terminal0, Direction terminal1, Edge... edges) {
+        return allOf(
+                isA(Section.class),
+                anyOf(
+                        allOf(
+                                hasProperty("exit0", equalTo(terminal0)),
+                                hasProperty("exit1", equalTo(terminal1))
+                        ),
+                        allOf(
+                                hasProperty("exit0", equalTo(terminal1)),
+                                hasProperty("exit1", equalTo(terminal0))
                         )
                 ),
                 hasProperty("edges", containsInAnyOrder(edges))

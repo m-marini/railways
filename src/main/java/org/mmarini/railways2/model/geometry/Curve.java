@@ -113,8 +113,12 @@ public class Curve extends AbstractEdge {
     }
 
     @Override
-    public Point2D getLocation(boolean direct, double distance) {
-        double da = (direct ? distance : (length - distance)) / radius;
+    public Point2D getLocation(Node destination, double distance) {
+        Node node0 = getNode0();
+        double d0 = destination.equals(node0) ?
+                distance :
+                (length - distance);
+        double da = d0 / radius;
         double a = angle0 + (angle > 0 ? da : -da);
         return new Point2D.Double(center.getX() + radius * cos(a), center.getY() + radius * sin(a));
     }

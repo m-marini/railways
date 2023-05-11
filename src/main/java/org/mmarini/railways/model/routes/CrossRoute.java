@@ -4,7 +4,7 @@ import org.mmarini.railways.model.elements.Cross;
 
 /**
  * @author $$Author: marco $$
- * @version $Id: CrossRoute.java,v 1.6 2012/02/08 22:03:18 marco Exp $
+ * @version $Id: CrossNodeRoute.java,v 1.6 2012/02/08 22:03:18 marco Exp $
  */
 public class CrossRoute extends PointRoute {
 	private CrossRoute lateral;

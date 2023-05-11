@@ -28,6 +28,7 @@
 
 package org.mmarini.railways2.model.geometry;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
@@ -36,17 +37,21 @@ import static java.lang.Math.PI;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mmarini.railways.TestFunctions.pointCloseTo;
 import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
 
 public class StationMapTest {
 
+    static StationMap stationMap;
+
     /**
      * Create the station map
      * aNode -- ab (Track)--> bNode -- bc (Platform) --> cNode -- cd (Curve) --> dNode
      */
-    public static StationMap createStation() {
-        return new StationBuilder("station")
+    @BeforeAll
+    static void createStation() {
+        stationMap = new StationBuilder("station")
                 .addNode("aNode", new Point2D.Double(0, 0), "ab")
                 .addNode("bNode", new Point2D.Double(100, 0), "ab", "bc")
                 .addNode("cNode", new Point2D.Double(200, 0), "bc", "cd")
@@ -55,12 +60,11 @@ public class StationMapTest {
                 .addEdge(Platform.builder("bc"), "bNode", "cNode")
                 .addEdge(Curve.builder("cd", PI / 2), "cNode", "dNode")
                 .build();
+        assertNotNull(stationMap);
     }
 
     @Test
     void create() {
-        StationMap stationMap = createStation();
-
         assertEquals("station", stationMap.getId());
         assertThat(stationMap.getNodeMap().keySet(), hasSize(4));
         assertThat(stationMap.getEdges().keySet(), hasSize(3));
@@ -76,22 +80,22 @@ public class StationMapTest {
         assertThat(aNode, allOf(
                 hasProperty("id", equalTo("aNode")),
                 hasProperty("location", equalTo(new Point2D.Double())),
-                hasProperty("edges", arrayContaining(ab))
+                hasProperty("edges", containsInAnyOrder(ab))
         ));
         assertThat(bNode, allOf(
                 hasProperty("id", equalTo("bNode")),
                 hasProperty("location", pointCloseTo(100, 0, 1e-3)),
-                hasProperty("edges", arrayContaining(ab, bc))
+                hasProperty("edges", containsInAnyOrder(ab, bc))
         ));
         assertThat(cNode, allOf(
                 hasProperty("id", equalTo("cNode")),
                 hasProperty("location", equalTo(new Point2D.Double(200, 0))),
-                hasProperty("edges", arrayContaining(bc, cd))
+                hasProperty("edges", containsInAnyOrder(bc, cd))
         ));
         assertThat(dNode, allOf(
                 hasProperty("id", equalTo("dNode")),
                 hasProperty("location", pointCloseTo(267.615, 67.615, 1e-3)),
-                hasProperty("edges", arrayContaining(cd))
+                hasProperty("edges", containsInAnyOrder(cd))
         ));
 
         assertThat(ab, allOf(
@@ -115,6 +119,27 @@ public class StationMapTest {
         ));
     }
 
+    @Test
+    void directions() {
+        Node a = stationMap.getNode("aNode");
+        Node b = stationMap.getNode("bNode");
+        Node c = stationMap.getNode("cNode");
+        Node d = stationMap.getNode("dNode");
+        Edge ab = stationMap.getEdge("ab");
+        Edge bc = stationMap.getEdge("bc");
+        Edge cd = stationMap.getEdge("cd");
+
+        assertThat(a.getExits(), containsInAnyOrder(
+                new Direction(ab, b)));
+        assertThat(b.getExits(), containsInAnyOrder(
+                new Direction(ab, a),
+                new Direction(bc, c)));
+        assertThat(c.getExits(), containsInAnyOrder(
+                new Direction(bc, b),
+                new Direction(cd, d)));
+        assertThat(d.getExits(), containsInAnyOrder(
+                new Direction(cd, c)));
+    }
 
 /*
     @Test

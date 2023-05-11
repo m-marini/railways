@@ -5,7 +5,7 @@ import org.mmarini.railways.model.train.Train;
 
 /**
  * @author $$Author: marco $$
- * @version $Id: AbstractRoute.java,v 1.5 2012/02/08 22:03:18 marco Exp $
+ * @version $Id: AbstractSingleNodeRoute.java,v 1.5 2012/02/08 22:03:18 marco Exp $
  */
 public abstract class AbstractRoute extends AbstractPointRoute {
 	private double transited;
