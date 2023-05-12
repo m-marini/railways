@@ -567,7 +567,7 @@ public class StationStatus {
      */
     public static class Builder {
         private final StationMap stationMap;
-        private final List<Tuple2<String[], Function<Node[], Route>>> builders;
+        private final List<Tuple2<String[], Function<Node[], ? extends Route>>> builders;
 
         /**
          * Creates the status builder
@@ -585,7 +585,7 @@ public class StationStatus {
          * @param builder the route builder
          * @param nodes   the nodes
          */
-        public Builder addRoute(Function<Node[], Route> builder, String... nodes) {
+        public Builder addRoute(Function<Node[], ? extends Route> builder, String... nodes) {
             builders.add(Tuple2.of(nodes, builder));
             return this;
         }

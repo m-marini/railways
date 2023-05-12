@@ -32,6 +32,7 @@ import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.geometry.Node;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -77,6 +78,21 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
                         entry0, exit1,
                         entry1, exit0
                 ));
+    }
+
+    /**
+     * Returns the function creating signal locked in the given directions
+     *
+     * @param locks the lock direction
+     */
+    public static Function<Node[], Route> createLocks(Direction... locks) {
+        return nodes -> {
+            Signal signal = create(nodes);
+            for (Direction lock : locks) {
+                signal = signal.lock(lock);
+            }
+            return signal;
+        };
     }
 
     private final Set<Direction> locks;

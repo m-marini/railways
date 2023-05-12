@@ -28,7 +28,6 @@
 
 package org.mmarini.railways2.model.routes;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.geometry.*;
@@ -40,19 +39,19 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mmarini.railways.TestFunctions.emptyOptional;
 import static org.mmarini.railways.TestFunctions.optionalContaining;
 
 class JunctionTest {
 
-    private static StationMap station;
+    private StationMap station;
+    private Junction route;
 
     /*
      * a --ab-- Junction(b) --bc -- c
      */
-    @BeforeAll
-    static void beforeAll() {
+    @BeforeEach
+    void beforeEach() {
         station = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc")
@@ -60,12 +59,6 @@ class JunctionTest {
                 .addEdge(Track.builder("ab"), "a", "b")
                 .addEdge(Track.builder("bc"), "b", "c")
                 .build();
-    }
-
-    private Junction route;
-
-    @BeforeEach
-    void beforEach() {
         route = Junction.create(station.getNode("b"));
     }
 

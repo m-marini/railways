@@ -33,6 +33,7 @@ import org.mmarini.railways2.model.geometry.Edge;
 import org.mmarini.railways2.model.geometry.Node;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -66,7 +67,16 @@ import static java.util.Objects.requireNonNull;
 public class DoubleSlipSwitch implements Route {
 
     /**
-     * Creates the double slip switch in deviated configuration.
+     * Returns the function creating the double slip switch in the given configuration
+     *
+     * @param through true if through configuration
+     */
+    public static Function<Node[], Route> create(boolean through) {
+        return through ? DoubleSlipSwitch::through : DoubleSlipSwitch::diverging;
+    }
+
+    /**
+     * Returns the double slip switch in deviated configuration.
      *
      * @param nodes the nodes of switch
      */
@@ -173,7 +183,7 @@ public class DoubleSlipSwitch implements Route {
                 _0b, crossAB,
                 _0c, crossCD,
                 _0d, crossCD
-                );
+        );
         return new DoubleSlipSwitch(id, List.of(nodes), true, exits, exitByDirection, crossingEdgeByDirection);
     }
 

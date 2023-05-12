@@ -28,7 +28,6 @@
 
 package org.mmarini.railways2.model.routes;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.geometry.*;
@@ -44,7 +43,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CrossRouteTest {
 
-    static StationMap station;
+    StationMap station;
+    private CrossRoute route;
 
     /**
      * Station map
@@ -53,8 +53,8 @@ class CrossRouteTest {
      * Entry(c) --ce--               --de-- Exit(d)
      * </pre>
      */
-    @BeforeAll
-    static void createRoutesConfig() {
+    @BeforeEach
+    void beforeEach() {
         station = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ae")
                 .addNode("b", new Point2D.Double(200, 0), "be")
@@ -66,12 +66,6 @@ class CrossRouteTest {
                 .addEdge(Track.builder("ce"), "c", "e")
                 .addEdge(Track.builder("de"), "d", "e")
                 .build();
-    }
-
-    private CrossRoute route;
-
-    @BeforeEach
-    void beforeEach() {
         route = CrossRoute.create(station.getNode("e"));
     }
 

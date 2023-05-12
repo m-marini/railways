@@ -28,7 +28,7 @@
 
 package org.mmarini.railways2.model;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
@@ -48,10 +48,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.TestFunctions.section;
 
-class StationStatusSwitchSwitchTest {
+class StationStatusSwitchTest {
 
-    static StationMap stationMap;
-    static StationStatus status;
+    StationMap stationMap;
+    StationStatus status;
 
     /**
      * Station map
@@ -60,8 +60,8 @@ class StationStatusSwitchSwitchTest {
      * Entry(a) --ab-- Switch(b) --bc-- Exit(c)
      * </pre>
      */
-    @BeforeAll
-    static void createRoutesConfig() {
+    @BeforeEach
+    void beforeEach() {
         stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc", "bd")
@@ -120,7 +120,7 @@ class StationStatusSwitchSwitchTest {
     void createSwitch(boolean through) {
         status = new StationStatus.Builder(stationMap)
                 .addRoute(Entry::create, "a")
-                .addRoute(nodes -> through ? Switch.through(nodes) : Switch.diverging(nodes), "b")
+                .addRoute(Switch.create(through), "b")
                 .addRoute(Exit::create, "c")
                 .addRoute(Exit::create, "d")
                 .build();

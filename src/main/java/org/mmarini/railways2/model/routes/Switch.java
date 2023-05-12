@@ -32,6 +32,7 @@ import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.geometry.Node;
 
 import java.util.Map;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -42,6 +43,16 @@ import static java.util.Objects.requireNonNull;
 public class Switch extends AbstractSingleNodeRoute {
 
     public static final int NUM_CONNECTIONS = 3;
+
+
+    /**
+     * Returns the function createing the switch in the given configuration
+     *
+     * @param through true if through configuration
+     */
+    public static Function<Node[], Switch> create(boolean through) {
+        return through ? Switch::through : Switch::diverging;
+    }
 
     /**
      * Returns the diverging switch

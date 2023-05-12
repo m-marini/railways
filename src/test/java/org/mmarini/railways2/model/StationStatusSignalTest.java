@@ -28,7 +28,7 @@
 
 package org.mmarini.railways2.model;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
@@ -50,8 +50,8 @@ import static org.mmarini.railways.TestFunctions.section;
 
 class StationStatusSignalTest {
 
-    static StationMap stationMap;
-    static StationStatus status;
+    StationMap stationMap;
+    StationStatus status;
 
     /**
      * Station map
@@ -59,8 +59,8 @@ class StationStatusSignalTest {
      * Entry(a) --ab-- Signal(b) --bc-- Exit(c)
      * </pre>
      */
-    @BeforeAll
-    static void createRoutesConfig() {
+    @BeforeEach
+    void beforeEach() {
         stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc")
@@ -99,13 +99,7 @@ class StationStatusSignalTest {
     void createStatus(Direction... locks) {
         status = new StationStatus.Builder(stationMap)
                 .addRoute(Entry::create, "a")
-                .addRoute(nodes -> {
-                    Signal signal = Signal.create(nodes);
-                    for (Direction lock : locks) {
-                        signal = signal.lock(lock);
-                    }
-                    return signal;
-                }, "b")
+                .addRoute(Signal.createLocks(locks), "b")
                 .addRoute(Exit::create, "c")
                 .build();
     }

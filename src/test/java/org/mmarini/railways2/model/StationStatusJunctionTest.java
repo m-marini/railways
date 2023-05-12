@@ -28,7 +28,7 @@
 
 package org.mmarini.railways2.model;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
@@ -46,8 +46,8 @@ import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
 
 class StationStatusJunctionTest {
 
-    static StationMap stationMap;
-    static StationStatus status;
+    StationMap stationMap;
+    StationStatus status;
 
     /**
      * Station map
@@ -55,8 +55,8 @@ class StationStatusJunctionTest {
      * Entry(a) --ab-- Junction(b) --bc-- Exit(c)
      * </pre>
      */
-    @BeforeAll
-    static void createRoutesConfig() {
+    @BeforeEach
+    void beforeEach() {
         stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc")

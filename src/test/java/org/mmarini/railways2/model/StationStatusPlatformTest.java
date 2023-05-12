@@ -42,8 +42,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StationStatusPlatformTest {
 
-    static StationMap stationMap;
-    static StationStatus status;
+    StationMap stationMap;
+    StationStatus status;
 
     /*
      *  Entry(a) -- ab -- Signal(b) -- Platform(bc) -- Signal(c) -- cd -- Exit(d)
@@ -64,13 +64,7 @@ class StationStatusPlatformTest {
     void createStatus(Direction... locks) {
         status = new StationStatus.Builder(stationMap)
                 .addRoute(Entry::create, "a")
-                .addRoute(nodes -> {
-                    Signal signal = Signal.create(nodes);
-                    for (Direction lock : locks) {
-                        signal = signal.lock(lock);
-                    }
-                    return signal;
-                }, "b")
+                .addRoute(Signal.createLocks(locks), "b")
                 .addRoute(Signal::create, "c")
                 .addRoute(Exit::create, "d")
                 .build();

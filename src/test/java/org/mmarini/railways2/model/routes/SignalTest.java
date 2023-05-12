@@ -28,7 +28,6 @@
 
 package org.mmarini.railways2.model.routes;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.geometry.*;
@@ -43,13 +42,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SignalTest {
 
-    private static StationMap station;
+    private StationMap station;
+    private Signal route;
 
     /*
      * a --ab-- Signal(b) --bc-- c
      */
-    @BeforeAll
-    static void beforeAll() {
+    @BeforeEach
+    void beforeEach() {
         station = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc")
@@ -57,12 +57,6 @@ class SignalTest {
                 .addEdge(Track.builder("ab"), "a", "b")
                 .addEdge(Track.builder("bc"), "b", "c")
                 .build();
-    }
-
-    private Signal route;
-
-    @BeforeEach
-    void beforeEach() {
         route = Signal.create(station.getNode("b"));
     }
 

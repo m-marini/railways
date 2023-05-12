@@ -28,7 +28,7 @@
 
 package org.mmarini.railways2.model.routes;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.geometry.*;
 
@@ -43,14 +43,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SwitchTest {
 
-    private static StationMap station;
+    StationMap station;
+    Switch route;
 
     /*
       a -- Switch(b) -- c
                      -- d
      */
-    @BeforeAll
-    static void beforeAll() {
+    @BeforeEach
+    void beforeEach() {
         station = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc", "bd")
@@ -62,12 +63,8 @@ class SwitchTest {
                 .build();
     }
 
-    private Switch route;
-
     void createSwitch(boolean through) {
-        route = through ?
-                Switch.through(station.getNode("b")) :
-                Switch.diverging(station.getNode("b"));
+        route = Switch.create(through).apply(new Node[]{station.getNode("b")});
     }
 
     @Test
