@@ -64,20 +64,19 @@ public class Track extends AbstractEdge {
     }
 
     @Override
-    public Point2D getLocation(boolean direct, double distance) {
-        Point2D p0 = getNode0().getLocation();
-        Point2D p1 = getNode1().getLocation();
+    public Point2D getLocation(Node destination, double distance) {
+        Node node0 = getNode0();
+        Point2D p0 = node0.getLocation();
+        Node node1 = getNode1();
+        Point2D p1 = node1.getLocation();
         double length = getLength();
         double x0 = p0.getX();
         double y0 = p0.getY();
         double x1 = p1.getX();
         double y1 = p1.getY();
-        return direct ?
-                new Point2D.Double(
-                        x0 + distance * (x1 - x0) / length,
-                        y0 + distance * (y1 - y0) / length) :
-                new Point2D.Double(
-                        x1 + distance * (x0 - x1) / length,
-                        y1 + distance * (y0 - y1) / length);
+        double d0 = destination.equals(node0) ? distance : length - distance;
+        return new Point2D.Double(
+                x0 + d0 * (x1 - x0) / length,
+                y0 + d0 * (y1 - y0) / length);
     }
 }

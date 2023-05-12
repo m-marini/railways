@@ -36,7 +36,7 @@ import java.awt.geom.Point2D;
 public interface Edge {
 
     /**
-     * Returns the edge indetifier
+     * Returns the edge identifier
      */
     String getId();
 
@@ -48,10 +48,10 @@ public interface Edge {
     /**
      * Returns the location of a point in the edge
      *
-     * @param direct   true if direct
-     * @param distance the distance (m)
+     * @param destination the destination node
+     * @param distance    the distance to destination (m)
      */
-    Point2D getLocation(boolean direct, double distance);
+    Point2D getLocation(Node destination, double distance);
 
     /**
      * Returns the first node

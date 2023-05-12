@@ -30,73 +30,151 @@ package org.mmarini.railways2.model;
 
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
-import org.mmarini.railways2.model.route.*;
-import org.mmarini.railways2.model.trains.Train;
+import org.mmarini.railways2.model.routes.*;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
-import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 
 /**
- * Tracks the status of trains and station components by simulating the elapsed time.
+ * Tracks the status of trains and station components.
  * Retrieves the sections, the edges occupied by trains.
  */
 public class StationStatus {
-    public static StationStatus create(StationMap stationMap, RoutesConfig routes, Collection<Train> trains) {
-        return new StationStatus(stationMap, routes, 0, trains, null, null, null, null);
-    }
-
     private final StationMap stationMap;
-    private final RoutesConfig routes;
-    private final double time;
+    private final Collection<? extends Route> routes;
     private final Collection<Train> trains;
+    private final double time;
+    private Map<Node, ? extends Route> routeByNode;
+    private Map<Entry, Train> firstTrainByEntry;
+    private Collection<Section> sections;
     private Map<Edge, Train> trainByEdge;
     private Map<Section, Train> trainBySection;
-    private Map<String, List<Train>> trainsByEntry;
+    private Map<? extends Edge, Section> sectionByEdge;
     private Map<Exit, Train> trainByExit;
 
     /**
      * Creates the station status
      *
-     * @param stationMap     the station map
-     * @param routes         the routes dictionary
-     * @param time           the time (s)
-     * @param trains         the train dictionary
-     * @param trainByEdge    the train map by edge
-     * @param trainBySection the train map by sections
-     * @param trainsByEntry  the trains by entry
-     * @param trainByExit    the train by exit
+     * @param stationMap  the station map
+     * @param routes      the routes
+     * @param time        the simulation time instant
+     * @param trains      the trains
+     * @param routeByNode the routes by nodes
      */
-    public StationStatus(StationMap stationMap, RoutesConfig routes, double time, Collection<Train> trains, Map<Edge, Train> trainByEdge, Map<Section, Train> trainBySection, Map<String, List<Train>> trainsByEntry, Map<Exit, Train> trainByExit) {
+    protected StationStatus(StationMap stationMap, Collection<? extends Route> routes, Collection<Train> trains, double time, Map<Node, ? extends Route> routeByNode, Map<Entry, Train> firstTrainByEntry, Collection<Section> sections, Map<Edge, Train> trainByEdge, Map<Section, Train> trainBySection, Map<? extends Edge, Section> sectionByEdge, Map<Exit, Train> trainByExit) {
         this.stationMap = requireNonNull(stationMap);
         this.routes = requireNonNull(routes);
-        this.trains = requireNonNull(trains);
         this.time = time;
+        this.trains = requireNonNull(trains);
+        this.routeByNode = routeByNode;
+        this.firstTrainByEntry = firstTrainByEntry;
+        this.sections = sections;
         this.trainByEdge = trainByEdge;
         this.trainBySection = trainBySection;
-        this.trainsByEntry = trainsByEntry;
+        this.sectionByEdge = sectionByEdge;
         this.trainByExit = trainByExit;
     }
 
     /**
-     * Returns the map of train by edge
+     * Returns first train by entry
      */
-    private Map<Edge, Train> createTrainByEdge() {
+    Map<Entry, Train> createFirstTrainByEntry() {
+        // The list must be sorted by arrival time
+        Map<Entry, List<Train>> trainsByEntry1 = trains.stream()
+                .filter(Train::isEntering)
+                .collect(Collectors.groupingBy(
+                        Train::getArrival)
+                );
+        return Tuple2.stream(trainsByEntry1)
+                .flatMap(t -> t._2.stream()
+                        .min(Comparator.comparingDouble(Train::getArrivalTime))
+                        .map(t::setV2)
+                        .stream())
+                .collect(Tuple2.toMap());
+    }
+
+    /**
+     * Returns the route by node
+     */
+    private Map<Node, ? extends Route> createRouteByNode() {
+        return routes.stream()
+                .flatMap(route -> route.getNodes().stream()
+                        .map(node -> Tuple2.of(node, route)))
+                .collect(Tuple2.toMap());
+    }
+
+    /**
+     * Returns the section by edge
+     */
+    Map<? extends Edge, Section> createSectionByEdge() {
+        return getSections().stream()
+                .flatMap(section -> section.getEdges().stream()
+                        .map(edge -> Tuple2.of(edge, section)))
+                .collect(Tuple2.toMap());
+    }
+
+    /**
+     * Returns the sections
+     */
+    Collection<Section> createSections() {
+        Set<Section> sections = new HashSet<>();
+        Map<Section, Set<Edge>> crossingEdgesBySection = new HashMap<>();
+        // Extracts all the section terminal directions
+        Set<Direction> fringe = routes.stream()
+                .filter(r -> r instanceof SectionTerminal)
+                .flatMap(route -> route.getExits().stream())
+                .collect(Collectors.toSet());
+
+        while (!fringe.isEmpty()) {
+            // Get a direction from fringe and find the section from it
+            Direction dir = fringe.iterator().next();
+            fringe.remove(dir);
+            findSection(dir).ifPresent(t -> {
+                sections.add(t._1);
+                fringe.remove(t._1.getExit0());
+                fringe.remove(t._1.getExit1());
+                crossingEdgesBySection.put(t._1, t._2);
+            });
+        }
+        // Computes the map of section by edge
+        Map<Edge, Section> sectionByEdge = sections.stream()
+                .flatMap(section -> section.getEdges().stream()
+                        .map(edge -> Tuple2.of(edge, section)))
+                .collect(Tuple2.toMap());
+
+        // Computes and sets crossing sections
+        Tuple2.stream(crossingEdgesBySection)
+                .forEach(t -> {
+                    Set<Section> crossingSections = t._2.stream()
+                            .flatMap(edge -> {
+                                Section section = sectionByEdge.get(edge);
+                                return section != null ? Stream.of(section) : Stream.of();
+                            })
+                            .collect(Collectors.toSet());
+                    t._1.setCrossingSections(crossingSections);
+                });
+        return sections;
+    }
+
+    /**
+     * Returns rain by edge
+     */
+    Map<Edge, Train> createTrainByEdge() {
         return trains.stream()
-                .flatMap(t ->
-                        this.findBackwardEdges(t.getLocation(), t.getLength() * COACH_LENGTH)
-                                .map(e -> Tuple2.of(e, t))
-                ).collect(Tuple2.toMap());
+                .flatMap(train -> getTrainEdges(train)
+                        .map(edge -> Tuple2.of(edge, train)))
+                .collect(Tuple2.toMap());
     }
 
     /**
      * Returns the train by exit map
      */
-    private Map<Exit, Train> createTrainByExit() {
+    Map<Exit, Train> createTrainByExit() {
         return trains.stream().filter(
                 Train::isExiting
         ).collect(Collectors.toMap(
@@ -106,13 +184,13 @@ public class StationStatus {
     }
 
     /**
-     * Returns the map of train by section
+     * Returns the train by section
      */
-    private Map<Section, Train> createTrainBySection() {
-        return routes.getSections().stream()
+    Map<Section, Train> createTrainBySection() {
+        return getSections().stream()
                 .flatMap(section ->
                         section.getEdges().stream()
-                                .flatMap(edge -> train(edge).stream())
+                                .flatMap(edge -> getTrain(edge).stream())
                                 .findAny()
                                 .map(train -> Tuple2.of(section, train))
                                 .stream()
@@ -120,94 +198,201 @@ public class StationStatus {
     }
 
     /**
-     * Returns the map of train by entry
-     */
-    private Map<String, List<Train>> createTrainsByEntry() {
-        // The list must be sorted by arrival time
-        Map<String, List<Train>> trainsByEntry1 = trains.stream()
-                .filter(Train::isEntering)
-                .collect(Collectors.groupingBy(
-                        t -> t.getArrival().getId())
-                );
-        return Tuple2.stream(trainsByEntry1)
-                .map(t -> t.setV2(t._2.stream()
-                        .sorted(Comparator.comparingDouble(Train::getArrivalTime))
-                        .collect(Collectors.toList())
-                ))
-                .collect(Tuple2.toMap());
-    }
-
-    /**
-     * Returns the list of edges traversing backward the route
+     * Returns the forward edges for the distance
      *
-     * @param start  the start point
-     * @param length the length of route
+     * @param location the location
+     * @param distance the distance
      */
-    public Stream<Edge> findBackwardEdges(OrientedLocation start, double length) {
+    Stream<Edge> findForwardEdges(EdgeLocation location, double distance) {
         Stream.Builder<Edge> builder = Stream.builder();
-        OrientedLocation orientedLocation = start;
-        while (length >= 0 && orientedLocation != null) {
-            Edge edge = orientedLocation.getEdge();
+        Direction direction = location.getDirection();
+        distance += location.opposite().getDistance();
+        while (distance > 0 && direction != null) {
+            // Get edge
+            Edge edge = direction.getEdge();
             builder.add(edge);
-            length -= orientedLocation.getDistance();
-            Node term = orientedLocation.getOrigin();
-            Route route = routes.getRoute(term.getId());
-            Optional<OrientedLocation> next = route.getConnectedDirection(route.indexOf(edge))
-                    .flatMap(RouteDirection::getLocation)
-                    .map(OrientedLocation::reverse);
-            orientedLocation = next.orElse(null);
+            // computes the new limit distance
+            distance -= edge.getLength();
+            if (distance > 0) {
+                // Next direction
+                direction = getRoute(direction.getDestination()) // gets destination route
+                        .getExit(location.getDirection()) // gets next exit for route
+                        .orElse(null);
+            }
         }
         return builder.build();
     }
 
     /**
-     * Returns the first train of entry
+     * Returns the section from a given direction with its crossing edges
      *
-     * @param entry the entry
+     * @param direction the direction
      */
-    public Optional<Train> firstTrainFrom(Entry entry) {
-        return Optional.ofNullable(getTrainsByEntry().get(entry.getId()))
-                .flatMap(l -> l.isEmpty() ?
-                        Optional.empty() :
-                        Optional.of(l.get(0)));
+    public Optional<Tuple2<Section, Set<Edge>>> findSection(Direction direction) {
+        Route term = getRoute(direction.getOrigin());
+        if (!(term instanceof SectionTerminal)) {
+            throw new IllegalArgumentException(format("Route %s is not a section terminal", term.getId()));
+        }
+        List<Edge> edges = new ArrayList<>();
+        Set<Edge> crossingEdges = new HashSet<>();
+        Direction terminal0 = direction;
+        for (; ; ) {
+            edges.add(direction.getEdge());
+            term = getRoute(direction.getDestination());
+            if (term instanceof SectionTerminal) {
+                return Optional.of(
+                        Tuple2.of(
+                                Section.create(terminal0, direction.opposite(), edges),
+                                crossingEdges));
+            }
+            crossingEdges.addAll(term.getCrossingEdges(direction));
+            Optional<Direction> next = term.getExit(direction);
+            if (next.isEmpty()) {
+                return Optional.empty();
+            }
+            direction = next.orElseThrow();
+        }
     }
 
     /**
-     * Returns the route dictionary
+     * Returns the next exit for the given direction
+     *
+     * @param direction the entry direction
      */
-    public RoutesConfig getRoutes() {
+    public Optional<Direction> getExit(Direction direction) {
+        return getRoute(direction.getDestination()).getExit(direction);
+    }
+
+    /**
+     * Returns the first train by entry (lazy value)
+     */
+    Map<Entry, Train> getFirstTrainByEntry() {
+        if (firstTrainByEntry == null) {
+            firstTrainByEntry = createFirstTrainByEntry();
+        }
+        return firstTrainByEntry;
+    }
+
+    /**
+     * Returns the first train from a given entry
+     *
+     * @param entry the entry
+     */
+    Optional<Train> getFirstTrainFrom(Entry entry) {
+        return Optional.ofNullable(getFirstTrainByEntry().get(entry));
+    }
+
+    /**
+     * Returns the route for a given node
+     *
+     * @param node the node
+     */
+    public <T extends Route> T getRoute(Node node) {
+        Route route = getRouteByNode().get(node);
+        if (route == null) {
+            throw new IllegalArgumentException(format("Route for node %s does not exist", node.getId()));
+        }
+        return (T) route;
+    }
+
+    public <T extends Route> T getRoute(String a) {
+        return getRoute(stationMap.getNode(a));
+    }
+
+    /**
+     * Returns the route by node (lazy value)
+     */
+    Map<Node, ? extends Route> getRouteByNode() {
+        if (routeByNode == null) {
+            routeByNode = createRouteByNode();
+        }
+        return routeByNode;
+    }
+
+    /**
+     * Returns the routes
+     */
+    public Collection<? extends Route> getRoutes() {
         return routes;
     }
 
     /**
-     * Returns the station status with a new route map
+     * Returns the station status with a set of routes
      *
-     * @param routes the route map
+     * @param routes the routes
      */
-    public StationStatus setRoutes(RoutesConfig routes) {
-        return new StationStatus(stationMap, routes, time, trains, null, null, null, null);
+    public StationStatus setRoutes(Collection<? extends Route> routes) {
+        return new StationStatus(stationMap, routes, trains, time, null, null, null, null, null, null, null);
     }
 
     /**
-     * Returns the time (s)
+     * Returns the section containing the edge
+     *
+     * @param edge the edge
+     */
+    Optional<Section> getSection(Edge edge) {
+        return Optional.ofNullable(getSectionByEdge().get(edge));
+    }
+
+    /**
+     * Returns the section by edge (lazy value)
+     */
+    Map<? extends Edge, Section> getSectionByEdge() {
+        if (sectionByEdge == null) {
+            sectionByEdge = createSectionByEdge();
+        }
+        return sectionByEdge;
+    }
+
+    /**
+     * Returns the sections (lazy value)
+     */
+    Collection<Section> getSections() {
+        if (sections == null) {
+            sections = createSections();
+        }
+        return sections;
+    }
+
+    /**
+     * Returns the simulation time instant
      */
     public double getTime() {
         return time;
     }
 
     /**
-     * Returns the station status with a new time
+     * Returns the station with time set
      *
-     * @param time the new time
+     * @param time the simulation instant
      */
     public StationStatus setTime(double time) {
-        return new StationStatus(stationMap, routes, time, trains, trainByEdge, trainBySection, trainsByEntry, trainByExit);
+        return time == this.time ? this :
+                new StationStatus(stationMap, routes, trains, time, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
     }
 
     /**
-     * Returns the map of train by edge
+     * Returns the train transiting in an edge
+     *
+     * @param edge the edge
      */
-    public Map<Edge, Train> getTrainByEdge() {
+    Optional<Train> getTrain(Edge edge) {
+        return Optional.ofNullable(getTrainByEdge().get(edge));
+    }
+
+    /**
+     * Returns the train in the section
+     *
+     * @param section the section
+     */
+    Optional<Train> getTrain(Section section) {
+        return Optional.ofNullable(getTrainBySection().get(section));
+    }
+
+    /**
+     * Returns train by edge (lazy value)
+     */
+    private Map<Edge, Train> getTrainByEdge() {
         if (trainByEdge == null) {
             trainByEdge = createTrainByEdge();
         }
@@ -215,9 +400,9 @@ public class StationStatus {
     }
 
     /**
-     * Returns the train by exit map
+     * Returns the train by exit map (lazy value)
      */
-    public Map<Exit, Train> getTrainByExit() {
+    private Map<Exit, Train> getTrainByExit() {
         if (trainByExit == null) {
             trainByExit = createTrainByExit();
         }
@@ -225,9 +410,9 @@ public class StationStatus {
     }
 
     /**
-     * Returns the map of train by section
+     * Returns the train by section (lazy value)
      */
-    public Map<Section, Train> getTrainBySection() {
+    private Map<Section, Train> getTrainBySection() {
         if (trainBySection == null) {
             trainBySection = createTrainBySection();
         }
@@ -235,47 +420,59 @@ public class StationStatus {
     }
 
     /**
-     * Returns the collection of trains
+     * Returns the edges of the train
+     *
+     * @param train the train
+     */
+    Stream<Edge> getTrainEdges(Train train) {
+        EdgeLocation location = train.getLocation();
+        return location != null ? findForwardEdges(location.opposite(), train.getLength()) : Stream.of();
+    }
+
+    /**
+     * Returns the train collection
      */
     public Collection<Train> getTrains() {
         return trains;
     }
 
     /**
-     * Returns the station status with new train collection
+     * Returns the station status with a train collection set
      *
-     * @param trains the train collection
+     * @param trains the trains
      */
-    StationStatus setTrains(Collection<Train> trains) {
-        return new StationStatus(stationMap, routes, time, trains, null, null, null, null);
+    public StationStatus setTrains(Train... trains) {
+        return setTrains(Arrays.asList(trains));
     }
 
     /**
-     * Returns the map of train by entry
+     * Returns the station status with a train collection set
+     *
+     * @param trains the trains
      */
-    Map<String, List<Train>> getTrainsByEntry() {
-        if (trainsByEntry == null) {
-            trainsByEntry = createTrainsByEntry();
-        }
-        return trainsByEntry;
+    public StationStatus setTrains(Collection<Train> trains) {
+        return new StationStatus(stationMap, routes, trains, time, routeByNode, null, sections, null, null, sectionByEdge, null);
     }
 
     /**
-     * Returns true if the entry is clear
-     * The entry is clear if the waiting for entry train is the first in the entry queue
+     * Returns true if the entry is clear for given train
+     * The entry is clear if the train is the first in the entry queue
      * and the entry section is clear
      *
      * @param train the train
      */
     public boolean isEntryClear(Train train) {
         Entry arrival = train.getArrival();
-        return firstTrainFrom(arrival)
-                .filter(train::equals)
-                .filter(x ->
-                        arrival.getDirection(0)
-                                .filter(this::isSectionClear)
-                                .isPresent()
-                ).isPresent();
+        return getFirstTrainFrom(arrival)
+                .filter(train::equals) // Checks for first train in queue
+                .filter(unused ->
+                                // Checks for entry section clear
+                        {
+                            Edge edge = arrival.getExits().iterator().next().getEdge();
+                            return isSectionClear(edge);
+                        }
+                )
+                .isPresent();
     }
 
     /**
@@ -288,126 +485,123 @@ public class StationStatus {
     }
 
     /**
-     * Returns true if next signal is clear
-     * The next signal is clear if exists and the signal is not locked and the next section is clear
-     *
-     * @param location the location
-     */
-    boolean isNextSignalClear(OrientedLocation location) {
-        // Find the section terminal
-        return routes.getTerminalDirection(location)
-                .filter(termDir -> {
-                    // Found terminal route
-                    Route route = termDir.getRoute();
-                    if (route instanceof Entry) {
-                        // terminal route is entry
-                        return false;
-                    } else if (route instanceof Exit) {
-                        // terminal route  is exit
-                        return isExitClear((Exit) route);
-                    } else if (route instanceof Signal) {
-                        // terminal route is signal
-                        if (route.isLocked(termDir.getIndex())) {
-                            return false;
-                        }
-                        return termDir.connectedDirection()
-                                .filter(this::isSectionClear)
-                                .isPresent();
-                    } else {
-                        return false;
-                    }
-                }).isPresent();
-    }
-
-    /**
-     * Returns true if next track within the limit distance is clear
-     * The next track is clear any signal within the limit distance is clear
-     * and the train should not stop for load
-     *
-     * @param location       the location
-     * @param limitDistance  the limit distance (m)
-     * @param stopForLoading true if train should stop for load
-     */
-    public boolean isNextTracksClear(OrientedLocation location, double limitDistance, boolean stopForLoading) {
-        while (location != null) {
-            // Checks for distance
-            Edge edge = location.getEdge();
-            limitDistance -= edge.getLength() - location.getDistance();
-            if (limitDistance <= 0) {
-                return true;
-            }
-            Route route = routes.getRoute(location.getTerminal().getId());
-            if (route instanceof Exit) {
-                return isExitClear((Exit) route);
-            } else if (route instanceof Entry
-                    || (route instanceof SectionTerminal && !isNextSignalClear(location))
-                    || (edge instanceof Platform && stopForLoading)) {
-                return false;
-            }
-
-            location = routes.getTerminalDirection(location)
-                    .flatMap(RouteDirection::connectedDirection)
-                    .flatMap(RouteDirection::getLocation)
-                    .orElse(null);
-        }
-        return false;
-    }
-
-    /**
-     * Returns true if route direction is clear(no transit train)
+     * Returns true if the next route of given direction is clear.
+     * <p>
+     * The next route is clear if
+     * <ul><li>it is not an entry</li>
+     * <li>and it is not a not clear exit</li>
+     * <li>and it is not a not clear signal</li>
+     * </ul>
+     * </p>
      *
      * @param direction the direction
      */
-    public boolean isSectionClear(RouteDirection direction) {
-        return direction.getLocation()
-                .map(OrientedLocation::getEdge)
-                .flatMap(routes::getSection)
-                .filter(this::isSectionClear)
+    boolean isNextRouteClear(Direction direction) {
+        Route route = getRoute(direction.getDestination());
+        if (route instanceof Entry) {
+            return false;
+        } else if (route instanceof Exit) {
+            return isExitClear((Exit) route);
+        } else if (route instanceof Signal) {
+            return isSignalClear(direction);
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Returns true if next track is clear
+     * The next track is clear if any signals within the limit distance is clear
+     * and the train has to load at end of platform
+     *
+     * @param train the train
+     */
+    public boolean isNextTracksClear(Train train) {
+        EdgeLocation location = train.getLocation();
+        Direction direction = location.getDirection();
+        double stopDistance = train.getStopDistance();
+        double edgeLimitDistance = stopDistance - location.getDistance();
+        while (direction != null && edgeLimitDistance > 0) {
+            Edge edge = direction.getEdge();
+            if (!isNextRouteClear(direction)
+                    || (edge instanceof Platform && !train.isLoaded())) {
+                return false;
+            }
+            edgeLimitDistance -= edge.getLength();
+            // Find next direction
+            direction = getExit(direction).orElse(null);
+        }
+        // Limit distance reached
+        return edgeLimitDistance <= 0;
+    }
+
+    /**
+     * Returns true if the section containing the edge is clear (no transiting train)
+     *
+     * @param edge the edge
+     */
+    boolean isSectionClear(Edge edge) {
+        // Searches section
+        return getSection(edge)
+                // Filter for train in the section
+                .filter(section -> getTrain(section).isEmpty())
                 .isPresent();
     }
 
     /**
-     * Returns true if the section is clear (no transiting train).
+     * Returns true if the entry direction of signal is clear
      *
-     * @param section the section
+     * @param direction the entry direction
      */
-    boolean isSectionClear(Section section) {
-        return train(section).isEmpty();
+    private boolean isSignalClear(Direction direction) {
+        Signal signal = getRoute(direction.getDestination());
+        return !signal.isLocked(direction)
+                && signal.getExit(direction)
+                .filter(exitDir -> isSectionClear(exitDir.getEdge()))
+                .isPresent();
     }
 
     /**
-     * Returns the status with a changed route
-     *
-     * @param route the route
+     * Creates the station status by the station map, route builders and no trains
+     * The builders are a tuple of node identifier array and function that creates the route by node array
      */
-    public StationStatus putRoute(Route route) {
-        return setRoutes(routes.putRoute(route));
-    }
+    public static class Builder {
+        private final StationMap stationMap;
+        private final List<Tuple2<String[], Function<Node[], ? extends Route>>> builders;
 
-    /**
-     * Returns the terminal route direction of an edge point
-     *
-     * @param orientedLocation the edge point
-     */
-    public Optional<RouteDirection> terminalDirection(OrientedLocation orientedLocation) {
-        return routes.getTerminalDirection(orientedLocation);
-    }
+        /**
+         * Creates the status builder
+         *
+         * @param stationMap the station map
+         */
+        public Builder(StationMap stationMap) {
+            this.stationMap = stationMap;
+            builders = new ArrayList<>();
+        }
 
-    /**
-     * Returns the train in a section
-     *
-     * @param section the section
-     */
-    Optional<Train> train(Section section) {
-        return Optional.ofNullable(getTrainBySection().get(section));
-    }
+        /**
+         * Returns the builder with a new route
+         *
+         * @param builder the route builder
+         * @param nodes   the nodes
+         */
+        public Builder addRoute(Function<Node[], ? extends Route> builder, String... nodes) {
+            builders.add(Tuple2.of(nodes, builder));
+            return this;
+        }
 
-    /**
-     * Returns train for a given edge
-     *
-     * @param edge the edge
-     */
-    public Optional<Train> train(Edge edge) {
-        return Optional.ofNullable(getTrainByEdge().get(edge));
+        /**
+         * Returns the station status by the station map, route builders and no trains
+         */
+        public StationStatus build() {
+            List<Route> routes1 = builders.stream()
+                    .map(t -> {
+                        Node[] nodes = Arrays.stream(t._1)
+                                .map(stationMap::getNode)
+                                .toArray(Node[]::new);
+                        return t._2.apply(nodes);
+                    }).collect(Collectors.toList());
+            return new StationStatus(stationMap, routes1, List.of(), 0, null, null, null, null, null, null, null);
+        }
     }
 }

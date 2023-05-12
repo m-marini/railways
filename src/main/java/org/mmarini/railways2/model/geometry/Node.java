@@ -29,8 +29,10 @@
 package org.mmarini.railways2.model.geometry;
 
 import java.awt.geom.Point2D;
+import java.util.List;
 import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -41,22 +43,35 @@ public class Node {
 
     private final String id;
     private final Point2D location;
-    private Edge[] edges;
+    private List<Edge> edges;
+    private List<Direction> directions;
 
     /**
      * Creates the node
      *
      * @param id       the identifier
      * @param location the location
-     * @param edges    the edges
      */
-    public Node(String id, Point2D location, Edge... edges) {
+    public Node(String id, Point2D location) {
         this.id = requireNonNull(id);
         this.location = location;
-        this.edges = requireNonNull(edges);
-        for (Edge edge : edges) {
-            requireNonNull(edge);
-        }
+        this.edges = List.of();
+        this.directions = null;
+    }
+
+    /**
+     * Returns the directions from the node
+     */
+    private List<Direction> createDirections() {
+        return edges.stream().flatMap(edge -> {
+            Node node0 = edge.getNode0();
+            Node node1 = edge.getNode1();
+            return node0 == this ?
+                    Stream.of(new Direction(edge, node1)) :
+                    node1 == this ?
+                            Stream.of(new Direction(edge, node0)) :
+                            Stream.of();
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -70,7 +85,7 @@ public class Node {
     /**
      * Returns the edges of node
      */
-    public Edge[] getEdges() {
+    public List<Edge> getEdges() {
         return edges;
     }
 
@@ -79,8 +94,20 @@ public class Node {
      *
      * @param edges edges
      */
-    void setEdges(Edge[] edges) {
+    void setEdges(List<Edge> edges) {
         this.edges = edges;
+        this.directions = null;
+    }
+
+    /**
+     * Returns the directions from the node
+     */
+    public List<Direction> getExits() {
+        if (directions == null) {
+            // Lazy reference of directions
+            directions = createDirections();
+        }
+        return directions;
     }
 
     /**
@@ -102,24 +129,11 @@ public class Node {
         return Objects.hash(id);
     }
 
-    /**
-     * Returns the index of edge or -1 if none
-     *
-     * @param edge the edge
-     */
-    public int indexOf(Edge edge) {
-        for (int i = 0; i < edges.length; i++) {
-            if (edges[i].equals(edge)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     @Override
     public String toString() {
-        return new StringJoiner(", ", Node.class.getSimpleName() + "[", "]")
-                .add("id='" + id + "'")
-                .toString();
+        return new StringBuilder(Node.class.getSimpleName())
+                .append("[")
+                .append(id)
+                .append("]").toString();
     }
 }

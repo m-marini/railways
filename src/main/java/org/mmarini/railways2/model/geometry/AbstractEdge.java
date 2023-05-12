@@ -29,7 +29,6 @@
 package org.mmarini.railways2.model.geometry;
 
 import java.util.Objects;
-import java.util.StringJoiner;
 
 import static java.util.Objects.requireNonNull;
 
@@ -84,8 +83,10 @@ public abstract class AbstractEdge implements Edge {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
-                .add(getId())
+        return new StringBuilder(getClass().getSimpleName())
+                .append("[")
+                .append(getId())
+                .append("]")
                 .toString();
     }
 }

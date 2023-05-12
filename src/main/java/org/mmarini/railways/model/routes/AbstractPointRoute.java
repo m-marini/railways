@@ -37,7 +37,7 @@ public abstract class AbstractPointRoute implements TrainHead {
 		log.error("Length        = " + ctxTrain.getLength());
 		log.error("Speed         = " + ctxTrain.getSpeed());
 		log.error("In            = " + ctxTrain.getElementLocation());
-		log.error("Route         = " + this);
+		log.error("SingleNodeRoute         = " + this);
 		if (this instanceof TrackRoute)
 			log.error("Track length  = " + ((TrackRoute) this).getLength());
 		log.error("Train route   = " + currentTrain);
