@@ -41,6 +41,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mmarini.railways.TestFunctions.emptyOptional;
+import static org.mmarini.railways.TestFunctions.optionalContaining;
 
 class JunctionTest {
 
@@ -68,26 +70,6 @@ class JunctionTest {
     }
 
     @Test
-    void getConnected() {
-        Node a = station.getNode("a");
-        Node b = station.getNode("b");
-        Node c = station.getNode("c");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
-
-        Optional<Direction> dirOpt = route.getExit(new Direction(ab, b));
-        assertTrue(dirOpt.isPresent());
-        assertEquals(new Direction(bc, c), dirOpt.orElseThrow());
-
-        dirOpt = route.getExit(new Direction(bc, b));
-        assertTrue(dirOpt.isPresent());
-        assertEquals(new Direction(ab, a), dirOpt.orElseThrow());
-
-        dirOpt = route.getExit(new Direction(bc, c));
-        assertFalse(dirOpt.isPresent());
-    }
-
-    @Test
     void getCrossingEdges() {
         Node b = station.getNode("b");
         Edge ab = station.getEdge("ab");
@@ -95,6 +77,26 @@ class JunctionTest {
 
         assertThat(route.getCrossingEdges(new Direction(ab, b)), empty());
         assertThat(route.getCrossingEdges(new Direction(bc, b)), empty());
+    }
+
+    @Test
+    void getExit() {
+        // Given ...
+        Node a = station.getNode("a");
+        Node b = station.getNode("b");
+        Node c = station.getNode("c");
+        Edge ab = station.getEdge("ab");
+        Edge bc = station.getEdge("bc");
+
+        // When ...
+        Optional<Direction> dirAB = route.getExit(new Direction(ab, b));
+        Optional<Direction> dirBC = route.getExit(new Direction(bc, c));
+        Optional<Direction> dirCB = route.getExit(new Direction(bc, b));
+
+        // Then ...
+        assertThat(dirAB, optionalContaining(new Direction(bc, c)));
+        assertThat(dirBC, emptyOptional());
+        assertThat(dirCB, optionalContaining(new Direction(ab, a)));
     }
 
     @Test

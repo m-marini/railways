@@ -102,33 +102,6 @@ class StationStatusCrossRouteTest {
         assertThat(map, hasEntry(bRoute, t3));
     }
 
-    /*
-        @Test
-        void findSectionTerminalDirect() {
-            SingleNodeRoute a = conf.getRoute("a");
-            SingleNodeRoute b = conf.getRoute("b");
-            SingleNodeRoute c = conf.getRoute("c");
-            SingleNodeRoute d = conf.getRoute("d");
-            Edge ae = stationMap.getEdge("ae");
-            Edge ce = stationMap.getEdge("ce");
-
-            Optional<RouteDirection> dirOpt = conf.findSectionTerminal(new OrientedLocation(ae, true, 0));
-            assertTrue(dirOpt.isPresent());
-            assertThat(dirOpt.orElseThrow(), routeDirection(b, 0));
-
-            dirOpt = conf.findSectionTerminal(new OrientedLocation(ae, false, 0));
-            assertTrue(dirOpt.isPresent());
-            assertThat(dirOpt.orElseThrow(), routeDirection(a, 0));
-
-            dirOpt = conf.findSectionTerminal(new OrientedLocation(ce, true, 0));
-            assertTrue(dirOpt.isPresent());
-            assertThat(dirOpt.orElseThrow(), routeDirection(d, 0));
-
-            dirOpt = conf.findSectionTerminal(new OrientedLocation(ce, false, 0));
-            assertTrue(dirOpt.isPresent());
-            assertThat(dirOpt.orElseThrow(), routeDirection(c, 0));
-        }
-    */
     @Test
     void createSections() {
         Edge ae = stationMap.getEdge("ae");

@@ -46,7 +46,7 @@ public interface Route {
      *
      * @param direction the direction
      */
-    Collection<Edge> getCrossingEdges(Direction direction);
+    Collection<? extends Edge> getCrossingEdges(Direction direction);
 
     /**
      * Returns the connected direction of route
