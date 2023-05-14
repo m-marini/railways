@@ -41,19 +41,6 @@ import static java.util.Objects.requireNonNull;
 import static org.hamcrest.Matchers.*;
 
 public interface TestFunctions {
-/*
-    @Deprecated
-    static Matcher<Object> locatedAt(Edge edge, boolean direct, double distance) {
-        return allOf(
-                isA(OrientedLocation.class),
-                hasProperty("edge", equalTo(edge)),
-                hasProperty("direct", equalTo(direct)),
-                hasProperty("distance", closeTo(distance, 10e-3))
-        );
-    }
-
-
- */
 
     static <T> Matcher<Optional<T>> emptyOptional() {
         return equalTo(Optional.empty());

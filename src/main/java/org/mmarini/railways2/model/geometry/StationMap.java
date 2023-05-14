@@ -28,6 +28,7 @@
 
 package org.mmarini.railways2.model.geometry;
 
+import java.awt.geom.Rectangle2D;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -39,23 +40,34 @@ import static java.util.Objects.requireNonNull;
  * Tracks the nodes of the station map
  */
 public class StationMap {
+
     private final String id;
     private final Map<String, Node> nodeMap;
     private final Map<String, ? extends Edge> edges;
+    private final Rectangle2D bounds;
 
     /**
      * Creates the station map
      *
      * @param id      the station identifier
      * @param nodeMap the nodes
+     * @param bounds  the station bound
      */
-    public StationMap(String id, Map<String, Node> nodeMap) {
+    protected StationMap(String id, Map<String, Node> nodeMap, Rectangle2D bounds) {
         this.id = requireNonNull(id);
         this.nodeMap = requireNonNull(nodeMap);
         edges = nodeMap.values().stream()
                 .flatMap(node -> node.getEdges().stream())
                 .distinct()
                 .collect(Collectors.toMap(Edge::getId, Function.identity()));
+        this.bounds = bounds;
+    }
+
+    /**
+     * Returns the bounds of the station (m)
+     */
+    public Rectangle2D getBounds() {
+        return bounds;
     }
 
     /**

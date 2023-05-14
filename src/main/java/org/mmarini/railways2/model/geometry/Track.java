@@ -29,7 +29,12 @@
 package org.mmarini.railways2.model.geometry;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.function.BiFunction;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.min;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Connects two points for train transit
@@ -41,30 +46,49 @@ public class Track extends AbstractEdge {
      * @param id the track identifier
      */
     public static BiFunction<Node, Node, Edge> builder(String id) {
-        return (node0, node1) -> new Track(id, node0, node1);
+        return (node0, node1) -> Track.create(id, node0, node1);
     }
 
-    private final double length;
-
     /**
-     * Create the edge
+     * Returns the track
      *
-     * @param id    the edge identifier
+     * @param id    the track identifier
      * @param node0 the first node
      * @param node1 the second node
      */
-    public Track(String id, Node node0, Node node1) {
-        super(id, node0, node1);
-        this.length = getNode0().getLocation().distance(getNode1().getLocation());
+    public static Track create(String id, Node node0, Node node1) {
+        requireNonNull(node0);
+        requireNonNull(node1);
+        Point2D p0 = node0.getLocation();
+        Point2D p1 = node1.getLocation();
+        double x0 = p0.getX();
+        double x1 = p1.getX();
+        double y0 = p0.getY();
+        double y1 = p1.getY();
+        double length = p0.distance(p1);
+        Rectangle2D bounds = new Rectangle2D.Double(
+                min(x0, x1),
+                min(y0, y1),
+                abs(x1 - x0),
+                abs(y1 - y0));
+        return new Track(id, node0, node1, length, bounds);
+    }
+
+    /**
+     * Creates the edge
+     *
+     * @param id     the edge identifier
+     * @param node0  the first node
+     * @param node1  the second node
+     * @param length the length of track
+     * @param bounds the track bound
+     */
+    protected Track(String id, Node node0, Node node1, double length, Rectangle2D bounds) {
+        super(id, node0, node1, length, bounds);
     }
 
     @Override
-    public double getLength() {
-        return length;
-    }
-
-    @Override
-    public Point2D getLocation(Node destination, double distance) {
+    public Point2D getLocation(EdgeLocation location) {
         Node node0 = getNode0();
         Point2D p0 = node0.getLocation();
         Node node1 = getNode1();
@@ -74,7 +98,8 @@ public class Track extends AbstractEdge {
         double y0 = p0.getY();
         double x1 = p1.getX();
         double y1 = p1.getY();
-        double d0 = destination.equals(node0) ? distance : length - distance;
+        double distance = location.getDistance();
+        double d0 = location.getDirection().getDestination().equals(node0) ? distance : length - distance;
         return new Point2D.Double(
                 x0 + d0 * (x1 - x0) / length,
                 y0 + d0 * (y1 - y0) / length);

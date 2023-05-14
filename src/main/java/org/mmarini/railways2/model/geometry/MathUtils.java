@@ -26,39 +26,32 @@
  *
  */
 
-package org.mmarini.railways1.model.routes;
+package org.mmarini.railways2.model.geometry;
 
-import org.mmarini.railways2.model.geometry.Node;
-import org.mmarini.railways2.model.routes.SectionTerminal;
+import static java.lang.Math.PI;
 
-import static java.lang.String.format;
+public interface MathUtils {
 
-/**
- * Defines the entry route from the map
- */
-public class Entry extends AbstractSingleNodeRoute implements SectionTerminal {
-    public static final int NUM_CONNECTIONS = 1;
+    double RAD90 = PI / 2;
+    double RAD180 = PI;
+    double _RAD180 = -PI;
+    double RAD360 = 2 * PI;
+    double _RAD360 = -RAD360;
+
 
     /**
-     * Create the route
+     * Returns the normalized angle
      *
-     * @param node the node
+     * @param x angle (RAD)
      */
-    public Entry(Node node) {
-        super(node);
-        int size = node.getEdges().size();
-        if (size != 1) {
-            throw new IllegalArgumentException(format(
-                    "Required node %s with %d edges (%d)",
-                    node.getId(),
-                    NUM_CONNECTIONS,
-                    size));
+    static double normalizeRad(double x) {
+        while (x < _RAD180) {
+            x += RAD360;
         }
-    }
-
-    @Override
-    public int getNumDirections() {
-        return NUM_CONNECTIONS;
+        while (x >= RAD180) {
+            x += _RAD360;
+        }
+        return x;
     }
 
 }

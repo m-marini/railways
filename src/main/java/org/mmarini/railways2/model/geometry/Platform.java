@@ -28,7 +28,13 @@
 
 package org.mmarini.railways2.model.geometry;
 
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.function.BiFunction;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.min;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Connects two points for train transit and unload/load passengers
@@ -40,7 +46,7 @@ public class Platform extends Track {
      * @param id the platform identifier
      */
     public static BiFunction<Node, Node, Edge> builder(String id) {
-        return (node0, node1) -> new Platform(id, node0, node1);
+        return (node0, node1) -> Platform.create(id, node0, node1);
     }
 
     /**
@@ -50,7 +56,34 @@ public class Platform extends Track {
      * @param node0 the first node
      * @param node1 the second node
      */
-    public Platform(String id, Node node0, Node node1) {
-        super(id, node0, node1);
+    public static Platform create(String id, Node node0, Node node1) {
+        requireNonNull(node0);
+        requireNonNull(node1);
+        Point2D p0 = node0.getLocation();
+        Point2D p1 = node1.getLocation();
+        double x0 = p0.getX();
+        double x1 = p1.getX();
+        double y0 = p0.getY();
+        double y1 = p1.getY();
+        double length = p0.distance(p1);
+        Rectangle2D bounds = new Rectangle2D.Double(
+                min(x0, x1),
+                min(y0, y1),
+                abs(x1 - x0),
+                abs(y1 - y0));
+        return new Platform(id, node0, node1, length, bounds);
+    }
+
+    /**
+     * Create the edge
+     *
+     * @param id     the edge identifier
+     * @param node0  the first node
+     * @param node1  the second node
+     * @param length the length of platform
+     * @param bounds the bounds of platform
+     */
+    protected Platform(String id, Node node0, Node node1, double length, Rectangle2D bounds) {
+        super(id, node0, node1, length, bounds);
     }
 }

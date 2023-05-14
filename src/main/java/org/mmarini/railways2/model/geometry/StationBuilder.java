@@ -31,6 +31,7 @@ package org.mmarini.railways2.model.geometry;
 import org.mmarini.Tuple2;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -43,6 +44,7 @@ import static java.util.Objects.requireNonNull;
  * Builds station by adding definitions
  */
 public class StationBuilder {
+    public static final Rectangle2D.Double EMPTY_BOUND = new Rectangle2D.Double(-5, -5, 10, 10);
     private final String id;
     private final Map<String, Node> nodes;
     private final Map<String, String[]> nodeEdges;
@@ -131,6 +133,14 @@ public class StationBuilder {
             ).collect(Collectors.toList());
             node.setEdges(edges);
         }
-        return new StationMap(id, nodes);
+        Rectangle2D bounds = edgeMap.values().stream()
+                .reduce(null,
+                        (rect, edges) -> {
+                            Rectangle2D bounds1 = edges.getBounds();
+                            return rect == null ? bounds1 : rect.createUnion(bounds1);
+                        },
+                        (a, b) -> a == null ? b : a.createUnion(b));
+
+        return new StationMap(id, nodes, bounds != null ? bounds : EMPTY_BOUND);
     }
 }

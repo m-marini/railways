@@ -12,26 +12,6 @@ import static java.lang.Math.sin;
  */
 public interface RailwayConstants extends XmlConstants {
     /**
-     * Seconds per minute
-     */
-    double SPM = 60.;
-
-    /**
-     * Seconds per hours
-     */
-    double SPH = 3600.;
-
-    /**
-     * Constant to covert the MIN_WAIT_TRAIN time in SEC
-     */
-    double MIN_WAIT_TRAIN_SCALE = SPM;
-
-    /**
-     * Constant to covert the FREQUENCE_TRAIN time in train/sec.
-     */
-    double FREQUENCE_TRAIN_SCALE = 1 / SPH;
-
-    /**
      * Exit distance (m)
      */
     double EXIT_DISTANCE = 3000;
@@ -66,7 +46,7 @@ public interface RailwayConstants extends XmlConstants {
     double ACCELERATION = 400. / 642.;
 
     /**
-     * The deacceleration (meters / sec ^ 2) = 100./2/3.6/3.6/2 = 1.929
+     * The deceleration (meters / sec ^ 2) = 100./2/3.6/3.6/2 = 1.929
      */
     double DEACCELERATION = -100. / 2 / 3.6 / 3.6 / 2;
 
@@ -76,22 +56,7 @@ public interface RailwayConstants extends XmlConstants {
     double COACH_LENGTH = 25;
 
     /**
-     * Coach width
-     */
-    double COACH_WIDTH = 3;
-
-    /**
-     * Minimun number of coach per train.
-     */
-    int MIN_COACH_COUNT = 3;
-
-    /**
-     * Maximum number od coach per train.
-     */
-    int MAX_COACH_COUNT = 14;
-
-    /**
-     * Length units of standars segment element (meters)
+     * Length units of standard segment element (meters)
      */
     double SEGMENT_LENGTH = 35;
 
@@ -104,10 +69,6 @@ public interface RailwayConstants extends XmlConstants {
      * Rads per curve unit (rads)
      */
     double CURVE_RADS = 2 * Math.PI / CURVES_PER_CIRCLE;
-    /**
-     * Default angle for cross element (degrees)
-     */
-    double DEFAULT_CROSS_ANGLE = 2 * Math.toDegrees(CURVE_RADS);
 
     /**
      * Radius of standard curve element (meters)
@@ -115,18 +76,8 @@ public interface RailwayConstants extends XmlConstants {
     double RADIUS = SEGMENT_LENGTH * 0.5 / sin(CURVE_RADS);
 
     /**
-     * Length of standard curve element (meters)
-     */
-    double CURVE_LENGTH = RADIUS * CURVE_RADS;
-
-    /**
      * Gap between tracks (meters)
      */
     double TRACK_GAP = SEGMENT_LENGTH
             * (1 - cos(CURVE_RADS)) / sin(CURVE_RADS);
-
-    /**
-     * Rads per curve unit (rads)
-     */
-    double CURVE_DEGS = 360. / CURVES_PER_CIRCLE;
 }

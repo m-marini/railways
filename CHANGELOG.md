@@ -17,3 +17,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #9: Exiting train state
 - Issue #18: Change section discovery to handle crossing points
 - Issue #21: Add double switch
+- Issue #23: Add map panel

@@ -26,57 +26,28 @@
  *
  */
 
-package org.mmarini.railways1.model.routes;
+package org.mmarini.railways2.swing;
 
-import org.mmarini.railways2.model.geometry.Node;
-
-import java.util.Objects;
-import java.util.StringJoiner;
-
-import static java.util.Objects.requireNonNull;
+import java.awt.*;
 
 /**
- * Template class with node attribute and statino map
+ * Graphic constants
  */
-public abstract class AbstractSingleNodeRoute implements SingleNodeRoute {
-    protected final Node node;
+public interface GraphConstants {
 
     /**
-     * Create the route
-     *
-     * @param node the node
+     * Coach width (m)
      */
-    protected AbstractSingleNodeRoute(Node node) {
-        this.node = requireNonNull(node);
-    }
+    double COACH_WIDTH = 3;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AbstractSingleNodeRoute that = (AbstractSingleNodeRoute) o;
-        return node.equals(that.node);
-    }
+    /**
+     * Track gauge (m)
+     */
+    double TRACK_GAUGE = 1.435;
 
-    @Override
-    public String getId() {
-        return node.getId();
-    }
-
-    @Override
-    public Node getNode() {
-        return node;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(node);
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", this.getClass().getSimpleName() + "[", "]")
-                .add("id=" + getId())
-                .toString();
-    }
+    Color PLATFORM_GREEN_COLOR = Color.getHSBColor(140f / 360f, 0.9f, 0.9f);
+    Color PLATFORM_RED_COLOR = Color.getHSBColor(343f / 360, 0.93f, 0.75f);
+    Color TRACK_GREEN_COLOR = Color.getHSBColor(162f / 360f, 0.9f, 1f);
+    Color TRACK_RED_COLOR = Color.getHSBColor(343f / 360, 0.93f, 1f);
+    Color TRAIN_COLOR = Color.getHSBColor(53f / 360f, .80f, 1f);
 }
