@@ -36,30 +36,29 @@ import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Signal;
 
 import java.awt.geom.Point2D;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StationStatusPlatformTest {
 
+    public static final double BLOCK = 10;
+    public static final double LENGTH = 6 * BLOCK;
     StationMap stationMap;
     StationStatus status;
-
-    /*
-     *  Entry(a) -- ab -- Signal(b) -- Platform(bc) -- Signal(c) -- cd -- Exit(d)
-     */
-    @BeforeEach
-    void beforeEach() {
-        stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "ab")
-                .addNode("b", new Point2D.Double(100, 0), "ab", "bc")
-                .addNode("c", new Point2D.Double(200, 0), "bc", "cd")
-                .addNode("d", new Point2D.Double(300, 0), "cd")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
-                .addEdge(Track.builder("cd"), "c", "d")
-                .build();
-    }
+    private Node a;
+    private Node b;
+    private Node c;
+    private Node d;
+    private Track ab;
+    private Track bc;
+    private Track cd;
+    private Entry aRoute;
+    private Exit dRoute;
 
     void createStatus(Direction... locks) {
         status = new StationStatus.Builder(stationMap)
@@ -68,18 +67,41 @@ class StationStatusPlatformTest {
                 .addRoute(Signal::create, "c")
                 .addRoute(Exit::create, "d")
                 .build();
+        this.aRoute = status.getRoute("a");
+        this.dRoute = status.getRoute("d");
+    }
+
+    @Test
+    void getSegments() {
+        // Given ...
+        createStatus();
+
+        // When ...
+        // |--+--+--+--+oo+--|
+        List<EdgeSegment> segs1 = status.getSegments(EdgeLocation.create(ab, b, 2 * BLOCK),
+                BLOCK).collect(Collectors.toList());
+        // |--+--+--+--+oo+oo|oo+--+--+--+--+--|
+        List<EdgeSegment> segs2 = status.getSegments(EdgeLocation.create(ab, b, 2 * BLOCK),
+                3 * BLOCK).collect(Collectors.toList());
+        // |--+--+--+--+oo+oo|oo+oo+oo+oo+oo+oo|oo+--+--+--+--+--|
+        List<EdgeSegment> segs3 = status.getSegments(EdgeLocation.create(ab, b, 2 * BLOCK),
+                9 * BLOCK).collect(Collectors.toList());
+
+        // Then ...
+        assertThat(segs1, contains(new EdgeSegment(ab, 4 * BLOCK, BLOCK)));
+        assertThat(segs2, contains(
+                new EdgeSegment(ab, 4 * BLOCK, 0),
+                new EdgeSegment(bc, 0, 5 * BLOCK)));
+        assertThat(segs3, contains(
+                new EdgeSegment(ab, 4 * BLOCK, 0),
+                new EdgeSegment(bc, 0, 0),
+                new EdgeSegment(cd, 0, 5 * BLOCK)));
     }
 
     @Test
     void isNextTracksClearAtClearSignal() {
         // Given ...
         createStatus();
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node d = stationMap.getNode("d");
-        Edge ab = stationMap.getEdge("ab");
-        Entry aRoute = status.getRoute(a);
-        Exit dRoute = status.getRoute(d);
         Train t1 = Train.create("t1", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(ab, b, 0))
                 .setSpeed(10);
@@ -94,14 +116,7 @@ class StationStatusPlatformTest {
     @Test
     void isNextTracksClearAtNotClearSignal() {
         // Given ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node d = stationMap.getNode("d");
-        Edge ab = stationMap.getEdge("ab");
-
         createStatus(new Direction(ab, b));
-        Entry aRoute = status.getRoute(a);
-        Exit dRoute = status.getRoute(d);
 
         Train t1 = Train.create("t1", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(ab, b, 0));
@@ -116,16 +131,8 @@ class StationStatusPlatformTest {
     @Test
     void isNextTracksClearAtPlatformLoaded() {
         // Given ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Node d = stationMap.getNode("d");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
 
         createStatus(new Direction(ab, b));
-        Entry aRoute = status.getRoute(a);
-        Exit dRoute = status.getRoute(d);
 
         Train t1 = Train.create("t1", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(bc, c, 1))
@@ -141,16 +148,8 @@ class StationStatusPlatformTest {
     @Test
     void isNextTracksClearForLoad() {
         // Given ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Node d = stationMap.getNode("d");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
 
         createStatus(new Direction(ab, b));
-        Entry aRoute = status.getRoute(a);
-        Exit dRoute = status.getRoute(d);
 
         Train t1 = Train.create("t1", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(bc, c, 1));
@@ -165,14 +164,7 @@ class StationStatusPlatformTest {
     @Test
     void isNextTracksClearInTrack() {
         // Given ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node d = stationMap.getNode("d");
-        Edge ab = stationMap.getEdge("ab");
-
         createStatus(new Direction(ab, b));
-        Entry aRoute = status.getRoute(a);
-        Exit dRoute = status.getRoute(d);
 
         Train t1 = Train.create("t1", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(ab, b, 100))
@@ -183,5 +175,28 @@ class StationStatusPlatformTest {
 
         //  Then ...
         assertTrue(nextTracksClear);
+    }
+
+    /*
+     *  Entry(a) -- ab -- Signal(b) -- Platform(bc) -- Signal(c) -- cd -- Exit(d)
+     */
+    @BeforeEach
+    void setUp() {
+        stationMap = new StationBuilder("station")
+                .addNode("a", new Point2D.Double(), "ab")
+                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
+                .addNode("c", new Point2D.Double(2 * LENGTH, 0), "bc", "cd")
+                .addNode("d", new Point2D.Double(3 * LENGTH, 0), "cd")
+                .addEdge(Track.builder("ab"), "a", "b")
+                .addEdge(Track.builder("bc"), "b", "c")
+                .addEdge(Track.builder("cd"), "c", "d")
+                .build();
+        this.a = stationMap.getNode("a");
+        this.b = stationMap.getNode("b");
+        this.c = stationMap.getNode("c");
+        this.d = stationMap.getNode("d");
+        this.ab = stationMap.getEdge("ab");
+        this.bc = stationMap.getEdge("bc");
+        this.cd = stationMap.getEdge("cd");
     }
 }

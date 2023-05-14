@@ -32,6 +32,7 @@ import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.*;
 
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -45,6 +46,18 @@ import static java.util.Objects.requireNonNull;
  * Retrieves the sections, the edges occupied by trains.
  */
 public class StationStatus {
+    /**
+     * Returns the station status
+     *
+     * @param stationMap the station map
+     * @param routes     the routes
+     * @param trains     the trains
+     * @param time       the time instant
+     */
+    public static StationStatus create(StationMap stationMap, List<Route> routes, List<Train> trains, double time) {
+        return new StationStatus(stationMap, routes, trains, time, null, null, null, null, null, null, null);
+    }
+
     private final StationMap stationMap;
     private final Collection<? extends Route> routes;
     private final Collection<Train> trains;
@@ -62,8 +75,8 @@ public class StationStatus {
      *
      * @param stationMap  the station map
      * @param routes      the routes
-     * @param time        the simulation time instant
      * @param trains      the trains
+     * @param time        the simulation time instant
      * @param routeByNode the routes by nodes
      */
     protected StationStatus(StationMap stationMap, Collection<? extends Route> routes, Collection<Train> trains, double time, Map<Node, ? extends Route> routeByNode, Map<Entry, Train> firstTrainByEntry, Collection<Section> sections, Map<Edge, Train> trainByEdge, Map<Section, Train> trainBySection, Map<? extends Edge, Section> sectionByEdge, Map<Exit, Train> trainByExit) {
@@ -255,6 +268,13 @@ public class StationStatus {
     }
 
     /**
+     * Returns the bounds of station
+     */
+    public Rectangle2D getBounds() {
+        return stationMap.getBounds();
+    }
+
+    /**
      * Returns the next exit for the given direction
      *
      * @param direction the entry direction
@@ -330,7 +350,7 @@ public class StationStatus {
      *
      * @param edge the edge
      */
-    Optional<Section> getSection(Edge edge) {
+    public Optional<Section> getSection(Edge edge) {
         return Optional.ofNullable(getSectionByEdge().get(edge));
     }
 
@@ -352,6 +372,39 @@ public class StationStatus {
             sections = createSections();
         }
         return sections;
+    }
+
+    /**
+     * Returns the segments from a location for a given distance
+     *
+     * @param start    the start location
+     * @param distance the length (m)
+     */
+    Stream<EdgeSegment> getSegments(EdgeLocation start, double distance) {
+        Stream.Builder<EdgeSegment> builder = Stream.builder();
+        while (distance > 0 && start != null) {
+            double len = start.getDistance();
+            if (distance <= len) {
+                EdgeSegment seg = EdgeSegment.create(start, distance);
+                builder.add(seg);
+                distance = 0;
+            } else {
+                EdgeSegment seg = EdgeSegment.create(start, len);
+                builder.add(seg);
+                distance -= len;
+                start = getExit(start.getDirection())
+                        .map(dir -> new EdgeLocation(dir, dir.getEdge().getLength()))
+                        .orElse(null);
+            }
+        }
+        return builder.build();
+    }
+
+    /**
+     * Returns the station map
+     */
+    public StationMap getStationMap() {
+        return stationMap;
     }
 
     /**
@@ -427,6 +480,18 @@ public class StationStatus {
     Stream<Edge> getTrainEdges(Train train) {
         EdgeLocation location = train.getLocation();
         return location != null ? findForwardEdges(location.opposite(), train.getLength()) : Stream.of();
+    }
+
+    /**
+     * Returns the train segments
+     *
+     * @param train the train
+     */
+    public Stream<EdgeSegment> getTrainSegments(Train train) {
+        EdgeLocation location = train.getLocation();
+        return location != null ?
+                getSegments(location.opposite(), train.getLength()) :
+                Stream.of();
     }
 
     /**
@@ -601,7 +666,7 @@ public class StationStatus {
                                 .toArray(Node[]::new);
                         return t._2.apply(nodes);
                     }).collect(Collectors.toList());
-            return new StationStatus(stationMap, routes1, List.of(), 0, null, null, null, null, null, null, null);
+            return StationStatus.create(stationMap, routes1, List.of(), 0);
         }
     }
 }

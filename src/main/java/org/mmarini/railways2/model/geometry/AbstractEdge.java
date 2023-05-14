@@ -28,6 +28,7 @@
 
 package org.mmarini.railways2.model.geometry;
 
+import java.awt.geom.Rectangle2D;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
@@ -36,21 +37,27 @@ import static java.util.Objects.requireNonNull;
  * Class template with id and points attributes
  */
 public abstract class AbstractEdge implements Edge {
-    private final String id;
-    private final Node node0;
-    private final Node node1;
+    protected final String id;
+    protected final Node node0;
+    protected final Node node1;
+    protected final double length;
+    protected final Rectangle2D bounds;
 
     /**
      * Create the edge
      *
-     * @param id    the edge identifier
-     * @param node0 the first node
-     * @param node1 the second node
+     * @param id     the edge identifier
+     * @param node0  the first node
+     * @param node1  the second node
+     * @param length the length of edge (m)
+     * @param bounds the edge bounds
      */
-    protected AbstractEdge(String id, Node node0, Node node1) {
+    protected AbstractEdge(String id, Node node0, Node node1, double length, Rectangle2D bounds) {
         this.id = requireNonNull(id);
         this.node0 = requireNonNull(node0);
         this.node1 = requireNonNull(node1);
+        this.length = length;
+        this.bounds = bounds;
     }
 
     @Override
@@ -62,8 +69,18 @@ public abstract class AbstractEdge implements Edge {
     }
 
     @Override
+    public Rectangle2D getBounds() {
+        return bounds;
+    }
+
+    @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public double getLength() {
+        return length;
     }
 
     @Override

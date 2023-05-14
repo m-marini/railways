@@ -32,57 +32,43 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 
-import static java.lang.Math.sqrt;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mmarini.railways.TestFunctions.pointCloseTo;
 
-class PlatformTest {
-    public static final int LENGTH = 100;
-    private StationMap stationMap;
-    private Platform platform;
+class EdgeSegmentTest {
+    public static final double LENGTH = 80;
+    private Node a;
+    private Node b;
+    private Node c;
+    private Track ab;
+    private Track bc;
+
+    @Test
+    void create() {
+        // Given ...
+
+        // When ...
+        EdgeSegment segAB = EdgeSegment.create(EdgeLocation.create(ab, b, 30), 10);
+        EdgeSegment segBA = EdgeSegment.create(EdgeLocation.create(ab, a, 30), 10);
+
+        // Then ...
+        assertEquals(new EdgeSegment(ab, LENGTH - 30, 20), segAB);
+        assertEquals(new EdgeSegment(ab, 20, LENGTH - 30), segBA);
+    }
 
     @BeforeEach
-    void beforeEach() {
-        this.stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(0, 0), "ab")
-                .addNode("b", new Point2D.Double(LENGTH, LENGTH), "ab")
-                .addEdge(Platform.builder("ab"), "a", "b")
+    void setUp() {
+        StationMap stationMap = new StationBuilder("station")
+                .addNode("a", new Point2D.Double(), "ab")
+                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
+                .addNode("c", new Point2D.Double(2 * LENGTH, 0), "bc")
+                .addEdge(Track.builder("ab"), "a", "b")
+                .addEdge(Track.builder("bc"), "b", "c")
                 .build();
-        this.platform = stationMap.getEdge("ab");
-    }
-
-    @Test
-    void getBounds() {
-        // Given ...
-
-        // When ...
-        Rectangle2D bounds = platform.getBounds();
-
-        // Then ...
-        assertEquals(new Rectangle2D.Double(0, 0, LENGTH, LENGTH), bounds);
-    }
-
-    @Test
-    void length() {
-        assertThat(platform.getLength(), closeTo(LENGTH * sqrt(2), 1e-3));
-    }
-
-    @Test
-    void location() {
-        // Given ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-
-        // When ...
-        Point2D locationA60 = platform.getLocation(EdgeLocation.create(platform, a, 60 * sqrt(2)));
-        Point2D locationB60 = platform.getLocation(EdgeLocation.create(platform, b, 60 * sqrt(2)));
-
-        // Then ...
-        assertThat(locationA60, pointCloseTo(60, 60, 1e-3));
-        assertThat(locationB60, pointCloseTo(40, 40, 1e-3));
+        this.a = stationMap.getNode("a");
+        this.b = stationMap.getNode("b");
+        this.c = stationMap.getNode("c");
+        this.ab = stationMap.getEdge("ab");
+        this.bc = stationMap.getEdge("bc");
     }
 }

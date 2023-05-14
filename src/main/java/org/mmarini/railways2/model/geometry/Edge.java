@@ -29,11 +29,17 @@
 package org.mmarini.railways2.model.geometry;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Describes the edge between map points
  */
 public interface Edge {
+
+    /**
+     * Returns the rectangle bounds of the edge
+     */
+    Rectangle2D getBounds();
 
     /**
      * Returns the edge identifier
@@ -46,12 +52,11 @@ public interface Edge {
     double getLength();
 
     /**
-     * Returns the location of a point in the edge
+     * Returns the point of the location in the edge
      *
-     * @param destination the destination node
-     * @param distance    the distance to destination (m)
+     * @param location the edge location
      */
-    Point2D getLocation(Node destination, double distance);
+    Point2D getLocation(EdgeLocation location);
 
     /**
      * Returns the first node

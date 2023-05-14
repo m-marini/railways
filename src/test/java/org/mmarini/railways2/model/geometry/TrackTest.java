@@ -28,35 +28,61 @@
 
 package org.mmarini.railways2.model.geometry;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+
+import static java.lang.Math.sqrt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mmarini.railways.TestFunctions.pointCloseTo;
-import static org.mmarini.railways2.model.geometry.StationMapTest.createStation;
-import static org.mmarini.railways2.model.geometry.StationMapTest.stationMap;
 
 class TrackTest {
-    @BeforeAll
-    static void beforAll() {
-        createStation();
+    public static final int LENGTH = 100;
+    private StationMap stationMap;
+    private Track track;
+
+    @BeforeEach
+    void beforeEach() {
+        this.stationMap = new StationBuilder("station")
+                .addNode("a", new Point2D.Double(0, 0), "ab")
+                .addNode("b", new Point2D.Double(LENGTH, LENGTH), "ab")
+                .addEdge(Track.builder("ab"), "a", "b")
+                .build();
+        this.track = stationMap.getEdge("ab");
+    }
+
+    @Test
+    void getBounds() {
+        // Given ...
+
+        // When ...
+        Rectangle2D bounds = track.getBounds();
+
+        // Then ...
+        assertEquals(new Rectangle2D.Double(0, 0, LENGTH, LENGTH), bounds);
     }
 
     @Test
     void length() {
-        Track track = stationMap.getEdge("ab");
-        assertThat(track.getLength(), closeTo(100, 1e-3));
+        assertThat(track.getLength(), closeTo(LENGTH * sqrt(2), 1e-3));
     }
-
 
     @Test
     void location() {
-        Node a = stationMap.getNode("aNode");
-        Node b = stationMap.getNode("bNode");
-        Track track = stationMap.getEdge("ab");
-        assertThat(track.getLocation(b, 60), pointCloseTo(40, 0, 1e-3));
-        assertThat(track.getLocation(a, 60), pointCloseTo(60, 0, 1e-3));
-    }
+        // Given ...
+        Node a = stationMap.getNode("a");
+        Node b = stationMap.getNode("b");
 
+        // When ...
+        Point2D locationA60 = track.getLocation(EdgeLocation.create(track, a, 60 * sqrt(2)));
+        Point2D locationB60 = track.getLocation(EdgeLocation.create(track, b, 60 * sqrt(2)));
+
+        // Then ...
+        assertThat(locationA60, pointCloseTo(60, 60, 1e-3));
+        assertThat(locationB60, pointCloseTo(40, 40, 1e-3));
+    }
 }

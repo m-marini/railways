@@ -73,9 +73,6 @@ class StationStatusSignalTest {
     @Test
     void createSections() {
         createStatus();
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
         Edge ab = stationMap.getEdge("ab");
         Edge bc = stationMap.getEdge("bc");
 
@@ -134,22 +131,6 @@ class StationStatusSignalTest {
         assertThat(section.orElseThrow()._2, empty());
     }
 
-    /*
-    @Test
-    void isSectionClearWithLock() {
-        // Give ...
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        createStatus(new Direction(ab, b), new Direction(bc, b));
-
-        // When ... Than ...
-        assertFalse(status.isSectionClear(ab));
-        assertFalse(status.isSectionClear(bc));
-    }
-*/
-
     @Test
     void isNextRouteClear() {
         // Give ...
@@ -173,7 +154,6 @@ class StationStatusSignalTest {
     void isNextRouteClearLocked() {
         // Give ...
         Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
         Edge ab = stationMap.getEdge("ab");
         Edge bc = stationMap.getEdge("bc");
         createStatus(new Direction(ab, b));
@@ -187,7 +167,6 @@ class StationStatusSignalTest {
     void isSectionClearWithTrain() {
         // Give ...
         createStatus();
-        Node b = stationMap.getNode("b");
         Node c = stationMap.getNode("c");
         Edge ab = stationMap.getEdge("ab");
         Edge bc = stationMap.getEdge("bc");
@@ -202,61 +181,4 @@ class StationStatusSignalTest {
         assertTrue(status.isSectionClear(ab));
         assertFalse(status.isSectionClear(bc));
     }
-
-    /*
-    @Test
-    void findSectionTerminalDirect() {
-        createRoutesConfig();
-        SingleNodeRoute a = conf.getRoute("a");
-        SingleNodeRoute b = conf.getRoute("b");
-        SingleNodeRoute c = conf.getRoute("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-
-        Optional<RouteDirection> dirOpt = conf.findSectionTerminal(new OrientedLocation(ab, true, 0));
-        assertTrue(dirOpt.isPresent());
-        assertThat(dirOpt.orElseThrow(), routeDirection(b, 0));
-
-        dirOpt = conf.findSectionTerminal(new OrientedLocation(ab, false, 0));
-        assertTrue(dirOpt.isPresent());
-        assertThat(dirOpt.orElseThrow(), routeDirection(a, 0));
-
-        dirOpt = conf.findSectionTerminal(new OrientedLocation(bc, true, 0));
-        assertTrue(dirOpt.isPresent());
-        assertThat(dirOpt.orElseThrow(), routeDirection(c, 0));
-
-        dirOpt = conf.findSectionTerminal(new OrientedLocation(bc, false, 0));
-        assertTrue(dirOpt.isPresent());
-        assertThat(dirOpt.orElseThrow(), routeDirection(b, 1));
-    }
-
-    @Test
-    void sessions() {
-        SingleNodeRoute a = conf.getRoute("a");
-        SingleNodeRoute b = conf.getRoute("b");
-        SingleNodeRoute c = conf.getRoute("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-
-        Collection<Section> sessions = conf.getSections();
-
-        assertThat(sessions, containsInAnyOrder(
-                section(new RouteDirection(a, 0), new RouteDirection(b, 0), ab),
-                section(new RouteDirection(c, 0), new RouteDirection(b, 1), bc)
-        ));
-        assertThat(conf.getSection(ab).orElseThrow().getCrossingSections(), empty());
-    }
-
-    @Test
-    void sessionsByEdge() {
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-
-        Map<Edge, Section> sectionByEdge = conf.getSectionByEdge();
-        assertThat(sectionByEdge, hasEntry(equalTo(ab), hasProperty("id", equalTo("ab"))));
-        assertThat(sectionByEdge, hasEntry(equalTo(bc), hasProperty("id", equalTo("bc"))));
-        assertEquals(2, sectionByEdge.size());
-    }
-
-     */
 }

@@ -28,10 +28,11 @@
 
 package org.mmarini.railways2.model.geometry;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 import static java.lang.Math.PI;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,14 +44,14 @@ import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
 
 public class StationMapTest {
 
-    static StationMap stationMap;
+    StationMap stationMap;
 
     /**
      * Create the station map
      * aNode -- ab (Track)--> bNode -- bc (Platform) --> cNode -- cd (Curve) --> dNode
      */
-    @BeforeAll
-    static void createStation() {
+    @BeforeEach
+    void beforeEach() {
         stationMap = new StationBuilder("station")
                 .addNode("aNode", new Point2D.Double(0, 0), "ab")
                 .addNode("bNode", new Point2D.Double(100, 0), "ab", "bc")
@@ -139,6 +140,20 @@ public class StationMapTest {
                 new Direction(cd, d)));
         assertThat(d.getExits(), containsInAnyOrder(
                 new Direction(cd, c)));
+    }
+
+    @Test
+    void getBounds() {
+        // Given ...
+
+        // When ...
+        Rectangle2D bounds = stationMap.getBounds();
+
+        // Then ...
+        assertThat(bounds.getX(), closeTo(0, 1e-3));
+        assertThat(bounds.getY(), closeTo(0, 1e-3));
+        assertThat(bounds.getWidth(), closeTo(200 + RADIUS, 1e-3));
+        assertThat(bounds.getHeight(), closeTo(RADIUS, 1e-3));
     }
 
 /*

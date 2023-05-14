@@ -98,7 +98,7 @@ public class EdgeLocation {
      * Returns the location of the edge point
      */
     public Point2D getLocation() {
-        return getDirection().getEdge().getLocation(direction.getDestination(), distance);
+        return getDirection().getEdge().getLocation(this);
     }
 
     @Override
