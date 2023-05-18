@@ -74,7 +74,7 @@ class EntryTest {
     void getExits() {
         Node b = station.getNode("b");
         Edge ab = station.getEdge("ab");
-        assertThat(route.getExits(), contains(
+        assertThat(route.getValidExits(), contains(
                 new Direction(ab, b)
         ));
     }

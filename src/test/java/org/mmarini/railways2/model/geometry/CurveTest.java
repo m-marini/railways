@@ -38,62 +38,55 @@ import java.awt.geom.Rectangle2D;
 import static java.lang.Math.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
-import static org.mmarini.railways.TestFunctions.pointCloseTo;
+import static org.mmarini.railways.Matchers.pointCloseTo;
 import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
 
 class CurveTest {
+
+    private Curve curve;
+    private Node a;
+    private Node b;
+
     @Test
     void angles270() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(270)), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, 270);
 
+        // When .. Then ...
         assertThat(curve.getAngle0(), closeTo(toRadians(-180), 1e-3));
     }
 
     @Test
     void angles90() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(90)), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, 90);
 
+        // When .. Then ...
         assertThat(curve.getAngle0(), closeTo(toRadians(-90), 1e-3));
     }
 
     @Test
     void angles_270() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(-270)), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, -270);
 
+        // When .. Then ...
         assertThat(curve.getAngle0(), closeTo(toRadians(-90), 1e-3));
     }
 
     @Test
     void angles_90() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(-90)), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, -90);
 
+        // When .. Then ...
         assertThat(curve.getAngle0(), closeTo(toRadians(180), 1e-3));
     }
 
     @Test
     void bounds180() {
         // Given ...
-        Curve curve = createCurve(0, 0, 2 * RADIUS, 0, 180);
+        given(0, 0, 2 * RADIUS, 0, 180);
 
         // When ...
         Rectangle2D bounds = curve.getBounds();
@@ -108,7 +101,7 @@ class CurveTest {
     @Test
     void bounds270() {
         // Given ...
-        Curve curve = createCurve(0, 0, RADIUS, RADIUS, 270);
+        given(0, 0, RADIUS, RADIUS, 270);
 
         // When ...
         Rectangle2D bounds = curve.getBounds();
@@ -123,7 +116,7 @@ class CurveTest {
     @Test
     void bounds90() {
         // Given ...
-        Curve curve = createCurve(0, 0, RADIUS, RADIUS, 90);
+        given(0, 0, RADIUS, RADIUS, 90);
 
         // When ...
         Rectangle2D bounds = curve.getBounds();
@@ -138,7 +131,7 @@ class CurveTest {
     @Test
     void bounds_180() {
         // Given ...
-        Curve curve = createCurve(0, 0, 2 * RADIUS, 0, -180);
+        given(0, 0, 2 * RADIUS, 0, -180);
 
         // When ...
         Rectangle2D bounds = curve.getBounds();
@@ -153,7 +146,7 @@ class CurveTest {
     @Test
     void bounds_270() {
         // Given ...
-        Curve curve = createCurve(0, 0, RADIUS, RADIUS, -270);
+        given(0, 0, RADIUS, RADIUS, -270);
 
         // When ...
         Rectangle2D bounds = curve.getBounds();
@@ -168,7 +161,7 @@ class CurveTest {
     @Test
     void bounds_90() {
         // Given ...
-        Curve curve = createCurve(0, 0, RADIUS, RADIUS, -90);
+        given(0, 0, RADIUS, RADIUS, -90);
 
         // When ...
         Rectangle2D bounds = curve.getBounds();
@@ -182,72 +175,67 @@ class CurveTest {
 
     @Test
     void center270() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(270)), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, 270);
 
+        // When ...
         Point2D center = curve.getCenter();
+
+        // Then ...
         assertThat(center, pointCloseTo(RADIUS, 0, 1e-3));
     }
 
     @Test
     void center90() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(90)), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, 90);
 
+        // When ...
         Point2D center = curve.getCenter();
+
+        // Then ...
         assertThat(center, pointCloseTo(0, RADIUS, 1e-3));
     }
 
     @Test
     void center_270() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(-270)), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, -270);
 
+        // When ...
         Point2D center = curve.getCenter();
+
+        // Then ...
         assertThat(center, pointCloseTo(0, RADIUS, 1e-3));
     }
 
     @Test
     void center_90() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, -RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(-90)), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, -RADIUS, -90);
 
+        // When ...
         Point2D center = curve.getCenter();
+
+        // Then ...
         assertThat(center, pointCloseTo(0, -RADIUS, 1e-3));
     }
 
-    Curve createCurve(double x0, double y0, double x1, double y1, double angle) {
-        return createMap(x0, y0, x1, y1, angle).getEdge("curve");
-    }
-
-    StationMap createMap(double x0, double y0, double x1, double y1, double angle) {
-        return new StationBuilder("station")
+    void given(double x0, double y0, double x1, double y1, double angle) {
+        StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(x0, y0), "curve")
                 .addNode("b", new Point2D.Double(x1, y1), "curve")
                 .addEdge(Curve.builder("curve", toRadians(angle)), "a", "b")
                 .build();
+        this.a = stationMap.getNode("a");
+        this.b = stationMap.getNode("b");
+        this.curve = stationMap.getEdge("curve");
     }
 
     @Test
     void length180() {
         // Given ...
-        Curve curve = createCurve(0, 0, 0, 2 * RADIUS, 180);
+        given(0, 0, 0, 2 * RADIUS, 180);
 
         // When ...
         double len = curve.getLength();
@@ -258,70 +246,61 @@ class CurveTest {
 
     @Test
     void length270() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(-RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", PI * 3 / 2), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, -RADIUS, RADIUS, 270);
 
+        // When ...
         double len = curve.getLength();
 
+        // Then ...
         assertThat(len, closeTo(RADIUS * PI * 3 / 2, 1e-3));
     }
 
     @Test
     void length90() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", PI / 2), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, 90);
 
+        // When ...
         double len = curve.getLength();
+
+        // Then ...
         assertThat(len, closeTo(RADIUS * PI / 2, 1e-3));
     }
 
     @Test
     void length_180() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(0, -2 * RADIUS), "curve")
-                .addEdge(Curve.builder("curve", -PI), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, 0, -2 * RADIUS, -180);
 
+        // When ...
         double len = curve.getLength();
 
+        // Then ...
         assertThat(len, closeTo(RADIUS * PI, 1e-3));
     }
 
     @Test
     void length_270() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(-RADIUS, -RADIUS), "curve")
-                .addEdge(Curve.builder("curve", -PI * 3 / 2), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, -RADIUS, -RADIUS, -270);
 
+        // When ...
         double len = curve.getLength();
 
+        // Then ...
         assertThat(len, closeTo(RADIUS * PI * 3 / 2, 1e-3));
     }
 
     @Test
     void length_90() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, -RADIUS), "curve")
-                .addEdge(Curve.builder("curve", -PI / 2), "a", "b")
-                .build()
-                .getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, -RADIUS, -90);
 
+        // When ...
         double len = curve.getLength();
 
+        // Then ...
         assertThat(len, closeTo(RADIUS * PI / 2, 1e-3));
     }
 
@@ -470,15 +449,10 @@ class CurveTest {
 
     @Test
     void location90() {
-        StationMap stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(90)), "a", "b")
-                .build();
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Curve curve = stationMap.getEdge("curve");
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, 90);
 
+        // When ... Then ...
         assertThat(curve.getLocation(EdgeLocation.create(curve, b, toRadians(60) * RADIUS)),
                 pointCloseTo(RADIUS * sin(toRadians(30)), RADIUS - RADIUS * cos(toRadians(30)), 1e-3));
 
@@ -494,14 +468,7 @@ class CurveTest {
     @Test
     void locationAngle90() {
         // Given ...
-        StationMap stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(90)), "a", "b")
-                .build();
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Curve curve = stationMap.getEdge("curve");
+        given(0, 0, RADIUS, RADIUS, 90);
 
         // When ...
         double angleB60 = toDegrees(curve.getAngle(EdgeLocation.create(curve, b, toRadians(60) * RADIUS)));
@@ -512,6 +479,7 @@ class CurveTest {
         assertThat(angleA60, closeTo(-90 + 60, 0.1));
     }
 
+
     /*
      *     --b
      *   /
@@ -520,14 +488,7 @@ class CurveTest {
     @Test
     void locationAngle_90() {
         // Given ...
-        StationMap stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(-90)), "a", "b")
-                .build();
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Curve curve = stationMap.getEdge("curve");
+        given(0, 0, RADIUS, RADIUS, -90);
 
         // When ...
         double angleB60 = toDegrees(curve.getAngle(EdgeLocation.create(curve, b, toRadians(60) * RADIUS)));
@@ -546,18 +507,7 @@ class CurveTest {
     @Test
     void location_90() {
         // Given ...
-        StationMap stationMap = createMap(0, 0, RADIUS, RADIUS, -90);
-/*
-                new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(-90)), "a", "b")
-                .build();
-
- */
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Curve curve = stationMap.getEdge("curve");
+        given(0, 0, RADIUS, RADIUS, -90);
 
         // When ...
         Point2D locationB60 = curve.getLocation(EdgeLocation.create(curve, b, toRadians(60) * RADIUS));
@@ -569,14 +519,55 @@ class CurveTest {
     }
 
     @Test
-    void radius90() {
-        Curve curve = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "curve")
-                .addNode("b", new Point2D.Double(RADIUS, RADIUS), "curve")
-                .addEdge(Curve.builder("curve", toRadians(90)), "a", "b")
-                .build()
-                .getEdge("curve");
+    void orientation90() {
+        // Given ...
+        given(0, 0, RADIUS, -RADIUS, 90);
 
+        // When ...
+        double orientation1 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(89) * RADIUS));
+        double orientation2 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(45) * RADIUS));
+        double orientation3 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(1) * RADIUS));
+        double orientation4 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(89) * RADIUS));
+        double orientation5 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(45) * RADIUS));
+        double orientation6 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(1) * RADIUS));
+
+        // Then ...
+        assertThat(toDegrees(orientation1), closeTo(179, 1));
+        assertThat(toDegrees(orientation2), closeTo(135, 1));
+        assertThat(toDegrees(orientation3), closeTo(91, 1));
+        assertThat(toDegrees(orientation4), closeTo(-89, 1));
+        assertThat(toDegrees(orientation5), closeTo(-45, 1));
+        assertThat(toDegrees(orientation6), closeTo(-1, 1));
+    }
+
+    @Test
+    void orientation_90() {
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, -90);
+
+        // When ...
+        double orientation1 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(89) * RADIUS));
+        double orientation2 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(45) * RADIUS));
+        double orientation3 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(1) * RADIUS));
+        double orientation4 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(89) * RADIUS));
+        double orientation5 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(45) * RADIUS));
+        double orientation6 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(1) * RADIUS));
+
+        // Then ...
+        assertThat(toDegrees(orientation1), closeTo(-179, 1));
+        assertThat(toDegrees(orientation2), closeTo(-135, 1));
+        assertThat(toDegrees(orientation3), closeTo(-91, 1));
+        assertThat(toDegrees(orientation4), closeTo(89, 1));
+        assertThat(toDegrees(orientation5), closeTo(45, 1));
+        assertThat(toDegrees(orientation6), closeTo(1, 1));
+    }
+
+    @Test
+    void radius90() {
+        // Given ...
+        given(0, 0, RADIUS, RADIUS, 90);
+
+        // When ... Then ...
         assertThat(curve.getRadius(), closeTo(RADIUS, 1e-3));
     }
 }

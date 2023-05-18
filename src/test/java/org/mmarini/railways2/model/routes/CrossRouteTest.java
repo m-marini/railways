@@ -134,7 +134,7 @@ class CrossRouteTest {
         Direction e_c = c_e.opposite();
         Direction e_d = d_e.opposite();
 
-        Collection<Direction> exits = route.getExits();
+        Collection<Direction> exits = route.getValidExits();
         assertThat(exits, containsInAnyOrder(e_a, e_b, e_c, e_d));
     }
 }

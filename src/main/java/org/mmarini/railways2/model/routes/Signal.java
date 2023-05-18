@@ -28,6 +28,7 @@
 
 package org.mmarini.railways2.model.routes;
 
+import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.geometry.Node;
 
@@ -39,6 +40,9 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Dissects two edges in boh direction
+ * <p>
+ * The signal can be locked in the entry directions
+ * </p>
  */
 public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
 
@@ -58,13 +62,13 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
                     numNodes));
         }
         Node node = nodes[0];
-        int size = node.getEdges().size();
-        if (size != 2) {
+        int numEdges = node.getExits().size();
+        if (numEdges != NUM_CONNECTIONS) {
             throw new IllegalArgumentException(format(
                     "Route %s requires %d edges (%d)",
                     node.getId(),
                     NUM_CONNECTIONS,
-                    size));
+                    numEdges));
         }
 
         List<Direction> exits = node.getExits();
@@ -81,11 +85,11 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
     }
 
     /**
-     * Returns the function creating signal locked in the given directions
+     * Returns the function creating signal locked in the given entry directions
      *
-     * @param locks the lock direction
+     * @param locks the locked entry directions
      */
-    public static Function<Node[], Route> createLocks(Direction... locks) {
+    public static Function<Node[], Signal> createLocks(Direction... locks) {
         return nodes -> {
             Signal signal = create(nodes);
             for (Direction lock : locks) {
@@ -101,7 +105,7 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
      * Create the signal
      *
      * @param node        the node
-     * @param locks       the lock directions
+     * @param locks       the lock entry directions
      * @param exitByEntry the connections map
      */
     protected Signal(Node node, Set<Direction> locks, Map<Direction, Direction> exitByEntry) {
@@ -115,7 +119,17 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
     }
 
     /**
-     * Returns true if the signal is locked in that direction
+     * Returns true id the exit is locked
+     *
+     * @param exit the exit
+     */
+    public boolean isExitLocked(Direction exit) {
+        return Tuple2.stream(exitByEntry)
+                .anyMatch(t -> t._2.equals(exit) && isLocked(t._1));
+    }
+
+    /**
+     * Returns true if the signal is locked in the entry direction
      *
      * @param direction the direction
      */
@@ -124,7 +138,7 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
     }
 
     /**
-     * Returns the signal locked in the given direction
+     * Returns the signal locked in the given entry direction
      *
      * @param direction the direction
      */
@@ -140,7 +154,7 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
     }
 
     /**
-     * Returns the signal locked in the given direction
+     * Returns the signal unlocked in the given entry direction
      *
      * @param direction the direction
      */
@@ -155,7 +169,7 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
     }
 
     /**
-     * Validate direction for entry
+     * Validates direction for entry
      *
      * @param direction the direction
      * @throws IllegalArgumentException in case of invalid direction

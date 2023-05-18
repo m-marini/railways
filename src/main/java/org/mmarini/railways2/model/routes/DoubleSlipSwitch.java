@@ -120,6 +120,7 @@ public class DoubleSlipSwitch implements Route {
                 _bc, _c0
         );
         Collection<Direction> exits = exitByDirection.values();
+        Collection<Direction> validEntries = exitByDirection.keySet();
         Set<? extends Edge> crossAD = Set.of(c0, b0);
         Set<? extends Edge> crossBC = Set.of(a0, d0);
         Map<Direction, Collection<? extends Edge>> crossingEdgeByDirection = Map.of(
@@ -128,7 +129,7 @@ public class DoubleSlipSwitch implements Route {
                 _0b, crossBC,
                 _0c, crossBC
         );
-        return new DoubleSlipSwitch(id, List.of(nodes), false, exits, exitByDirection, crossingEdgeByDirection);
+        return new DoubleSlipSwitch(id, List.of(nodes), false, validEntries, exits, exitByDirection, crossingEdgeByDirection);
     }
 
     /**
@@ -176,6 +177,7 @@ public class DoubleSlipSwitch implements Route {
                 _dc, _c0
         );
         Collection<Direction> exits = exitByDirection.values();
+        Collection<Direction> validEntries = exitByDirection.keySet();
         Set<? extends Edge> crossAB = Set.of(c0, d0);
         Set<? extends Edge> crossCD = Set.of(a0, b0);
         Map<Direction, Collection<? extends Edge>> crossingEdgeByDirection = Map.of(
@@ -184,7 +186,7 @@ public class DoubleSlipSwitch implements Route {
                 _0c, crossCD,
                 _0d, crossCD
         );
-        return new DoubleSlipSwitch(id, List.of(nodes), true, exits, exitByDirection, crossingEdgeByDirection);
+        return new DoubleSlipSwitch(id, List.of(nodes), true, validEntries, exits, exitByDirection, crossingEdgeByDirection);
     }
 
     /**
@@ -249,13 +251,13 @@ public class DoubleSlipSwitch implements Route {
             ));
         }
         if (!(a2.equals(d2))) {
-            throw new IllegalArgumentException(format("Edge 1 of nodes %s, %s must be equals (%s != %s)",
+            throw new IllegalArgumentException(format("Edge 2 of nodes %s, %s must be equals (%s != %s)",
                     a.getId(), d.getId(),
                     a2.getId(), d2.getId()
             ));
         }
         if (!(c2.equals(b2))) {
-            throw new IllegalArgumentException(format("Edge 1 of nodes %s, %s must be equals (%s != %s)",
+            throw new IllegalArgumentException(format("Edge 2 of nodes %s, %s must be equals (%s != %s)",
                     c.getId(), b.getId(),
                     c2.getId(), b2.getId()
             ));
@@ -265,9 +267,10 @@ public class DoubleSlipSwitch implements Route {
     private final String id;
     private final List<Node> nodes;
     private final boolean through;
-    private final Collection<Direction> exits;
+    private final Collection<Direction> validExits;
     private final Map<Direction, Direction> exitByDirection;
     private final Map<Direction, Collection<? extends Edge>> crossingEdgeByDirection;
+    private final Collection<Direction> validEntries;
 
     /**
      * Creates the double slip switch
@@ -275,15 +278,17 @@ public class DoubleSlipSwitch implements Route {
      * @param id                      the identifier
      * @param nodes                   the nodes
      * @param through                 true if the configuration is through
-     * @param exits                   the valid exits
+     * @param validEntries            the valid entries
+     * @param validExits              the valid exits
      * @param exitByDirection         the exit by direction map
      * @param crossingEdgeByDirection the crossing edge by direction
      */
-    protected DoubleSlipSwitch(String id, List<Node> nodes, boolean through, Collection<Direction> exits, Map<Direction, Direction> exitByDirection, Map<Direction, Collection<? extends Edge>> crossingEdgeByDirection) {
+    protected DoubleSlipSwitch(String id, List<Node> nodes, boolean through, Collection<Direction> validEntries, Collection<Direction> validExits, Map<Direction, Direction> exitByDirection, Map<Direction, Collection<? extends Edge>> crossingEdgeByDirection) {
         this.id = requireNonNull(id);
         this.nodes = requireNonNull(nodes);
         this.through = through;
-        this.exits = requireNonNull(exits);
+        this.validEntries = validEntries;
+        this.validExits = requireNonNull(validExits);
         this.exitByDirection = requireNonNull(exitByDirection);
         this.crossingEdgeByDirection = crossingEdgeByDirection;
     }
@@ -307,18 +312,23 @@ public class DoubleSlipSwitch implements Route {
     }
 
     @Override
-    public Collection<Direction> getExits() {
-        return exits;
-    }
-
-    @Override
     public String getId() {
         return id;
     }
 
     @Override
-    public Collection<Node> getNodes() {
+    public List<Node> getNodes() {
         return nodes;
+    }
+
+    @Override
+    public Collection<Direction> getValidEntries() {
+        return validEntries;
+    }
+
+    @Override
+    public Collection<Direction> getValidExits() {
+        return validExits;
     }
 
     /**

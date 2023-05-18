@@ -32,8 +32,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.function.BiFunction;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -103,5 +102,12 @@ public class Track extends AbstractEdge {
         return new Point2D.Double(
                 x0 + d0 * (x1 - x0) / length,
                 y0 + d0 * (y1 - y0) / length);
+    }
+
+    @Override
+    public double getOrientation(EdgeLocation location) {
+        Point2D p0 = location.getDirection().getOrigin().getLocation();
+        Point2D p1 = location.getDirection().getDestination().getLocation();
+        return atan2(p1.getY() - p0.getY(), p1.getX() - p0.getX());
     }
 }

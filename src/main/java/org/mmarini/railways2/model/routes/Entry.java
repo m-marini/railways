@@ -78,7 +78,7 @@ public class Entry extends AbstractSingleNodeRoute implements SectionTerminal {
     }
 
     @Override
-    public Collection<Direction> getExits() {
+    public Collection<Direction> getValidExits() {
         return node.getExits();
     }
 }

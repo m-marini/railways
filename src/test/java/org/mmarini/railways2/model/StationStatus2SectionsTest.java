@@ -30,7 +30,10 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mmarini.railways2.model.geometry.*;
+import org.mmarini.railways2.model.geometry.EdgeLocation;
+import org.mmarini.railways2.model.geometry.StationBuilder;
+import org.mmarini.railways2.model.geometry.StationMap;
+import org.mmarini.railways2.model.geometry.Track;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Section;
@@ -42,11 +45,10 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mmarini.railways2.model.Matchers.isEdge;
+import static org.mmarini.railways2.model.Matchers.isRoute;
 
-class StationStatus2SectionsTest {
-
-    StationMap stationMap;
-    StationStatus status;
+class StationStatus2SectionsTest extends WithStationStatusTest {
 
     /**
      * Station map
@@ -57,7 +59,7 @@ class StationStatus2SectionsTest {
      */
     @BeforeEach
     void beforeEach() {
-        stationMap = new StationBuilder("station")
+        StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab")
                 .addNode("c", new Point2D.Double(200, 0), "cd")
@@ -75,21 +77,22 @@ class StationStatus2SectionsTest {
 
     @Test
     void createSections() {
-        Edge ab = stationMap.getEdge("ab");
-        Edge cd = stationMap.getEdge("cd");
+        // Given ...
 
+        // When ...
         Collection<Section> sections = status.createSections();
 
+        // Then ...
         assertThat(sections, hasSize(2));
         assertThat(sections, hasItem(allOf(
                 hasProperty("id", equalTo("ab")),
-                hasProperty("edges", containsInAnyOrder(ab)))));
+                hasProperty("edges", containsInAnyOrder(isEdge("ab"))))));
         assertThat(sections, hasItem(allOf(
                 hasProperty("id", equalTo("ab")),
                 hasProperty("crossingSections", empty()))));
         assertThat(sections, hasItem(allOf(
                 hasProperty("id", equalTo("cd")),
-                hasProperty("edges", containsInAnyOrder(cd)))));
+                hasProperty("edges", containsInAnyOrder(isEdge("cd"))))));
         assertThat(sections, hasItem(allOf(
                 hasProperty("id", equalTo("cd")),
                 hasProperty("crossingSections", empty()))));
@@ -97,17 +100,14 @@ class StationStatus2SectionsTest {
 
     @Test
     void createTrainByExit() {
-        // Give ...
-        Entry aRoute = status.getRoute("a");
-        Exit bRoute = status.getRoute("b");
-        Exit dRoute = status.getRoute("d");
-        Train t1 = Train.create("t1", 1, aRoute, bRoute)
+        // Given ...
+        Train t1 = Train.create("t1", 1, route("a"), route("b"))
                 .setState(Train.EXITING_STATE)
-                .setExitingNode(bRoute);
-        Train t2 = Train.create("t2", 1, aRoute, bRoute)
+                .setExitingNode(route("b"));
+        Train t2 = Train.create("t2", 1, route("a"), route("b"))
                 .setState(Train.EXITING_STATE)
-                .setExitingNode(dRoute);
-        Train t3 = Train.create("t3", 1, aRoute, bRoute);
+                .setExitingNode(route("d"));
+        Train t3 = Train.create("t3", 1, route("a"), route("b"));
         status = status.setTrains(t1, t2, t3);
 
         // When ...
@@ -116,23 +116,17 @@ class StationStatus2SectionsTest {
         // Than ...
         assertNotNull(map);
         assertEquals(2, map.size());
-        assertThat(map, hasEntry(bRoute, t1));
-        assertThat(map, hasEntry(dRoute, t2));
+        assertThat(map, hasEntry(isRoute("b"), equalTo(t1)));
+        assertThat(map, hasEntry(isRoute("d"), equalTo(t2)));
     }
 
     @Test
     void createTrainBySection() {
         // Give ...
-        Node b = stationMap.getNode("b");
-        Node d = stationMap.getNode("d");
-        Entry aRoute = status.getRoute("a");
-        Exit bRoute = status.getRoute("b");
-        Edge ab = stationMap.getEdge("ab");
-        Edge cd = stationMap.getEdge("cd");
-        Train t1 = Train.create("t1", 1, aRoute, bRoute)
-                .setLocation(EdgeLocation.create(ab, b, 0));
-        Train t2 = Train.create("t2", 1, aRoute, bRoute)
-                .setLocation(EdgeLocation.create(cd, d, 0));
+        Train t1 = Train.create("t1", 1, route("a"), route("b"))
+                .setLocation(EdgeLocation.create(edge("ab"), node("b"), 0));
+        Train t2 = Train.create("t2", 1, route("a"), route("b"))
+                .setLocation(EdgeLocation.create(edge("cd"), node("d"), 0));
         status = status.setTrains(t1, t2);
 
         // When ...
@@ -153,18 +147,15 @@ class StationStatus2SectionsTest {
 
     @Test
     void isExitClear() {
-        // Give ...
-        Entry aRoute = status.getRoute("a");
-        Exit bRoute = status.getRoute("b");
-        Exit dRoute = status.getRoute("d");
-        Train t1 = Train.create("t1", 1, aRoute, bRoute)
+        // Given ...
+        Train t1 = Train.create("t1", 1, route("a"), route("b"))
                 .setState(Train.EXITING_STATE)
-                .setExitingNode(bRoute);
-        Train t2 = Train.create("t2", 1, aRoute, bRoute);
+                .setExitingNode(route("b"));
+        Train t2 = Train.create("t2", 1, route("a"), route("b"));
         status = status.setTrains(t1, t2);
 
         // When ... Then ...
-        assertFalse(status.isExitClear(bRoute));
-        assertTrue(status.isExitClear(dRoute));
+        assertFalse(status.isExitClear(route("b")));
+        assertTrue(status.isExitClear(route("d")));
     }
 }

@@ -41,7 +41,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mmarini.railways.TestFunctions.locatedAt;
+import static org.mmarini.railways2.model.Matchers.locatedAt;
 
 class TrainWaitingForSignalTest {
     public static final int LENGTH = 500;
@@ -92,7 +92,7 @@ class TrainWaitingForSignalTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.RUNNING_STATE, next.getState());
         assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt(ab, b, 0));
+        assertThat(next.getLocation(), locatedAt("ab", "b", 0));
     }
 
     @Test
@@ -121,6 +121,6 @@ class TrainWaitingForSignalTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.WAITING_FOR_SIGNAL_STATE, next.getState());
         assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt(ab, b, 0));
+        assertThat(next.getLocation(), locatedAt("ab", "b", 0));
     }
 }

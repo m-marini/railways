@@ -101,6 +101,13 @@ public class EdgeLocation {
         return getDirection().getEdge().getLocation(this);
     }
 
+    /**
+     * Returns the orientation (RAD)
+     */
+    public double getOrientation() {
+        return direction.getEdge().getOrientation(this);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(direction, distance);

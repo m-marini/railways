@@ -25,70 +25,10 @@
 
 package org.mmarini.railways;
 
-import org.hamcrest.CustomMatcher;
-import org.hamcrest.Matcher;
-import org.mmarini.railways2.model.geometry.Direction;
-import org.mmarini.railways2.model.geometry.Edge;
-import org.mmarini.railways2.model.geometry.EdgeLocation;
-import org.mmarini.railways2.model.geometry.Node;
-import org.mmarini.railways2.model.routes.Section;
-
-import java.awt.geom.Point2D;
-import java.util.Optional;
-
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
-import static org.hamcrest.Matchers.*;
 
 public interface TestFunctions {
-
-    static <T> Matcher<Optional<T>> emptyOptional() {
-        return equalTo(Optional.empty());
-    }
-
-    static Matcher<Object> locatedAt(Edge edge, Node destination, double distance) {
-        return allOf(
-                isA(EdgeLocation.class),
-                hasProperty("direction", allOf(
-                        hasProperty("edge", equalTo(edge)),
-                        hasProperty("destination", equalTo(destination)))),
-                hasProperty("distance", closeTo(distance, 10e-3))
-        );
-    }
-
-    static <T> Matcher<Optional<T>> optionalContaining(Matcher<T> exp) {
-        requireNonNull(exp);
-        return new CustomMatcher<>(format("Optional containing  %s",
-                exp)) {
-            @Override
-            public boolean matches(Object o) {
-                return o instanceof Optional
-                        && ((Optional<T>) o).isPresent()
-                        && exp.matches(((Optional<T>) o).orElseThrow());
-            }
-        };
-    }
-
-    static <T> Matcher<Optional<T>> optionalContaining(T exp) {
-        return optionalContaining(equalTo(exp));
-    }
-
-    static Matcher<Point2D> pointCloseTo(double x, double y, double epsilon) {
-        return pointCloseTo(new Point2D.Double(x, y), epsilon);
-    }
-
-    static Matcher<Point2D> pointCloseTo(Point2D expected, double epsilon) {
-        requireNonNull(expected);
-        return new CustomMatcher<>(format("Point close to %s within +- %f",
-                expected,
-                epsilon)) {
-            @Override
-            public boolean matches(Object o) {
-                return o instanceof Point2D
-                        && ((Point2D) o).distance(expected) <= epsilon;
-            }
-        };
-    }
 
     /*
     @Deprecated
@@ -109,23 +49,6 @@ public interface TestFunctions {
         );
     }
 */
-
-    static Matcher<Object> section(Direction terminal0, Direction terminal1, Edge... edges) {
-        return allOf(
-                isA(Section.class),
-                anyOf(
-                        allOf(
-                                hasProperty("exit0", equalTo(terminal0)),
-                                hasProperty("exit1", equalTo(terminal1))
-                        ),
-                        allOf(
-                                hasProperty("exit0", equalTo(terminal1)),
-                                hasProperty("exit1", equalTo(terminal0))
-                        )
-                ),
-                hasProperty("edges", containsInAnyOrder(edges))
-        );
-    }
 
     static String text(String... lines) {
         return String.join("\n", lines) + "\n";

@@ -67,4 +67,11 @@ public interface Edge {
      * Returns the second node
      */
     Node getNode1();
+
+    /**
+     * Returns the orientation of a point in the edge (RAD)
+     *
+     * @param location the edge location
+     */
+    double getOrientation(EdgeLocation location);
 }

@@ -39,7 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mmarini.railways.TestFunctions.pointCloseTo;
+import static org.mmarini.railways.Matchers.pointCloseTo;
 import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
 
 public class StationMapTest {

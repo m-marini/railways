@@ -41,7 +41,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mmarini.railways.TestFunctions.locatedAt;
+import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
 
 class TrainRunningAtPlatformTest {
@@ -98,7 +98,7 @@ class TrainRunningAtPlatformTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.RUNNING_STATE, next.getState());
         assertEquals(MAX_SPEED, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt(cd, d, LENGTH - DT * MAX_SPEED + distance));
+        assertThat(next.getLocation(), locatedAt("cd", "d", LENGTH - DT * MAX_SPEED + distance));
     }
 
     @Test
@@ -122,6 +122,6 @@ class TrainRunningAtPlatformTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.LOADING_STATE, next.getState());
         assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt(bc, c, 0));
+        assertThat(next.getLocation(), locatedAt("bc", "c", 0));
     }
 }
