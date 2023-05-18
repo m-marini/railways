@@ -29,73 +29,38 @@
 package org.mmarini.railways2.swing;
 
 import org.mmarini.railways2.model.StationStatus;
-import org.mmarini.railways2.model.Train;
-import org.mmarini.railways2.model.geometry.*;
-import org.mmarini.railways2.model.routes.Entry;
-import org.mmarini.railways2.model.routes.Exit;
-import org.mmarini.railways2.model.routes.Signal;
-import org.mmarini.railways2.model.routes.Switch;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Point2D;
-
-import static java.lang.Math.toRadians;
 
 class MapPanelTest {
 
     private static final Dimension DEFAULT_SIZE = new Dimension(800, 600);
-    private static final double LENGTH = 500;
 
     public static void main(String[] args) {
-        new MapPanelTest().run();
+        new MapPanelTest(
+                new WithTrain(StationExamples.createSwitchStation())
+                        .addTrain(3, "a", "e", "ab", "b", 100)
+                        .addTrain(3, "a", "e", "bc", "c", 10)
+                        .build()
+
+                /*
+                new WithTrain(StationExamples.create2CrossExitStation(true))
+                        .addTrain(10, "a", "e", "ab", "b", 0)
+                        .addTrain(3, "a", "j", "gh", "h", 0)
+                        .build()
+                 */
+        ).run();
     }
 
     private final MapPanel panel;
     private final JFrame frame;
     private final StationStatus status;
 
-    public MapPanelTest() {
+    public MapPanelTest(StationStatus status) {
         this.frame = new JFrame(getClass().getSimpleName());
         this.panel = new MapPanel();
-        this.status = createStationStatus();
-    }
-
-    /*
-     * Entry(a) --curve-- Signal(b) --platform-- Signal(c) --track-- Switch(d) -- track -- Exit(e)
-     *                                                                         -- curve -- Exit(f)
-     */
-    protected StationStatus createStationStatus() {
-        StationMap stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(0, LENGTH), "ab")
-                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
-                .addNode("c", new Point2D.Double(2 * LENGTH, 0), "bc", "cd")
-                .addNode("d", new Point2D.Double(2 * LENGTH + 1, 0), "cd", "de", "df")
-                .addNode("e", new Point2D.Double(3 * LENGTH + 1, 0), "de")
-                .addNode("f", new Point2D.Double(3 * LENGTH + 1, -LENGTH), "df")
-                .addEdge(Curve.builder("ab", toRadians(90)), "a", "b")
-                .addEdge(Platform.builder("bc"), "b", "c")
-                .addEdge(Track.builder("cd"), "c", "d")
-                .addEdge(Track.builder("de"), "d", "e")
-                .addEdge(Curve.builder("df", toRadians(-90)), "d", "f")
-                .build();
-        StationStatus status = new StationStatus.Builder(stationMap)
-                .addRoute(Entry::create, "a")
-                .addRoute(Signal::create, "b")
-                .addRoute(Signal::create, "c")
-                .addRoute(Switch::through, "d")
-                .addRoute(Exit::create, "e")
-                .addRoute(Exit::create, "f")
-                .build();
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Entry aEntry = status.getRoute("a");
-        Exit eExit = status.getRoute("e");
-        Train t = Train.create("id", 3, aEntry, eExit)
-                .setLocation(EdgeLocation.create(bc, c,  10));
-        return status.setTrains(t);
+        this.status = status;
     }
 
     private void run() {

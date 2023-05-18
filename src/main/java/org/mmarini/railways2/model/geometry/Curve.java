@@ -105,14 +105,14 @@ public class Curve extends AbstractEdge {
                         (da > 0 && a1 >= RAD360)) ||
                 (a0 < 0 &&
                         (da >= 0 && a0 + da >= 0 ||
-                                da < 0 && a0 + da <= _RAD360)) ?
+                                da < 0 && a0 + da <= RAD_360)) ?
                 1 :
                 max(y0, y1);
         double min = (a0 >= 0 &&
                 (da >= 0 && a1 >= RAD180 ||
-                        da < 0 && a1 <= _RAD180)) ||
+                        da < 0 && a1 <= RAD_180)) ||
                 (a0 < 0 &&
-                        (da <= 0 && a1 <= _RAD180 ||
+                        (da <= 0 && a1 <= RAD_180 ||
                                 da > 0 && a1 >= RAD180)) ?
                 -1 :
                 min(y0, y1);
@@ -210,6 +210,18 @@ public class Curve extends AbstractEdge {
     public Point2D getLocation(EdgeLocation location) {
         double a = getAngle(location);
         return new Point2D.Double(center.getX() + radius * cos(a), center.getY() + radius * sin(a));
+    }
+
+    @Override
+    public double getOrientation(EdgeLocation location) {
+        double da = location.getDirection().getOrigin().equals(node0) ?
+                angle >= 0 ?
+                        (length - location.getDistance()) / radius + RAD90 :
+                        (-length + location.getDistance()) / radius + RAD_90 :
+                angle >= 0 ?
+                        location.getDistance() / radius + RAD_90 :
+                        -location.getDistance() / radius + RAD90;
+        return normalizeRad(angle0 + da);
     }
 
     /**

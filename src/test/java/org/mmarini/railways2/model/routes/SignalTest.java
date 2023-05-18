@@ -44,40 +44,40 @@ class SignalTest {
 
     private StationMap station;
     private Signal route;
+    private Node a;
+    private Node b;
+    private Node c;
+    private Edge ab;
+    private Edge bc;
 
     /*
      * a --ab-- Signal(b) --bc-- c
      */
     @BeforeEach
     void beforeEach() {
-        station = new StationBuilder("station")
+        this.station = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(200, 0), "bc")
                 .addEdge(Track.builder("ab"), "a", "b")
                 .addEdge(Track.builder("bc"), "b", "c")
                 .build();
-        route = Signal.create(station.getNode("b"));
+        this.a = station.getNode("a");
+        this.b = station.getNode("b");
+        this.c = station.getNode("c");
+        this.ab = station.getEdge("ab");
+        this.bc = station.getEdge("bc");
+        route = Signal.create(b);
     }
 
     @Test
     void getCrossingEdges() {
-        Node b = station.getNode("b");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
-
         assertThat(route.getCrossingEdges(new Direction(ab, b)), empty());
         assertThat(route.getCrossingEdges(new Direction(bc, b)), empty());
     }
 
     @Test
     void getExit() {
-        Node a = station.getNode("a");
-        Node b = station.getNode("b");
-        Node c = station.getNode("c");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
-
         Optional<Direction> dirOpt = route.getExit(new Direction(ab, b));
         assertTrue(dirOpt.isPresent());
         assertEquals(new Direction(bc, c), dirOpt.orElseThrow());
@@ -92,12 +92,7 @@ class SignalTest {
 
     @Test
     void getExits() {
-        Node a = station.getNode("a");
-        Node c = station.getNode("c");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
-
-        Collection<Direction> exits = route.getExits();
+        Collection<Direction> exits = route.getValidExits();
         assertThat(exits, containsInAnyOrder(
                 new Direction(ab, a),
                 new Direction(bc, c)
@@ -105,11 +100,26 @@ class SignalTest {
     }
 
     @Test
+    void isExitLockedFalse() {
+        // Given ...
+
+        //When ... Then ...
+        assertFalse(route.isExitLocked(new Direction(ab, a)));
+        assertFalse(route.isExitLocked(new Direction(bc, c)));
+    }
+
+    @Test
+    void isExitLockedTrue() {
+        // Given ...
+        route = Signal.createLocks(new Direction(ab, b)).apply(new Node[]{b});
+
+        //When ... Then ...
+        assertFalse(route.isExitLocked(new Direction(ab, a)));
+        assertTrue(route.isExitLocked(new Direction(bc, c)));
+    }
+
+    @Test
     void lock() {
-        Node b = station.getNode("b");
-        Node c = station.getNode("c");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
         Direction a_b = new Direction(ab, b);
         Direction c_b = new Direction(bc, b);
         Direction b_c = new Direction(bc, c);
@@ -138,9 +148,6 @@ class SignalTest {
 
     @Test
     void unlock() {
-        Node b = station.getNode("b");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
         Direction a_b = new Direction(ab, b);
         Direction c_b = new Direction(bc, b);
 

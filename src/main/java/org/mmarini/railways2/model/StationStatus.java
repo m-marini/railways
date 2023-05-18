@@ -32,14 +32,19 @@ import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.*;
 
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.lang.Math.atan2;
+import static java.lang.Math.ceil;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
+import static org.mmarini.railways2.model.RailwayConstants.COACH_RAIL_DISTANCE;
 
 /**
  * Tracks the status of trains and station components.
@@ -94,6 +99,33 @@ public class StationStatus {
     }
 
     /**
+     * Returns the coach location
+     *
+     * @param start the front of coach
+     */
+    Optional<Tuple2<Point2D, Double>> computeCoachLocation(EdgeLocation start) {
+        return getLocationAt(start, COACH_RAIL_DISTANCE)
+                .map(EdgeLocation::getLocation)
+                .flatMap(front ->
+                        getLocationAt(start, COACH_LENGTH - COACH_RAIL_DISTANCE)
+                                .map(EdgeLocation::getLocation)
+                                .map(rear -> {
+                                    double x0 = rear.getX();
+                                    double x1 = front.getX();
+                                    double y0 = rear.getY();
+                                    double y1 = front.getY();
+                                    Point2D center = new Point2D.Double(
+                                            (x0 + x1) / 2,
+                                            (y0 + y1) / 2);
+                                    double dx = x1 - x0;
+                                    double dy = y1 - y0;
+                                    double orientation = atan2(dy, dx);
+                                    return Tuple2.of(center, orientation);
+                                })
+                );
+    }
+
+    /**
      * Returns first train by entry
      */
     Map<Entry, Train> createFirstTrainByEntry() {
@@ -140,7 +172,7 @@ public class StationStatus {
         // Extracts all the section terminal directions
         Set<Direction> fringe = routes.stream()
                 .filter(r -> r instanceof SectionTerminal)
-                .flatMap(route -> route.getExits().stream())
+                .flatMap(route -> route.getValidExits().stream())
                 .collect(Collectors.toSet());
 
         while (!fringe.isEmpty()) {
@@ -300,6 +332,36 @@ public class StationStatus {
      */
     Optional<Train> getFirstTrainFrom(Entry entry) {
         return Optional.ofNullable(getFirstTrainByEntry().get(entry));
+    }
+
+    /**
+     * Returns the location from a point at a given distance
+     *
+     * @param start    the start location
+     * @param distance the distance
+     */
+    Optional<EdgeLocation> getLocationAt(EdgeLocation start, double distance) {
+        while (start != null) {
+            double terminalDistance = start.getDistance();
+            if (distance <= terminalDistance) {
+                return Optional.of(start.setDistance(terminalDistance - distance));
+            }
+            distance -= terminalDistance;
+            start = getNextDirection(start.getDirection())
+                    .map(dir -> new EdgeLocation(dir, dir.getEdge().getLength()))
+                    .orElse(null);
+        }
+        // Terminal not found
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the next direction
+     *
+     * @param direction the direction
+     */
+    private Optional<Direction> getNextDirection(Direction direction) {
+        return getRoute(direction.getDestination()).getExit(direction);
     }
 
     /**
@@ -473,6 +535,45 @@ public class StationStatus {
     }
 
     /**
+     * Returns the train composition
+     *
+     * @param train the train
+     */
+    TrainComposition getTrainCoaches(Train train) {
+        Train.State state = train.getState();
+        List<Tuple2<Point2D, Double>> coaches = new ArrayList<>();
+        if (Train.EXITING_STATE.equals(state)) {
+            int numExitedCoaches = (int) ceil(train.getExitDistance() / COACH_LENGTH);
+            if (numExitedCoaches >= train.getNumCoaches()) {
+                return TrainComposition.EMPTY;
+            }
+            double startDistance = numExitedCoaches * COACH_LENGTH - train.getExitDistance();
+            Direction exitDir = train.getExitingNode().getValidExits().iterator().next();
+            EdgeLocation start = new EdgeLocation(exitDir, exitDir.getEdge().getLength() - startDistance);
+            int n = train.getNumCoaches() - numExitedCoaches - 1;
+            while (start != null && n > 0) {
+                computeCoachLocation(start).ifPresent(coaches::add);
+                start = getLocationAt(start, COACH_LENGTH).orElse(null);
+                n--;
+            }
+            Tuple2<Point2D, Double> tail = computeCoachLocation(start).orElse(null);
+            return new TrainComposition(null, tail, coaches);
+        } else {
+            EdgeLocation start = train.getLocation().opposite();
+            Tuple2<Point2D, Double> head = computeCoachLocation(start).orElse(null);
+            start = getLocationAt(start, COACH_LENGTH).orElse(null);
+            int n = train.getNumCoaches() - 2;
+            while (start != null && n > 0) {
+                computeCoachLocation(start).ifPresent(coaches::add);
+                start = getLocationAt(start, COACH_LENGTH).orElse(null);
+                n--;
+            }
+            Tuple2<Point2D, Double> tail = computeCoachLocation(start).orElse(null);
+            return new TrainComposition(head, tail, coaches);
+        }
+    }
+
+    /**
      * Returns the edges of the train
      *
      * @param train the train
@@ -520,6 +621,14 @@ public class StationStatus {
     }
 
     /**
+     * Returns the composition of all trains
+     */
+    public Stream<TrainComposition> getTrainsCoaches() {
+        return getTrains().stream()
+                .map(this::getTrainCoaches);
+    }
+
+    /**
      * Returns true if the entry is clear for given train
      * The entry is clear if the train is the first in the entry queue
      * and the entry section is clear
@@ -533,7 +642,7 @@ public class StationStatus {
                 .filter(unused ->
                                 // Checks for entry section clear
                         {
-                            Edge edge = arrival.getExits().iterator().next().getEdge();
+                            Edge edge = arrival.getValidExits().iterator().next().getEdge();
                             return isSectionClear(edge);
                         }
                 )
@@ -545,7 +654,7 @@ public class StationStatus {
      *
      * @param exit the exit
      */
-    boolean isExitClear(Exit exit) {
+    public boolean isExitClear(Exit exit) {
         return !getTrainByExit().containsKey(exit);
     }
 
@@ -601,16 +710,58 @@ public class StationStatus {
     }
 
     /**
-     * Returns true if the section containing the edge is clear (no transiting train)
+     * Returns true if the section containing the edge is clear (no transiting train) and no trains is transiting in the crossing sections
      *
      * @param edge the edge
      */
-    boolean isSectionClear(Edge edge) {
+    public boolean isSectionClear(Edge edge) {
         // Searches section
         return getSection(edge)
                 // Filter for train in the section
                 .filter(section -> getTrain(section).isEmpty())
+                .filter(section->
+                        // Filter for train in crossing sections
+                        section.getCrossingSections().stream()
+                                .noneMatch(crossSection-> getTrain(crossSection).isPresent())
+                        )
                 .isPresent();
+    }
+
+    /**
+     * Retruns true if the section is locked.
+     * <p>
+     * The section is locked if it is not clear or any terminals is locked or if any crossing section is not clear
+     * </p>
+     *
+     * @param edge the session edge
+     */
+    public boolean isSectionLocked(Edge edge) {
+        if (!isSectionClear(edge)) {
+            // Section not clear
+            return true;
+        }
+        Optional<Section> sectionOpt = getSection(edge);
+        if (sectionOpt.isEmpty()) {
+            // Session does not exit
+            return true;
+        }
+        Section section = sectionOpt.orElseThrow();
+        Direction exit0 = section.getExit0();
+        Route route0 = getRoute(exit0.getOrigin());
+        if (route0 instanceof Signal && ((Signal) route0).isExitLocked(exit0)) {
+            // Signal locked
+            return true;
+        }
+        Direction exit1 = section.getExit1();
+        Route route1 = getRoute(exit1.getOrigin());
+        if (route1 instanceof Signal && ((Signal) route1).isExitLocked(exit1)) {
+            // Signal locked
+            return true;
+        }
+        // Searches for any train in crossing sections
+        return section.getCrossingSections().stream()
+                .anyMatch(s ->
+                        getTrain(s).isPresent());
     }
 
     /**

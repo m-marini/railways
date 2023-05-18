@@ -30,6 +30,7 @@ package org.mmarini.railways2.model.routes;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mmarini.railways.Matchers;
 import org.mmarini.railways2.model.geometry.*;
 
 import java.awt.geom.Point2D;
@@ -40,8 +41,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mmarini.railways.TestFunctions.emptyOptional;
-import static org.mmarini.railways.TestFunctions.optionalContaining;
+import static org.mmarini.railways.Matchers.emptyOptional;
+import static org.mmarini.railways.Matchers.optionalOf;
 
 class DoubleSlipSwitchTest {
 
@@ -224,18 +225,18 @@ class DoubleSlipSwitchTest {
         // a-b-g-h
         // e-f-c-d
         assertFalse(route.isThrough());
-        assertThat(dirAB, optionalContaining(new Direction(bg, g)));
+        assertThat(dirAB, Matchers.optionalOf(new Direction(bg, g)));
         assertThat(dirCB, emptyOptional());
-        assertThat(dirGB, optionalContaining(new Direction(ab, a)));
+        assertThat(dirGB, Matchers.optionalOf(new Direction(ab, a)));
         assertThat(dirBC, emptyOptional());
-        assertThat(dirDC, optionalContaining(new Direction(fc, f)));
-        assertThat(dirFC, optionalContaining(new Direction(cd, d)));
-        assertThat(dirEF, optionalContaining(new Direction(fc, c)));
-        assertThat(dirCF, optionalContaining(new Direction(ef, e)));
+        assertThat(dirDC, Matchers.optionalOf(new Direction(fc, f)));
+        assertThat(dirFC, Matchers.optionalOf(new Direction(cd, d)));
+        assertThat(dirEF, Matchers.optionalOf(new Direction(fc, c)));
+        assertThat(dirCF, Matchers.optionalOf(new Direction(ef, e)));
         assertThat(dirGF, emptyOptional());
-        assertThat(dirBG, optionalContaining(new Direction(gh, h)));
+        assertThat(dirBG, Matchers.optionalOf(new Direction(gh, h)));
         assertThat(dirFG, emptyOptional());
-        assertThat(dirHG, optionalContaining(new Direction(bg, b)));
+        assertThat(dirHG, Matchers.optionalOf(new Direction(bg, b)));
     }
 
     @Test
@@ -276,18 +277,18 @@ class DoubleSlipSwitchTest {
         // a-b-c-d
         // e-f-g-h
         assertTrue(route.isThrough());
-        assertThat(dirAB, optionalContaining(new Direction(bc, c)));
-        assertThat(dirCB, optionalContaining(new Direction(ab, a)));
+        assertThat(dirAB, Matchers.optionalOf(new Direction(bc, c)));
+        assertThat(dirCB, Matchers.optionalOf(new Direction(ab, a)));
         assertThat(dirGB, emptyOptional());
-        assertThat(dirBC, optionalContaining(new Direction(cd, d)));
-        assertThat(dirDC, optionalContaining(new Direction(bc, b)));
+        assertThat(dirBC, Matchers.optionalOf(new Direction(cd, d)));
+        assertThat(dirDC, Matchers.optionalOf(new Direction(bc, b)));
         assertThat(dirFC, emptyOptional());
-        assertThat(dirEF, optionalContaining(new Direction(fg, g)));
+        assertThat(dirEF, Matchers.optionalOf(new Direction(fg, g)));
         assertThat(dirCF, emptyOptional());
-        assertThat(dirGF, optionalContaining(new Direction(ef, e)));
+        assertThat(dirGF, Matchers.optionalOf(new Direction(ef, e)));
         assertThat(dirBG, emptyOptional());
-        assertThat(dirFG, optionalContaining(new Direction(gh, h)));
-        assertThat(dirHG, optionalContaining(new Direction(fg, f)));
+        assertThat(dirFG, Matchers.optionalOf(new Direction(gh, h)));
+        assertThat(dirHG, Matchers.optionalOf(new Direction(fg, f)));
     }
 
     @Test
@@ -310,7 +311,7 @@ class DoubleSlipSwitchTest {
         Edge fc = station.getEdge("fc");
 
         // When ...
-        Collection<Direction> exits = route.getExits();
+        Collection<Direction> exits = route.getValidExits();
 
         // Then ...
         // a-b-g-h
@@ -347,7 +348,7 @@ class DoubleSlipSwitchTest {
         Edge gh = station.getEdge("gh");
 
         // When ...
-        Collection<Direction> exits = route.getExits();
+        Collection<Direction> exits = route.getValidExits();
 
         // Then ...
         // a-b-c-d

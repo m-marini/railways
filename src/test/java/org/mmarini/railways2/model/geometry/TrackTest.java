@@ -38,7 +38,7 @@ import static java.lang.Math.sqrt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mmarini.railways.TestFunctions.pointCloseTo;
+import static org.mmarini.railways.Matchers.pointCloseTo;
 
 class TrackTest {
     public static final int LENGTH = 100;

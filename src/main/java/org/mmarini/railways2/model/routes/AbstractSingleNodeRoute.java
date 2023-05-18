@@ -45,7 +45,8 @@ import static java.util.Objects.requireNonNull;
 public abstract class AbstractSingleNodeRoute implements Route {
     protected final Node node;
     protected final Map<Direction, Direction> exitByEntry;
-    private final Collection<Direction> exits;
+    private final Collection<Direction> validExits;
+    private final Collection<Direction> validEntries;
 
     /**
      * Creates the abstract single node route
@@ -56,7 +57,8 @@ public abstract class AbstractSingleNodeRoute implements Route {
     protected AbstractSingleNodeRoute(Node node, Map<Direction, Direction> exitByEntry) {
         this.node = requireNonNull(node);
         this.exitByEntry = requireNonNull(exitByEntry);
-        this.exits = exitByEntry.values();
+        this.validExits = exitByEntry.values();
+        this.validEntries = exitByEntry.keySet();
     }
 
     @Override
@@ -78,8 +80,8 @@ public abstract class AbstractSingleNodeRoute implements Route {
     }
 
     @Override
-    public Collection<Direction> getExits() {
-        return exits;
+    public Collection<Direction> getValidExits() {
+        return validExits;
     }
 
     @Override
@@ -88,13 +90,18 @@ public abstract class AbstractSingleNodeRoute implements Route {
     }
 
     @Override
-    public Collection<Node> getNodes() {
+    public List<Node> getNodes() {
         return List.of(node);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(node);
+    }
+
+    @Override
+    public Collection<Direction> getValidEntries() {
+        return validEntries;
     }
 
     @Override

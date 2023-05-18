@@ -29,6 +29,7 @@
 package org.mmarini.railways2.swing;
 
 import java.awt.*;
+import java.util.function.Consumer;
 
 /**
  * Graphic constants
@@ -38,16 +39,17 @@ public interface GraphConstants {
     /**
      * Coach width (m)
      */
-    double COACH_WIDTH = 3;
-
-    /**
-     * Track gauge (m)
-     */
-    double TRACK_GAUGE = 1.435;
+    double COACH_WIDTH = 3.15;
 
     Color PLATFORM_GREEN_COLOR = Color.getHSBColor(140f / 360f, 0.9f, 0.9f);
     Color PLATFORM_RED_COLOR = Color.getHSBColor(343f / 360, 0.93f, 0.75f);
+    Color TRACK_BLACK_COLOR = Color.getHSBColor(26f / 360, 0.23f, 0.27f);
     Color TRACK_GREEN_COLOR = Color.getHSBColor(162f / 360f, 0.9f, 1f);
     Color TRACK_RED_COLOR = Color.getHSBColor(343f / 360, 0.93f, 1f);
     Color TRAIN_COLOR = Color.getHSBColor(53f / 360f, .80f, 1f);
+    /**
+     * None painter
+     */
+    Consumer<Graphics2D> NONE_PAINTER = unused -> {
+    };
 }

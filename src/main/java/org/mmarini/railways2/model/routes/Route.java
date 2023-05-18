@@ -33,6 +33,7 @@ import org.mmarini.railways2.model.geometry.Edge;
 import org.mmarini.railways2.model.geometry.Node;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -58,7 +59,12 @@ public interface Route {
     /**
      * Returns the valid exit of the route
      */
-    Collection<Direction> getExits();
+    Collection<Direction> getValidExits();
+
+    /**
+     * Returns the valid entries of the route
+     */
+    Collection<Direction> getValidEntries();
 
     /**
      * Returns the identifier
@@ -68,5 +74,5 @@ public interface Route {
     /**
      * Returns the nodes
      */
-    Collection<Node> getNodes();
+    List<Node> getNodes();
 }

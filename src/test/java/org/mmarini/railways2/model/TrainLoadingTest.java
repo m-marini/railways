@@ -40,7 +40,7 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mmarini.railways.TestFunctions.locatedAt;
+import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.LOADING_TIME;
 
 class TrainLoadingTest {
@@ -88,7 +88,7 @@ class TrainLoadingTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.WAITING_FOR_RUN_STATE, next.getState());
         assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt(ab, b, 0));
+        assertThat(next.getLocation(), locatedAt("ab", "b", 0));
         assertTrue(next.isLoaded());
     }
 
@@ -109,7 +109,7 @@ class TrainLoadingTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.LOADING_STATE, next.getState());
         assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt(ab, b, 0));
+        assertThat(next.getLocation(), locatedAt("ab", "b", 0));
         assertFalse(next.isLoaded());
     }
 }

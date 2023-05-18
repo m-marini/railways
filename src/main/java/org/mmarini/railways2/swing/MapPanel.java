@@ -29,22 +29,17 @@
 package org.mmarini.railways2.swing;
 
 import org.mmarini.railways2.model.StationStatus;
-import org.mmarini.railways2.model.geometry.*;
+import org.mmarini.railways2.model.geometry.Edge;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Arc2D;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static java.lang.Math.toDegrees;
 import static org.mmarini.railways2.swing.GraphConstants.*;
+import static org.mmarini.railways2.swing.Painters.TRACK_STROKE;
+import static org.mmarini.railways2.swing.Painters.createLinePainter;
 
 /**
  * Displays the station map
@@ -52,108 +47,19 @@ import static org.mmarini.railways2.swing.GraphConstants.*;
 public class MapPanel extends JComponent {
     public static final Color BACKGROUND_COLOR = Color.getHSBColor(0.278f, 0.10f,
             0.671f);
-    private static final BasicStroke TRACK_STROCK = new BasicStroke((float) TRACK_GAUGE);
-    private static final BasicStroke TRAIN_STROKE = new BasicStroke((float) COACH_WIDTH);
     private static final int BORDER = 10;
-    private static final Consumer<Graphics2D> NONE_PAINTER = unused -> {
-    };
-
-    private static Consumer<Graphics2D> createCurvePainter(EdgeSegment segment, Stroke stroke, Color color) {
-        Curve curve = segment.getEdge();
-        double radius = curve.getRadius();
-        Point2D center = curve.getCenter();
-        double x = center.getX() - radius;
-        double y = center.getY() - radius;
-        float diameter = (float) (radius * 2);
-        double start = toDegrees(-curve.getAngle(segment.getLocation0()));
-        double end = toDegrees(-curve.getAngle(segment.getLocation1()));
-        double extent = end - start;
-        Arc2D shape = new Arc2D.Double(x, y, diameter, diameter, start, extent, Arc2D.OPEN);
-        return createShapePainter(shape, color, stroke);
-    }
-
-    /**
-     * Returns the painter of edge
-     *
-     * @param edge  the edge
-     * @param green the color
-     */
-    private static Consumer<Graphics2D> createPainter(Edge edge, boolean green) {
-        if (edge instanceof Platform) {
-            return createTrackPainter(
-                    EdgeSegment.createFullSegment(edge),
-                    green ? PLATFORM_GREEN_COLOR : PLATFORM_RED_COLOR);
-        } else if (edge instanceof Track) {
-            return createTrackPainter(
-                    EdgeSegment.createFullSegment(edge),
-                    green ? TRACK_GREEN_COLOR : TRACK_RED_COLOR);
-        } else if (edge instanceof Curve) {
-            return createCurvePainter(
-                    EdgeSegment.createFullSegment(edge),
-                    TRACK_STROCK,
-                    green ? TRACK_GREEN_COLOR : TRACK_RED_COLOR);
-        } else {
-            return NONE_PAINTER;
-        }
-    }
-
-    /**
-     * Returns the segment painter
-     *
-     * @param segment the segment
-     */
-    private static Consumer<Graphics2D> createSegmentPainter(EdgeSegment segment) {
-        Edge edge = segment.getEdge();
-        if (edge instanceof Curve) {
-            return createCurvePainter(segment, MapPanel.TRAIN_STROKE, GraphConstants.TRAIN_COLOR);
-        } else if (edge instanceof Track) {
-            return createTrackPainter(segment, GraphConstants.TRAIN_COLOR);
-        } else {
-            return NONE_PAINTER;
-        }
-
-    }
-
-    /**
-     * Returns the shape painter
-     *
-     * @param color  the shape color
-     * @param shape  the shape
-     * @param stroke the stroke
-     */
-    private static Consumer<Graphics2D> createShapePainter(Shape shape, Color color, Stroke stroke) {
-        return gr -> {
-            gr.setColor(color);
-            gr.setStroke(stroke);
-            gr.draw(shape);
-        };
-    }
-
-    private static Consumer<Graphics2D> createTrackPainter(EdgeSegment segment, Color color) {
-        Line2D shape = new Line2D.Float(segment.getLocation0().getLocation(), segment.getLocation1().getLocation());
-        return createShapePainter(shape, color, TRACK_STROCK);
-    }
-
-    /**
-     * Returns the train painter
-     *
-     * @param status the station status
-     */
-    private static Stream<Consumer<Graphics2D>> createTrainPainter(StationStatus status) {
-        return status.getTrains()
-                .stream().flatMap(status::getTrainSegments)
-                .map(MapPanel::createSegmentPainter);
-    }
+    private static final double MIN_WIDTH = 100;
+    private static final double MIN_HEIGHT = 100;
     private Rectangle2D mapBounds;
-    private List<Consumer<Graphics2D>> painters;
+    private Consumer<Graphics2D> painter;
 
     /**
      * Creates the map panel
      */
     public MapPanel() {
-        painters = List.of();
+        painter = NONE_PAINTER;
         setBackground(BACKGROUND_COLOR);
-        mapBounds = new Rectangle2D.Float(0, 0, 500, 500);
+        mapBounds = new Rectangle2D.Double(0, 0, MIN_WIDTH, MIN_HEIGHT);
     }
 
     @Override
@@ -171,7 +77,7 @@ public class MapPanel extends JComponent {
         gr.scale((panelRect.getWidth()) / mapBounds.getWidth(),
                 -panelRect.getHeight() / mapBounds.getHeight());
         gr.translate(-mapBounds.getCenterX(), -mapBounds.getCenterY());
-        painters.forEach(c -> c.accept(gr));
+        painter.accept(gr);
     }
 
     /**
@@ -182,19 +88,28 @@ public class MapPanel extends JComponent {
      */
     public void paintStation(StationStatus status) {
         mapBounds = status.getBounds();
+        if (mapBounds.getHeight() < MIN_HEIGHT) {
+            mapBounds = new Rectangle2D.Double(mapBounds.getX(), mapBounds.getCenterY() - MIN_HEIGHT / 2, mapBounds.getWidth(), MIN_HEIGHT);
+        }
+        if (mapBounds.getWidth() < MIN_WIDTH) {
+            mapBounds = new Rectangle2D.Double(mapBounds.getCenterX() - MIN_WIDTH / 2, mapBounds.getY(), MIN_WIDTH, mapBounds.getHeight());
+        }
         Collection<? extends Edge> edges = status.getStationMap().getEdges().values();
-        Stream<Consumer<Graphics2D>> redPainters = edges.stream()
+        Consumer<Graphics2D> redPainters = edges.stream()
                 .filter(e -> status.getSection(e).isEmpty())
-                .map(edge -> createPainter(edge, false));
-        Stream<Consumer<Graphics2D>> greenPainters = edges.stream()
+                .map(edge -> createLinePainter(edge, TRACK_STROKE, TRACK_RED_COLOR))
+                .reduce(Consumer::andThen)
+                .orElseThrow();
+        Consumer<Graphics2D> greenPainters = edges.stream()
                 .filter(e -> status.getSection(e).isPresent())
-                .map(edge -> createPainter(edge, true));
-        Stream<Consumer<Graphics2D>> trainPainters = status.getTrains().stream()
-                .flatMap(train -> createTrainPainter(status));
-        painters = Stream.concat(
-                        Stream.concat(redPainters, greenPainters),
-                        trainPainters)
-                .collect(Collectors.toList());
+                .map(edge -> createLinePainter(edge, TRACK_STROKE, TRACK_GREEN_COLOR))
+                .reduce(Consumer::andThen)
+                .orElseThrow();
+        Consumer<Graphics2D> trainPainters = Painters.createLineTrainPainters(status);
+
+        painter = redPainters
+                .andThen(greenPainters)
+                .andThen(trainPainters);
         repaint();
     }
 }

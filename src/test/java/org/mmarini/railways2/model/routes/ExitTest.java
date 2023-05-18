@@ -74,7 +74,7 @@ class ExitTest {
     void getExits() {
         Node b = station.getNode("b");
         Edge bc = station.getEdge("bc");
-        assertThat(route.getExits(), contains(
+        assertThat(route.getValidExits(), contains(
                 new Direction(bc, b)
         ));
     }

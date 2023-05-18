@@ -44,9 +44,8 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mmarini.railways.TestFunctions.section;
+import static org.mmarini.railways.Matchers.*;
+import static org.mmarini.railways2.model.Matchers.isSectionWith;
 
 class StationStatusSwitchTest {
 
@@ -138,15 +137,19 @@ class StationStatusSwitchTest {
         Edge bd = stationMap.getEdge("bd");
 
         Optional<Tuple2<Section, Set<Edge>>> section = status.findSection(new Direction(ab, b));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(ab, b), new Direction(bd, b), ab, bd));
+        assertThat(section, optionalOf(tupleOf(
+                isSectionWith("ab", "b", "bd", "b", "ab", "bd"),
+                empty()
+        )));
 
         section = status.findSection(new Direction(bd, b));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(bd, b), new Direction(ab, b), ab, bd));
+        assertThat(section, optionalOf(tupleOf(
+                isSectionWith("bd", "b", "ab", "b", "ab", "bd"),
+                empty()
+        )));
 
         section = status.findSection(new Direction(bc, b));
-        assertFalse(section.isPresent());
+        assertThat(section, emptyOptional());
     }
 
     @Test
@@ -161,35 +164,17 @@ class StationStatusSwitchTest {
         Edge bd = stationMap.getEdge("bd");
 
         Optional<Tuple2<Section, Set<Edge>>> section = status.findSection(new Direction(ab, b));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(ab, b), new Direction(bc, b), ab, bc));
-        assertThat(section.orElseThrow()._2, empty());
+        assertThat(section, optionalOf(tupleOf(
+                isSectionWith("ab", "b", "bc", "b", "ab", "bc"),
+                empty()
+        )));
 
         section = status.findSection(new Direction(bc, b));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(bc, b), new Direction(ab, b), ab, bc));
-        assertThat(section.orElseThrow()._2, empty());
+        assertThat(section, optionalOf(tupleOf(
+                isSectionWith("bc", "b", "ab", "b", "ab", "bc"),
+                empty()
+        )));
 
-        assertFalse(status.findSection(new Direction(bd, b)).isPresent());
+        assertThat(status.findSection(new Direction(bd, b)), emptyOptional());
     }
-
-/*
-    @Test
-    void findSectionTerminalDeviated() {
-        createSwitch(false);
-        SingleNodeRoute a = conf.getRoute("a");
-        Edge bc = stationMap.getEdge("bc");
-        Edge bd = stationMap.getEdge("bd");
-
-        Optional<RouteDirection> dirOpt = conf.findSectionTerminal(new OrientedLocation(bc, false, 0));
-        assertFalse(dirOpt.isPresent());
-
-        dirOpt = conf.findSectionTerminal(new OrientedLocation(bd, false, 0));
-        assertTrue(dirOpt.isPresent());
-
-        RouteDirection dir = dirOpt.orElseThrow();
-        assertThat(dir, routeDirection(a, 0));
-    }
-
- */
 }

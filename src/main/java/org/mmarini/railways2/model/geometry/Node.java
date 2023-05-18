@@ -44,7 +44,8 @@ public class Node {
     private final String id;
     private final Point2D location;
     private List<Edge> edges;
-    private List<Direction> directions;
+    private List<Direction> exits;
+    private List<Direction> entries;
 
     /**
      * Creates the node
@@ -56,13 +57,14 @@ public class Node {
         this.id = requireNonNull(id);
         this.location = location;
         this.edges = List.of();
-        this.directions = null;
+        this.exits = null;
+        this.entries = null;
     }
 
     /**
      * Returns the directions from the node
      */
-    private List<Direction> createDirections() {
+    private List<Direction> createExitDirections() {
         return edges.stream().flatMap(edge -> {
             Node node0 = edge.getNode0();
             Node node1 = edge.getNode1();
@@ -72,14 +74,6 @@ public class Node {
                             Stream.of(new Direction(edge, node0)) :
                             Stream.of();
         }).collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Node node = (Node) o;
-        return id.equals(node.id);
     }
 
     /**
@@ -96,18 +90,29 @@ public class Node {
      */
     void setEdges(List<Edge> edges) {
         this.edges = edges;
-        this.directions = null;
+        this.exits = null;
     }
 
     /**
-     * Returns the directions from the node
+     * Returns the entries directions to the node
+     */
+    public List<Direction> getEntries() {
+        if (entries == null) {
+            // Lazy reference of directions
+            entries = getExits().stream().map(Direction::opposite).collect(Collectors.toList());
+        }
+        return entries;
+    }
+
+    /**
+     * Returns the exit directions from the node
      */
     public List<Direction> getExits() {
-        if (directions == null) {
+        if (exits == null) {
             // Lazy reference of directions
-            directions = createDirections();
+            exits = createExitDirections();
         }
-        return directions;
+        return exits;
     }
 
     /**
@@ -125,8 +130,16 @@ public class Node {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node node = (Node) o;
+        return location.equals(node.location);
+    }
+
+    @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(location);
     }
 
     @Override

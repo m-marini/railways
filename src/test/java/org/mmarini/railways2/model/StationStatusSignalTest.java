@@ -46,12 +46,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mmarini.railways.TestFunctions.section;
+import static org.mmarini.railways.Matchers.optionalOf;
+import static org.mmarini.railways.Matchers.tupleOf;
+import static org.mmarini.railways2.model.Matchers.isSectionWith;
 
 class StationStatusSignalTest {
 
     StationMap stationMap;
     StationStatus status;
+    private Node a;
+    private Node b;
+    private Node c;
+    private Track ab;
+    private Track bc;
+    private Entry aRoute;
+    private Signal bRoute;
+    private Exit cRoute;
 
     /**
      * Station map
@@ -68,13 +78,16 @@ class StationStatusSignalTest {
                 .addEdge(Track.builder("ab"), "a", "b")
                 .addEdge(Track.builder("bc"), "b", "c")
                 .build();
+        this.a = stationMap.getNode("a");
+        this.b = stationMap.getNode("b");
+        this.c = stationMap.getNode("c");
+        this.ab = stationMap.getEdge("ab");
+        this.bc = stationMap.getEdge("bc");
     }
 
     @Test
     void createSections() {
         createStatus();
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
 
         Collection<Section> sections = status.createSections();
 
@@ -99,48 +112,44 @@ class StationStatusSignalTest {
                 .addRoute(Signal.createLocks(locks), "b")
                 .addRoute(Exit::create, "c")
                 .build();
+        this.aRoute = status.getRoute(a);
+        this.bRoute = status.getRoute(b);
+        this.cRoute = status.getRoute(c);
     }
 
     @Test
     void findSection() {
         createStatus();
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
 
         Optional<Tuple2<Section, Set<Edge>>> section = status.findSection(new Direction(ab, b));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(ab, b), new Direction(ab, a), ab));
-        assertThat(section.orElseThrow()._2, empty());
+        assertThat(section, optionalOf(tupleOf(
+                isSectionWith("ab", "b", "ab", "a", "ab"),
+                empty()
+        )));
 
         section = status.findSection(new Direction(ab, a));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(ab, a), new Direction(ab, b), ab));
-        assertThat(section.orElseThrow()._2, empty());
+        assertThat(section, optionalOf(tupleOf(
+                isSectionWith("ab", "b", "ab", "b", "ab"),
+                empty()
+        )));
 
         section = status.findSection(new Direction(bc, b));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(bc, b), new Direction(bc, c), bc));
-        assertThat(section.orElseThrow()._2, empty());
+        assertThat(section, optionalOf(tupleOf(
+                isSectionWith("bc", "b", "bc", "c", "bc"),
+                empty()
+        )));
 
         section = status.findSection(new Direction(bc, c));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(bc, c), new Direction(bc, b), bc));
-        assertThat(section.orElseThrow()._2, empty());
+        assertThat(section, optionalOf(tupleOf(
+                isSectionWith("bc", "c", "bc", "b", "bc"),
+                empty()
+        )));
     }
 
     @Test
     void isNextRouteClear() {
         // Give ...
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
         createStatus();
-        Entry aRoute = status.getRoute("a");
-        Exit cRoute = status.getRoute("c");
         Train t1 = Train.create("t1", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(bc, c, 0));
         status = status.setTrains(t1);
@@ -153,9 +162,6 @@ class StationStatusSignalTest {
     @Test
     void isNextRouteClearLocked() {
         // Give ...
-        Node b = stationMap.getNode("b");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
         createStatus(new Direction(ab, b));
 
         // When ... Than ...
@@ -167,12 +173,6 @@ class StationStatusSignalTest {
     void isSectionClearWithTrain() {
         // Give ...
         createStatus();
-        Node c = stationMap.getNode("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        createStatus();
-        Entry aRoute = status.getRoute("a");
-        Exit cRoute = status.getRoute("c");
         Train t1 = Train.create("t1", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(bc, c, 0));
         status = status.setTrains(t1);
@@ -180,5 +180,58 @@ class StationStatusSignalTest {
         // When ... Than ...
         assertTrue(status.isSectionClear(ab));
         assertFalse(status.isSectionClear(bc));
+    }
+
+    @Test
+    void isSectionLocked1() {
+        // Given ...
+        createStatus(new Direction(ab, b));
+
+        // When ... Then ...
+        assertFalse(status.isSectionLocked(ab));
+        assertTrue(status.isSectionLocked(bc));
+    }
+
+    @Test
+    void isSectionLocked2() {
+        // Given ...
+        createStatus(new Direction(bc, b));
+
+        // When ... Then ...
+        assertTrue(status.isSectionLocked(ab));
+        assertFalse(status.isSectionLocked(bc));
+    }
+
+    @Test
+    void isSectionLockedFalse() {
+        // Given ...
+        createStatus();
+
+        // When ... Then ...
+        assertFalse(status.isSectionLocked(ab));
+        assertFalse(status.isSectionLocked(bc));
+    }
+
+    @Test
+    void isSectionLockedTrue() {
+        // Given ...
+        createStatus(new Direction(ab, b), new Direction(bc, b));
+
+        // When ... Then ...
+        assertTrue(status.isSectionLocked(ab));
+        assertTrue(status.isSectionLocked(bc));
+    }
+
+    @Test
+    void isSectionLockedWithTrain() {
+        // Given ...
+        createStatus();
+        Train t = Train.create("t", 1, aRoute, cRoute)
+                .setLocation(EdgeLocation.create(ab, b, 10));
+        status = status.setTrains(t);
+
+        // When ... Then ...
+        assertTrue(status.isSectionLocked(ab));
+        assertFalse(status.isSectionLocked(bc));
     }
 }

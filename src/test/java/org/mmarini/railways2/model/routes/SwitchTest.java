@@ -43,8 +43,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SwitchTest {
 
-    StationMap station;
-    Switch route;
+    private StationMap station;
+    private Switch bRoute;
+    private Node a;
+    private Node b;
+    private Node c;
+    private Node d;
+    private Track ab;
+    private Track bc;
+    private Track bd;
 
     /*
       a -- Switch(b) -- c
@@ -52,7 +59,7 @@ class SwitchTest {
      */
     @BeforeEach
     void beforeEach() {
-        station = new StationBuilder("station")
+        this.station = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc", "bd")
                 .addNode("c", new Point2D.Double(200, 0), "bc")
@@ -61,59 +68,52 @@ class SwitchTest {
                 .addEdge(Track.builder("bc"), "b", "c")
                 .addEdge(Track.builder("bd"), "b", "d")
                 .build();
+        this.a = station.getNode("a");
+        this.b = station.getNode("b");
+        this.c = station.getNode("c");
+        this.d = station.getNode("d");
+        this.ab = station.getEdge("ab");
+        this.bc = station.getEdge("bc");
+        this.bd = station.getEdge("bd");
     }
 
     void createSwitch(boolean through) {
-        route = Switch.create(through).apply(new Node[]{station.getNode("b")});
+        this.bRoute = Switch.create(through).apply(new Node[]{station.getNode("b")});
     }
 
     @Test
     void divergingDiverging() {
         createSwitch(false);
-        assertSame(route, route.diverging());
+        assertSame(bRoute, bRoute.diverging());
     }
 
     @Test
     void divergingThrough() {
         createSwitch(true);
-        assertTrue(route.through().isThrough());
+        assertTrue(bRoute.through().isThrough());
     }
 
     @Test
     void getCrossingEdgesDiverging() {
         createSwitch(false);
-        Node b = station.getNode("b");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
-        Edge bd = station.getEdge("bd");
 
-        assertThat(route.getCrossingEdges(new Direction(ab, b)), empty());
-        assertThat(route.getCrossingEdges(new Direction(bc, b)), empty());
-        assertThat(route.getCrossingEdges(new Direction(bd, b)), empty());
+        assertThat(bRoute.getCrossingEdges(new Direction(ab, b)), empty());
+        assertThat(bRoute.getCrossingEdges(new Direction(bc, b)), empty());
+        assertThat(bRoute.getCrossingEdges(new Direction(bd, b)), empty());
     }
 
     @Test
     void getCrossingEdgesThrough() {
         createSwitch(true);
-        Node b = station.getNode("b");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
-        Edge bd = station.getEdge("bd");
 
-        assertThat(route.getCrossingEdges(new Direction(ab, b)), empty());
-        assertThat(route.getCrossingEdges(new Direction(bc, b)), empty());
-        assertThat(route.getCrossingEdges(new Direction(bd, b)), empty());
+        assertThat(bRoute.getCrossingEdges(new Direction(ab, b)), empty());
+        assertThat(bRoute.getCrossingEdges(new Direction(bc, b)), empty());
+        assertThat(bRoute.getCrossingEdges(new Direction(bd, b)), empty());
     }
 
     @Test
     void getExitDiverging() {
         createSwitch(false);
-        Node a = station.getNode("a");
-        Node b = station.getNode("b");
-        Node d = station.getNode("d");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
-        Edge bd = station.getEdge("bd");
 
         Direction a_b = new Direction(ab, b);
         Direction b_a = new Direction(ab, a);
@@ -121,29 +121,23 @@ class SwitchTest {
         Direction b_d = new Direction(bd, d);
         Direction d_b = new Direction(bd, b);
 
-        assertFalse(route.isThrough());
+        assertFalse(bRoute.isThrough());
 
-        Optional<Direction> dirOpt = route.getExit(a_b);
+        Optional<Direction> dirOpt = bRoute.getExit(a_b);
         assertTrue(dirOpt.isPresent());
         assertEquals(b_d, dirOpt.orElseThrow());
 
-        dirOpt = route.getExit(d_b);
+        dirOpt = bRoute.getExit(d_b);
         assertTrue(dirOpt.isPresent());
         assertEquals(b_a, dirOpt.orElseThrow());
 
-        dirOpt = route.getExit(c_b);
+        dirOpt = bRoute.getExit(c_b);
         assertFalse(dirOpt.isPresent());
     }
 
     @Test
     void getExitThrow() {
         createSwitch(true);
-        Node a = station.getNode("a");
-        Node b = station.getNode("b");
-        Node c = station.getNode("c");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
-        Edge bd = station.getEdge("bd");
 
         Direction a_b = new Direction(ab, b);
         Direction b_a = new Direction(ab, a);
@@ -151,29 +145,25 @@ class SwitchTest {
         Direction b_c = new Direction(bc, c);
         Direction d_b = new Direction(bd, b);
 
-        assertTrue(route.isThrough());
+        assertTrue(bRoute.isThrough());
 
-        Optional<Direction> dirOpt = route.getExit(a_b);
+        Optional<Direction> dirOpt = bRoute.getExit(a_b);
         assertTrue(dirOpt.isPresent());
         assertEquals(b_c, dirOpt.orElseThrow());
 
-        dirOpt = route.getExit(c_b);
+        dirOpt = bRoute.getExit(c_b);
         assertTrue(dirOpt.isPresent());
         assertEquals(b_a, dirOpt.orElseThrow());
 
-        dirOpt = route.getExit(d_b);
+        dirOpt = bRoute.getExit(d_b);
         assertFalse(dirOpt.isPresent());
     }
 
     @Test
     void getExitsDiverging() {
         createSwitch(false);
-        Node a = station.getNode("a");
-        Node d = station.getNode("d");
-        Edge ab = station.getEdge("ab");
-        Edge bd = station.getEdge("bd");
 
-        Collection<Direction> exits = route.getExits();
+        Collection<Direction> exits = bRoute.getValidExits();
         assertThat(exits, containsInAnyOrder(
                 new Direction(ab, a),
                 new Direction(bd, d)
@@ -183,12 +173,8 @@ class SwitchTest {
     @Test
     void getExitsThrough() {
         createSwitch(true);
-        Node a = station.getNode("a");
-        Node c = station.getNode("c");
-        Edge ab = station.getEdge("ab");
-        Edge bc = station.getEdge("bc");
 
-        Collection<Direction> exits = route.getExits();
+        Collection<Direction> exits = bRoute.getValidExits();
         assertThat(exits, containsInAnyOrder(
                 new Direction(ab, a),
                 new Direction(bc, c)
@@ -198,12 +184,12 @@ class SwitchTest {
     @Test
     void throughDiverging() {
         createSwitch(true);
-        assertFalse(route.diverging().isThrough());
+        assertFalse(bRoute.diverging().isThrough());
     }
 
     @Test
     void throughThrough() {
         createSwitch(true);
-        assertSame(route, route.through());
+        assertSame(bRoute, bRoute.through());
     }
 }

@@ -33,10 +33,11 @@ import static java.lang.Math.PI;
 public interface MathUtils {
 
     double RAD90 = PI / 2;
+    double RAD_90 = -RAD90;
     double RAD180 = PI;
-    double _RAD180 = -PI;
+    double RAD_180 = -PI;
     double RAD360 = 2 * PI;
-    double _RAD360 = -RAD360;
+    double RAD_360 = -RAD360;
 
 
     /**
@@ -45,11 +46,11 @@ public interface MathUtils {
      * @param x angle (RAD)
      */
     static double normalizeRad(double x) {
-        while (x < _RAD180) {
+        while (x < RAD_180) {
             x += RAD360;
         }
         while (x >= RAD180) {
-            x += _RAD360;
+            x += RAD_360;
         }
         return x;
     }

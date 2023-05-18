@@ -46,13 +46,22 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mmarini.railways.TestFunctions.section;
+import static org.mmarini.railways.Matchers.optionalOf;
+import static org.mmarini.railways.Matchers.tupleOf;
+import static org.mmarini.railways2.model.Matchers.*;
 import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
 
-class StationStatusCrossRouteTest {
+class StationStatusCrossRouteTest extends WithStationStatusTest {
 
-    StationMap stationMap;
-    StationStatus status;
+    private Node e;
+    private Track ae;
+    private Track be;
+    private Track ce;
+    private Track de;
+    private Entry aRoute;
+    private Exit bRoute;
+    private Entry cRoute;
+    private Exit dRoute;
 
     /**
      * Station map
@@ -63,7 +72,7 @@ class StationStatusCrossRouteTest {
      */
     @BeforeEach
     void beforeEach() {
-        stationMap = new StationBuilder("station")
+        StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ae")
                 .addNode("b", new Point2D.Double(200, 0), "be")
                 .addNode("c", new Point2D.Double(0, -10), "ce")
@@ -74,24 +83,35 @@ class StationStatusCrossRouteTest {
                 .addEdge(Track.builder("ce"), "c", "e")
                 .addEdge(Track.builder("de"), "d", "e")
                 .build();
-        status = new StationStatus.Builder(stationMap)
+        this.status = new StationStatus.Builder(stationMap)
                 .addRoute(Entry::create, "a")
-                .addRoute(Entry::create, "b")
-                .addRoute(Exit::create, "c")
+                .addRoute(Exit::create, "b")
+                .addRoute(Entry::create, "c")
                 .addRoute(Exit::create, "d")
                 .addRoute(CrossRoute::create, "e")
                 .build();
+
+        Node a = node("a");
+        Node b = node("b");
+        Node c = node("c");
+        Node d = node("d");
+        this.e = node("e");
+        this.ae = edge("ae");
+        this.be = edge("be");
+        this.ce = edge("ce");
+        this.de = edge("de");
+        this.aRoute = route("a");
+        this.bRoute = route("b");
+        this.cRoute = route("c");
+        this.dRoute = route("d");
     }
 
     @Test
     void createFirstTrainByEntry() {
-        // Give ...
-        Entry aRoute = status.getRoute("a");
-        Entry bRoute = status.getRoute("b");
-        Exit cRoute = status.getRoute("c");
-        Train t1 = Train.create("t1", 1, aRoute, cRoute);
-        Train t2 = Train.create("t2", 1, aRoute, cRoute).setArrivalTime(ENTRY_TIMEOUT - 1);
-        Train t3 = Train.create("t3", 1, bRoute, cRoute);
+        // Given ...
+        Train t1 = Train.create("t1", 1, aRoute, bRoute);
+        Train t2 = Train.create("t2", 1, aRoute, bRoute).setArrivalTime(ENTRY_TIMEOUT - 1);
+        Train t3 = Train.create("t3", 1, cRoute, dRoute);
         status = status.setTrains(t1, t2, t3);
 
         // When ...
@@ -99,17 +119,17 @@ class StationStatusCrossRouteTest {
 
         // Than ...
         assertThat(map, hasEntry(aRoute, t2));
-        assertThat(map, hasEntry(bRoute, t3));
+        assertThat(map, hasEntry(cRoute, t3));
     }
 
     @Test
     void createSections() {
-        Edge ae = stationMap.getEdge("ae");
-        Edge be = stationMap.getEdge("be");
-        Edge ce = stationMap.getEdge("ce");
-        Edge de = stationMap.getEdge("de");
+        // Given ...
+
+        // When ...
         Collection<Section> sections = status.createSections();
 
+        // Then ...
         assertThat(sections, hasSize(2));
         assertThat(sections, hasItem(allOf(
                 hasProperty("id", equalTo("ae")),
@@ -131,55 +151,45 @@ class StationStatusCrossRouteTest {
 
     @Test
     void findSection() {
-        Node e = stationMap.getNode("e");
-        Edge ae = stationMap.getEdge("ae");
-        Edge be = stationMap.getEdge("be");
-        Edge ce = stationMap.getEdge("ce");
-        Edge de = stationMap.getEdge("de");
+        // Given ...
 
-        Optional<Tuple2<Section, Set<Edge>>> section = status.findSection(new Direction(ae, e));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(ae, e), new Direction(be, e), ae, be));
-        assertThat(section.orElseThrow()._2, containsInAnyOrder(ce, de));
+        // When ...
+        Optional<Tuple2<Section, Set<Edge>>> sectionAE = status.findSection(direction("ae", "e"));
+        Optional<Tuple2<Section, Set<Edge>>> sectionBE = status.findSection( direction("be", "e"));
+        Optional<Tuple2<Section, Set<Edge>>> sectionCE = status.findSection(direction("ce", "e"));
+        Optional<Tuple2<Section, Set<Edge>>> sectionDE = status.findSection(direction("de", "e"));
 
-        section = status.findSection(new Direction(be, e));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(be, e), new Direction(ae, e), ae, be));
-        assertThat(section.orElseThrow()._2, containsInAnyOrder(ce, de));
+        // Then ...
+        assertThat(sectionAE, optionalOf(tupleOf(
+                isSectionWith("ae", "e", "be", "e", "ae", "be"),
+                containsInAnyOrder(isEdge("ce"), isEdge("de")))));
 
-        section = status.findSection(new Direction(ce, e));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(ce, e), new Direction(de, e), ce, de));
-        assertThat(section.orElseThrow()._2, containsInAnyOrder(ae, be));
+        assertThat(sectionBE, optionalOf(tupleOf(
+                isSectionWith("be", "e", "ae", "e", "ae", "be"),
+                containsInAnyOrder(isEdge("ce"), isEdge("de")))));
 
-        section = status.findSection(new Direction(de, e));
-        assertTrue(section.isPresent());
-        assertThat(section.orElseThrow()._1, section(new Direction(de, e), new Direction(ce, e), ce, de));
-        assertThat(section.orElseThrow()._2, containsInAnyOrder(ae, be));
+        assertThat(sectionCE, optionalOf(tupleOf(
+                isSectionWith("ce", "e", "de", "e", "ce", "de"),
+                containsInAnyOrder(isEdge("ae"), isEdge("be")))));
+
+        assertThat(sectionDE, optionalOf(tupleOf(
+                isSectionWith("de", "e", "ce", "e", "ce", "de"),
+                containsInAnyOrder(isEdge("ae"), isEdge("be")))));
     }
 
     @Test
     void getExit() {
-        // Give ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Node d = stationMap.getNode("d");
-        Node e = stationMap.getNode("e");
-        Edge ae = stationMap.getEdge("ae");
-        Edge be = stationMap.getEdge("be");
-        Edge ce = stationMap.getEdge("ce");
-        Edge de = stationMap.getEdge("de");
+        // Given ...
 
         // When ...
         Optional<Direction> exitAE = status.getExit(new Direction(ae, e));
         Optional<Direction> exitBE = status.getExit(new Direction(be, e));
         Optional<Direction> exitCE = status.getExit(new Direction(ce, e));
         Optional<Direction> exitDE = status.getExit(new Direction(de, e));
-        Optional<Direction> exitEA = status.getExit(new Direction(ae, a));
-        Optional<Direction> exitEB = status.getExit(new Direction(be, b));
-        Optional<Direction> exitEC = status.getExit(new Direction(ce, c));
-        Optional<Direction> exitED = status.getExit(new Direction(de, d));
+        Optional<Direction> exitEA = status.getExit(direction("ae", "a"));
+        Optional<Direction> exitEB = status.getExit(direction("be", "b"));
+        Optional<Direction> exitEC = status.getExit(direction("ce", "c"));
+        Optional<Direction> exitED = status.getExit(direction("de", "d"));
 
         // Then ...
         assertTrue(exitAE.isPresent());
@@ -191,26 +201,23 @@ class StationStatusCrossRouteTest {
         assertFalse(exitEC.isPresent());
         assertFalse(exitED.isPresent());
 
-        assertEquals(new Direction(be, b), exitAE.orElseThrow());
-        assertEquals(new Direction(ae, a), exitBE.orElseThrow());
-        assertEquals(new Direction(de, d), exitCE.orElseThrow());
-        assertEquals(new Direction(ce, c), exitDE.orElseThrow());
+        assertThat(exitAE, optionalOf(isDirection("be", "b")));
+        assertThat(exitBE, optionalOf(isDirection("ae", "a")));
+        assertThat(exitCE, optionalOf(isDirection("de", "d")));
+        assertThat(exitDE, optionalOf(isDirection("ce", "c")));
     }
 
     @Test
     void getFirstTrainFrom() {
-        // Give ...
-        Entry aRoute = status.getRoute("a");
-        Entry bRoute = status.getRoute("b");
-        Exit cRoute = status.getRoute("c");
-        Train t1 = Train.create("t1", 1, aRoute, cRoute);
-        Train t2 = Train.create("t2", 1, aRoute, cRoute).setArrivalTime(ENTRY_TIMEOUT - 1);
-        Train t3 = Train.create("t3", 1, bRoute, cRoute);
+        // Given ...
+        Train t1 = Train.create("t1", 1, aRoute, bRoute);
+        Train t2 = Train.create("t2", 1, aRoute, bRoute).setArrivalTime(ENTRY_TIMEOUT - 1);
+        Train t3 = Train.create("t3", 1, cRoute, dRoute);
         status = status.setTrains(t1, t2, t3);
 
         // When ...
         Optional<Train> fta = status.getFirstTrainFrom(aRoute);
-        Optional<Train> ftb = status.getFirstTrainFrom(bRoute);
+        Optional<Train> ftb = status.getFirstTrainFrom(cRoute);
 
         // Than ...
         assertTrue(fta.isPresent());
@@ -218,5 +225,26 @@ class StationStatusCrossRouteTest {
 
         assertTrue(ftb.isPresent());
         assertEquals(t3, ftb.orElseThrow());
+    }
+
+    @Test
+    void isSectionLockedFalse() {
+        // Given ...
+
+        // When ... Then ...
+        assertFalse(status.isSectionLocked(ae));
+        assertFalse(status.isSectionLocked(ce));
+    }
+
+    @Test
+    void isSectionLockedWithTrain() {
+        // Given ...
+        Train t = Train.create("t", 1, aRoute, bRoute)
+                .setLocation(EdgeLocation.create(ae, e, 1));
+        status = status.setTrains(t);
+
+        // When ... Then ...
+        assertTrue(status.isSectionLocked(ae));
+        assertTrue(status.isSectionLocked(ce));
     }
 }

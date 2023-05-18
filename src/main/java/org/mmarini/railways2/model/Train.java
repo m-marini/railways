@@ -63,17 +63,16 @@ public class Train {
                 ENTRY_TIMEOUT, null, MAX_SPEED, false, 0,
                 null, 0);
     }
-
     private final String id;
     private final int numCoaches;
-    private final Entry arrival;    public static final State BRAKING_STATE = new State("BRAKING_STATE", Train::braking);
+    private final Entry arrival;
     private final Exit destination;
-    private final State state;
+    private final State state;    public static final State BRAKING_STATE = new State("BRAKING_STATE", Train::braking);
     private final EdgeLocation location;
-    private final double arrivalTime;    public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    private final double arrivalTime;
     private final double speed;
     private final boolean loaded;
-    private final double loadedTime;
+    private final double loadedTime;    public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
     private final Exit exitingNode;
     private final double exitDistance;
     /**
@@ -138,7 +137,7 @@ public class Train {
             // Computes the distance in the entry edge
             double movement = context.getDt() * speed;
             // Computes the train location
-            Direction dir = arrival.getExits().iterator().next();
+            Direction dir = arrival.getValidExits().iterator().next();
             EdgeLocation location = new EdgeLocation(dir, dir.getEdge().getLength() - movement);
             return Optional.of(setSpeed(speed).setLocation(location).run());
         } else {
@@ -251,6 +250,13 @@ public class Train {
                 || location != null && location.equals(this.location)
                 || this.location != null && this.location.equals(location) ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
+    }
+
+    /**
+     * Returns the number of coaches
+     */
+    public int getNumCoaches() {
+        return numCoaches;
     }
 
     /**
@@ -430,7 +436,7 @@ public class Train {
                 return Optional.of(setLocation(newLocation).setSpeed(newSpeed));
             }
         }
-    }    public static final State RUNNING_STATE = new State("RUNNING", Train::running);
+    }
 
     /**
      * Returns the train in loaded state
@@ -459,7 +465,7 @@ public class Train {
     public double speedPhysics(double targetSpeed, double dt) {
         double acc = min(max((targetSpeed - speed) / dt, DEACCELERATION), ACCELERATION);
         return min(speed + acc * dt, MAX_SPEED);
-    }
+    }    public static final State RUNNING_STATE = new State("RUNNING", Train::running);
 
     /**
      * Returns the train started
@@ -540,6 +546,7 @@ public class Train {
             return id;
         }
     }
+
 
 
 
