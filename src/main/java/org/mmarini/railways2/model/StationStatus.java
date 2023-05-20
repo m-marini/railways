@@ -719,11 +719,11 @@ public class StationStatus {
         return getSection(edge)
                 // Filter for train in the section
                 .filter(section -> getTrain(section).isEmpty())
-                .filter(section->
+                .filter(section ->
                         // Filter for train in crossing sections
                         section.getCrossingSections().stream()
-                                .noneMatch(crossSection-> getTrain(crossSection).isPresent())
-                        )
+                                .noneMatch(crossSection -> getTrain(crossSection).isPresent())
+                )
                 .isPresent();
     }
 
@@ -775,6 +775,14 @@ public class StationStatus {
                 && signal.getExit(direction)
                 .filter(exitDir -> isSectionClear(exitDir.getEdge()))
                 .isPresent();
+    }
+
+    public StationStatus tick(double dt) {
+        SimulationContext ctx = new SimulationContext(this, dt);
+        List<Train> newTrains = getTrains().stream()
+                .flatMap(t -> t.tick(ctx).stream())
+                .collect(Collectors.toList());
+        return setTime(time + dt).setTrains(newTrains);
     }
 
     /**

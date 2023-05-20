@@ -67,6 +67,7 @@ public class WithTrain {
         Edge edge = status.getStationMap().getEdge(edgeId);
         Node to = status.getStationMap().getNode(toId);
         trains.add(Train.create(id, numCoaches, arrivalRoute, destinationRoute)
+                .setState(Train.RUNNING_STATE)
                 .setLocation(EdgeLocation.create(edge, to, distance)));
         return this;
     }

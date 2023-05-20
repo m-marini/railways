@@ -121,15 +121,6 @@ public class StationPanel extends JComponent {
         center = new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
         setPreferredSize(new Dimension(w + BORDER * 2, h + BORDER * 2));
         painter = createPainters(status);
-        /*
-        painter = transformAndPaint(new Point2D.Double(), toRadians(45), CLEAR_LINE_IMAGE_PAINTER).andThen(
-                gr -> {
-                    gr.setColor(Color.GREEN);
-                    gr.fill(new Ellipse2D.Double(-1, -1, 2, 2));
-                }
-        );
-
-         */
         repaint();
     }
 }

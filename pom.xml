@@ -11,6 +11,7 @@
 		<jackson.version>2.14.2</jackson.version>
 		<slf4j.version>2.0.6</slf4j.version>
 		<logback.version>1.4.6</logback.version>
+		<rxjava.version>3.0.0-RC2</rxjava.version>
 		<junit.version>5.9.2</junit.version>
 		<hamcrest.version>2.2</hamcrest.version>
 	</properties>
@@ -93,6 +94,16 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.reactivex.rxjava3</groupId>
+			<artifactId>rxjava</artifactId>
+			<version>${rxjava.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.akarnokd</groupId>
+			<artifactId>rxjava3-swing</artifactId>
+			<version>3.0.0-RC6</version>
 		</dependency>
 
 		<!-- Test -->

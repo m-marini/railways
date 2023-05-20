@@ -288,7 +288,7 @@ public class Train {
      *
      * @param state the state
      */
-    Train setState(State state) {
+    public Train setState(State state) {
         return this.state.equals(state) ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
     }
