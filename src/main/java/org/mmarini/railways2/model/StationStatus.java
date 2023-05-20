@@ -43,14 +43,22 @@ import static java.lang.Math.atan2;
 import static java.lang.Math.ceil;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
-import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
-import static org.mmarini.railways2.model.RailwayConstants.COACH_RAIL_DISTANCE;
+import static org.mmarini.railways2.model.RailwayConstants.*;
+import static org.mmarini.railways2.model.Utils.nextPoisson;
 
 /**
  * Tracks the status of trains and station components.
  * Retrieves the sections, the edges occupied by trains.
  */
 public class StationStatus {
+
+    /**
+     * Arrival train frequency (#/s)
+     */
+    public static final double ARRIVING_TRAIN_FREQUENCY = 10;
+    private static final int MIN_TRAIN_ID = 100;
+    private static final int MAX_TRAIN_ID = 999;
+
     /**
      * Returns the station status
      *
@@ -141,6 +149,34 @@ public class StationStatus {
                         .map(t::setV2)
                         .stream())
                 .collect(Tuple2.toMap());
+    }
+
+    List<Train> createNewTrains(List<Train> trains, double lambda, Random random) { // TODO tests
+        // Generates new trains
+        int n = nextPoisson(random, lambda);
+        List<Entry> entries = routes.stream()
+                .filter(r -> r instanceof Entry)
+                .map(r -> (Entry) r)
+                .collect(Collectors.toList());
+        List<Exit> exits = routes.stream()
+                .filter(r -> r instanceof Exit)
+                .map(r -> (Exit) r)
+                .collect(Collectors.toList());
+        for (int i = 0; i < n; i++) {
+            // Generates a unique id
+            String trainId;
+            do {
+                trainId = "T" + (random.nextInt(MAX_TRAIN_ID - MIN_TRAIN_ID + 1) + MIN_TRAIN_ID);
+            } while (trains.stream().map(Train::getId).anyMatch(trainId::equals));
+            // Generates the train length
+            int numCoaches = random.nextInt(MAX_COACH_COUNT - MIN_COACH_COUNT + 1) + MIN_COACH_COUNT;
+            // Generates the arrival and destination of train
+            Entry arrival = entries.get(random.nextInt(entries.size()));
+            Exit destination = exits.get(random.nextInt(exits.size()));
+            trains.add(Train.create(trainId, numCoaches, arrival, destination)
+                    .setArrivalTime(time + ENTRY_TIMEOUT));
+        }
+        return trains;
     }
 
     /**
@@ -728,7 +764,7 @@ public class StationStatus {
     }
 
     /**
-     * Retruns true if the section is locked.
+     * Returns true if the section is locked.
      * <p>
      * The section is locked if it is not clear or any terminals is locked or if any crossing section is not clear
      * </p>
@@ -777,11 +813,18 @@ public class StationStatus {
                 .isPresent();
     }
 
-    public StationStatus tick(double dt) {
+    /**
+     * Returns the next status simulating the time elapsed interval
+     *
+     * @param dt     the time interval (s)
+     * @param random the random generator
+     */
+    public StationStatus tick(double dt, Random random) {
         SimulationContext ctx = new SimulationContext(this, dt);
         List<Train> newTrains = getTrains().stream()
                 .flatMap(t -> t.tick(ctx).stream())
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
+        newTrains = createNewTrains(newTrains, ARRIVING_TRAIN_FREQUENCY * dt, random);
         return setTime(time + dt).setTrains(newTrains);
     }
 
@@ -828,4 +871,5 @@ public class StationStatus {
             return StationStatus.create(stationMap, routes1, List.of(), 0);
         }
     }
+
 }

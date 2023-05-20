@@ -76,6 +76,14 @@ public class Node {
         }).collect(Collectors.toList());
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node node = (Node) o;
+        return location.equals(node.location);
+    }
+
     /**
      * Returns the edges of node
      */
@@ -127,14 +135,6 @@ public class Node {
      */
     public Point2D getLocation() {
         return location;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Node node = (Node) o;
-        return location.equals(node.location);
     }
 
     @Override

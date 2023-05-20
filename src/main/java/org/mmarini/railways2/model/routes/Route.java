@@ -57,16 +57,6 @@ public interface Route {
     Optional<Direction> getExit(Direction direction);
 
     /**
-     * Returns the valid exit of the route
-     */
-    Collection<Direction> getValidExits();
-
-    /**
-     * Returns the valid entries of the route
-     */
-    Collection<Direction> getValidEntries();
-
-    /**
      * Returns the identifier
      */
     String getId();
@@ -75,4 +65,14 @@ public interface Route {
      * Returns the nodes
      */
     List<Node> getNodes();
+
+    /**
+     * Returns the valid entries of the route
+     */
+    Collection<Direction> getValidEntries();
+
+    /**
+     * Returns the valid exit of the route
+     */
+    Collection<Direction> getValidExits();
 }

@@ -80,11 +80,6 @@ public abstract class AbstractSingleNodeRoute implements Route {
     }
 
     @Override
-    public Collection<Direction> getValidExits() {
-        return validExits;
-    }
-
-    @Override
     public String getId() {
         return node.getId();
     }
@@ -95,13 +90,18 @@ public abstract class AbstractSingleNodeRoute implements Route {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(node);
+    public Collection<Direction> getValidEntries() {
+        return validEntries;
     }
 
     @Override
-    public Collection<Direction> getValidEntries() {
-        return validEntries;
+    public Collection<Direction> getValidExits() {
+        return validExits;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(node);
     }
 
     @Override

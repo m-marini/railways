@@ -28,11 +28,9 @@
 
 package org.mmarini.railways2.model.geometry;
 
-import java.awt.geom.Point2D;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-import static java.lang.Math.atan2;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 

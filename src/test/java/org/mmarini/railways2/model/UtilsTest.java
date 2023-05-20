@@ -29,26 +29,33 @@
 package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.Test;
-import org.mmarini.railways2.swing.StationExamples;
-import org.mmarini.railways2.swing.WithTrain;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import java.util.Random;
 
-public class StationStatus2CrossExitsTest extends WithStationStatusTest {
-    void createStatus(boolean through) {
-        status = new WithTrain(StationExamples.create2CrossExitStation(through))
-                .addTrain(10, "a", "e", "ab", "b", 0)
-                .addTrain(3, "a", "j", "gh", "h", 0)
-                .build();
-    }
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mmarini.railways2.model.Utils.nextPoisson;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+class UtilsTest {
     @Test
-    void isSectionClear() {
+    void nextPoissonTest() {
         // Given ...
-        createStatus(false);
+        double lambda = 1;
+        Random random = mock(Random.class);
+        when(random.nextDouble()).thenReturn(0.367d,
+                0.606, 0.606,
+                0.716, 0.716, 0.716
+        );
 
-        // When ... Then ...
-        assertFalse(status.isSectionClear(edge("gh")));
-        assertFalse(status.isSectionClear(edge("bc")));
+        // When ...
+        int n0 = nextPoisson(random, lambda);
+        int n1 = nextPoisson(random, lambda);
+        int n2 = nextPoisson(random, lambda);
+
+        // Then ...
+        assertEquals(0, n0);
+        assertEquals(1, n1);
+        assertEquals(2, n2);
     }
 }
