@@ -28,27 +28,39 @@
 
 package org.mmarini.railways2.model;
 
-import org.junit.jupiter.api.Test;
-import org.mmarini.railways2.swing.StationExamples;
-import org.mmarini.railways2.swing.WithTrain;
+import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static java.lang.Math.exp;
 
-public class StationStatus2CrossExitsTest extends WithStationStatusTest {
-    void createStatus(boolean through) {
-        status = new WithTrain(StationExamples.create2CrossExitStation(through))
-                .addTrain(10, "a", "e", "ab", "b", 0)
-                .addTrain(3, "a", "j", "gh", "h", 0)
-                .build();
+/**
+ * Utilities functions
+ */
+interface Utils {
+    static int nextPoisson(Random random, double lambda) {
+        double l = exp(-lambda);
+        int k = 0;
+        double p = random.nextDouble();
+        while (p > l) {
+            k++;
+            p = p * random.nextDouble();
+        }
+        return k;
     }
 
-    @Test
-    void isSectionClear() {
-        // Given ...
-        createStatus(false);
-
-        // When ... Then ...
-        assertFalse(status.isSectionClear(edge("gh")));
-        assertFalse(status.isSectionClear(edge("bc")));
+    /**
+     * Returns the random number with poisson distribution
+     *
+     * @param random the random generator
+     * @param lambda the rate of poisson function
+     */
+    static int nextPoisson1(Random random, double lambda) {
+        double l = exp(-lambda);
+        int k = 0;
+        double p = 1;
+        do {
+            k++;
+            p = p * random.nextDouble();
+        } while (p > l);
+        return k - 1;
     }
 }

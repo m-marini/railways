@@ -155,7 +155,7 @@ class StationStatusCrossRouteTest extends WithStationStatusTest {
 
         // When ...
         Optional<Tuple2<Section, Set<Edge>>> sectionAE = status.findSection(direction("ae", "e"));
-        Optional<Tuple2<Section, Set<Edge>>> sectionBE = status.findSection( direction("be", "e"));
+        Optional<Tuple2<Section, Set<Edge>>> sectionBE = status.findSection(direction("be", "e"));
         Optional<Tuple2<Section, Set<Edge>>> sectionCE = status.findSection(direction("ce", "e"));
         Optional<Tuple2<Section, Set<Edge>>> sectionDE = status.findSection(direction("de", "e"));
 

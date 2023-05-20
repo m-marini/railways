@@ -39,14 +39,17 @@ import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Section;
 
 import java.awt.geom.Point2D;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mmarini.railways2.model.Matchers.isEdge;
 import static org.mmarini.railways2.model.Matchers.isRoute;
+import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class StationStatus2SectionsTest extends WithStationStatusTest {
 
@@ -143,6 +146,103 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
                 hasProperty("id", equalTo("cd")),
                 equalTo(t2)
         ));
+    }
+
+    @Test
+    void generate2Train() {
+        // Given ...
+        status = status.setTime(12);
+        double lambda = 1;
+        Random random = mock(Random.class);
+        when(random.nextDouble()).thenReturn(1d, 1d, 0d); // 2 train
+        when(random.nextInt(anyInt()))
+                .thenReturn(0, 0, 0, 0) // id, len, arrival, destination
+                .thenReturn(1, 3, 1, 1); // id, len, arrival, destination
+
+        // When ...
+        List<Train> trains = status.createNewTrains(new ArrayList<>(), lambda, random);
+
+        // Then ...
+        assertThat(trains, hasSize(2));
+        assertEquals("T100", trains.get(0).getId());
+        assertEquals(3, trains.get(0).getNumCoaches());
+        assertEquals(route("a"), trains.get(0).getArrival());
+        assertEquals(route("b"), trains.get(0).getDestination());
+        assertEquals(12 + ENTRY_TIMEOUT, trains.get(0).getArrivalTime());
+
+        assertEquals("T101", trains.get(1).getId());
+        assertEquals(6, trains.get(1).getNumCoaches());
+        assertEquals(route("c"), trains.get(1).getArrival());
+        assertEquals(route("d"), trains.get(1).getDestination());
+        assertEquals(12 + ENTRY_TIMEOUT, trains.get(1).getArrivalTime());
+
+    }
+
+    @Test
+    void generateDuplicatedTrain() {
+        // Given ...
+        status = status.setTime(12);
+        double lambda = 1;
+        Random random = mock(Random.class);
+        when(random.nextDouble()).thenReturn(1d, 1d, 0d); // 2 train
+        when(random.nextInt(anyInt()))
+                .thenReturn(0, 0, 0, 0) // id, len, arrival, destination
+                .thenReturn(0) // duplicated id
+                .thenReturn(1, 3, 1, 1); // id, len, arrival, destination
+
+        // When ...
+        List<Train> trains = status.createNewTrains(new ArrayList<>(), lambda, random);
+
+        // Then ...
+        assertThat(trains, hasSize(2));
+        assertEquals("T100", trains.get(0).getId());
+        assertEquals(3, trains.get(0).getNumCoaches());
+        assertEquals(route("a"), trains.get(0).getArrival());
+        assertEquals(route("b"), trains.get(0).getDestination());
+        assertEquals(12 + ENTRY_TIMEOUT, trains.get(0).getArrivalTime());
+
+        assertEquals("T101", trains.get(1).getId());
+        assertEquals(6, trains.get(1).getNumCoaches());
+        assertEquals(route("c"), trains.get(1).getArrival());
+        assertEquals(route("d"), trains.get(1).getDestination());
+        assertEquals(12 + ENTRY_TIMEOUT, trains.get(1).getArrivalTime());
+
+    }
+
+    @Test
+    void generateNoTrain() {
+        // Given ...
+        double lambda = 1;
+        Random random = mock(Random.class);
+        when(random.nextDouble()).thenReturn(0d);
+
+        // When ...
+        List<Train> trains = status.createNewTrains(new ArrayList<>(), lambda, random);
+
+        // Then ...
+        assertThat(trains, empty());
+    }
+
+    @Test
+    void generateTrain() {
+        // Given ...
+        status = status.setTime(12);
+        double lambda = 1;
+        Random random = mock(Random.class);
+        when(random.nextDouble()).thenReturn(1d, 0d); // 1 train
+        when(random.nextInt(anyInt())).thenReturn(0, 0, 0, 0); // id, len, arrival, destination
+
+        // When ...
+        List<Train> trains = status.createNewTrains(new ArrayList<>(), lambda, random);
+
+        // Then ...
+        assertThat(trains, hasSize(1));
+        assertEquals("T100", trains.get(0).getId());
+        assertEquals(3, trains.get(0).getNumCoaches());
+        assertEquals(route("a"), trains.get(0).getArrival());
+        assertEquals(route("b"), trains.get(0).getDestination());
+        assertEquals(12 + ENTRY_TIMEOUT, trains.get(0).getArrivalTime());
+
     }
 
     @Test

@@ -42,7 +42,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mmarini.railways.Matchers.emptyOptional;
-import static org.mmarini.railways.Matchers.optionalOf;
 
 class DoubleSlipSwitchTest {
 

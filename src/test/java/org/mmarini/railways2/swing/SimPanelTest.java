@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.time.Duration;
+import java.util.Random;
 import java.util.function.Function;
 
 class SimPanelTest {
@@ -65,6 +66,7 @@ class SimPanelTest {
     private final StationPanel panel;
     private final JFrame frame;
     private final SimulatorEngineImpl<StationStatus, StationStatus> engine;
+    private final Random random;
 
     public SimPanelTest(StationStatus status) {
         this.frame = new JFrame(getClass().getSimpleName());
@@ -74,6 +76,7 @@ class SimPanelTest {
                 .setOnEvent(this::handleEvent)
                 .setOnSpeed(this::handleSpeed);
         engine.setSpeed(1);
+        random = new Random();
     }
 
     private void handleEvent(StationStatus status) {
@@ -95,7 +98,7 @@ class SimPanelTest {
     }
 
     private Tuple2<StationStatus, Double> stepUp(StationStatus status, double dt) {
-        StationStatus next = status.tick(dt);
+        StationStatus next = status.tick(dt, random);
         return Tuple2.of(next, dt);
     }
 

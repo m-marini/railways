@@ -29,6 +29,17 @@ public interface RailwayConstants extends XmlConstants {
      * Radius of standard curve element (meters)
      */
     double RADIUS = SEGMENT_LENGTH * 0.5 / sin(CURVE_RADS);
+
+    /**
+     * Minimun number of coach per train.
+     */
+    int MIN_COACH_COUNT = 3;
+
+    /**
+     * Maximum number od coach per train.
+     */
+    int MAX_COACH_COUNT = 14;
+
     /**
      * Track gauge (m)
      */
