@@ -251,8 +251,8 @@ public class Train {
     /**
      * Returns the location of train head
      */
-    public EdgeLocation getLocation() {
-        return location;
+    public Optional<EdgeLocation> getLocation() {
+        return Optional.ofNullable(location);
     }
 
     /**

@@ -62,19 +62,21 @@ public class StationStatus {
     /**
      * Returns the station status
      *
-     * @param stationMap the station map
-     * @param routes     the routes
-     * @param trains     the trains
-     * @param time       the time instant
+     * @param stationMap     the station map
+     * @param routes         the routes
+     * @param trains         the trains
+     * @param time           the time instant
+     * @param trainFrequency the train frequency
      */
-    public static StationStatus create(StationMap stationMap, List<Route> routes, List<Train> trains, double time) {
-        return new StationStatus(stationMap, routes, trains, time, null, null, null, null, null, null, null);
+    public static StationStatus create(StationMap stationMap, List<Route> routes, List<Train> trains, double time, double trainFrequency) {
+        return new StationStatus(stationMap, routes, trains, time, trainFrequency, null, null, null, null, null, null, null);
     }
 
     private final StationMap stationMap;
     private final Collection<? extends Route> routes;
     private final Collection<Train> trains;
     private final double time;
+    private final double trainFrequency;
     private Map<Node, ? extends Route> routeByNode;
     private Map<Entry, Train> firstTrainByEntry;
     private Collection<Section> sections;
@@ -86,17 +88,19 @@ public class StationStatus {
     /**
      * Creates the station status
      *
-     * @param stationMap  the station map
-     * @param routes      the routes
-     * @param trains      the trains
-     * @param time        the simulation time instant
-     * @param routeByNode the routes by nodes
+     * @param stationMap     the station map
+     * @param routes         the routes
+     * @param trains         the trains
+     * @param time           the simulation time instant
+     * @param trainFrequency the train frequency
+     * @param routeByNode    the routes by nodes
      */
-    protected StationStatus(StationMap stationMap, Collection<? extends Route> routes, Collection<Train> trains, double time, Map<Node, ? extends Route> routeByNode, Map<Entry, Train> firstTrainByEntry, Collection<Section> sections, Map<Edge, Train> trainByEdge, Map<Section, Train> trainBySection, Map<? extends Edge, Section> sectionByEdge, Map<Exit, Train> trainByExit) {
+    protected StationStatus(StationMap stationMap, Collection<? extends Route> routes, Collection<Train> trains, double time, double trainFrequency, Map<Node, ? extends Route> routeByNode, Map<Entry, Train> firstTrainByEntry, Collection<Section> sections, Map<Edge, Train> trainByEdge, Map<Section, Train> trainBySection, Map<? extends Edge, Section> sectionByEdge, Map<Exit, Train> trainByExit) {
         this.stationMap = requireNonNull(stationMap);
         this.routes = requireNonNull(routes);
         this.time = time;
         this.trains = requireNonNull(trains);
+        this.trainFrequency = trainFrequency;
         this.routeByNode = routeByNode;
         this.firstTrainByEntry = firstTrainByEntry;
         this.sections = sections;
@@ -151,7 +155,7 @@ public class StationStatus {
                 .collect(Tuple2.toMap());
     }
 
-    List<Train> createNewTrains(List<Train> trains, double lambda, Random random) { // TODO tests
+    List<Train> createNewTrains(List<Train> trains, double lambda, Random random) {
         // Generates new trains
         int n = nextPoisson(random, lambda);
         List<Entry> entries = routes.stream()
@@ -440,7 +444,7 @@ public class StationStatus {
      * @param routes the routes
      */
     public StationStatus setRoutes(Collection<? extends Route> routes) {
-        return new StationStatus(stationMap, routes, trains, time, null, null, null, null, null, null, null);
+        return new StationStatus(stationMap, routes, trains, time, trainFrequency, null, null, null, null, null, null, null);
     }
 
     /**
@@ -519,7 +523,7 @@ public class StationStatus {
      */
     public StationStatus setTime(double time) {
         return time == this.time ? this :
-                new StationStatus(stationMap, routes, trains, time, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
+                new StationStatus(stationMap, routes, trains, time, trainFrequency, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
     }
 
     /**
@@ -595,17 +599,19 @@ public class StationStatus {
             Tuple2<Point2D, Double> tail = computeCoachLocation(start).orElse(null);
             return new TrainComposition(null, tail, coaches);
         } else {
-            EdgeLocation start = train.getLocation().opposite();
-            Tuple2<Point2D, Double> head = computeCoachLocation(start).orElse(null);
-            start = getLocationAt(start, COACH_LENGTH).orElse(null);
-            int n = train.getNumCoaches() - 2;
-            while (start != null && n > 0) {
-                computeCoachLocation(start).ifPresent(coaches::add);
+            return train.getLocation().map(location -> {
+                EdgeLocation start = location.opposite();
+                Tuple2<Point2D, Double> head = computeCoachLocation(start).orElse(null);
                 start = getLocationAt(start, COACH_LENGTH).orElse(null);
-                n--;
-            }
-            Tuple2<Point2D, Double> tail = computeCoachLocation(start).orElse(null);
-            return new TrainComposition(head, tail, coaches);
+                int n = train.getNumCoaches() - 2;
+                while (start != null && n > 0) {
+                    computeCoachLocation(start).ifPresent(coaches::add);
+                    start = getLocationAt(start, COACH_LENGTH).orElse(null);
+                    n--;
+                }
+                Tuple2<Point2D, Double> tail = computeCoachLocation(start).orElse(null);
+                return new TrainComposition(head, tail, coaches);
+            }).orElse(new TrainComposition(null, null, List.of()));
         }
     }
 
@@ -615,8 +621,8 @@ public class StationStatus {
      * @param train the train
      */
     Stream<Edge> getTrainEdges(Train train) {
-        EdgeLocation location = train.getLocation();
-        return location != null ? findForwardEdges(location.opposite(), train.getLength()) : Stream.of();
+        return train.getLocation().stream()
+                .flatMap(location -> findForwardEdges(location.opposite(), train.getLength()));
     }
 
     /**
@@ -625,10 +631,8 @@ public class StationStatus {
      * @param train the train
      */
     public Stream<EdgeSegment> getTrainSegments(Train train) {
-        EdgeLocation location = train.getLocation();
-        return location != null ?
-                getSegments(location.opposite(), train.getLength()) :
-                Stream.of();
+        return train.getLocation().stream()
+                .flatMap(location -> getSegments(location.opposite(), train.getLength()));
     }
 
     /**
@@ -653,7 +657,7 @@ public class StationStatus {
      * @param trains the trains
      */
     public StationStatus setTrains(Collection<Train> trains) {
-        return new StationStatus(stationMap, routes, trains, time, routeByNode, null, sections, null, null, sectionByEdge, null);
+        return new StationStatus(stationMap, routes, trains, time, trainFrequency, routeByNode, null, sections, null, null, sectionByEdge, null);
     }
 
     /**
@@ -727,7 +731,7 @@ public class StationStatus {
      * @param train the train
      */
     public boolean isNextTracksClear(Train train) {
-        EdgeLocation location = train.getLocation();
+        EdgeLocation location = train.getLocation().orElseThrow();
         Direction direction = location.getDirection();
         double stopDistance = train.getStopDistance();
         double edgeLimitDistance = stopDistance - location.getDistance();
@@ -835,15 +839,19 @@ public class StationStatus {
     public static class Builder {
         private final StationMap stationMap;
         private final List<Tuple2<String[], Function<Node[], ? extends Route>>> builders;
+        private final double trainFrequency;
 
         /**
          * Creates the status builder
          *
-         * @param stationMap the station map
+         * @param stationMap     the station map
+         * @param trainFrequency the train frequency
          */
-        public Builder(StationMap stationMap) {
+        public Builder(StationMap stationMap, double trainFrequency) {
             this.stationMap = stationMap;
+            this.trainFrequency = trainFrequency;
             builders = new ArrayList<>();
+//            this.trainFrequency = trainFrequency;
         }
 
         /**
@@ -868,7 +876,7 @@ public class StationStatus {
                                 .toArray(Node[]::new);
                         return t._2.apply(nodes);
                     }).collect(Collectors.toList());
-            return StationStatus.create(stationMap, routes1, List.of(), 0);
+            return StationStatus.create(stationMap, routes1, List.of(), 0, trainFrequency);
         }
     }
 

@@ -152,7 +152,7 @@ class StationStatusDoubleSlipSwitchTest {
     }
 
     void createStatus(boolean through) {
-        status = new StationStatus.Builder(stationMap)
+        status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")
                 .addRoute(Entry::create, "e")
                 .addRoute(DoubleSlipSwitch.create(through), "b", "c", "f", "g")

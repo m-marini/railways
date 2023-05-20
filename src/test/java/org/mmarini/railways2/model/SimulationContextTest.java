@@ -61,7 +61,7 @@ class SimulationContextTest {
                 .addEdge(Track.builder("bc"), "b", "c")
                 .addEdge(Track.builder("cd"), "c", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap)
+        status = new StationStatus.Builder(stationMap,1 )
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Signal::create, "c")

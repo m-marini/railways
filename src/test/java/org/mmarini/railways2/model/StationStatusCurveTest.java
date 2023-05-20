@@ -76,7 +76,7 @@ class StationStatusCurveTest {
         this.a = stationMap.getNode("a");
         this.b = stationMap.getNode("b");
         this.ab = stationMap.getEdge("ab");
-        this.status = new StationStatus.Builder(stationMap)
+        this.status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")
                 .addRoute(Exit::create, "b")
                 .build();

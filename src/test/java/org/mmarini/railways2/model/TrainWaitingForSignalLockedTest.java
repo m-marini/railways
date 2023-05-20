@@ -41,6 +41,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 
 class TrainWaitingForSignalLockedTest {
@@ -65,7 +66,7 @@ class TrainWaitingForSignalLockedTest {
                 .build();
         Node b = stationMap.getNode("b");
         Edge bc = stationMap.getEdge("bc");
-        status = new StationStatus.Builder(stationMap)
+        status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(org.mmarini.railways2.model.routes.Entry::create, "a")
                 .addRoute(Signal.createLocks(new Direction(bc, b)), "b")
                 .addRoute(org.mmarini.railways2.model.routes.Exit::create, "c")
@@ -93,7 +94,7 @@ class TrainWaitingForSignalLockedTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.RUNNING_STATE, next.getState());
         assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt("ab", "b", 0));
+        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
     }
 
     @Test
@@ -121,6 +122,6 @@ class TrainWaitingForSignalLockedTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.WAITING_FOR_SIGNAL_STATE, next.getState());
         assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt("ab", "b", 0));
+        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
     }
 }
