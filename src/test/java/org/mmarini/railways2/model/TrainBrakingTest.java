@@ -41,6 +41,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.DEACCELERATION;
 import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
@@ -65,7 +66,7 @@ class TrainBrakingTest {
                 .addEdge(Track.builder("ab"), "a", "b")
                 .addEdge(Track.builder("bc"), "b", "c")
                 .build();
-        status = new StationStatus.Builder(stationMap)
+        status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
@@ -94,7 +95,7 @@ class TrainBrakingTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.BRAKING_STATE, next.getState());
         assertEquals(DEACCELERATION * DT + speed, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt("ab", "b", LENGTH - speed * DT));
+        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", LENGTH - speed * DT)));
     }
 
     @Test
@@ -122,7 +123,7 @@ class TrainBrakingTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.BRAKING_STATE, next.getState());
         assertEquals(MAX_SPEED + DEACCELERATION * DT, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt("ab", "b", distance - DT * MAX_SPEED));
+        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", distance - DT * MAX_SPEED)));
     }
 
     @Test
@@ -148,7 +149,7 @@ class TrainBrakingTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.WAITING_FOR_RUN_STATE, next.getState());
         assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt("ab", "b", distance - speed * DT));
+        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", distance - speed * DT)));
     }
 
     @Test
@@ -175,6 +176,6 @@ class TrainBrakingTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.WAITING_FOR_RUN_STATE, next.getState());
         assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), locatedAt("ab", "b", 0));
+        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
     }
 }

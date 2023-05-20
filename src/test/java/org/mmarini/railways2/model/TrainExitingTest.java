@@ -63,7 +63,7 @@ class TrainExitingTest {
                 .addEdge(Track.builder("ab"), "a", "b")
                 .addEdge(Track.builder("bc"), "b", "c")
                 .build();
-        status = new StationStatus.Builder(stationMap)
+        status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")

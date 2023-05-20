@@ -25,3 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #23: Add map panel
 - Issue #25: Add station panel
 - Issue #29: Add random arrival train
+
+### Fixed
+
+- Issue #31: StationStatus null pointer

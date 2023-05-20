@@ -83,7 +83,7 @@ class StationStatusCrossRouteTest extends WithStationStatusTest {
                 .addEdge(Track.builder("ce"), "c", "e")
                 .addEdge(Track.builder("de"), "d", "e")
                 .build();
-        this.status = new StationStatus.Builder(stationMap)
+        this.status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")
                 .addRoute(Exit::create, "b")
                 .addRoute(Entry::create, "c")

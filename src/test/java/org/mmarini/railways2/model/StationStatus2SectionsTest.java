@@ -70,7 +70,7 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
                 .addEdge(Track.builder("ab"), "a", "b")
                 .addEdge(Track.builder("cd"), "c", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap)
+        status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")
                 .addRoute(Exit::create, "b")
                 .addRoute(Entry::create, "c")

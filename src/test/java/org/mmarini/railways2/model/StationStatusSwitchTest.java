@@ -117,7 +117,7 @@ class StationStatusSwitchTest {
     }
 
     void createSwitch(boolean through) {
-        status = new StationStatus.Builder(stationMap)
+        status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")
                 .addRoute(Switch.create(through), "b")
                 .addRoute(Exit::create, "c")

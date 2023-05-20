@@ -42,6 +42,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
 import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
@@ -61,7 +62,7 @@ class TrainEnteringTest {
                 .addNode("b", new Point2D.Double(200, 0), "ab")
                 .addEdge(Track.builder("ab"), "a", "b")
                 .build();
-        status = new StationStatus.Builder(stationMap)
+        status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")
                 .addRoute(Exit::create, "b")
                 .build();
@@ -132,7 +133,7 @@ class TrainEnteringTest {
         Train next = nextOpt.orElseThrow();
         assertEquals(MAX_SPEED, next.getSpeed());
         assertEquals(Train.RUNNING_STATE, next.getState());
-        assertThat(next.getLocation(), locatedAt("ab", "b", 200 - DT * MAX_SPEED));
+        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 200 - DT * MAX_SPEED)));
     }
 
     @Test
