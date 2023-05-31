@@ -30,6 +30,7 @@ package org.mmarini.railways2.model;
 
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
+import org.mmarini.railways2.model.blocks.OrientedGeometry;
 import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.geometry.Edge;
 import org.mmarini.railways2.model.geometry.EdgeLocation;
@@ -37,6 +38,7 @@ import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.routes.Route;
 import org.mmarini.railways2.model.routes.Section;
 
+import java.awt.geom.Point2D;
 import java.util.Arrays;
 
 import static java.lang.String.format;
@@ -146,6 +148,23 @@ public interface Matchers {
 
     static Matcher<EdgeLocation> locatedAt(String edge, String destination, double distance) {
         return locatedAt(isDirection(edge, destination), closeTo(distance, 10e-3));
+    }
+
+    static Matcher<OrientedGeometry> orientedGeometry(Point2D point, int orientation) {
+        return orientedGeometry(equalTo(point), equalTo(orientation));
+    }
+
+    static Matcher<OrientedGeometry> orientedGeometry(Matcher<Point2D> point, Matcher<Integer> orientation) {
+        requireNonNull(point);
+        requireNonNull(orientation);
+        return new CustomMatcher<>(format("Oriented geometry %s, %s", point, orientation)) {
+            @Override
+            public boolean matches(Object o) {
+                return o instanceof OrientedGeometry
+                        && point.matches(((OrientedGeometry) o).getPoint())
+                        || orientation.matches(((OrientedGeometry) o).getOrientation());
+            }
+        };
     }
 
     static Matcher<Section> sectionContaining(Edge... edges) {

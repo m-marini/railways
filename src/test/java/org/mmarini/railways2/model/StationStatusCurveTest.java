@@ -45,9 +45,9 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways.Matchers.pointCloseTo;
+import static org.mmarini.railways2.model.MathUtils.RAD_180;
 import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
-import static org.mmarini.railways2.model.geometry.MathUtils.RAD_180;
 
 class StationStatusCurveTest {
 
@@ -71,7 +71,7 @@ class StationStatusCurveTest {
         this.stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(2 * RADIUS, 0), "ab")
-                .addEdge(Curve.builder("ab", RAD_180), "a", "b")
+                .addCurve("ab", RAD_180, "a", "b")
                 .build();
         this.a = stationMap.getNode("a");
         this.b = stationMap.getNode("b");

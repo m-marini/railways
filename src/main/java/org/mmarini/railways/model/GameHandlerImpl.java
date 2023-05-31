@@ -284,7 +284,7 @@ public class GameHandlerImpl implements RailwayConstants, GameHandler {
 
 	/**
 	 * @see org.mmarini.railways.model.GameHandler#select(org.mmarini.railways.model
-	 *      .elements.Signal, int)
+	 *      .elements.Signals, int)
 	 */
 	@Override
 	public void select(Semaphore element, int index) {

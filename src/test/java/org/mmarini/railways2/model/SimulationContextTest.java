@@ -47,7 +47,7 @@ class SimulationContextTest {
     /**
      * Station map
      * <pre>
-     * Entry(a) --ab-- Signal(b) --bc-- Signal(c) --cd-- Exit(dc)
+     * Entry(a) --ab-- Signals(b) --bc-- Signals(c) --cd-- Exit(dc)
      * </pre>
      */
     @BeforeEach
@@ -57,11 +57,11 @@ class SimulationContextTest {
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(200, 0), "bc", "cd")
                 .addNode("d", new Point2D.Double(300, 0), "cd")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
-                .addEdge(Track.builder("cd"), "c", "d")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
+                .addTrack("cd", "c", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap,1 )
+        status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Signal::create, "c")

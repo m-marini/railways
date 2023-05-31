@@ -61,10 +61,10 @@ class CrossRouteTest {
                 .addNode("c", new Point2D.Double(0, -10), "ce")
                 .addNode("d", new Point2D.Double(200, -10), "de")
                 .addNode("e", new Point2D.Double(100, 0), "ae", "be", "ce", "de")
-                .addEdge(Track.builder("ae"), "a", "e")
-                .addEdge(Track.builder("be"), "b", "e")
-                .addEdge(Track.builder("ce"), "c", "e")
-                .addEdge(Track.builder("de"), "d", "e")
+                .addTrack("ae", "a", "e")
+                .addTrack("be", "b", "e")
+                .addTrack("ce", "c", "e")
+                .addTrack("de", "d", "e")
                 .build();
         route = CrossRoute.create(station.getNode("e"));
     }

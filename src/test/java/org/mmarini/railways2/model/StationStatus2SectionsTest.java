@@ -67,8 +67,8 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
                 .addNode("b", new Point2D.Double(100, 0), "ab")
                 .addNode("c", new Point2D.Double(200, 0), "cd")
                 .addNode("d", new Point2D.Double(300, 0), "cd")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("cd"), "c", "d")
+                .addTrack("ab", "a", "b")
+                .addTrack("cd", "c", "d")
                 .build();
         status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")

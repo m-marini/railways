@@ -52,7 +52,7 @@ class TrainWaitingForSignalTest {
 
     /**
      * <pre>
-     *     Entry(a) --ab(500m)-- Signal(b) --bc(500m)-- Exit(c)
+     *     Entry(a) --ab(500m)-- Signals(b) --bc(500m)-- Exit(c)
      * </pre>
      */
     @BeforeEach
@@ -61,8 +61,8 @@ class TrainWaitingForSignalTest {
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
                 .build();
         status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")

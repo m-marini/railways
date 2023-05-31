@@ -64,9 +64,9 @@ class SwitchTest {
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc", "bd")
                 .addNode("c", new Point2D.Double(200, 0), "bc")
                 .addNode("d", new Point2D.Double(200, 100), "bd")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
-                .addEdge(Track.builder("bd"), "b", "d")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
+                .addTrack("bd", "b", "d")
                 .build();
         this.a = station.getNode("a");
         this.b = station.getNode("b");

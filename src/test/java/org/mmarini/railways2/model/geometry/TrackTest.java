@@ -50,7 +50,7 @@ class TrackTest {
         this.stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(0, 0), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, LENGTH), "ab")
-                .addEdge(Track.builder("ab"), "a", "b")
+                .addTrack("ab", "a", "b")
                 .build();
         this.track = stationMap.getEdge("ab");
     }

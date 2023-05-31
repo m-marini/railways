@@ -66,7 +66,7 @@ class StationStatusSignalTest {
     /**
      * Station map
      * <pre>
-     * Entry(a) --ab-- Signal(b) --bc-- Exit(c)
+     * Entry(a) --ab-- Signals(b) --bc-- Exit(c)
      * </pre>
      */
     @BeforeEach
@@ -75,8 +75,8 @@ class StationStatusSignalTest {
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(200, 0), "bc")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
                 .build();
         this.a = stationMap.getNode("a");
         this.b = stationMap.getNode("b");

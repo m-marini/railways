@@ -178,7 +178,7 @@ class StationStatusPlatformTest {
     }
 
     /*
-     *  Entry(a) -- ab -- Signal(b) -- Platform(bc) -- Signal(c) -- cd -- Exit(d)
+     *  Entry(a) -- ab -- Signals(b) -- Platform(bc) -- Signals(c) -- cd -- Exit(d)
      */
     @BeforeEach
     void setUp() {
@@ -187,9 +187,9 @@ class StationStatusPlatformTest {
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(2 * LENGTH, 0), "bc", "cd")
                 .addNode("d", new Point2D.Double(3 * LENGTH, 0), "cd")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
-                .addEdge(Track.builder("cd"), "c", "d")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
+                .addTrack("cd", "c", "d")
                 .build();
         this.a = stationMap.getNode("a");
         this.b = stationMap.getNode("b");

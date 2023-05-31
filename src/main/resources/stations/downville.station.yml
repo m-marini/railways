@@ -7,10 +7,10 @@ blocks:
     numPlatforms: 8
     length: 8
   eastSemaphores:
-    type: org.mmarini.railways.blocks.Semaphores
+    type: org.mmarini.railways.blocks.Signals
     numSemaphores: 8
   westSemaphores:
-    type: org.mmarini.railways.blocks.Semaphores
+    type: org.mmarini.railways.blocks.Signals
     numSemaphores: 8
   norton:
     type: org.mmarini.railways.blocks.Wayout
@@ -21,16 +21,16 @@ blocks:
   southend:
     type: org.mmarini.railways.blocks.Wayout
   nortonSem:
-    type: org.mmarini.railways.blocks.Semaphores
+    type: org.mmarini.railways.blocks.Signals
     numSemaphores: 2
   sowertSem:
-    type: org.mmarini.railways.blocks.Semaphores
+    type: org.mmarini.railways.blocks.Signals
     numSemaphores: 2
   neweselSem:
-    type: org.mmarini.railways.blocks.Semaphores
+    type: org.mmarini.railways.blocks.Signals
     numSemaphores: 2
   southendSem:
-    type: org.mmarini.railways.blocks.Semaphores
+    type: org.mmarini.railways.blocks.Signals
     numSemaphores: 2
 connections:
   platform.

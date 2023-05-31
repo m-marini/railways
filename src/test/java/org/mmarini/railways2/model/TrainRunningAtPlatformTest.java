@@ -63,9 +63,9 @@ class TrainRunningAtPlatformTest {
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc", "cd")
                 .addNode("d", new Point2D.Double(LENGTH * 3, 0), "cd")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Platform.builder("bc"), "b", "c")
-                .addEdge(Track.builder("cd"), "c", "d")
+                .addTrack("ab", "a", "b")
+                .addPlatform("bc", "b", "c")
+                .addTrack("cd", "c", "d")
                 .build();
         status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")

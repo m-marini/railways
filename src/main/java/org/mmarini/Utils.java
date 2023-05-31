@@ -90,6 +90,40 @@ public interface Utils {
     }
 
     /**
+     * Returns the concatenation string of a collection
+     *
+     * @param collection the collection
+     * @param separator  the separator
+     * @param <T>        the stream type
+     */
+    static <T> String mkString(Collection<T> collection, String separator) {
+        return mkString(collection.stream(), separator);
+    }
+
+    /**
+     * Returns the concatenation string of the array
+     *
+     * @param array     the collection
+     * @param separator the separator
+     * @param <T>       the stream type
+     */
+    static <T> String mkString(T[] array, String separator) {
+        return mkString(Arrays.stream(array), separator);
+    }
+
+    /**
+     * Returns the concatenation string of the stream
+     *
+     * @param stream    the stream
+     * @param separator the separator
+     * @param <T>       the stream type
+     */
+
+    static <T> String mkString(Stream<T> stream, String separator) {
+        return stream.map(Objects::toString).collect(Collectors.joining(separator));
+    }
+
+    /**
      * Returns an integer with probability given by cdf values
      *
      * @param random the random generator
@@ -140,9 +174,8 @@ public interface Utils {
     }
 
     /**
-     * @param iterator
-     * @param <T>
-     * @return
+     * @param iterator the iterator
+     * @param <T>      the type iterator
      */
     static <T> Stream<T> stream(Iterator<T> iterator) {
         return Stream.iterate(iterator,
@@ -152,9 +185,8 @@ public interface Utils {
     }
 
     /**
-     * @param iterator
-     * @param <T>
-     * @return
+     * @param iterator the iterator
+     * @param <T>      the type iterator
      */
     static <T> List<T> toList(Iterator<T> iterator) {
         return stream(iterator).collect(Collectors.toList());

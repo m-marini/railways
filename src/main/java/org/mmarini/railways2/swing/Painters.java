@@ -45,8 +45,8 @@ import java.util.stream.Stream;
 import static java.lang.Math.*;
 import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAUGE;
-import static org.mmarini.railways2.model.geometry.MathUtils.RAD180;
-import static org.mmarini.railways2.model.geometry.MathUtils.RAD_90;
+import static org.mmarini.railways2.model.MathUtils.RAD180;
+import static org.mmarini.railways2.model.MathUtils.RAD_90;
 import static org.mmarini.railways2.swing.GraphConstants.*;
 
 /**

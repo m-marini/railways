@@ -56,8 +56,8 @@ class JunctionTest {
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(200, 0), "bc")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
                 .build();
         route = Junction.create(station.getNode("b"));
     }

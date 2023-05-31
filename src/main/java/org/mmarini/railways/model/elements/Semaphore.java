@@ -12,7 +12,7 @@ import org.mmarini.railways.model.visitor.RouteLockingVisitor;
 
 /**
  * @author $$Author: marco $$
- * @version $Id: Signal.java,v 1.7 2012/02/08 22:03:21 marco Exp $
+ * @version $Id: Signals.java,v 1.7 2012/02/08 22:03:21 marco Exp $
  */
 public class Semaphore extends AbstractNode implements Serializable {
 	private static final long serialVersionUID = 1L;

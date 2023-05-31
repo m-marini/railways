@@ -49,7 +49,7 @@ import static org.mmarini.railways.Matchers.tupleOf;
 import static org.mmarini.railways2.model.Matchers.isSectionWith;
 import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
-import static org.mmarini.railways2.model.geometry.MathUtils.RAD180;
+import static org.mmarini.railways2.model.MathUtils.RAD180;
 
 class StationStatusJunctionTest {
 
@@ -76,8 +76,8 @@ class StationStatusJunctionTest {
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(2 * LENGTH, 0), "bc")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
                 .build();
         this.a = stationMap.getNode("a");
         this.b = stationMap.getNode("b");

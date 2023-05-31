@@ -50,7 +50,7 @@ class PlatformTest {
         this.stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(0, 0), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, LENGTH), "ab")
-                .addEdge(Platform.builder("ab"), "a", "b")
+                .addPlatform("ab", "a", "b")
                 .build();
         this.platform = stationMap.getEdge("ab");
     }
