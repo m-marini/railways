@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.blocks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.routes.Route;
@@ -95,13 +95,13 @@ public class Signals extends AbstractBlock {
                         "w" + (i + 1) + ".signal" + (i + 1),
                         "signal" + (i + 1) + ".e" + (i + 1)))
                 .collect(Collectors.toList());
-        List<EdgeBuilder> edgeBuilders = IntStream.range(0, numSignals)
+        List<EdgeBuilderParams> edgeBuilderParams = IntStream.range(0, numSignals)
                 .boxed()
                 .flatMap(i -> {
                     String suffixId = String.valueOf(i + 1);
                     return Stream.of(
-                            EdgeBuilder.track("w" + suffixId + ".signal" + suffixId, "w" + suffixId, "signal" + suffixId),
-                            EdgeBuilder.track("signal" + suffixId + ".e" + suffixId, "signal" + suffixId, "e" + suffixId)
+                            EdgeBuilderParams.track("w" + suffixId + ".signal" + suffixId, "w" + suffixId, "signal" + suffixId),
+                            EdgeBuilderParams.track("signal" + suffixId + ".e" + suffixId, "signal" + suffixId, "e" + suffixId)
                     );
                 }).collect(Collectors.toList());
         Map<String, String> edgeByBlockPoint = IntStream.range(0, numSignals)
@@ -113,7 +113,7 @@ public class Signals extends AbstractBlock {
         List<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams = IntStream.range(0, numSignals)
                 .mapToObj(i -> Tuple2.<Function<Node[], ? extends Route>, List<String>>of(Signal::create, List.of("signal" + (i + 1))))
                 .collect(Collectors.toList());
-        return new Signals(id, geometryById1, innerPointById1, edgeBuilders, edgeByBlockPoint, innerRouteParams);
+        return new Signals(id, geometryById1, innerPointById1, edgeBuilderParams, edgeByBlockPoint, innerRouteParams);
     }
 
     /**
@@ -122,11 +122,11 @@ public class Signals extends AbstractBlock {
      * @param id               the identifier
      * @param geometryById     the geometry by identifier
      * @param innerPointById   the inner point by identifier
-     * @param edgeBuilders     the edge builders
+     * @param edgeBuilderParams     the edge builders
      * @param edgeByBlockPoint the edge by block point
      * @param innerRouteParams the inner route parameters
      */
-    protected Signals(String id, Map<String, OrientedGeometry> geometryById, List<NodeBuilderParams> innerPointById, List<EdgeBuilder> edgeBuilders, Map<String, String> edgeByBlockPoint, List<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams) {
-        super(id, geometryById, innerPointById, edgeBuilders, edgeByBlockPoint, innerRouteParams);
+    protected Signals(String id, Map<String, OrientedGeometry> geometryById, List<NodeBuilderParams> innerPointById, List<EdgeBuilderParams> edgeBuilderParams, Map<String, String> edgeByBlockPoint, List<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams) {
+        super(id, geometryById, innerPointById, edgeBuilderParams, edgeByBlockPoint, innerRouteParams);
     }
 }

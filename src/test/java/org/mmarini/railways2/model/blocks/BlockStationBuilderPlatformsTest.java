@@ -34,7 +34,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.StationStatus;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.geometry.StationMap;
@@ -268,7 +268,7 @@ class BlockStationBuilderPlatformsTest {
         setUp(0);
 
         // When ...
-        List<EdgeBuilder> builders = builder.createGlobalEdgeBuilders().collect(Collectors.toList());
+        List<EdgeBuilderParams> builders = builder.createGlobalEdgeParams().collect(Collectors.toList());
 
         // Then ...
         assertThat(builders, hasSize(10));
@@ -488,8 +488,8 @@ class BlockStationBuilderPlatformsTest {
         setUp(0);
 
         // When ...
-        EdgeBuilder eb = builder.getGlobalEdgeBuilder("west",
-                EdgeBuilder.track("t", "entry", "in"));
+        EdgeBuilderParams eb = builder.getGlobalEdgeParams("west",
+                EdgeBuilderParams.track("t", "entry", "in"));
 
         // Then ...
         assertNotNull(eb);

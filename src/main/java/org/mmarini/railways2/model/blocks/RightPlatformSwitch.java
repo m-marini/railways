@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.blocks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.routes.Junction;
@@ -49,13 +49,13 @@ import static org.mmarini.railways2.model.RailwayConstants.*;
  * Describes the right platform switch
  */
 public class RightPlatformSwitch extends AbstractBlock {
-    public static final List<EdgeBuilder> EDGE_BUILDERS = List.of(
-            EdgeBuilder.track("entry.switch", "entry", "switch"),
-            EdgeBuilder.track("switch.t1", "switch", "t1"),
-            EdgeBuilder.track("t2.through", "t2", "through"),
-            EdgeBuilder.track("d1.diverged", "d1", "diverged"),
-            EdgeBuilder.curve("switch.d1", "switch", "d1", -SWITCH_ANGLE_DEG),
-            EdgeBuilder.curve("t1.t2", "t1", "t2", -SWITCH_ANGLE_DEG)
+    public static final List<EdgeBuilderParams> EDGE_BUILDERS = List.of(
+            EdgeBuilderParams.track("entry.switch", "entry", "switch"),
+            EdgeBuilderParams.track("switch.t1", "switch", "t1"),
+            EdgeBuilderParams.track("t2.through", "t2", "through"),
+            EdgeBuilderParams.track("d1.diverged", "d1", "diverged"),
+            EdgeBuilderParams.curve("switch.d1", "switch", "d1", -SWITCH_ANGLE_DEG),
+            EdgeBuilderParams.curve("t1.t2", "t1", "t2", -SWITCH_ANGLE_DEG)
     );
     public static final Map<String, String> EDGE_BY_BLOCK_POINT = Map.of(
             "entry", "entry.switch",

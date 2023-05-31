@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.blocks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.routes.DoubleSlipSwitch;
@@ -49,15 +49,15 @@ import static org.mmarini.railways2.model.RailwayConstants.*;
  * The oblique track is between NW --- SE
  */
 public class DownCross extends AbstractBlock {
-    public static final List<EdgeBuilder> EDGE_BUILDERS = List.of(
-            EdgeBuilder.track("w.ws", "w", "ws"),
-            EdgeBuilder.track("nw.nws", "nw", "nws"),
-            EdgeBuilder.track("ws.ses", "ws", "ses"),
-            EdgeBuilder.track("ws.es", "ws", "es"),
-            EdgeBuilder.track("nws.ses", "nws", "ses"),
-            EdgeBuilder.track("nws.es", "nws", "es"),
-            EdgeBuilder.track("ses.se", "ses", "se"),
-            EdgeBuilder.track("es.e", "es", "e")
+    public static final List<EdgeBuilderParams> EDGE_BUILDERS = List.of(
+            EdgeBuilderParams.track("w.ws", "w", "ws"),
+            EdgeBuilderParams.track("nw.nws", "nw", "nws"),
+            EdgeBuilderParams.track("ws.ses", "ws", "ses"),
+            EdgeBuilderParams.track("ws.es", "ws", "es"),
+            EdgeBuilderParams.track("nws.ses", "nws", "ses"),
+            EdgeBuilderParams.track("nws.es", "nws", "es"),
+            EdgeBuilderParams.track("ses.se", "ses", "se"),
+            EdgeBuilderParams.track("es.e", "es", "e")
     );
     public static final Map<String, String> EDGE_BY_BLOCK_POINT = Map.of(
             "w", "w.ws",

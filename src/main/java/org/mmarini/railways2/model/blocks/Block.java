@@ -29,7 +29,7 @@
 package org.mmarini.railways2.model.blocks;
 
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.routes.Route;
@@ -56,7 +56,7 @@ public interface Block {
     /**
      * Returns the edge builder
      */
-    List<EdgeBuilder> getEdgeBuilders();
+    List<EdgeBuilderParams> getEdgeParams();
 
     /**
      * Returns the edge identifier

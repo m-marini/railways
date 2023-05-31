@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.blocks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.routes.Route;
@@ -115,16 +115,16 @@ public class Platforms extends AbstractBlock {
                                     "signale" + suffix + ".e" + suffix));
                 })
                 .collect(Collectors.toList());
-        List<EdgeBuilder> edgeBuilders = IntStream.range(0, numPlatforms)
+        List<EdgeBuilderParams> edgeBuilderParams = IntStream.range(0, numPlatforms)
                 .boxed()
                 .flatMap(i -> {
                     String suffixId = String.valueOf(i + 1);
                     return Stream.of(
-                            EdgeBuilder.track("w" + suffixId + ".signalw" + suffixId,
+                            EdgeBuilderParams.track("w" + suffixId + ".signalw" + suffixId,
                                     "w" + suffixId, "signalw" + suffixId),
-                            EdgeBuilder.platform("p" + suffixId,
+                            EdgeBuilderParams.platform("p" + suffixId,
                                     "signalw" + suffixId, "signale" + suffixId),
-                            EdgeBuilder.track("signale" + suffixId + ".e" + suffixId,
+                            EdgeBuilderParams.track("signale" + suffixId + ".e" + suffixId,
                                     "signale" + suffixId, "e" + suffixId)
                     );
                 })
@@ -142,7 +142,7 @@ public class Platforms extends AbstractBlock {
                         Tuple2.<Function<Node[], ? extends Route>, List<String>>of(Signal::create, List.of("signale" + (i + 1)))
                 ))
                 .collect(Collectors.toList());
-        return new Platforms(id, geometryById, innerPoints, edgeBuilders, edgeByBlockPoint, innerRouteParams);
+        return new Platforms(id, geometryById, innerPoints, edgeBuilderParams, edgeByBlockPoint, innerRouteParams);
     }
 
     /**
@@ -151,11 +151,11 @@ public class Platforms extends AbstractBlock {
      * @param id               the id
      * @param geometryById     the geometry by id
      * @param innerPoints      the inner points
-     * @param edgeBuilders     the edge builders
+     * @param edgeBuilderParams     the edge builders
      * @param edgeByBlockPoint edge by block point
      * @param innerRouteParams the inner route parameters
      */
-    protected Platforms(String id, Map<String, OrientedGeometry> geometryById, List<NodeBuilderParams> innerPoints, List<EdgeBuilder> edgeBuilders, Map<String, String> edgeByBlockPoint, List<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams) {
-        super(id, geometryById, innerPoints, edgeBuilders, edgeByBlockPoint, innerRouteParams);
+    protected Platforms(String id, Map<String, OrientedGeometry> geometryById, List<NodeBuilderParams> innerPoints, List<EdgeBuilderParams> edgeBuilderParams, Map<String, String> edgeByBlockPoint, List<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams) {
+        super(id, geometryById, innerPoints, edgeBuilderParams, edgeByBlockPoint, innerRouteParams);
     }
 }

@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.blocks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.yaml.schema.Locator;
 import org.mmarini.yaml.schema.Validator;
 
@@ -116,10 +116,10 @@ public class Curves extends AbstractBlock {
                     })
                     .collect(Tuple2.toMap());
         }
-        List<EdgeBuilder> edgeBuilders = IntStream.range(0, numTracks)
+        List<EdgeBuilderParams> edgeBuilderParams = IntStream.range(0, numTracks)
                 .mapToObj(i -> {
                     String id1 = String.valueOf(i + 1);
-                    return EdgeBuilder.curve("w" + id1 + ".e" + id1,
+                    return EdgeBuilderParams.curve("w" + id1 + ".e" + id1,
                             "w" + id1, "e" + id1, angle);
                 })
                 .collect(Collectors.toList());
@@ -129,7 +129,7 @@ public class Curves extends AbstractBlock {
                         Tuple2.of("w" + (i + 1), "w" + (i + 1) + ".e" + (i + 1)),
                         Tuple2.of("e" + (i + 1), "w" + (i + 1) + ".e" + (i + 1))
                 )).collect(Tuple2.toMap());
-        return new Curves(id, angle, geometryById, edgeBuilders, edgeByBlockPoint);
+        return new Curves(id, angle, geometryById, edgeBuilderParams, edgeByBlockPoint);
     }
 
     private final int angle;
@@ -140,11 +140,11 @@ public class Curves extends AbstractBlock {
      * @param id               the identifier
      * @param angle            the CCW angle (DEG)
      * @param geometryById     the geometry by id
-     * @param edgeBuilders     the edge builders
+     * @param edgeBuilderParams     the edge builders
      * @param edgeByBlockPoint the edge by block point
      */
-    protected Curves(String id, int angle, Map<String, OrientedGeometry> geometryById, List<EdgeBuilder> edgeBuilders, Map<String, String> edgeByBlockPoint) {
-        super(id, geometryById, List.of(), edgeBuilders, edgeByBlockPoint, List.of());
+    protected Curves(String id, int angle, Map<String, OrientedGeometry> geometryById, List<EdgeBuilderParams> edgeBuilderParams, Map<String, String> edgeByBlockPoint) {
+        super(id, geometryById, List.of(), edgeBuilderParams, edgeByBlockPoint, List.of());
         this.angle = angle;
     }
 

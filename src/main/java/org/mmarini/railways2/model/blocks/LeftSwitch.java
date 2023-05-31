@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.blocks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.routes.Junction;
@@ -49,11 +49,11 @@ import static org.mmarini.railways2.model.RailwayConstants.*;
  * Describes the left switch
  */
 public class LeftSwitch extends AbstractBlock {
-    public static final List<EdgeBuilder> EDGE_BUILDERS = List.of(
-            EdgeBuilder.track("entry.switch", "entry", "switch"),
-            EdgeBuilder.track("switch.through", "switch", "through"),
-            EdgeBuilder.curve("switch.d", "switch", "d", SWITCH_ANGLE_DEG),
-            EdgeBuilder.track("d.diverged", "d", "diverged")
+    public static final List<EdgeBuilderParams> EDGE_BUILDERS = List.of(
+            EdgeBuilderParams.track("entry.switch", "entry", "switch"),
+            EdgeBuilderParams.track("switch.through", "switch", "through"),
+            EdgeBuilderParams.curve("switch.d", "switch", "d", SWITCH_ANGLE_DEG),
+            EdgeBuilderParams.track("d.diverged", "d", "diverged")
     );
     public static final Map<String, String> EDGE_BY_BLOCK_POINT = Map.of(
             "entry", "entry.switch",

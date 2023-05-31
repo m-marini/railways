@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.blocks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.routes.Entry;
@@ -57,9 +57,9 @@ public class Wayout extends AbstractBlock {
     public static final List<NodeBuilderParams> INNER_NODES = List.of(
             NodeBuilderParams.create("in", 1, 0, "entry.in"),
             NodeBuilderParams.create("out", 1, TRACK_GAP, "exit.out"));
-    public static final List<EdgeBuilder> EDGE_BUILDERS = List.of(
-            EdgeBuilder.track("entry.in", "entry", "in"),
-            EdgeBuilder.track("exit.out", "exit", "out")
+    public static final List<EdgeBuilderParams> EDGE_BUILDERS = List.of(
+            EdgeBuilderParams.track("entry.in", "entry", "in"),
+            EdgeBuilderParams.track("exit.out", "exit", "out")
     );
     public static final Map<String, String> EDGE_BY_BLOCK_POINT = Map.of(
             "entry", "entry.in",

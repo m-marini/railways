@@ -46,7 +46,7 @@ import static java.util.Objects.requireNonNull;
 public class StationBuilder {
     public static final Rectangle2D.Double EMPTY_BOUND = new Rectangle2D.Double(-5, -5, 10, 10);
     private final String id;
-    private final List<EdgeBuilder> edgeBuilders;
+    private final List<EdgeBuilderParams> edgeBuilderParams;
     private final List<NodeBuilderParams> nodeBuilders;
 
 
@@ -58,7 +58,7 @@ public class StationBuilder {
     public StationBuilder(String id) {
         this.id = requireNonNull(id);
         this.nodeBuilders = new ArrayList<>();
-        this.edgeBuilders = new ArrayList<>();
+        this.edgeBuilderParams = new ArrayList<>();
     }
 
     /**
@@ -70,16 +70,16 @@ public class StationBuilder {
      * @param node1 the node1 identifier
      */
     public StationBuilder addCurve(String id, double angle, String node0, String node1) {
-        return addEdge(EdgeBuilder.curve(id, node0, node1, angle));
+        return addEdge(EdgeBuilderParams.curve(id, node0, node1, angle));
     }
 
     /**
      * Returns the station builder with a new edge
      *
-     * @param edgeBuilder the edge builder
+     * @param edgeBuilderParams the edge builder
      */
-    public StationBuilder addEdge(EdgeBuilder edgeBuilder) {
-        edgeBuilders.add(edgeBuilder);
+    public StationBuilder addEdge(EdgeBuilderParams edgeBuilderParams) {
+        this.edgeBuilderParams.add(edgeBuilderParams);
         return this;
     }
 
@@ -124,7 +124,7 @@ public class StationBuilder {
      * @param node1 the node1 identifier
      */
     public StationBuilder addPlatform(String id, String node0, String node1) {
-        return addEdge(EdgeBuilder.platform(id, node0, node1));
+        return addEdge(EdgeBuilderParams.platform(id, node0, node1));
     }
 
     /**
@@ -135,7 +135,7 @@ public class StationBuilder {
      * @param node1 the node1 identifier
      */
     public StationBuilder addTrack(String id, String node0, String node1) {
-        return addEdge(EdgeBuilder.track(id, node0, node1));
+        return addEdge(EdgeBuilderParams.track(id, node0, node1));
     }
 
     /**
@@ -147,7 +147,7 @@ public class StationBuilder {
                 .collect(Collectors.toMap(Node::getId, Function.identity()));
 
         // Creates edges
-        Map<String, Edge> edgeById = edgeBuilders.stream().map(params -> {
+        Map<String, Edge> edgeById = edgeBuilderParams.stream().map(params -> {
             Node node0 = nodeById.get(params.getNode0());
             if (node0 == null) {
                 throw new IllegalArgumentException(format("Node %s not found", params.getNode0()));

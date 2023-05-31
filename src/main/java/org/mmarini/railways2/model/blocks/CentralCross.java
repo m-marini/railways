@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.blocks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.routes.CrossRoute;
@@ -49,45 +49,45 @@ import static org.mmarini.railways2.model.RailwayConstants.*;
  * Describes the central cross block.
  */
 public class CentralCross extends AbstractBlock {
-    public static final List<EdgeBuilder> EDGE_BUILDERS = List.of(
-            EdgeBuilder.track("sw.s1", "sw", "s1"),
-            EdgeBuilder.track("w1.s2", "w1", "s2"),
-            EdgeBuilder.track("w2.s3", "w2", "s3"),
-            EdgeBuilder.track("nw.s4", "nw", "s4"),
+    public static final List<EdgeBuilderParams> EDGE_BUILDERS = List.of(
+            EdgeBuilderParams.track("sw.s1", "sw", "s1"),
+            EdgeBuilderParams.track("w1.s2", "w1", "s2"),
+            EdgeBuilderParams.track("w2.s3", "w2", "s3"),
+            EdgeBuilderParams.track("nw.s4", "nw", "s4"),
 
-            EdgeBuilder.track("s1.s5", "s1", "s5"),
-            EdgeBuilder.track("s1.s6", "s1", "s6"),
-            EdgeBuilder.track("s2.s5", "s2", "s5"),
-            EdgeBuilder.track("s2.s6", "s2", "s6"),
+            EdgeBuilderParams.track("s1.s5", "s1", "s5"),
+            EdgeBuilderParams.track("s1.s6", "s1", "s6"),
+            EdgeBuilderParams.track("s2.s5", "s2", "s5"),
+            EdgeBuilderParams.track("s2.s6", "s2", "s6"),
 
-            EdgeBuilder.track("s3.s7", "s3", "s7"),
-            EdgeBuilder.track("s3.s8", "s3", "s8"),
-            EdgeBuilder.track("s4.s7", "s4", "s7"),
-            EdgeBuilder.track("s4.s8", "s4", "s8"),
+            EdgeBuilderParams.track("s3.s7", "s3", "s7"),
+            EdgeBuilderParams.track("s3.s8", "s3", "s8"),
+            EdgeBuilderParams.track("s4.s7", "s4", "s7"),
+            EdgeBuilderParams.track("s4.s8", "s4", "s8"),
 
-            EdgeBuilder.track("s5.s9", "s5", "s9"),
+            EdgeBuilderParams.track("s5.s9", "s5", "s9"),
 
-            EdgeBuilder.track("s6.x", "s6", "x"),
-            EdgeBuilder.track("s7.x", "s7", "x"),
-            EdgeBuilder.track("x.s10", "x", "s10"),
-            EdgeBuilder.track("x.s11", "x", "s11"),
+            EdgeBuilderParams.track("s6.x", "s6", "x"),
+            EdgeBuilderParams.track("s7.x", "s7", "x"),
+            EdgeBuilderParams.track("x.s10", "x", "s10"),
+            EdgeBuilderParams.track("x.s11", "x", "s11"),
 
-            EdgeBuilder.track("s8.s12", "s8", "s12"),
+            EdgeBuilderParams.track("s8.s12", "s8", "s12"),
 
-            EdgeBuilder.track("s9.s13", "s9", "s13"),
-            EdgeBuilder.track("s9.s14", "s9", "s14"),
-            EdgeBuilder.track("s10.s13", "s10", "s13"),
-            EdgeBuilder.track("s10.s14", "s10", "s14"),
+            EdgeBuilderParams.track("s9.s13", "s9", "s13"),
+            EdgeBuilderParams.track("s9.s14", "s9", "s14"),
+            EdgeBuilderParams.track("s10.s13", "s10", "s13"),
+            EdgeBuilderParams.track("s10.s14", "s10", "s14"),
 
-            EdgeBuilder.track("s11.s15", "s11", "s15"),
-            EdgeBuilder.track("s11.s16", "s11", "s16"),
-            EdgeBuilder.track("s12.s15", "s12", "s15"),
-            EdgeBuilder.track("s12.s16", "s12", "s16"),
+            EdgeBuilderParams.track("s11.s15", "s11", "s15"),
+            EdgeBuilderParams.track("s11.s16", "s11", "s16"),
+            EdgeBuilderParams.track("s12.s15", "s12", "s15"),
+            EdgeBuilderParams.track("s12.s16", "s12", "s16"),
 
-            EdgeBuilder.track("s13.se", "s13", "se"),
-            EdgeBuilder.track("s14.e1", "s14", "e1"),
-            EdgeBuilder.track("s15.e2", "s15", "e2"),
-            EdgeBuilder.track("s16.ne", "s16", "ne")
+            EdgeBuilderParams.track("s13.se", "s13", "se"),
+            EdgeBuilderParams.track("s14.e1", "s14", "e1"),
+            EdgeBuilderParams.track("s15.e2", "s15", "e2"),
+            EdgeBuilderParams.track("s16.ne", "s16", "ne")
     );
     public static final Map<String, String> EDGE_BY_BLOCK_POINT = Map.of(
             "sw", "sw.s1",

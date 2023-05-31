@@ -154,7 +154,7 @@ public class BlockStationBuilder {
     StationMap buildStationMap() {
         StationBuilder builder = new StationBuilder(station.getId());
         // Generates the edges
-        createGlobalEdgeBuilders().forEach(builder::addEdge);
+        createGlobalEdgeParams().forEach(builder::addEdge);
         createNodeBuilders().forEach(builder::addNode);
         return builder.build();
     }
@@ -162,10 +162,10 @@ public class BlockStationBuilder {
     /**
      * Returns the global edge builders
      */
-    Stream<EdgeBuilder> createGlobalEdgeBuilders() {
+    Stream<EdgeBuilderParams> createGlobalEdgeParams() {
         return station.getBlocks().stream()
-                .flatMap(b -> b.getEdgeBuilders().stream()
-                        .map(eb -> getGlobalEdgeBuilder(b.getId(), eb)));
+                .flatMap(b -> b.getEdgeParams().stream()
+                        .map(eb -> getGlobalEdgeParams(b.getId(), eb)));
     }
 
     /**
@@ -331,14 +331,14 @@ public class BlockStationBuilder {
      * </p>
      *
      * @param blockId     the block id
-     * @param edgeBuilder the local edge builder
+     * @param edgeBuilderParams the local edge builder
      */
-    EdgeBuilder getGlobalEdgeBuilder(String blockId, EdgeBuilder edgeBuilder) {
+    EdgeBuilderParams getGlobalEdgeParams(String blockId, EdgeBuilderParams edgeBuilderParams) {
         // Transform local reference to global reference
         String prefix = blockId + ".";
-        return edgeBuilder.setId(prefix + edgeBuilder.getId())
-                .setNode0(getGlobalNodeId((prefix + edgeBuilder.getNode0())))
-                .setNode1(getGlobalNodeId(prefix + edgeBuilder.getNode1()));
+        return edgeBuilderParams.setId(prefix + edgeBuilderParams.getId())
+                .setNode0(getGlobalNodeId((prefix + edgeBuilderParams.getNode0())))
+                .setNode1(getGlobalNodeId(prefix + edgeBuilderParams.getNode1()));
     }
 
     /**

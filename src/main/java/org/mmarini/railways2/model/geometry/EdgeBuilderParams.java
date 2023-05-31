@@ -37,7 +37,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * The edge builder
  */
-public class EdgeBuilder {
+public class EdgeBuilderParams {
     /**
      * Returns the curve builder
      *
@@ -46,8 +46,8 @@ public class EdgeBuilder {
      * @param node1 the node1 identifier
      * @param angle the angle (RAD)
      */
-    public static EdgeBuilder curve(String id, String node0, String node1, double angle) {
-        return new EdgeBuilder(id, id1 -> Curve.builder(id1, angle), node0, node1);
+    public static EdgeBuilderParams curve(String id, String node0, String node1, double angle) {
+        return new EdgeBuilderParams(id, id1 -> Curve.builder(id1, angle), node0, node1);
     }
 
     /**
@@ -57,8 +57,8 @@ public class EdgeBuilder {
      * @param node0 the node0 identifier
      * @param node1 the node1 identifier
      */
-    public static EdgeBuilder platform(String id, String node0, String node1) {
-        return new EdgeBuilder(id, Platform::builder, node0, node1);
+    public static EdgeBuilderParams platform(String id, String node0, String node1) {
+        return new EdgeBuilderParams(id, Platform::builder, node0, node1);
     }
 
     /**
@@ -68,8 +68,8 @@ public class EdgeBuilder {
      * @param node0 the node0 identifier
      * @param node1 the node1 identifier
      */
-    public static EdgeBuilder track(String id, String node0, String node1) {
-        return new EdgeBuilder(id, Track::builder, node0, node1);
+    public static EdgeBuilderParams track(String id, String node0, String node1) {
+        return new EdgeBuilderParams(id, Track::builder, node0, node1);
     }
 
     private final String id;
@@ -85,7 +85,7 @@ public class EdgeBuilder {
      * @param node0           the node0 identifier
      * @param node1           the node1 identifier
      */
-    protected EdgeBuilder(String id, Function<String, BiFunction<Node, Node, Edge>> edgeBuilderFunc, String node0, String node1) {
+    protected EdgeBuilderParams(String id, Function<String, BiFunction<Node, Node, Edge>> edgeBuilderFunc, String node0, String node1) {
         this.id = requireNonNull(id);
         this.edgeBuilderFunc = requireNonNull(edgeBuilderFunc);
         this.node0 = requireNonNull(node0);
@@ -111,9 +111,9 @@ public class EdgeBuilder {
      *
      * @param id the identifier
      */
-    public EdgeBuilder setId(String id) {
+    public EdgeBuilderParams setId(String id) {
         return !this.id.equals(id) ?
-                new EdgeBuilder(id, edgeBuilderFunc, node0, node1) : this;
+                new EdgeBuilderParams(id, edgeBuilderFunc, node0, node1) : this;
     }
 
     /**
@@ -128,9 +128,9 @@ public class EdgeBuilder {
      *
      * @param node0 the node0
      */
-    public EdgeBuilder setNode0(String node0) {
+    public EdgeBuilderParams setNode0(String node0) {
         return !this.node0.equals(node0) ?
-                new EdgeBuilder(id, edgeBuilderFunc, node0, node1) : this;
+                new EdgeBuilderParams(id, edgeBuilderFunc, node0, node1) : this;
     }
 
     /**
@@ -145,14 +145,14 @@ public class EdgeBuilder {
      *
      * @param node1 the node1
      */
-    public EdgeBuilder setNode1(String node1) {
+    public EdgeBuilderParams setNode1(String node1) {
         return !this.node1.equals(node1) ?
-                new EdgeBuilder(id, edgeBuilderFunc, node0, node1) : this;
+                new EdgeBuilderParams(id, edgeBuilderFunc, node0, node1) : this;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", EdgeBuilder.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", EdgeBuilderParams.class.getSimpleName() + "[", "]")
                 .add("id='" + id + "'")
                 .add("node0='" + node0 + "'")
                 .add("node1='" + node1 + "'")

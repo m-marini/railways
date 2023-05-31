@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.blocks;
 
 import org.mmarini.LazyValue;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.routes.Route;
@@ -53,7 +53,7 @@ public abstract class AbstractBlock implements Block {
     protected final String id;
     protected final Map<String, OrientedGeometry> geometryById;
     protected final List<NodeBuilderParams> innerParams;
-    protected final List<EdgeBuilder> edgeBuilders;
+    protected final List<EdgeBuilderParams> edgeBuilderParams;
     protected final Map<String, String> edgeByBlockPoint;
     protected final Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams;
     private final LazyValue<Collection<BlockPoint>> blockPoints;
@@ -64,17 +64,17 @@ public abstract class AbstractBlock implements Block {
      * @param id               the identifier
      * @param geometryById     the orientation by identifier
      * @param innerParams      the inner parameters by identifier
-     * @param edgeBuilders     the edge builders
+     * @param edgeBuilderParams     the edge builders
      * @param edgeByBlockPoint the edge by block point
      * @param innerRouteParams the inner building route parameters
      */
     protected AbstractBlock(String id, Map<String, OrientedGeometry> geometryById,
-                            List<NodeBuilderParams> innerParams, List<EdgeBuilder> edgeBuilders,
+                            List<NodeBuilderParams> innerParams, List<EdgeBuilderParams> edgeBuilderParams,
                             Map<String, String> edgeByBlockPoint, Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams) {
         this.id = requireNonNull(id);
         this.geometryById = requireNonNull(geometryById);
         this.innerParams = requireNonNull(innerParams);
-        this.edgeBuilders = requireNonNull(edgeBuilders);
+        this.edgeBuilderParams = requireNonNull(edgeBuilderParams);
         this.edgeByBlockPoint = requireNonNull(edgeByBlockPoint);
         this.innerRouteParams = innerRouteParams;
         this.blockPoints = new LazyValue<>(this::createBlockPoints);
@@ -101,8 +101,8 @@ public abstract class AbstractBlock implements Block {
     }
 
     @Override
-    public List<EdgeBuilder> getEdgeBuilders() {
-        return edgeBuilders;
+    public List<EdgeBuilderParams> getEdgeParams() {
+        return edgeBuilderParams;
     }
 
     @Override

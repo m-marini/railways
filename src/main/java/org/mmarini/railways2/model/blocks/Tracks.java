@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.blocks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.yaml.schema.Locator;
 import org.mmarini.yaml.schema.Validator;
 
@@ -89,10 +89,10 @@ public class Tracks extends AbstractBlock {
                         )))
                 .collect(Tuple2.toMap());
 
-        List<EdgeBuilder> edgeBuilders = IntStream.range(0, numTracks)
+        List<EdgeBuilderParams> edgeBuilderParams = IntStream.range(0, numTracks)
                 .mapToObj(i -> {
                     String id1 = String.valueOf(i + 1);
-                    return EdgeBuilder.track("w" + id1 + ".e" + id1, "w" + id1, "e" + id1);
+                    return EdgeBuilderParams.track("w" + id1 + ".e" + id1, "w" + id1, "e" + id1);
                 }).collect(Collectors.toList());
         Map<String, String> edgeByBlockPoint = IntStream.range(0, numTracks)
                 .boxed()
@@ -100,7 +100,7 @@ public class Tracks extends AbstractBlock {
                         Tuple2.of("w" + (i + 1), "w" + (i + 1) + ".e" + (i + 1)),
                         Tuple2.of("e" + (i + 1), "w" + (i + 1) + ".e" + (i + 1))
                 )).collect(Tuple2.toMap());
-        return new Tracks(id, geometryById, edgeBuilders, edgeByBlockPoint);
+        return new Tracks(id, geometryById, edgeBuilderParams, edgeByBlockPoint);
     }
 
     /**
@@ -108,10 +108,10 @@ public class Tracks extends AbstractBlock {
      *
      * @param id               the identifier
      * @param geometryById     the geometry by id
-     * @param edgeBuilders     the edge builder
+     * @param edgeBuilderParams     the edge builder
      * @param edgeByBlockPoint the edge by block point
      */
-    protected Tracks(String id, Map<String, OrientedGeometry> geometryById, List<EdgeBuilder> edgeBuilders, Map<String, String> edgeByBlockPoint) {
-        super(id, geometryById, List.of(), edgeBuilders, edgeByBlockPoint, List.of());
+    protected Tracks(String id, Map<String, OrientedGeometry> geometryById, List<EdgeBuilderParams> edgeBuilderParams, Map<String, String> edgeByBlockPoint) {
+        super(id, geometryById, List.of(), edgeBuilderParams, edgeByBlockPoint, List.of());
     }
 }

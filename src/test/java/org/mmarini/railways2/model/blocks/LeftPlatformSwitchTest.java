@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.Matchers;
-import org.mmarini.railways2.model.geometry.EdgeBuilder;
+import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.routes.Route;
@@ -74,7 +74,7 @@ class LeftPlatformSwitchTest {
     void getEdgeBuilders() {
         // Given ...
         // When ...
-        List<EdgeBuilder> builders = block.getEdgeBuilders();
+        List<EdgeBuilderParams> builders = block.getEdgeParams();
 
         // Then ...
         assertThat(builders, hasSize(6));
