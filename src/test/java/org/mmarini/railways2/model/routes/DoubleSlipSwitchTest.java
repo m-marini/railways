@@ -65,14 +65,14 @@ class DoubleSlipSwitchTest {
                 .addNode("f", new Point2D.Double(LENGTH, 50), "ef", "fg", "fc")
                 .addNode("g", new Point2D.Double(LENGTH * 2, 50), "gh", "fg", "bg")
                 .addNode("h", new Point2D.Double(LENGTH * 3, 50), "gh")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
-                .addEdge(Track.builder("cd"), "c", "d")
-                .addEdge(Track.builder("ef"), "e", "f")
-                .addEdge(Track.builder("fg"), "f", "g")
-                .addEdge(Track.builder("gh"), "g", "h")
-                .addEdge(Track.builder("bg"), "b", "g")
-                .addEdge(Track.builder("fc"), "f", "c")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
+                .addTrack("cd", "c", "d")
+                .addTrack("ef", "e", "f")
+                .addTrack("fg", "f", "g")
+                .addTrack("gh", "g", "h")
+                .addTrack("bg", "b", "g")
+                .addTrack("fc", "f", "c")
                 .build();
     }
 

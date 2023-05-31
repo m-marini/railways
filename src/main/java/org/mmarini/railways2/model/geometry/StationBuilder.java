@@ -28,14 +28,14 @@
 
 package org.mmarini.railways2.model.geometry;
 
-import org.mmarini.Tuple2;
-
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.*;
-import java.util.function.BiFunction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -46,10 +46,8 @@ import static java.util.Objects.requireNonNull;
 public class StationBuilder {
     public static final Rectangle2D.Double EMPTY_BOUND = new Rectangle2D.Double(-5, -5, 10, 10);
     private final String id;
-    private final Map<String, Node> nodes;
-    private final Map<String, String[]> nodeEdges;
-    private final List<BiFunction<Node, Node, ? extends Edge>> edgeBuilders;
-    private final List<String[]> edgeNodes;
+    private final List<EdgeBuilder> edgeBuilders;
+    private final List<NodeBuilderParams> nodeBuilders;
 
 
     /**
@@ -59,22 +57,51 @@ public class StationBuilder {
      */
     public StationBuilder(String id) {
         this.id = requireNonNull(id);
-        this.nodes = new HashMap<>();
-        this.nodeEdges = new HashMap<>();
+        this.nodeBuilders = new ArrayList<>();
         this.edgeBuilders = new ArrayList<>();
-        this.edgeNodes = new ArrayList<>();
     }
 
     /**
-     * Returns the station builder with a nde edge
+     * Returns the builder with a new platform
      *
-     * @param builder the edge builder
-     * @param node0   the node0 identifier
-     * @param node1   the node1 identifier
+     * @param id    the platform identifier
+     * @param angle the curve angle (RAD)
+     * @param node0 the node0 identifier
+     * @param node1 the node1 identifier
      */
-    public StationBuilder addEdge(BiFunction<Node, Node, Edge> builder, String node0, String node1) {
-        this.edgeBuilders.add(requireNonNull(builder));
-        this.edgeNodes.add(new String[]{requireNonNull(node0), requireNonNull(node1)});
+    public StationBuilder addCurve(String id, double angle, String node0, String node1) {
+        return addEdge(EdgeBuilder.curve(id, node0, node1, angle));
+    }
+
+    /**
+     * Returns the station builder with a new edge
+     *
+     * @param edgeBuilder the edge builder
+     */
+    public StationBuilder addEdge(EdgeBuilder edgeBuilder) {
+        edgeBuilders.add(edgeBuilder);
+        return this;
+    }
+
+    /**
+     * Returns the builder with a new node
+     *
+     * @param id    the node identifier
+     * @param x     the x coordinate (m)
+     * @param y     the y coordinate (m)
+     * @param edges the edge identifier list
+     */
+    public StationBuilder addNode(String id, double x, double y, String... edges) {
+        return addNode(new NodeBuilderParams(id, new Point2D.Double(x, y), Arrays.asList(edges)));
+    }
+
+    /**
+     * Returns the builder with a new node
+     *
+     * @param params the node builder parameters
+     */
+    public StationBuilder addNode(NodeBuilderParams params) {
+        nodeBuilders.add(requireNonNull(params));
         return this;
     }
 
@@ -85,55 +112,69 @@ public class StationBuilder {
      * @param location the node location
      * @param edges    the edge identifier list
      */
-    public StationBuilder addNode(String id, Point2D.Double location, String... edges) {
-        requireNonNull(id);
-        requireNonNull(location);
-        requireNonNull(edges);
-        if (nodes.containsKey(id)) {
-            throw new IllegalArgumentException(format("Node %s already defined", id));
-        }
-        nodes.put(id, new Node(id, location));
-        nodeEdges.put(id, edges);
-        return this;
+    public StationBuilder addNode(String id, Point2D location, String... edges) {
+        return addNode(new NodeBuilderParams(id, location, Arrays.asList(edges)));
+    }
+
+    /**
+     * Returns the builder with a new platform
+     *
+     * @param id    the platform identifier
+     * @param node0 the node0 identifier
+     * @param node1 the node1 identifier
+     */
+    public StationBuilder addPlatform(String id, String node0, String node1) {
+        return addEdge(EdgeBuilder.platform(id, node0, node1));
+    }
+
+    /**
+     * Returns the builder with a new track
+     *
+     * @param id    the track identifier
+     * @param node0 the node0 identifier
+     * @param node1 the node1 identifier
+     */
+    public StationBuilder addTrack(String id, String node0, String node1) {
+        return addEdge(EdgeBuilder.track(id, node0, node1));
     }
 
     /**
      * Returns the built station
      */
     public StationMap build() {
+        // Creates nodes
+        Map<String, Node> nodeById = nodeBuilders.stream().map(NodeBuilderParams::buildNode)
+                .collect(Collectors.toMap(Node::getId, Function.identity()));
+
         // Creates edges
-        Map<String, Edge> edgeMap = IntStream.range(0, edgeBuilders.size())
-                .mapToObj(i -> Tuple2.of(
-                        edgeBuilders.get(i),
-                        edgeNodes.get(i)))
-                .map(t -> {
-                    Node node0 = nodes.get(t._2[0]);
-                    if (node0 == null) {
-                        throw new IllegalArgumentException(format("Node %s not found", t._2[0]));
-                    }
-                    Node node1 = nodes.get(t._2[1]);
-                    if (node1 == null) {
-                        throw new IllegalArgumentException(format("Node %s not found", t._2[1]));
-                    }
-                    Edge edge = t._1.apply(node0, node1);
-                    return Tuple2.of(edge.getId(), edge);
-                })
-                .collect(Tuple2.toMap());
+        Map<String, Edge> edgeById = edgeBuilders.stream().map(params -> {
+            Node node0 = nodeById.get(params.getNode0());
+            if (node0 == null) {
+                throw new IllegalArgumentException(format("Node %s not found", params.getNode0()));
+            }
+            Node node1 = nodeById.get(params.getNode1());
+            if (node1 == null) {
+                throw new IllegalArgumentException(format("Node %s not found", params.getNode1()));
+            }
+            return params.getBuilder().apply(node0, node1);
+        }).collect(Collectors.toMap(
+                Edge::getId, Function.identity()
+        ));
 
         // Sets the node edges
-        for (Node node : nodes.values()) {
-            List<Edge> edges = Arrays.stream(nodeEdges.get(node.getId())).map(
-                    edgeId -> {
-                        Edge edge = edgeMap.get(edgeId);
+        for (NodeBuilderParams params : nodeBuilders) {
+            Node node = nodeById.get(params.getId());
+            List<Edge> edges = params.getEdges().stream()
+                    .map(edgeId -> {
+                        Edge edge = edgeById.get(edgeId);
                         if (edge == null) {
                             throw new IllegalArgumentException(format("Edge %s not found for node %s", edgeId, node.getId()));
                         }
                         return edge;
-                    }
-            ).collect(Collectors.toList());
+                    }).collect(Collectors.toList());
             node.setEdges(edges);
         }
-        Rectangle2D bounds = edgeMap.values().stream()
+        Rectangle2D bounds = edgeById.values().stream()
                 .reduce(null,
                         (rect, edges) -> {
                             Rectangle2D bounds1 = edges.getBounds();
@@ -141,6 +182,6 @@ public class StationBuilder {
                         },
                         (a, b) -> a == null ? b : a.createUnion(b));
 
-        return new StationMap(id, nodes, bounds != null ? bounds : EMPTY_BOUND);
+        return new StationMap(id, nodeById, bounds != null ? bounds : EMPTY_BOUND);
     }
 }

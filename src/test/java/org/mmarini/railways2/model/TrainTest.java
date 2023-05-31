@@ -53,7 +53,7 @@ class TrainTest {
         stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(200, 0), "ab")
-                .addEdge(Track.builder("ab"), "a", "b")
+                .addTrack("ab", "a", "b")
                 .build();
         status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")

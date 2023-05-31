@@ -51,7 +51,7 @@ class SignalTest {
     private Edge bc;
 
     /*
-     * a --ab-- Signal(b) --bc-- c
+     * a --ab-- Signals(b) --bc-- c
      */
     @BeforeEach
     void beforeEach() {
@@ -59,8 +59,8 @@ class SignalTest {
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(200, 0), "bc")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
                 .build();
         this.a = station.getNode("a");
         this.b = station.getNode("b");

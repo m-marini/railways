@@ -58,7 +58,7 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
         int numNodes = nodes.length;
         if (numNodes != 1) {
             throw new IllegalArgumentException(format(
-                    "Signal requires 1 nodes (%d)",
+                    "Signals requires 1 nodes (%d)",
                     numNodes));
         }
         Node node = nodes[0];

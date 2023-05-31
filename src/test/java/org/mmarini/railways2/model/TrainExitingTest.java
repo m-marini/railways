@@ -32,7 +32,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.geometry.StationBuilder;
 import org.mmarini.railways2.model.geometry.StationMap;
-import org.mmarini.railways2.model.geometry.Track;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Signal;
@@ -51,7 +50,7 @@ class TrainExitingTest {
 
     /**
      * <pre>
-     *     Entry(a) --ab(500m)-- Signal(b) --bc(500m)-- Exit(c)
+     *     Entry(a) --ab(500m)-- Signals(b) --bc(500m)-- Exit(c)
      * </pre>
      */
     @BeforeEach
@@ -60,8 +59,8 @@ class TrainExitingTest {
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc")
-                .addEdge(Track.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
                 .build();
         status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")

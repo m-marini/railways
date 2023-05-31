@@ -35,7 +35,7 @@ import java.util.function.BiFunction;
 
 import static java.lang.Math.*;
 import static java.util.Objects.requireNonNull;
-import static org.mmarini.railways2.model.geometry.MathUtils.*;
+import static org.mmarini.railways2.model.MathUtils.*;
 
 /**
  * Connects two points for train transit with a curve

@@ -6,7 +6,7 @@
 	xsi:schemaLocation="http://www.mmarini.org/railways-1.2.5 station-1.2.5.xsd ">
 	<s:name>Delta Crossing</s:name>
 	<s:nodes>
-		<!-- Semaphores -->
+		<!-- Signals -->
 		<s:semaphore>s.w.1</s:semaphore>
 		<s:semaphore>s.w.1.1</s:semaphore>
 		<s:semaphore>s.w.1.2</s:semaphore>

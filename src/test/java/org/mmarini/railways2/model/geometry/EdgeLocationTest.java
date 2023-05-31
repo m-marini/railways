@@ -45,17 +45,17 @@ class EdgeLocationTest {
         StationMap station = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(RADIUS, RADIUS), "ab")
-                .addEdge(Curve.builder("ab", toRadians(90)), "a", "b")
+                .addCurve("ab", toRadians(90), "a", "b")
                 .build();
         Node a = station.getNode("a");
         Node b = station.getNode("b");
         Curve ab = station.getEdge("ab");
 
         EdgeLocation ep1 = EdgeLocation.create(ab, b, RADIUS * toRadians(60));
-        assertThat(ep1.getLocation(), pointCloseTo(33.8, 9.1, 1e-1));
+        assertThat(ep1.getLocation(), pointCloseTo(200, 53.6, 1e-1));
 
         EdgeLocation ep2 = EdgeLocation.create(ab, a, RADIUS * toRadians(60));
-        assertThat(ep2.getLocation(), pointCloseTo(58.5, 33.8, 1e-1));
+        assertThat(ep2.getLocation(), pointCloseTo(346.4, 200, 1e-1));
     }
 
     @Test
@@ -63,7 +63,7 @@ class EdgeLocationTest {
         StationMap station = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 100), "ab")
-                .addEdge(Platform.builder("ab"), "a", "b")
+                .addPlatform("ab", "a", "b")
                 .build();
         Node a = station.getNode("a");
         Node b = station.getNode("b");
@@ -81,7 +81,7 @@ class EdgeLocationTest {
         StationMap station = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 0), "ab")
-                .addEdge(Track.builder("ab"), "a", "b")
+                .addTrack("ab", "a", "b")
                 .build();
         Node a = station.getNode("a");
         Node b = station.getNode("b");
@@ -103,7 +103,7 @@ class EdgeLocationTest {
         StationMap station = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(100, 100), "ab")
-                .addEdge(Track.builder("ab"), "a", "b")
+                .addTrack("ab", "a", "b")
                 .build();
         Node a = station.getNode("a");
         Node b = station.getNode("b");

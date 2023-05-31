@@ -34,7 +34,8 @@ import org.mmarini.railways2.model.routes.*;
 
 import java.awt.geom.Point2D;
 
-import static java.lang.Math.toRadians;
+import static org.mmarini.railways2.model.MathUtils.RAD90;
+import static org.mmarini.railways2.model.MathUtils.RAD_90;
 import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
 
 public interface StationExamples {
@@ -44,11 +45,11 @@ public interface StationExamples {
 
     /**
      * <pre>
-     * Entry(a) --platform-- Signal(b) --track-- DoubleSwitch(c) --------track-------- DoubleSwitch(d) --track-- Exit(e)
+     * Entry(a) --platform-- Signals(b) --track-- DoubleSwitch(c) --------track-------- DoubleSwitch(d) --track-- Exit(e)
      *                                                           --track--   --track--
      *                                                                     X
      *                                                           --track--   --track--
-     * Entry(f) --platform-- Signal(g) --track-- DoubleSwitch(h) --------track--------- DoubleSwitch(i) --track-- Exit(j)
+     * Entry(f) --platform-- Signals(g) --track-- DoubleSwitch(h) --------track--------- DoubleSwitch(i) --track-- Exit(j)
      * </pre>
      */
     static StationStatus create2CrossExitStation(boolean through) {
@@ -63,16 +64,16 @@ public interface StationExamples {
                 .addNode("h", new Point2D.Double(LENGTH + GAP, -TRACK_GAP), "gh", "hi", "hd")
                 .addNode("i", new Point2D.Double(LENGTH + GAP + CROSS_LENGTH, -TRACK_GAP), "ij", "hi", "ci")
                 .addNode("j", new Point2D.Double(LENGTH + GAP + CROSS_LENGTH + GAP, -TRACK_GAP), "ij")
-                .addEdge(Platform.builder("ab"), "a", "b")
-                .addEdge(Track.builder("bc"), "b", "c")
-                .addEdge(Track.builder("cd"), "c", "d")
-                .addEdge(Track.builder("de"), "d", "e")
-                .addEdge(Platform.builder("fg"), "f", "g")
-                .addEdge(Track.builder("gh"), "g", "h")
-                .addEdge(Track.builder("hi"), "h", "i")
-                .addEdge(Track.builder("ij"), "i", "j")
-                .addEdge(Track.builder("ci"), "c", "i")
-                .addEdge(Track.builder("hd"), "h", "d")
+                .addPlatform("ab", "a", "b")
+                .addTrack("bc", "b", "c")
+                .addTrack("cd", "c", "d")
+                .addTrack("de", "d", "e")
+                .addPlatform("fg", "f", "g")
+                .addTrack("gh", "g", "h")
+                .addTrack("hi", "h", "i")
+                .addTrack("ij", "i", "j")
+                .addTrack("ci", "c", "i")
+                .addTrack("hd", "h", "d")
                 .build();
 
         return new StationStatus.Builder(stationMap, 1)
@@ -123,24 +124,24 @@ public interface StationExamples {
                 .addNode("d1", new Point2D.Double(540, TRACK_GAP * 2), "t11", "t12", "t13")
                 .addNode("d2", new Point2D.Double(580, TRACK_GAP * 2), "t15", "t12", "t14")
                 .addNode("o2", new Point2D.Double(590, TRACK_GAP * 2), "t15")
-                .addEdge(Platform.builder("p1"), "i1", "s1")
-                .addEdge(Platform.builder("p2"), "i2", "s2")
-                .addEdge(Platform.builder("p3"), "i3", "s3")
-                .addEdge(Track.builder("t1"), "s1", "ds2")
-                .addEdge(Track.builder("t2"), "s2", "ds1")
-                .addEdge(Track.builder("t3"), "ds2", "ds4")
-                .addEdge(Track.builder("t4"), "ds1", "ds4")
-                .addEdge(Track.builder("t5"), "ds1", "ds3")
-                .addEdge(Track.builder("t6"), "ds2", "ds3")
-                .addEdge(Track.builder("t7"), "ds3", "c")
-                .addEdge(Track.builder("t8"), "ds4", "d3")
-                .addEdge(Track.builder("t9"), "c", "d3")
-                .addEdge(Track.builder("t10"), "d3", "o1")
-                .addEdge(Track.builder("t11"), "s3", "d1")
-                .addEdge(Track.builder("t12"), "d1", "d2")
-                .addEdge(Track.builder("t13"), "d1", "c")
-                .addEdge(Track.builder("t14"), "c", "d2")
-                .addEdge(Track.builder("t15"), "d2", "o2")
+                .addPlatform("p1", "i1", "s1")
+                .addPlatform("p2", "i2", "s2")
+                .addPlatform("p3", "i3", "s3")
+                .addTrack("t1", "s1", "ds2")
+                .addTrack("t2", "s2", "ds1")
+                .addTrack("t3", "ds2", "ds4")
+                .addTrack("t4", "ds1", "ds4")
+                .addTrack("t5", "ds1", "ds3")
+                .addTrack("t6", "ds2", "ds3")
+                .addTrack("t7", "ds3", "c")
+                .addTrack("t8", "ds4", "d3")
+                .addTrack("t9", "c", "d3")
+                .addTrack("t10", "d3", "o1")
+                .addTrack("t11", "s3", "d1")
+                .addTrack("t12", "d1", "d2")
+                .addTrack("t13", "d1", "c")
+                .addTrack("t14", "c", "d2")
+                .addTrack("t15", "d2", "o2")
                 .build();
 
         return new StationStatus.Builder(stationMap, 1)
@@ -162,7 +163,7 @@ public interface StationExamples {
 
     /**
      * <pre>
-     * Entry(a) --curve-- Signal(b) --platform-- Signal(c) --track-- Switch(d) -- track -- Exit(e)
+     * Entry(a) --curve-- Signals(b) --platform-- Signals(c) --track-- Switch(d) -- track -- Exit(e)
      *                                                                         -- curve -- Exit(f)
      * </pre>
      */
@@ -174,11 +175,11 @@ public interface StationExamples {
                 .addNode("d", new Point2D.Double(2 * LENGTH + GAP, 0), "cd", "de", "df")
                 .addNode("e", new Point2D.Double(3 * LENGTH + GAP, 0), "de")
                 .addNode("f", new Point2D.Double(3 * LENGTH + GAP, -LENGTH), "df")
-                .addEdge(Curve.builder("ab", toRadians(90)), "a", "b")
-                .addEdge(Platform.builder("bc"), "b", "c")
-                .addEdge(Track.builder("cd"), "c", "d")
-                .addEdge(Track.builder("de"), "d", "e")
-                .addEdge(Curve.builder("df", toRadians(-90)), "d", "f")
+                .addCurve("ab", RAD90, "a", "b")
+                .addPlatform("bc", "b", "c")
+                .addTrack("cd", "c", "d")
+                .addTrack("de", "d", "e")
+                .addCurve("df", RAD_90, "d", "f")
                 .build();
         Node b = stationMap.getNode("b");
         Node c = stationMap.getNode("c");

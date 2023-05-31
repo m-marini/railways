@@ -789,13 +789,13 @@ public class StationStatus {
         Direction exit0 = section.getExit0();
         Route route0 = getRoute(exit0.getOrigin());
         if (route0 instanceof Signal && ((Signal) route0).isExitLocked(exit0)) {
-            // Signal locked
+            // Signals locked
             return true;
         }
         Direction exit1 = section.getExit1();
         Route route1 = getRoute(exit1.getOrigin());
         if (route1 instanceof Signal && ((Signal) route1).isExitLocked(exit1)) {
-            // Signal locked
+            // Signals locked
             return true;
         }
         // Searches for any train in crossing sections

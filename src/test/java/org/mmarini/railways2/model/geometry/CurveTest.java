@@ -225,7 +225,7 @@ class CurveTest {
         StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(x0, y0), "curve")
                 .addNode("b", new Point2D.Double(x1, y1), "curve")
-                .addEdge(Curve.builder("curve", toRadians(angle)), "a", "b")
+                .addCurve("curve", toRadians(angle), "a", "b")
                 .build();
         this.a = stationMap.getNode("a");
         this.b = stationMap.getNode("b");

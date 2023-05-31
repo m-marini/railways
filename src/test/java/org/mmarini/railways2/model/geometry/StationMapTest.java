@@ -57,9 +57,9 @@ public class StationMapTest {
                 .addNode("bNode", new Point2D.Double(100, 0), "ab", "bc")
                 .addNode("cNode", new Point2D.Double(200, 0), "bc", "cd")
                 .addNode("dNode", new Point2D.Double(200 + RADIUS, RADIUS), "cd")
-                .addEdge(Track.builder("ab"), "aNode", "bNode")
-                .addEdge(Platform.builder("bc"), "bNode", "cNode")
-                .addEdge(Curve.builder("cd", PI / 2), "cNode", "dNode")
+                .addTrack("ab", "aNode", "bNode")
+                .addPlatform("bc", "bNode", "cNode")
+                .addCurve("cd", PI / 2, "cNode", "dNode")
                 .build();
         assertNotNull(stationMap);
     }
@@ -95,7 +95,7 @@ public class StationMapTest {
         ));
         assertThat(dNode, allOf(
                 hasProperty("id", equalTo("dNode")),
-                hasProperty("location", pointCloseTo(267.615, 67.615, 1e-3)),
+                hasProperty("location", pointCloseTo(600, 400, 1e-3)),
                 hasProperty("edges", containsInAnyOrder(cd))
         ));
 
