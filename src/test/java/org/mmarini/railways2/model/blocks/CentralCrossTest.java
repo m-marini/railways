@@ -287,12 +287,12 @@ class CentralCrossTest {
     void getGeometry() {
         // When ...
         OrientedGeometry nw = block.getEntryGeometry("nw");
-        OrientedGeometry w2 = block.getEntryGeometry("w.2");
-        OrientedGeometry w1 = block.getEntryGeometry("w.1");
+        OrientedGeometry w2 = block.getEntryGeometry("w2");
+        OrientedGeometry w1 = block.getEntryGeometry("w1");
         OrientedGeometry sw = block.getEntryGeometry("sw");
         OrientedGeometry ne = block.getEntryGeometry("ne");
-        OrientedGeometry e2 = block.getEntryGeometry("e.2");
-        OrientedGeometry e1 = block.getEntryGeometry("e.1");
+        OrientedGeometry e2 = block.getEntryGeometry("e2");
+        OrientedGeometry e1 = block.getEntryGeometry("e1");
         OrientedGeometry se = block.getEntryGeometry("se");
 
         // Then ...
@@ -301,13 +301,13 @@ class CentralCrossTest {
                 equalTo(0)));
         assertThat(w2, orientedGeometry(
                 pointCloseTo(0, TRACK_GAP, EPSILON),
-                equalTo(SWITCH_ANGLE_DEG)));
+                equalTo(0)));
         assertThat(nw, orientedGeometry(
                 pointCloseTo(0, TRACK_GAP * 1.5, EPSILON),
-                equalTo(SWITCH_ANGLE_DEG)));
+                equalTo(-SWITCH_ANGLE_DEG)));
         assertThat(sw, orientedGeometry(
                 pointCloseTo(0, -TRACK_GAP / 2, EPSILON),
-                equalTo(-180)));
+                equalTo(SWITCH_ANGLE_DEG)));
         assertThat(ne, orientedGeometry(
                 pointCloseTo(SWITCH_LENGTH * 2, TRACK_GAP * 1.5, EPSILON),
                 equalTo(SWITCH_ANGLE_DEG - 180)));
@@ -333,82 +333,104 @@ class CentralCrossTest {
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s1")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_GAP, -PLATFORM_SWITCH_Y, EPSILON))
+                        SWITCH_GAP, -PLATFORM_SWITCH_Y, EPSILON)),
+                hasProperty("edges", contains("id.sw.s1", "id.s1.s6", "id.s1.s5"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s2")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_GAP, -0, EPSILON))
+                        SWITCH_GAP, -0, EPSILON)),
+                hasProperty("edges", contains("id.w1.s2", "id.s2.s5", "id.s2.s6"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s3")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_GAP, TRACK_GAP, EPSILON))
+                        SWITCH_GAP, TRACK_GAP, EPSILON)),
+                hasProperty("edges", contains("id.w2.s3", "id.s3.s8", "id.s3.s7"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s4")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_GAP, TRACK_GAP + PLATFORM_SWITCH_Y, EPSILON))
+                        SWITCH_GAP, TRACK_GAP + PLATFORM_SWITCH_Y, EPSILON)),
+                hasProperty("edges", contains("id.nw.s4", "id.s4.s7", "id.s4.s8"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s5")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH - SWITCH_GAP, 0, EPSILON))
+                        SWITCH_LENGTH - SWITCH_GAP, 0, EPSILON)),
+                hasProperty("edges", contains("id.s5.s9", "id.s2.s5", "id.s1.s5"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s6")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH - SWITCH_GAP, PLATFORM_SWITCH_Y, EPSILON))
+                        SWITCH_LENGTH - SWITCH_GAP, PLATFORM_SWITCH_Y, EPSILON)),
+                hasProperty("edges", contains("id.s6.x", "id.s1.s6", "id.s2.s6"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s7")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH - SWITCH_GAP, TRACK_GAP - PLATFORM_SWITCH_Y, EPSILON))
+                        SWITCH_LENGTH - SWITCH_GAP, TRACK_GAP - PLATFORM_SWITCH_Y, EPSILON)),
+                hasProperty("edges", contains("id.s7.x", "id.s4.s7", "id.s3.s7"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s8")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH - SWITCH_GAP, TRACK_GAP, EPSILON))
+                        SWITCH_LENGTH - SWITCH_GAP, TRACK_GAP, EPSILON)),
+                hasProperty("edges", contains("id.s8.s12", "id.s3.s8", "id.s4.s8"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s9")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH + SWITCH_GAP, 0, EPSILON))
+                        SWITCH_LENGTH + SWITCH_GAP, 0, EPSILON)),
+                hasProperty("edges", contains("id.s5.s9", "id.s9.s14", "id.s9.s13"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s10")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH + SWITCH_GAP, PLATFORM_SWITCH_Y, EPSILON))
+                        SWITCH_LENGTH + SWITCH_GAP, PLATFORM_SWITCH_Y, EPSILON)),
+                hasProperty("edges", contains("id.x.s10", "id.s10.s13", "id.s10.s14"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s11")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH + SWITCH_GAP, TRACK_GAP - PLATFORM_SWITCH_Y, EPSILON))
+                        SWITCH_LENGTH + SWITCH_GAP, TRACK_GAP - PLATFORM_SWITCH_Y, EPSILON)),
+                hasProperty("edges", contains("id.x.s11", "id.s11.s16", "id.s11.s15"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s12")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH + SWITCH_GAP, TRACK_GAP, EPSILON))
+                        SWITCH_LENGTH + SWITCH_GAP, TRACK_GAP, EPSILON)),
+                hasProperty("edges", contains("id.s8.s12", "id.s12.s15", "id.s12.s16"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s13")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH * 2 - SWITCH_GAP, -PLATFORM_SWITCH_Y, EPSILON))
+                        SWITCH_LENGTH * 2 - SWITCH_GAP, -PLATFORM_SWITCH_Y, EPSILON)),
+                hasProperty("edges", contains("id.s13.se", "id.s10.s13", "id.s9.s13"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s14")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH * 2 - SWITCH_GAP, 0, EPSILON))
+                        SWITCH_LENGTH * 2 - SWITCH_GAP, 0, EPSILON)),
+                hasProperty("edges", contains("id.s14.e1", "id.s9.s14", "id.s10.s14"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s15")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH * 2 - SWITCH_GAP, TRACK_GAP, EPSILON))
+                        SWITCH_LENGTH * 2 - SWITCH_GAP, TRACK_GAP, EPSILON)),
+                hasProperty("edges", contains("id.s15.e2", "id.s12.s15", "id.s11.s15"))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.s16")),
                 hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH * 2 - SWITCH_GAP, TRACK_GAP + PLATFORM_SWITCH_Y, EPSILON))
+                        SWITCH_LENGTH * 2 - SWITCH_GAP, TRACK_GAP + PLATFORM_SWITCH_Y, EPSILON)),
+                hasProperty("edges", contains("id.s16.ne", "id.s11.s16", "id.s12.s16"))
+        )));
+        assertThat(nodes, hasItem(allOf(
+                hasProperty("id", equalTo("id.x")),
+                hasProperty("location", pointCloseTo(
+                        SWITCH_LENGTH, TRACK_GAP / 2, EPSILON)),
+                hasProperty("edges", contains("id.s6.x", "id.x.s11", "id.s7.x", "id.x.s10"))
         )));
     }
 
@@ -425,9 +447,9 @@ class CentralCrossTest {
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
                 contains("s3", "s8", "s4", "s7"))));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("s9","s14","s10","s13"))));
+                contains("s9", "s14", "s10", "s13"))));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("s12","s15","s11","s16"))));
+                contains("s12", "s15", "s11", "s16"))));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
                 contains("x"))));
     }

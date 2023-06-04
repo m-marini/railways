@@ -149,13 +149,13 @@ class DownCrossTest {
                 equalTo(0)));
         assertThat(nw, orientedGeometry(
                 pointCloseTo(0, TRACK_GAP / 2, EPSILON),
-                equalTo(SWITCH_ANGLE_DEG)));
+                equalTo(-SWITCH_ANGLE_DEG)));
         assertThat(e, orientedGeometry(
                 pointCloseTo(SWITCH_LENGTH, 0, EPSILON),
                 equalTo(-180)));
         assertThat(se, orientedGeometry(
                 pointCloseTo(SWITCH_LENGTH, -TRACK_GAP / 2, EPSILON),
-                equalTo(SWITCH_ANGLE_DEG - 180)));
+                equalTo(180 - SWITCH_ANGLE_DEG)));
     }
 
     @Test

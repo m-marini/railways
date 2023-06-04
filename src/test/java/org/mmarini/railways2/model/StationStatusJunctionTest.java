@@ -47,9 +47,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways.Matchers.tupleOf;
 import static org.mmarini.railways2.model.Matchers.isSectionWith;
+import static org.mmarini.railways2.model.MathUtils.RAD180;
 import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
-import static org.mmarini.railways2.model.MathUtils.RAD180;
 
 class StationStatusJunctionTest {
 
@@ -65,7 +65,7 @@ class StationStatusJunctionTest {
     private Exit cRoute;
 
     /**
-     * Station map
+     * StationDef map
      * <pre>
      * Entry(a) --ab-- Junction(b) --bc-- Exit(c)
      * </pre>
@@ -84,7 +84,7 @@ class StationStatusJunctionTest {
         this.c = stationMap.getNode("c");
         this.ab = stationMap.getEdge("ab");
         this.bc = stationMap.getEdge("bc");
-        status = new StationStatus.Builder(stationMap,1)
+        status = new StationStatus.Builder(stationMap, 1)
                 .addRoute(Entry::create, "a")
                 .addRoute(Junction::create, "b")
                 .addRoute(Exit::create, "c")

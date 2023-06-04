@@ -71,24 +71,6 @@ class RightPlatformSwitchTest {
     }
 
     @Test
-    void getInnerRouteParams() {
-        // Given ...
-        // When ...
-        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
-
-        // Then ...
-        assertThat(routes, hasSize(4));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("switch"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("d1"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("t1"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("t2"))));
-    }
-
-    @Test
     void getEdgeBuilders() {
         // Given ...
         // When ...
@@ -153,10 +135,10 @@ class RightPlatformSwitchTest {
                 pointCloseTo(0, 0, EPSILON),
                 equalTo(0)));
         assertThat(through, orientedGeometry(
-                pointCloseTo(0, TRACK_GAP, EPSILON),
+                pointCloseTo(0, -TRACK_GAP, EPSILON),
                 equalTo(0)));
         assertThat(entry, orientedGeometry(
-                pointCloseTo(SWITCH_LENGTH * 2, TRACK_GAP * 1.5, EPSILON),
+                pointCloseTo(SWITCH_LENGTH * 2, TRACK_GAP * 0.5, EPSILON),
                 equalTo(SWITCH_ANGLE_DEG - 180)));
     }
 
@@ -196,6 +178,24 @@ class RightPlatformSwitchTest {
                         -TRACK_GAP,
                         EPSILON))
         )));
+    }
+
+    @Test
+    void getInnerRouteParams() {
+        // Given ...
+        // When ...
+        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
+
+        // Then ...
+        assertThat(routes, hasSize(4));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("switch"))));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("d1"))));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("t1"))));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("t2"))));
     }
 
     @BeforeEach

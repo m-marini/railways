@@ -30,7 +30,10 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mmarini.railways2.model.geometry.*;
+import org.mmarini.railways2.model.geometry.Edge;
+import org.mmarini.railways2.model.geometry.Node;
+import org.mmarini.railways2.model.geometry.StationBuilder;
+import org.mmarini.railways2.model.geometry.StationMap;
 import org.mmarini.railways2.model.routes.DoubleSlipSwitch;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
@@ -49,7 +52,7 @@ class StationStatusDoubleSlipSwitchTest {
     StationStatus status;
 
     /**
-     * Station map
+     * StationDef map
      * <pre>
      * Entry(a) --ab-- b --bc-- c --cd-- Exit(d)
      *                   --bg-- g

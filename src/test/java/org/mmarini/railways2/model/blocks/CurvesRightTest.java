@@ -30,6 +30,8 @@ package org.mmarini.railways2.model.blocks;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
@@ -48,10 +50,10 @@ import static java.lang.Math.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mmarini.railways.Matchers.pointCloseTo;
 import static org.mmarini.railways.TestFunctions.text;
 import static org.mmarini.railways2.model.Matchers.orientedGeometry;
+import static org.mmarini.railways2.model.MathUtils.normalizeDeg;
 import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
 import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
 import static org.mmarini.yaml.Utils.createObject;
@@ -77,28 +79,24 @@ class CurvesRightTest {
     }
 
     @Test
-    void getInnerRouteParams() {
+    void getE2WorldGeo() {
         // Given ...
+        setUp(-45);
+
         // When ...
-        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
+        OrientedGeometry e1WorldPointGeo = OrientedGeometry.create(0, 0, -180);
+        OrientedGeometry e1LocalGeo = block.getEntryGeometry("e1");
+        OrientedGeometry e2LocalGeo = block.getEntryGeometry("e2");
+        OrientedGeometry worldBlock = e1LocalGeo.getWorldBlockGeo(e1WorldPointGeo);
+        OrientedGeometry e2WorldGeo = worldBlock.getBlock2World().apply(e2LocalGeo);
 
         // Then ...
-        assertThat(routes, empty());
-    }
+        double blockx = -RADIUS * sin(toRadians(45));
+        double blocky = -RADIUS * (1 - cos(toRadians(45)));
+        int expOrientation = 45;
+        assertThat(worldBlock, orientedGeometry(pointCloseTo(blockx, blocky, EPSILON), equalTo(expOrientation)));
+        assertThat(e2WorldGeo, orientedGeometry(pointCloseTo(0, TRACK_GAP, EPSILON), equalTo(-180)));
 
-    @Test
-    void getEdgeId() {
-        // When ...
-        String w1 = block.getEdgeId("w1");
-        String e1 = block.getEdgeId("e1");
-        String w2 = block.getEdgeId("w2");
-        String e2 = block.getEdgeId("e2");
-
-        // Then ...
-        assertEquals("w1.e1", w1);
-        assertEquals("w2.e2", w2);
-        assertEquals("w1.e1", e1);
-        assertEquals("w2.e2", e2);
     }
 
     @Test
@@ -122,14 +120,45 @@ class CurvesRightTest {
     }
 
     @Test
-    void getGeometry() {
+    void getEdgeId() {
         // When ...
+        String w1 = block.getEdgeId("w1");
+        String e1 = block.getEdgeId("e1");
+        String w2 = block.getEdgeId("w2");
+        String e2 = block.getEdgeId("e2");
+
+        // Then ...
+        assertEquals("w1.e1", w1);
+        assertEquals("w2.e2", w2);
+        assertEquals("w1.e1", e1);
+        assertEquals("w2.e2", e2);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "-30",
+            "-45",
+            "-60",
+            "-90",
+            "-135",
+            "-180",
+            "-225",
+            "-270",
+            "-315"
+    })
+    void getGeometry(int angle) {
+        // When ...
+        setUp(angle);
         OrientedGeometry w1 = block.getEntryGeometry("w1");
         OrientedGeometry e1 = block.getEntryGeometry("e1");
         OrientedGeometry w2 = block.getEntryGeometry("w2");
         OrientedGeometry e2 = block.getEntryGeometry("e2");
 
         // Then ...
+        double e1x = -RADIUS * sin(toRadians(angle));
+        double e1y = -RADIUS * (1 - cos(toRadians(angle)));
+        double e2x = -(RADIUS + TRACK_GAP) * sin(toRadians(angle));
+        double e2y = TRACK_GAP - (RADIUS + TRACK_GAP) * (1 - cos(toRadians(angle)));
         assertThat(w1, orientedGeometry(
                 pointCloseTo(0, 0, EPSILON),
                 equalTo(0)));
@@ -137,17 +166,11 @@ class CurvesRightTest {
                 pointCloseTo(0, TRACK_GAP, EPSILON),
                 equalTo(0)));
         assertThat(e1, orientedGeometry(
-                pointCloseTo(
-                        (RADIUS) * sin(toRadians(ANGLE)),
-                        (RADIUS) * (1 - cos(toRadians(ANGLE))),
-                        EPSILON),
-                equalTo(180 + ANGLE)));
+                pointCloseTo(e1x, e1y, EPSILON),
+                equalTo(normalizeDeg(180 + angle))));
         assertThat(e2, orientedGeometry(
-                pointCloseTo(
-                        (RADIUS + TRACK_GAP) * sin(toRadians(ANGLE)),
-                        (RADIUS + TRACK_GAP) * (1 - cos(toRadians(ANGLE))),
-                        EPSILON),
-                equalTo(180 + ANGLE)));
+                pointCloseTo(e2x, e2y, EPSILON),
+                equalTo(normalizeDeg(180 + angle))));
     }
 
     @Test
@@ -161,8 +184,22 @@ class CurvesRightTest {
         assertThat(nodes, empty());
     }
 
+    @Test
+    void getInnerRouteParams() {
+        // Given ...
+        // When ...
+        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
+
+        // Then ...
+        assertThat(routes, empty());
+    }
+
     @BeforeEach
     void setUp() {
-        this.block = Curves.create("id", 2, ANGLE);
+        setUp(ANGLE);
+    }
+
+    void setUp(int angle) {
+        this.block = Curves.create("id", 2, angle);
     }
 }

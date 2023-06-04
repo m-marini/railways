@@ -114,20 +114,6 @@ class LeftSwitchTest {
     }
 
     @Test
-    void getInnerRouteParams() {
-        // Given ...
-        // When ...
-        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
-
-        // Then ...
-        assertThat(routes, hasSize(2));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("switch"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("d"))));
-    }
-
-    @Test
     void getGeometry() {
         // When ...
         OrientedGeometry entry = block.getEntryGeometry("entry");
@@ -162,6 +148,20 @@ class LeftSwitchTest {
                 hasProperty("id", equalTo("id.d")),
                 hasProperty("location", pointCloseTo(SWITCH_LENGTH - SWITCH_GAP, PLATFORM_SWITCH_Y, EPSILON))
         )));
+    }
+
+    @Test
+    void getInnerRouteParams() {
+        // Given ...
+        // When ...
+        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
+
+        // Then ...
+        assertThat(routes, hasSize(2));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("switch"))));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("d"))));
     }
 
     @BeforeEach

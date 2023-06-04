@@ -31,6 +31,7 @@ package org.mmarini.railways2.model.blocks;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.Tuple2;
+import org.mmarini.railways2.model.MathUtils;
 import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
@@ -41,14 +42,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mmarini.railways.Matchers.pointCloseTo;
-import static org.mmarini.railways.Matchers.tupleOf;
+import static org.mmarini.railways.Matchers.*;
 import static org.mmarini.railways.TestFunctions.text;
 import static org.mmarini.railways2.model.Matchers.orientedGeometry;
 import static org.mmarini.railways2.model.RailwayConstants.*;
@@ -162,33 +161,25 @@ class UpCrossTest {
     void getInnerNodes() {
         // GIven
         // When ...
-        List<NodeBuilderParams> nodes = block.getInnerParams(UnaryOperator.identity()).collect(Collectors.toList());
+        List<NodeBuilderParams> nodes = block.getInnerParams(MathUtils::snapToGrid).collect(Collectors.toList());
 
         // Then ...
         assertThat(nodes, hasSize(4));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.ws")),
-                hasProperty("location", pointCloseTo(
-                        SWITCH_GAP, 0, EPSILON))
+                hasProperty("location", pointSnapTo(SWITCH_GAP, 0))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.es")),
-                hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH - SWITCH_GAP, 0, EPSILON))
+                hasProperty("location", pointSnapTo(SWITCH_LENGTH - SWITCH_GAP, 0))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.sws")),
-                hasProperty("location", pointCloseTo(
-                        SWITCH_GAP,
-                        -PLATFORM_SWITCH_Y,
-                        EPSILON))
+                hasProperty("location", pointSnapTo(SWITCH_GAP, -PLATFORM_SWITCH_Y))
         )));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("id.nes")),
-                hasProperty("location", pointCloseTo(
-                        SWITCH_LENGTH - SWITCH_GAP,
-                        PLATFORM_SWITCH_Y,
-                        EPSILON))
+                hasProperty("location", pointSnapTo(SWITCH_LENGTH - SWITCH_GAP, PLATFORM_SWITCH_Y))
         )));
     }
 

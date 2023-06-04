@@ -45,7 +45,7 @@ class SimulationContextTest {
     static StationStatus status;
 
     /**
-     * Station map
+     * StationDef map
      * <pre>
      * Entry(a) --ab-- Signals(b) --bc-- Signals(c) --cd-- Exit(dc)
      * </pre>

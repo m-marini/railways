@@ -61,12 +61,12 @@ public abstract class AbstractBlock implements Block {
     /**
      * Creates the abstract block
      *
-     * @param id               the identifier
-     * @param geometryById     the orientation by identifier
-     * @param innerParams      the inner parameters by identifier
-     * @param edgeBuilderParams     the edge builders
-     * @param edgeByBlockPoint the edge by block point
-     * @param innerRouteParams the inner building route parameters
+     * @param id                the identifier
+     * @param geometryById      the orientation by identifier
+     * @param innerParams       the inner parameters by identifier
+     * @param edgeBuilderParams the edge builders
+     * @param edgeByBlockPoint  the edge by block point
+     * @param innerRouteParams  the inner building route parameters
      */
     protected AbstractBlock(String id, Map<String, OrientedGeometry> geometryById,
                             List<NodeBuilderParams> innerParams, List<EdgeBuilderParams> edgeBuilderParams,
@@ -101,11 +101,6 @@ public abstract class AbstractBlock implements Block {
     }
 
     @Override
-    public List<EdgeBuilderParams> getEdgeParams() {
-        return edgeBuilderParams;
-    }
-
-    @Override
     public String getEdgeId(String blockPointId) {
         String edgeId = edgeByBlockPoint.get(blockPointId);
         if (edgeId == null) {
@@ -113,6 +108,11 @@ public abstract class AbstractBlock implements Block {
                     this.id, blockPointId));
         }
         return edgeId;
+    }
+
+    @Override
+    public List<EdgeBuilderParams> getEdgeParams() {
+        return edgeBuilderParams;
     }
 
     @Override
@@ -128,7 +128,7 @@ public abstract class AbstractBlock implements Block {
     /**
      * Returns the inner point by identifier
      */
-    public Map<String, OrientedGeometry> getGeometryById() {
+    Map<String, OrientedGeometry> getGeometryById() {
         return geometryById;
     }
 

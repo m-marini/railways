@@ -108,32 +108,32 @@ public class CentralCross extends AbstractBlock {
     );
     private static final Map<String, OrientedGeometry> GEOMETRY_BY_ID = Map.of(
             "nw", new OrientedGeometry(new Point2D.Double(0, TRACK_GAP * 1.5), -SWITCH_ANGLE_DEG),
-            "w.2", new OrientedGeometry(new Point2D.Double(0, TRACK_GAP), 0),
-            "w.1", new OrientedGeometry(new Point2D.Double(0, 0), 0),
+            "w2", new OrientedGeometry(new Point2D.Double(0, TRACK_GAP), 0),
+            "w1", new OrientedGeometry(new Point2D.Double(0, 0), 0),
             "sw", new OrientedGeometry(new Point2D.Double(0, -TRACK_GAP / 2), SWITCH_ANGLE_DEG),
             "ne", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH * 2, TRACK_GAP * 1.5), SWITCH_ANGLE_DEG - 180),
-            "e.2", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH * 2, TRACK_GAP), 0),
-            "e.1", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH * 2, 0), 0),
+            "e2", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH * 2, TRACK_GAP), -180),
+            "e1", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH * 2, 0), -180),
             "se", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH * 2, -TRACK_GAP / 2), 180 - SWITCH_ANGLE_DEG)
     );
     private static final List<NodeBuilderParams> INNER_NODES = List.of(
-            NodeBuilderParams.create("s1", SWITCH_GAP, -PLATFORM_SWITCH_Y),
-            NodeBuilderParams.create("s2", SWITCH_GAP, 0),
-            NodeBuilderParams.create("s3", SWITCH_GAP, TRACK_GAP),
-            NodeBuilderParams.create("s4", SWITCH_GAP, TRACK_GAP + PLATFORM_SWITCH_Y),
-            NodeBuilderParams.create("s5", SWITCH_LENGTH - SWITCH_GAP, 0),
-            NodeBuilderParams.create("s6", SWITCH_LENGTH - SWITCH_GAP, PLATFORM_SWITCH_Y),
-            NodeBuilderParams.create("s7", SWITCH_LENGTH - SWITCH_GAP, TRACK_GAP - PLATFORM_SWITCH_Y),
-            NodeBuilderParams.create("s8", SWITCH_LENGTH - SWITCH_GAP, TRACK_GAP),
-            NodeBuilderParams.create("s9", SWITCH_LENGTH + SWITCH_GAP, 0),
-            NodeBuilderParams.create("s10", SWITCH_LENGTH + SWITCH_GAP, PLATFORM_SWITCH_Y),
-            NodeBuilderParams.create("s11", SWITCH_LENGTH + SWITCH_GAP, TRACK_GAP - PLATFORM_SWITCH_Y),
-            NodeBuilderParams.create("s12", SWITCH_LENGTH + SWITCH_GAP, TRACK_GAP),
-            NodeBuilderParams.create("s13", SWITCH_LENGTH * 2 - SWITCH_GAP, -PLATFORM_SWITCH_Y),
-            NodeBuilderParams.create("s14", SWITCH_LENGTH * 2 - SWITCH_GAP, 0),
-            NodeBuilderParams.create("s15", SWITCH_LENGTH * 2 - SWITCH_GAP, TRACK_GAP),
-            NodeBuilderParams.create("s16", SWITCH_LENGTH * 2 - SWITCH_GAP, TRACK_GAP + PLATFORM_SWITCH_Y),
-            NodeBuilderParams.create("x", SWITCH_LENGTH, TRACK_GAP / 2)
+            NodeBuilderParams.create("s1", SWITCH_GAP, -PLATFORM_SWITCH_Y, "sw.s1", "s1.s6", "s1.s5"),
+            NodeBuilderParams.create("s2", SWITCH_GAP, 0, "w1.s2", "s2.s5", "s2.s6"),
+            NodeBuilderParams.create("s3", SWITCH_GAP, TRACK_GAP, "w2.s3", "s3.s8", "s3.s7"),
+            NodeBuilderParams.create("s4", SWITCH_GAP, TRACK_GAP + PLATFORM_SWITCH_Y, "nw.s4", "s4.s7", "s4.s8"),
+            NodeBuilderParams.create("s5", SWITCH_LENGTH - SWITCH_GAP, 0, "s5.s9", "s2.s5", "s1.s5"),
+            NodeBuilderParams.create("s6", SWITCH_LENGTH - SWITCH_GAP, PLATFORM_SWITCH_Y, "s6.x", "s1.s6", "s2.s6"),
+            NodeBuilderParams.create("s7", SWITCH_LENGTH - SWITCH_GAP, TRACK_GAP - PLATFORM_SWITCH_Y, "s7.x", "s4.s7", "s3.s7"),
+            NodeBuilderParams.create("s8", SWITCH_LENGTH - SWITCH_GAP, TRACK_GAP, "s8.s12", "s3.s8", "s4.s8"),
+            NodeBuilderParams.create("s9", SWITCH_LENGTH + SWITCH_GAP, 0, "s5.s9", "s9.s14", "s9.s13"),
+            NodeBuilderParams.create("s10", SWITCH_LENGTH + SWITCH_GAP, PLATFORM_SWITCH_Y, "x.s10", "s10.s13", "s10.s14"),
+            NodeBuilderParams.create("s11", SWITCH_LENGTH + SWITCH_GAP, TRACK_GAP - PLATFORM_SWITCH_Y, "x.s11", "s11.s16", "s11.s15"),
+            NodeBuilderParams.create("s12", SWITCH_LENGTH + SWITCH_GAP, TRACK_GAP, "s8.s12", "s12.s15", "s12.s16"),
+            NodeBuilderParams.create("s13", SWITCH_LENGTH * 2 - SWITCH_GAP, -PLATFORM_SWITCH_Y, "s13.se", "s10.s13", "s9.s13"),
+            NodeBuilderParams.create("s14", SWITCH_LENGTH * 2 - SWITCH_GAP, 0, "s14.e1", "s9.s14", "s10.s14"),
+            NodeBuilderParams.create("s15", SWITCH_LENGTH * 2 - SWITCH_GAP, TRACK_GAP, "s15.e2", "s12.s15", "s11.s15"),
+            NodeBuilderParams.create("s16", SWITCH_LENGTH * 2 - SWITCH_GAP, TRACK_GAP + PLATFORM_SWITCH_Y, "s16.ne", "s11.s16", "s12.s16"),
+            NodeBuilderParams.create("x", SWITCH_LENGTH, TRACK_GAP / 2, "s6.x", "x.s11", "s7.x", "x.s10")
     );
 
     /**

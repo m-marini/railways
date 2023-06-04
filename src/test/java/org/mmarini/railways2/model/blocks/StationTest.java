@@ -62,13 +62,13 @@ class StationTest {
             "  Platform.1: Platform.2",
             "  Platform.3: Platform.4");
 
-    private Station station;
+    private StationDef station;
     private Platforms platform;
 
     @Test
     void createBlocks() throws IOException {
         JsonNode root = Utils.fromText(DOC);
-        this.station = Station.create(root, Locator.root());
+        this.station = StationDef.create(root, Locator.root());
         assertThat(station.getBlocksById(), hasEntry(
                 equalTo("Platform"),
                 allOf(
@@ -76,6 +76,26 @@ class StationTest {
                         hasProperty("id", equalTo("Platform"))
                 )));
 
+    }
+
+    /**
+     * Returns the junctions by block
+     */
+    private Map<Block, List<BlockJunction>> createJunctionsByBlock() {
+        Map<Block, List<Tuple2<Block, BlockJunction>>> groupBy = station.getDeclaredJunctions().stream()
+                .flatMap(j -> Stream.of(
+                        Tuple2.of(j.getFrom().<Block>getBlock(), j),
+                        Tuple2.of(j.getTo().<Block>getBlock(), j)
+                ))
+                .collect(Collectors.groupingBy(Tuple2::getV1));
+        // Creates the junction by block
+        return Tuple2.stream(groupBy)
+                .map(t -> t.setV2(
+                        t._2.stream()
+                                .map(Tuple2::getV2)
+                                .collect(Collectors.toList())
+                ))
+                .collect(Tuple2.toMap());
     }
 
     @Test
@@ -114,49 +134,11 @@ class StationTest {
 
         // When ...
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                Station.create("id", 0, blocks, links)
+                StationDef.create("id", 0, blocks, links)
         );
 
         // Then ...
         assertThat(ex.getMessage(), matchesRegex("Duplicated links \\[left\\.entry]"));
-    }
-
-    @Test
-    void getDeclaredJunctions() {
-        // Given ...
-
-        // When ...
-        Collection<BlockJunction> junctions = station.getDeclaredJunctions();
-
-        // Then ...
-        assertThat(junctions, containsInAnyOrder(
-                hasToString("leftSignals.w1 - leftTracks.e1"),
-                hasToString("left.entry - leftTracks.w1"),
-                hasToString("rightSignals.e1 - rightTracks.w1"),
-                hasToString("leftSignals.e1 - platforms.w1"),
-                hasToString("platforms.e1 - rightSignals.w1"),
-                hasToString("right.exit - rightTracks.e1")
-        ));
-    }
-
-    /**
-     * Returns the junctions by block
-     */
-    private Map<Block, List<BlockJunction>> createJunctionsByBlock() {
-        Map<Block, List<Tuple2<Block, BlockJunction>>> groupBy = station.getDeclaredJunctions().stream()
-                .flatMap(j -> Stream.of(
-                        Tuple2.of(j.getFrom().<Block>getBlock(), j),
-                        Tuple2.of(j.getTo().<Block>getBlock(), j)
-                ))
-                .collect(Collectors.groupingBy(Tuple2::getV1));
-        // Creates the junction by block
-        return Tuple2.stream(groupBy)
-                .map(t -> t.setV2(
-                        t._2.stream()
-                                .map(Tuple2::getV2)
-                                .collect(Collectors.toList())
-                ))
-                .collect(Tuple2.toMap());
     }
 
     @Test
@@ -195,6 +177,24 @@ class StationTest {
         ));
     }
 
+    @Test
+    void getDeclaredJunctions() {
+        // Given ...
+
+        // When ...
+        Collection<BlockJunction> junctions = station.getDeclaredJunctions();
+
+        // Then ...
+        assertThat(junctions, containsInAnyOrder(
+                hasToString("leftSignals.w1 - leftTracks.e1"),
+                hasToString("left.entry - leftTracks.w1"),
+                hasToString("rightSignals.e1 - rightTracks.w1"),
+                hasToString("leftSignals.e1 - platforms.w1"),
+                hasToString("platforms.e1 - rightSignals.w1"),
+                hasToString("right.exit - rightTracks.e1")
+        ));
+    }
+
     /*
      * left -- leftTracks -- leftSignals -- platforms -- rightSignals -- rightTracks -- right
      */
@@ -216,7 +216,7 @@ class StationTest {
                 "rightSignals.e1", "rightTracks.w1",
                 "rightTracks.e1", "right.exit"
         );
-        this.station = Station.create("id", 0, blocks, links);
+        this.station = StationDef.create("id", 0, blocks, links);
         this.platform = (Platforms) station.getBlock("platforms").orElseThrow();
     }
 }

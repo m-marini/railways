@@ -26,17 +26,24 @@
 package org.mmarini.railways;
 
 import org.hamcrest.CustomMatcher;
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.mmarini.Tuple2;
 
 import java.awt.geom.Point2D;
 import java.util.Optional;
 
+import static java.lang.Math.abs;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mmarini.railways2.model.MathUtils.GRID_SIZE;
+import static org.mmarini.railways2.model.MathUtils.round;
 
 public interface Matchers {
+
+    double SNAP_EPSILON = GRID_SIZE / 2;
+
     static <T> Matcher<Optional<T>> emptyOptional() {
         return equalTo(Optional.empty());
     }
@@ -68,9 +75,42 @@ public interface Matchers {
                 expected,
                 epsilon)) {
             @Override
+            public void describeMismatch(Object item, Description description) {
+                if (item instanceof Point2D) {
+                    double distance = expected.distance((Point2D) item);
+                    description.appendText("distance between ")
+                            .appendValue(item)
+                            .appendText(" and ")
+                            .appendValue(expected)
+                            .appendText(" = ")
+                            .appendValue(distance)
+                            .appendText(" > ")
+                            .appendValue(SNAP_EPSILON);
+                } else {
+                    super.describeMismatch(item, description);
+                }
+            }
+
+            @Override
+            public boolean matches(Object o) {
+                if (!(o instanceof Point2D)) return false;
+                double distance = ((Point2D) o).distance(expected);
+                boolean matched = distance <= epsilon;
+                return matched;
+            }
+        };
+    }
+
+    static Matcher<Point2D> pointSnapTo(double x, double y) {
+        double snapX = round(x, GRID_SIZE);
+        double snapY = round(y, GRID_SIZE);
+        return new CustomMatcher<>(format("Point snap to %.3f, %.3f",
+                snapX, snapY)) {
+            @Override
             public boolean matches(Object o) {
                 return o instanceof Point2D
-                        && ((Point2D) o).distance(expected) <= epsilon;
+                        && abs(((Point2D) o).getX() - snapX) <= SNAP_EPSILON
+                        && abs(((Point2D) o).getY() - snapY) <= SNAP_EPSILON;
             }
         };
     }

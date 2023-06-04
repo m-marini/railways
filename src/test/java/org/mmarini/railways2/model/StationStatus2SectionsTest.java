@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.geometry.EdgeLocation;
 import org.mmarini.railways2.model.geometry.StationBuilder;
 import org.mmarini.railways2.model.geometry.StationMap;
-import org.mmarini.railways2.model.geometry.Track;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Section;
@@ -54,7 +53,7 @@ import static org.mockito.Mockito.when;
 class StationStatus2SectionsTest extends WithStationStatusTest {
 
     /**
-     * Station map
+     * StationDef map
      * <pre>
      * Entry(a) --ab--  Exit(b)
      * Entry(c) --cd--  Exit(d)

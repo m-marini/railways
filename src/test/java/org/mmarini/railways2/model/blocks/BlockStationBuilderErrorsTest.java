@@ -46,38 +46,38 @@ class BlockStationBuilderErrorsTest {
     private List<? extends Block> blocks;
 
     @Test
+    void missingBlock() {
+        // Given ...
+        Map<String, String> links = Map.of(
+                "west.entry", "p.e1");
+        StationDef station = StationDef.create("station", 0, blocks, links);
+        this.builder = new BlockStationBuilder(station);
+
+        // When ...
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                builder.validateBlocks()
+        );
+
+        // Then ...
+        assertThat(ex.getMessage(), matchesRegex("Missing connection with blocks \\[east]"));
+    }
+
+    @Test
     void missingConnections1() {
         // Given ...
         Map<String, String> links = Map.of(
                 "west.entry", "p.w1",
                 "east.exit", "p.e1");
-        Station station = Station.create("station", 0, blocks, links);
+        StationDef station = StationDef.create("station", 0, blocks, links);
         this.builder = new BlockStationBuilder(station);
 
         // When ...
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                builder.getNodeIdByBlockPointId()
+                builder.validateJunctions()
         );
 
         // Then ...
-        assertThat(ex.getMessage(), matchesRegex("\\[east\\.entry, p\\.e2, p\\.w2, west\\.exit] have no connection"));
-    }
-
-    @Test
-    void missingBlock() {
-        // Given ...
-        Map<String, String> links = Map.of(
-                "west.entry", "p.e1");
-        Station station = Station.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station);
-
-        // When ...
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                builder.getWorldBlockGeometries()
-        );
-
-        // Then ...
-        assertThat(ex.getMessage(), matchesRegex("Missing connection with blocks \\[east]"));
+        assertThat(ex.getMessage(), matchesRegex("\\[east\\.entry, p\\.e2, p\\.w2, west\\.exit] have no junction"));
     }
 
     @BeforeEach
@@ -94,7 +94,7 @@ class BlockStationBuilderErrorsTest {
         Map<String, String> links = Map.of(
                 "west.entry", "none.e1",
                 "east.exit", "p.e2");
-        Station station = Station.create("station", 0, blocks, links);
+        StationDef station = StationDef.create("station", 0, blocks, links);
         this.builder = new BlockStationBuilder(station);
 
         // When ...
@@ -112,7 +112,7 @@ class BlockStationBuilderErrorsTest {
         Map<String, String> links = Map.of(
                 "west.entry", "p.none",
                 "east.exit", "p.e2");
-        Station station = Station.create("station", 0, blocks, links);
+        StationDef station = StationDef.create("station", 0, blocks, links);
         this.builder = new BlockStationBuilder(station);
 
         // When ...

@@ -29,27 +29,36 @@
 package org.mmarini.railways2.swing;
 
 import org.mmarini.railways2.model.StationStatus;
+import org.mmarini.railways2.model.blocks.BlockStationBuilder;
+import org.mmarini.railways2.model.blocks.StationDef;
+import org.mmarini.yaml.Utils;
+import org.mmarini.yaml.schema.Locator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 class MapPanelTest {
 
     private static final Dimension DEFAULT_SIZE = new Dimension(800, 600);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         new MapPanelTest(
+                /*
                 new WithTrain(StationExamples.createSwitchStation())
                         .addTrain(3, "a", "e", "ab", "b", 100)
                         .addTrain(3, "a", "e", "bc", "c", 10)
                         .build()
-
-                /*
+*/
+                                /*
                 new WithTrain(StationExamples.create2CrossExitStation(true))
                         .addTrain(10, "a", "e", "ab", "b", 0)
                         .addTrain(3, "a", "j", "gh", "h", 0)
                         .build()
                  */
+
+                new BlockStationBuilder(StationDef.create(
+                        Utils.fromResource("/stations/downville.station.yml"), Locator.root())).build()
         ).run();
     }
 

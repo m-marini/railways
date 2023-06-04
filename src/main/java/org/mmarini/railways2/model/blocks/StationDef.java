@@ -48,7 +48,7 @@ import static org.mmarini.yaml.schema.Validator.*;
 /**
  * The station definitions from json
  */
-public class Station {
+public class StationDef {
     private static final Validator BLOCKS_VALIDATOR = objectAdditionalProperties(DYNAMIC_OBJECT);
     private static final Validator LINKS_VALIDATOR = objectAdditionalProperties(string());
     public final static Validator VALIDATOR = objectPropertiesRequired(Map.of(
@@ -66,7 +66,7 @@ public class Station {
      * @param root    the json document
      * @param locator the locator of station definition
      */
-    public static Station create(JsonNode root, Locator locator) {
+    public static StationDef create(JsonNode root, Locator locator) {
         VALIDATOR.apply(locator).accept(root);
         String id = locator.path("name").getNode(root).asText();
         int orientation = locator.path("orientation").getNode(root).asInt();
@@ -77,7 +77,7 @@ public class Station {
         List<Tuple2<String, String>> links1 = locator.path("links").propertyNames(root)
                 .map(t -> t.setV2(t._2.getNode(root).asText()))
                 .collect(Collectors.toList());
-        return new Station(id, orientation, blocks1, links1);
+        return new StationDef(id, orientation, blocks1, links1);
     }
 
     /**
@@ -88,7 +88,7 @@ public class Station {
      * @param blocks      the blocks
      * @param links       the links
      */
-    public static Station create(String id, int orientation, Collection<? extends Block> blocks, Map<String, String> links) {
+    public static StationDef create(String id, int orientation, Collection<? extends Block> blocks, Map<String, String> links) {
         // Normalizes the links
         Set<Tuple2<String, String>> normalLinks = Tuple2.stream(links)
                 .map(t -> t._1.compareTo(t._2) <= 0 ? t : Tuple2.of(t._2, t._1)
@@ -104,7 +104,7 @@ public class Station {
             duplicated.forEach(t -> list.add(t._1));
             throw new IllegalArgumentException(format("Duplicated links %s", list));
         }
-        return new Station(id, orientation, blocks, normalLinks);
+        return new StationDef(id, orientation, blocks, normalLinks);
     }
 
     private final String id;
@@ -124,7 +124,7 @@ public class Station {
      * @param blocks      the blocks
      * @param links       the links
      */
-    protected Station(String id, int orientation, Collection<? extends Block> blocks, Collection<Tuple2<String, String>> links) {
+    protected StationDef(String id, int orientation, Collection<? extends Block> blocks, Collection<Tuple2<String, String>> links) {
         this.id = requireNonNull(id);
         this.orientation = orientation;
         this.blocks = requireNonNull(blocks);

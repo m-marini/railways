@@ -70,8 +70,8 @@ public class RightPlatformSwitch extends AbstractBlock {
     );
     private static final Map<String, OrientedGeometry> GEOMETRY_BY_ID = Map.of(
             "diverged", new OrientedGeometry(new Point2D.Double(), 0),
-            "through", new OrientedGeometry(new Point2D.Double(0, TRACK_GAP), 0),
-            "entry", new OrientedGeometry(new Point2D.Double(2 * SWITCH_LENGTH, TRACK_GAP * 3 / 2), SWITCH_ANGLE_DEG - 180)
+            "through", new OrientedGeometry(new Point2D.Double(0, -TRACK_GAP), 0),
+            "entry", new OrientedGeometry(new Point2D.Double(2 * SWITCH_LENGTH, TRACK_GAP / 2), SWITCH_ANGLE_DEG - 180)
     );
     private static final List<NodeBuilderParams> INNER_NODES = List.of(
             NodeBuilderParams.create("switch", 2 * SWITCH_LENGTH - SWITCH_GAP, PLATFORM_SWITCH_Y, "entry.switch", "switch.t1", "switch.d1"),

@@ -148,12 +148,12 @@ public class Platforms extends AbstractBlock {
     /**
      * Creates a platform
      *
-     * @param id               the id
-     * @param geometryById     the geometry by id
-     * @param innerPoints      the inner points
-     * @param edgeBuilderParams     the edge builders
-     * @param edgeByBlockPoint edge by block point
-     * @param innerRouteParams the inner route parameters
+     * @param id                the id
+     * @param geometryById      the geometry by id
+     * @param innerPoints       the inner points
+     * @param edgeBuilderParams the edge builders
+     * @param edgeByBlockPoint  edge by block point
+     * @param innerRouteParams  the inner route parameters
      */
     protected Platforms(String id, Map<String, OrientedGeometry> geometryById, List<NodeBuilderParams> innerPoints, List<EdgeBuilderParams> edgeBuilderParams, Map<String, String> edgeByBlockPoint, List<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams) {
         super(id, geometryById, innerPoints, edgeBuilderParams, edgeByBlockPoint, innerRouteParams);

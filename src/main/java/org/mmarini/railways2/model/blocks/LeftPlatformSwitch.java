@@ -74,7 +74,7 @@ public class LeftPlatformSwitch extends AbstractBlock {
             "entry", new OrientedGeometry(new Point2D.Double(2 * SWITCH_LENGTH, -TRACK_GAP / 2), 180 - SWITCH_ANGLE_DEG)
     );
     private static final List<NodeBuilderParams> INNER_NODES = List.of(
-            NodeBuilderParams.create("switch", 2 * SWITCH_LENGTH - SWITCH_GAP, -PLATFORM_SWITCH_Y, "entry.switch", "switch.t1, switch.d1"),
+            NodeBuilderParams.create("switch", 2 * SWITCH_LENGTH - SWITCH_GAP, -PLATFORM_SWITCH_Y, "entry.switch", "switch.t1", "switch.d1"),
             NodeBuilderParams.create("d1", SWITCH_LENGTH + SWITCH_GAP, 0, "switch.d1", "d1.diverged"),
             NodeBuilderParams.create("t1", SWITCH_LENGTH - SWITCH_GAP, TRACK_GAP - PLATFORM_SWITCH_Y, "switch.t1", "t1.t2"),
             NodeBuilderParams.create("t2", SWITCH_GAP, TRACK_GAP, "t1.t2", "t2.through")

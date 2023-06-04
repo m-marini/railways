@@ -29,30 +29,61 @@
 package org.mmarini.railways2.model.blocks;
 
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.awt.geom.Point2D;
+import java.util.stream.Stream;
 
+import static java.lang.Math.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mmarini.railways.Matchers.pointCloseTo;
 import static org.mmarini.railways2.model.Matchers.orientedGeometry;
+import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
+import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
 
-class BlockStationBuilderTest {
+class OrientedGeometryTest {
 
     public static final double EPSILON = 1e-3;
 
+    static Stream<Arguments> block2WorldGeoArgs() {
+        return Stream.of(
+                // expectedWorldPoint, givenWorldBlockPoint, givenBlockPoint
+                Arguments.of(1, 1, 0, 0, 0, 0, 1, 1, 0), // Identity
+                Arguments.of(1, 1, 90, 0, 0, 0, 1, 1, 90), // Identity
+                Arguments.of(-1, -1, -180, 0, 0, -180, 1, 1, 0), // Rotate 180DEG
+                Arguments.of(-1, -1, -170, 0, 0, -180, 1, 1, 10), // Rotate 180DEG
+                Arguments.of(-1, 1, 100, 0, 0, 90, 1, 1, 10), // Rotate 180DEG
+                Arguments.of(1, 1, 0, 1, 1, 0, 0, 0, 0), // translate
+                Arguments.of(2, 3, 0, 1, 1, 0, 1, 2, 0), // translate
+                Arguments.of(0, 2, 110, 1, 1, 90, 1, 1, 20), // translate and rotate
+                Arguments.of(0, TRACK_GAP, -180,
+                        -RADIUS * sin(toRadians(45)), -RADIUS * (1 - cos(toRadians(45))), 45,
+                        (RADIUS + TRACK_GAP) * sin(toRadians(45)), TRACK_GAP - (RADIUS + TRACK_GAP) * (1 - cos(toRadians(45))), 135)
+        );
+    }
+
+    static Stream<Arguments> worldBlockGeoArgs() {
+        return Stream.of(
+                // expectedWorldBlockGeo, givenWorldPoint, givenBlockPoint
+                Arguments.of(0, 0, 0, 1, 1, 0, 1, 1, 0), // Identity
+                Arguments.of(0, 0, 0, 1, 1, 90, 1, 1, 90), // Identity
+                Arguments.of(0, 0, -180, -1, -1, -180, 1, 1, 0), // Rotate 180DEG
+                Arguments.of(0, 0, -180, -1, -1, -170, 1, 1, 10), // Rotate 180DEG
+                Arguments.of(0, 0, 90, -1, 1, 100, 1, 1, 10), // Rotate 180DEG
+                Arguments.of(1, 1, 0, 1, 1, 0, 0, 0, 0), // translate
+                Arguments.of(1, 1, 0, 2, 3, 0, 1, 2, 0), // translate
+                Arguments.of(1, 1, 90, 0, 2, 110, 1, 1, 20), // translate and rotate
+                Arguments.of(
+                        -RADIUS * sqrt(2) / 2, -RADIUS * (1 - sqrt(2) / 2), 45,
+                        0, 0, 0,
+                        RADIUS * sqrt(2) / 2, -RADIUS * (1 - sqrt(2) / 2), -45)
+        );
+    }
+
     @ParameterizedTest
-    @CsvSource(value = {
-            "1,1,0,     0,0,0,   1,1,0", // Identity
-            "1,1,90,     0,0,0,   1,1,90", // Identity
-            "-1,-1,-180,     0,0,-180,   1,1,0", // Rotate 180DEG
-            "-1,-1,-170,     0,0,-180,   1,1,10", // Rotate 180DEG
-            "-1,1,100,     0,0,90,   1,1,10", // Rotate 180DEG
-            "1,1,0,     1,1,0,   0,0,0", // translate
-            "2,3,0,     1,1,0,   1,2,0", // translate
-            "0,2,110,     1,1,90,   1,1,20", // translate and rotate
-    })
+    @MethodSource("block2WorldGeoArgs")
     void block2WorldGeo(double worldPointX, double worldPointY, int worldPointDeg,
                         double worldBlockX, double worldBlockY, int worldBlockDeg,
                         double blockPointX, double blockPointY, int blockPointDeg) {
@@ -61,7 +92,7 @@ class BlockStationBuilderTest {
         OrientedGeometry blockPointGeo = new OrientedGeometry(new Point2D.Double(blockPointX, blockPointY), blockPointDeg);
 
         // When ...
-        OrientedGeometry wordPointGeo = BlockStationBuilder.block2WorldGeo(worldBlockGeo).apply(blockPointGeo);
+        OrientedGeometry wordPointGeo = worldBlockGeo.getBlock2World().apply(blockPointGeo);
 
         // Then ...
         assertThat(wordPointGeo, orientedGeometry(
@@ -71,17 +102,7 @@ class BlockStationBuilderTest {
     }
 
     @ParameterizedTest
-    @CsvSource(value = { // wp, wb, bp -> wb, wp, bp
-            "0,0,0,   1,1,0,     1,1,0", // Identity
-            "0,0,0,   1,1,90,     1,1,90", // Identity
-            "0,0,-180,   -1,-1,-180,     1,1,0", // Rotate 180DEG
-            "0,0,-180,   -1,-1,-170,     1,1,10", // Rotate 180DEG
-            "0,0,90,   -1,1,100,     1,1,10", // Rotate 180DEG
-            "1,1,0,   1,1,0,     0,0,0", // translate
-            "1,1,0,   2,3,0,     1,2,0", // translate
-            "1,1,90,   0,2,110,     1,1,20", // translate and rotate
-
-    })
+    @MethodSource("worldBlockGeoArgs")
     void worldBlockGeo(double worldBlockX, double worldBlockY, int worldBlockDeg,
                        double worldPointX, double worldPointY, int worldPointDeg,
                        double blockPointX, double blockPointY, int blockPointDeg) {
@@ -90,7 +111,7 @@ class BlockStationBuilderTest {
         OrientedGeometry blockPointGeo = new OrientedGeometry(new Point2D.Double(blockPointX, blockPointY), blockPointDeg);
 
         // When ...
-        OrientedGeometry worldBlockGeo = BlockStationBuilder.worldBlockGeo(worldPointGeo, blockPointGeo);
+        OrientedGeometry worldBlockGeo = blockPointGeo.getWorldBlockGeo(worldPointGeo);
 
         // Then ...
         assertThat(worldBlockGeo, orientedGeometry(

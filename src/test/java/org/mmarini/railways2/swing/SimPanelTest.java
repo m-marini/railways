@@ -31,11 +31,16 @@ package org.mmarini.railways2.swing;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.SimulatorEngineImpl;
 import org.mmarini.railways2.model.StationStatus;
+import org.mmarini.railways2.model.blocks.BlockStationBuilder;
+import org.mmarini.railways2.model.blocks.StationDef;
+import org.mmarini.yaml.Utils;
+import org.mmarini.yaml.schema.Locator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Random;
 import java.util.function.Function;
@@ -45,7 +50,7 @@ class SimPanelTest {
     private static final Dimension DEFAULT_SIZE = new Dimension(800, 600);
     private static final int FPS = 60;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         /*
         StationStatus status1 = new WithTrain(StationExamples.createSwitchStation())
                 .addTrain(10, "a", "e", "ab", "b", 0)
@@ -56,10 +61,13 @@ class SimPanelTest {
                 .addTrain(3, "a", "j", "gh", "h", 0)
                 .build();
 
-         */
         StationStatus status3 = new WithTrain(StationExamples.create3Entry2ExitStation())
                 .addTrain(10, "i1", "o1", "p1", "s1", 500)
                 .build();
+         */
+
+        StationStatus status3 = new BlockStationBuilder(StationDef.create(
+                Utils.fromResource("/stations/downville.station.yml"), Locator.root())).build();
         new SimPanelTest(status3).run();
     }
 

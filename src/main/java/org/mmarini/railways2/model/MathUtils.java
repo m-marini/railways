@@ -40,6 +40,7 @@ public interface MathUtils {
     double RAD_180 = -PI;
     double RAD360 = 2 * PI;
     double RAD_360 = -RAD360;
+    double GRID_SIZE = 5e-3;
 
     /**
      * Returns the normalized angle (DEG)
@@ -107,5 +108,9 @@ public interface MathUtils {
                 round(point.getX(), precision),
                 round(point.getY(), precision)
         );
+    }
+
+    static Point2D snapToGrid(Point2D point2D) {
+        return snap(point2D, GRID_SIZE);
     }
 }
