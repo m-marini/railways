@@ -28,10 +28,13 @@
 
 package org.mmarini.railways2.model.blocks;
 
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.function.UnaryOperator;
 
+import static java.lang.Math.toRadians;
 import static java.util.Objects.requireNonNull;
 import static org.mmarini.railways2.model.MathUtils.normalizeDeg;
 
@@ -39,6 +42,17 @@ import static org.mmarini.railways2.model.MathUtils.normalizeDeg;
  * Defines a point and a direction in the point
  */
 public class OrientedGeometry {
+    /**
+     * Returns the oriented geometry
+     *
+     * @param x           x coordinates (m)
+     * @param y           y coordinates (m)
+     * @param orientation orientation (DEG)
+     */
+    public static OrientedGeometry create(double x, double y, int orientation) {
+        return new OrientedGeometry(new Point2D.Double(x, y), orientation);
+    }
+
     private final Point2D point;
     private final int orientation;
 
@@ -62,6 +76,20 @@ public class OrientedGeometry {
     }
 
     /**
+     * Returns the transformation from the block geometry to the world geometry
+     * for the block geometry expressed in world geometry
+     */
+    public UnaryOperator<OrientedGeometry> getBlock2World() {
+        AffineTransform tr = AffineTransform.getTranslateInstance(point.getX(), point.getY());
+        tr.rotate(toRadians(orientation));
+        return pointBlockGeo -> {
+            int beta0 = normalizeDeg(orientation + pointBlockGeo.getOrientation());
+            Point2D p0 = tr.transform(pointBlockGeo.getPoint(), null);
+            return new OrientedGeometry(p0, beta0);
+        };
+    }
+
+    /**
      * Returns the orientation (DEG)
      */
     public int getOrientation() {
@@ -73,6 +101,39 @@ public class OrientedGeometry {
      */
     public Point2D getPoint() {
         return point;
+    }
+
+    /**
+     * Returns the world block geometry for this geometry block point given the world point geometry
+     *
+     * @param worldPointGeo the point world geometry
+     */
+
+    public OrientedGeometry getWorldBlockGeo(OrientedGeometry worldPointGeo) {
+        /*
+        Point2D p0 = worldPointGeo.getPoint();
+        Point2D p1 = point;
+        int alpha0 = worldPointGeo.getOrientation();
+        int alpha1 = orientation;
+        int alpha2 = normalizeDeg(alpha0 - alpha1);
+        AffineTransform tr = AffineTransform.getTranslateInstance(p0.getX(), p0.getY());
+        tr.rotate(toRadians(alpha2));
+        tr.translate(-p1.getX(), -p1.getY());
+        Point2D p2 = new Point2D.Double();
+        tr.transform(p2, p2);
+        return new OrientedGeometry(p2, alpha2);
+
+         */
+        Point2D p0 = worldPointGeo.getPoint();
+        int alpha0 = worldPointGeo.getOrientation();
+        int alpha1 = orientation;
+        int blockOrientation = normalizeDeg(alpha0 - alpha1);
+        AffineTransform tr = AffineTransform.getTranslateInstance(p0.getX(), p0.getY());
+        tr.rotate(toRadians(blockOrientation));
+        tr.translate(-point.getX(), -point.getY());
+        Point2D blockLocation = new Point2D.Double();
+        tr.transform(blockLocation, blockLocation);
+        return new OrientedGeometry(blockLocation, blockOrientation);
     }
 
     @Override

@@ -1,36 +1,210 @@
 ---
 name: Downville
-direction: 0
+orientation: 0
 blocks:
-  platform:
-    type: org.mmarini.railways.blocks.Platforms
+  platforms:
+    class: org.mmarini.railways2.model.blocks.Platforms
     numPlatforms: 8
     length: 8
-  eastSemaphores:
-    type: org.mmarini.railways.blocks.Signals
-    numSemaphores: 8
-  westSemaphores:
-    type: org.mmarini.railways.blocks.Signals
-    numSemaphores: 8
+
+  # west switchyard
+  westLeftPlatformSwitch:
+    class: org.mmarini.railways2.model.blocks.LeftPlatformSwitch
+  westRightPlatformSwitch:
+    class: org.mmarini.railways2.model.blocks.RightPlatformSwitch
+  westTrack3:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  westTrack45:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 3
+  westTrack6:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  westDownCross:
+    class: org.mmarini.railways2.model.blocks.DownCross
+  westUpCross:
+    class: org.mmarini.railways2.model.blocks.UpCross
+  westCentralCross:
+    class: org.mmarini.railways2.model.blocks.CentralCross
+  westCentralTrack3:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  westCentralTrack6:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+
+  westLeftSwitch:
+    class: org.mmarini.railways2.model.blocks.LeftSwitch
+  westRightSwitch:
+    class: org.mmarini.railways2.model.blocks.RightSwitch
+  westCentralTrack45:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 1
+
+  westSignals:
+    class: org.mmarini.railways2.model.blocks.Signals
+    numSignals: 4
+
+  # sowerth lines
+  sowerthCurves:
+    class: org.mmarini.railways2.model.blocks.Curves
+    numTracks: 2
+    angle: -45
+  sowerthTracks:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 5
+  sowerth:
+    class: org.mmarini.railways2.model.blocks.Wayout
+
+  # norton lines
+  nortonCurves:
+    class: org.mmarini.railways2.model.blocks.Curves
+    numTracks: 2
+    angle: 45
+  nortonTracks:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 5
   norton:
-    type: org.mmarini.railways.blocks.Wayout
-  sowert:
-    type: org.mmarini.railways.blocks.Wayout
-  newesel:
-    type: org.mmarini.railways.blocks.Wayout
+    class: org.mmarini.railways2.model.blocks.Wayout
+
+  # east switchyard
+  eastRightPlatformSwitch:
+    class: org.mmarini.railways2.model.blocks.RightPlatformSwitch
+  eastLeftPlatformSwitch:
+    class: org.mmarini.railways2.model.blocks.LeftPlatformSwitch
+
+  eastTrack3:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  eastTrack6:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  eastTrack45:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 3
+
+  eastUpCross:
+    class: org.mmarini.railways2.model.blocks.UpCross
+  eastDownCross:
+    class: org.mmarini.railways2.model.blocks.DownCross
+
+  eastCentralCross:
+    class: org.mmarini.railways2.model.blocks.CentralCross
+  eastCentralTrack3:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  eastCentralTrack6:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+
+  eastRightSwitch:
+    class: org.mmarini.railways2.model.blocks.RightSwitch
+  eastLeftSwitch:
+    class: org.mmarini.railways2.model.blocks.LeftSwitch
+  eastCentralTrack45:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 1
+
+  eastSignals:
+    class: org.mmarini.railways2.model.blocks.Signals
+    numSignals: 4
+
+  # southend lines
+  southendCurves:
+    class: org.mmarini.railways2.model.blocks.Curves
+    numTracks: 2
+    angle: -45
+  southendTracks:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 5
   southend:
-    type: org.mmarini.railways.blocks.Wayout
-  nortonSem:
-    type: org.mmarini.railways.blocks.Signals
-    numSemaphores: 2
-  sowertSem:
-    type: org.mmarini.railways.blocks.Signals
-    numSemaphores: 2
-  neweselSem:
-    type: org.mmarini.railways.blocks.Signals
-    numSemaphores: 2
-  southendSem:
-    type: org.mmarini.railways.blocks.Signals
-    numSemaphores: 2
-connections:
-  platform.
+    class: org.mmarini.railways2.model.blocks.Wayout
+
+  # newesel lines
+  neweselCurves:
+    class: org.mmarini.railways2.model.blocks.Curves
+    numTracks: 2
+    angle: 45
+  neweselTracks:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 5
+  newesel:
+    class: org.mmarini.railways2.model.blocks.Wayout
+
+links:
+  # west switchyard
+  westLeftPlatformSwitch.through: platforms.w1
+  westTrack3.e1: platforms.w3
+  westTrack45.e1: platforms.w4
+  westTrack6.e1: platforms.w6
+  westRightPlatformSwitch.diverged: platforms.w7
+
+  westDownCross.se: westLeftPlatformSwitch.entry
+  westUpCross.ne: westRightPlatformSwitch.entry
+
+  westCentralCross.se: westDownCross.nw
+  westCentralTrack3.e1: westDownCross.w
+  westCentralTrack6.e1: westUpCross.w
+
+  westLeftSwitch.through: westCentralTrack3.w1
+  westRightSwitch.through: westCentralTrack6.w1
+  westCentralTrack45.e1: westCentralCross.w1
+  westSignals.e1: westLeftSwitch.entry
+
+  # sowerth lines
+  sowerthCurves.e1: westSignals.w1
+  sowerthTracks.e1: sowerthCurves.w1
+  sowerth.exit: sowerthTracks.w1
+
+  # norton lines
+  nortonCurves.e1: westSignals.w3
+  nortonTracks.e1: nortonCurves.w1
+  norton.exit: nortonTracks.w1
+
+  # east switchyard
+  eastRightPlatformSwitch.through: platforms.e1
+  eastLeftPlatformSwitch.through: platforms.e8
+  eastTrack3.w1: platforms.e3
+  eastTrack6.w1: platforms.e6
+  eastTrack45.w1: platforms.e4
+
+  eastUpCross.sw: eastRightPlatformSwitch.entry
+  eastDownCross.nw: eastLeftPlatformSwitch.entry
+
+  eastCentralCross.sw: eastUpCross.ne
+  eastCentralTrack3.w1: eastUpCross.e
+  eastCentralTrack6.w1: eastDownCross.e
+
+  eastRightSwitch.through: eastCentralTrack3.e1
+  eastLeftSwitch.through: eastCentralTrack6.e1
+  eastCentralTrack45.w1: eastCentralCross.e1
+
+  eastSignals.w1: eastRightSwitch.entry
+
+  # southend lines
+  southendCurves.w1: eastSignals.e1
+  southendTracks.w1: southendCurves.e1
+  southend.entry: southendTracks.e1
+
+  # newesel lines
+  neweselCurves.w1: eastSignals.e3
+  neweselTracks.w1: neweselCurves.e1
+  newesel.entry: neweselTracks.e1
+

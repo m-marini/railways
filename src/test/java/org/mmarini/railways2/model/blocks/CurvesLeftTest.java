@@ -119,23 +119,22 @@ class CurvesLeftTest {
         OrientedGeometry e2 = block.getEntryGeometry("e2");
 
         // Then ...
+        double y0 = RADIUS + TRACK_GAP;
         assertThat(w1, orientedGeometry(
                 pointCloseTo(0, 0, EPSILON),
                 equalTo(0)));
         assertThat(w2, orientedGeometry(
                 pointCloseTo(0, TRACK_GAP, EPSILON),
                 equalTo(0)));
+        double e1x = y0 * sin(toRadians(ANGLE));
+        double e1y = y0 * (1 - cos(toRadians(ANGLE)));
         assertThat(e1, orientedGeometry(
-                pointCloseTo(
-                        (RADIUS + TRACK_GAP) * sin(toRadians(ANGLE)),
-                        (RADIUS + TRACK_GAP) * (1 - cos(toRadians(ANGLE))),
-                        EPSILON),
+                pointCloseTo(e1x, e1y, EPSILON),
                 equalTo(ANGLE - 180)));
+        double e2x = RADIUS * sin(toRadians(ANGLE));
+        double e2y = y0 - RADIUS * cos(toRadians(ANGLE));
         assertThat(e2, orientedGeometry(
-                pointCloseTo(
-                        (RADIUS) * sin(toRadians(ANGLE)),
-                        (RADIUS) * (1 - cos(toRadians(ANGLE))),
-                        EPSILON),
+                pointCloseTo(e2x, e2y, EPSILON),
                 equalTo(ANGLE - 180)));
     }
 

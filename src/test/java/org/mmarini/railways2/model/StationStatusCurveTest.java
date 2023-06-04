@@ -59,7 +59,7 @@ class StationStatusCurveTest {
     private Curve ab;
 
     /**
-     * Station map
+     * StationDef map
      * <pre>
      *            Curve(ab)
      *          /          \

@@ -47,6 +47,8 @@ import static org.mmarini.yaml.schema.Validator.*;
 
 /**
  * Describes a line tracks
+ * The length is in number of base segment
+ * Each segment may contain three coaches
  */
 public class Tracks extends AbstractBlock {
     public static final Validator VALIDATOR = objectPropertiesRequired(Map.of(
@@ -106,10 +108,10 @@ public class Tracks extends AbstractBlock {
     /**
      * Creates the abstract block
      *
-     * @param id               the identifier
-     * @param geometryById     the geometry by id
-     * @param edgeBuilderParams     the edge builder
-     * @param edgeByBlockPoint the edge by block point
+     * @param id                the identifier
+     * @param geometryById      the geometry by id
+     * @param edgeBuilderParams the edge builder
+     * @param edgeByBlockPoint  the edge by block point
      */
     protected Tracks(String id, Map<String, OrientedGeometry> geometryById, List<EdgeBuilderParams> edgeBuilderParams, Map<String, String> edgeByBlockPoint) {
         super(id, geometryById, List.of(), edgeBuilderParams, edgeByBlockPoint, List.of());

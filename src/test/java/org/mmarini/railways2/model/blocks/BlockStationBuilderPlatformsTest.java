@@ -55,20 +55,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mmarini.ArgumentsGenerator.createStream;
 import static org.mmarini.ArgumentsGenerator.uniform;
-import static org.mmarini.railways.Matchers.pointCloseTo;
-import static org.mmarini.railways.Matchers.tupleOf;
+import static org.mmarini.railways.Matchers.*;
 import static org.mmarini.railways2.model.Matchers.orientedGeometry;
 import static org.mmarini.railways2.model.MathUtils.normalizeDeg;
 import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
-import static org.mmarini.railways2.model.blocks.BlockStationBuilder.GRID_SIZE;
 import static org.mmarini.railways2.model.blocks.Platforms.PLATFORM_GAP;
 import static org.mmarini.railways2.model.blocks.Platforms.PLATFORM_SIGNAL_GAP;
 
 class BlockStationBuilderPlatformsTest {
 
     public static final double EPSILON = 1e-3;
-    public static final double EPSILON1 = GRID_SIZE * sqrt(2);
     public static final int NUM_COACHES = 10;
     public static final double PLATFORM_LENGTH = COACH_LENGTH * NUM_COACHES + PLATFORM_GAP + PLATFORM_SIGNAL_GAP * 2;
 
@@ -547,6 +544,37 @@ class BlockStationBuilderPlatformsTest {
 
     @ParameterizedTest
     @MethodSource("orientationValues")
+    void getJunctionParams(int orientation) {
+        // Given ...
+        setUp(orientation);
+
+        // When ...
+        Tuple2<Point2D, List<String>> pw1 = builder.getJunctionParams("p.w1");
+        Tuple2<Point2D, List<String>> pw2 = builder.getJunctionParams("p.w2");
+        Tuple2<Point2D, List<String>> eastEntry = builder.getJunctionParams("east.entry");
+        Tuple2<Point2D, List<String>> eastExit = builder.getJunctionParams("east.exit");
+
+        // Then ...
+        double x1 = PLATFORM_LENGTH * cos(toRadians(orientation));
+        double y1 = PLATFORM_LENGTH * sin(toRadians(orientation));
+        double x2 = -TRACK_GAP * sin(toRadians(orientation));
+        double y2 = TRACK_GAP * cos(toRadians(orientation));
+        assertThat(pw1, tupleOf(
+                pointSnapTo(0, 0),
+                contains("p.w1", "west.exit")));
+        assertThat(pw2, tupleOf(
+                pointSnapTo(x2, y2),
+                contains("p.w2", "west.entry")));
+        assertThat(eastEntry, tupleOf(
+                pointSnapTo(x1, y1),
+                contains("east.entry", "p.e1")));
+        assertThat(eastExit, tupleOf(
+                pointSnapTo(x1 + x2, y1 + y2),
+                contains("east.exit", "p.e2")));
+    }
+
+    @ParameterizedTest
+    @MethodSource("orientationValues")
     void getNodeByBlockPoint(int orientation) {
         // Given ...
         setUp(orientation);
@@ -602,67 +630,60 @@ class BlockStationBuilderPlatformsTest {
 
     @ParameterizedTest
     @MethodSource("orientationValues")
-    void getSnapPointsByBlockPoint(int orientation) {
+    void getWorldBlockGeometry(int orientation) {
         // Given ...
         setUp(orientation);
 
         // When ...
-        Map<String, Point2D> pts = builder.getSnapPointsByBlockPoint();
+        OrientedGeometry p = builder.getWorldBlockGeometry("p");
+        OrientedGeometry west = builder.getWorldBlockGeometry("west");
+        OrientedGeometry east = builder.getWorldBlockGeometry("east");
+
+
+        // Then ...
+        assertThat(p, orientedGeometry(
+                pointCloseTo(0, 0, EPSILON),
+                equalTo(orientation)));
+        assertThat(west, orientedGeometry(
+                pointCloseTo(-TRACK_GAP * sin(toRadians(orientation)),
+                        TRACK_GAP * cos(toRadians(orientation)), EPSILON),
+                equalTo(normalizeDeg(orientation + 180))));
+        assertThat(east, orientedGeometry(
+                pointCloseTo((COACH_LENGTH * NUM_COACHES + PLATFORM_GAP + PLATFORM_SIGNAL_GAP * 2) * cos(toRadians(orientation)),
+                        (COACH_LENGTH * NUM_COACHES + PLATFORM_GAP + PLATFORM_SIGNAL_GAP * 2) * sin(toRadians(orientation)),
+                        EPSILON),
+                equalTo(orientation)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("orientationValues")
+    void getWorldGeometry(int orientation) {
+        // Given ...
+        setUp(orientation);
+
+        // When ...
+        OrientedGeometry pw1 = builder.getWorldGeometry("p.w1");
+        OrientedGeometry pe1 = builder.getWorldGeometry("p.e1");
+        OrientedGeometry pw2 = builder.getWorldGeometry("p.w2");
+        OrientedGeometry pe2 = builder.getWorldGeometry("p.e2");
+        OrientedGeometry eastEntry = builder.getWorldGeometry("east.entry");
+        OrientedGeometry eastExit = builder.getWorldGeometry("east.exit");
+        OrientedGeometry westEntry = builder.getWorldGeometry("west.entry");
+        OrientedGeometry westExit = builder.getWorldGeometry("west.exit");
 
         // Then ...
         double x1 = PLATFORM_LENGTH * cos(toRadians(orientation));
         double y1 = PLATFORM_LENGTH * sin(toRadians(orientation));
         double x2 = -TRACK_GAP * sin(toRadians(orientation));
         double y2 = TRACK_GAP * cos(toRadians(orientation));
-        assertThat(pts, hasEntry(
-                equalTo("p.w1"),
-                pointCloseTo(0, 0, EPSILON1)));
-        assertThat(pts, hasEntry(
-                equalTo("p.w2"),
-                pointCloseTo(x2, y2, EPSILON1)));
-        assertThat(pts, hasEntry(
-                equalTo("p.e1"),
-                pointCloseTo(x1, y1, EPSILON1)));
-        assertThat(pts, hasEntry(
-                equalTo("p.e2"),
-                pointCloseTo(x1 + x2, y1 + y2, EPSILON1)));
-        assertThat(pts, hasEntry(
-                equalTo("east.exit"),
-                pointCloseTo(x1 + x2, y1 + y2, EPSILON1)));
-        assertThat(pts, hasEntry(
-                equalTo("east.entry"),
-                pointCloseTo(x1, y1, EPSILON1)));
-        assertThat(pts, hasEntry(
-                equalTo("west.exit"),
-                pointCloseTo(0, 0, EPSILON1)));
-        assertThat(pts, hasEntry(
-                equalTo("west.entry"),
-                pointCloseTo(x2, y2, EPSILON1)));
-    }
-
-    @ParameterizedTest
-    @MethodSource("orientationValues")
-    void getWorldBlockGeometries(int orientation) {
-        // Given ...
-        setUp(orientation);
-
-        // When ...
-        Map<String, OrientedGeometry> geos = builder.getWorldBlockGeometries();
-
-        // Then ...
-        assertEquals(3, geos.size());
-        assertThat(geos, hasEntry(equalTo("p"), orientedGeometry(
-                pointCloseTo(0, 0, EPSILON),
-                equalTo(orientation))));
-        assertThat(geos, hasEntry(equalTo("west"), orientedGeometry(
-                pointCloseTo(-TRACK_GAP * sin(toRadians(orientation)),
-                        TRACK_GAP * cos(toRadians(orientation)), EPSILON),
-                equalTo(normalizeDeg(orientation + 180)))));
-        assertThat(geos, hasEntry(equalTo("east"), orientedGeometry(
-                pointCloseTo((COACH_LENGTH * NUM_COACHES + PLATFORM_GAP) * cos(toRadians(orientation)),
-                        (COACH_LENGTH * NUM_COACHES + PLATFORM_GAP) * sin(toRadians(orientation)),
-                        EPSILON),
-                equalTo(orientation))));
+        assertThat(pw1.getPoint(), pointCloseTo(0, 0, EPSILON));
+        assertThat(pw2.getPoint(), pointCloseTo(x2, y2, EPSILON));
+        assertThat(pe1.getPoint(), pointCloseTo(x1, y1, EPSILON));
+        assertThat(pe2.getPoint(), pointCloseTo(x1 + x2, y1 + y2, EPSILON));
+        assertThat(eastExit.getPoint(), pointCloseTo(x1 + x2, y1 + y2, EPSILON));
+        assertThat(westExit.getPoint(), pointCloseTo(0, 0, EPSILON));
+        assertThat(eastEntry.getPoint(), pointCloseTo(x1, y1, EPSILON));
+        assertThat(westEntry.getPoint(), pointCloseTo(x2, y2, EPSILON));
     }
 
     /*
@@ -678,7 +699,7 @@ class BlockStationBuilderPlatformsTest {
         Map<String, String> links = Map.of(
                 "west.entry", "p.w2",
                 "east.entry", "p.e1");
-        Station station = Station.create("station", orientation, blocks, links);
+        StationDef station = StationDef.create("station", orientation, blocks, links);
         this.builder = new BlockStationBuilder(station);
     }
 }

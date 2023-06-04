@@ -54,16 +54,16 @@ public interface Block {
     Collection<BlockPoint> getBlockPoints();
 
     /**
-     * Returns the edge builder
-     */
-    List<EdgeBuilderParams> getEdgeParams();
-
-    /**
      * Returns the edge identifier
      *
      * @param blockPointId the local block point identifier
      */
     String getEdgeId(String blockPointId);
+
+    /**
+     * Returns the edge builder
+     */
+    List<EdgeBuilderParams> getEdgeParams();
 
     /**
      * Returns the geometry of the entry

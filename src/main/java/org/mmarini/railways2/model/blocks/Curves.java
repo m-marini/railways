@@ -83,9 +83,11 @@ public class Curves extends AbstractBlock {
     public static Curves create(String id, int numTracks, int angle) {
         Map<String, OrientedGeometry> geometryById;
         double sin = sin(toRadians(angle));
-        double onemcos = 1 - cos(toRadians(angle));
-        int westEntry = normalizeDeg(angle + 180);
+        double cos = cos(toRadians(angle));
+        int eastEntry = normalizeDeg(angle + 180);
         if (angle >= 0) {
+            // Left curve
+            double y0 = RADIUS + (numTracks - 1) * TRACK_GAP;
             geometryById = IntStream.range(0, numTracks)
                     .boxed()
                     .flatMap(i -> {
@@ -96,11 +98,13 @@ public class Curves extends AbstractBlock {
                                                 new Point2D.Double(0, i * TRACK_GAP), 0)),
                                 Tuple2.of(
                                         "e" + (i + 1), new OrientedGeometry(
-                                                new Point2D.Double(sin * radius, onemcos * radius), westEntry)
+                                                new Point2D.Double(sin * radius, y0 - radius * cos), eastEntry)
                                 ));
                     })
                     .collect(Tuple2.toMap());
         } else {
+            // Right curve
+            double y0 = -RADIUS;
             geometryById = IntStream.range(0, numTracks)
                     .boxed()
                     .flatMap(i -> {
@@ -111,7 +115,7 @@ public class Curves extends AbstractBlock {
                                                 new Point2D.Double(0, i * TRACK_GAP), 0)),
                                 Tuple2.of(
                                         "e" + (i + 1), new OrientedGeometry(
-                                                new Point2D.Double(sin * radius, onemcos * radius), westEntry)
+                                                new Point2D.Double(-sin * radius, y0 + radius * cos), eastEntry)
                                 ));
                     })
                     .collect(Tuple2.toMap());
@@ -137,11 +141,11 @@ public class Curves extends AbstractBlock {
     /**
      * Creates the abstract block
      *
-     * @param id               the identifier
-     * @param angle            the CCW angle (DEG)
-     * @param geometryById     the geometry by id
-     * @param edgeBuilderParams     the edge builders
-     * @param edgeByBlockPoint the edge by block point
+     * @param id                the identifier
+     * @param angle             the CCW angle (DEG)
+     * @param geometryById      the geometry by id
+     * @param edgeBuilderParams the edge builders
+     * @param edgeByBlockPoint  the edge by block point
      */
     protected Curves(String id, int angle, Map<String, OrientedGeometry> geometryById, List<EdgeBuilderParams> edgeBuilderParams, Map<String, String> edgeByBlockPoint) {
         super(id, geometryById, List.of(), edgeBuilderParams, edgeByBlockPoint, List.of());

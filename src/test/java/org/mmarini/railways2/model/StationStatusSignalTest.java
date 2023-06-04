@@ -64,7 +64,7 @@ class StationStatusSignalTest {
     private Exit cRoute;
 
     /**
-     * Station map
+     * StationDef map
      * <pre>
      * Entry(a) --ab-- Signals(b) --bc-- Exit(c)
      * </pre>

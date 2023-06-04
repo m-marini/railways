@@ -107,16 +107,6 @@ class TracksTest {
     }
 
     @Test
-    void getInnerRouteParams() {
-        // Given ...
-        // When ...
-        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
-
-        // Then ...
-        assertThat(routes, empty());
-    }
-
-    @Test
     void getGeometry() {
         // When ...
         OrientedGeometry w1 = block.getEntryGeometry("w1");
@@ -152,6 +142,16 @@ class TracksTest {
 
         // Then ...
         assertThat(nodes, empty());
+    }
+
+    @Test
+    void getInnerRouteParams() {
+        // Given ...
+        // When ...
+        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
+
+        // Then ...
+        assertThat(routes, empty());
     }
 
     @BeforeEach

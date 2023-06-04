@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author $$Author: marco $$
- * @version $Id: Station.java,v 1.11 2012/02/08 22:03:21 marco Exp $
+ * @version $Id: StationDef.java,v 1.11 2012/02/08 22:03:21 marco Exp $
  */
 public class Station implements RailwayConstants, Serializable {
 	public static final double INCOME_CANCEL_FREQUENCE = 10. * FREQUENCE_TRAIN_SCALE;
@@ -562,7 +562,7 @@ public class Station implements RailwayConstants, Serializable {
 	@Override
 	public String toString() {
 		StringBuffer bfr = new StringBuffer();
-		bfr.append("Station ");
+		bfr.append("StationDef ");
 		bfr.append(this.name);
 		bfr.append("(direction=");
 		bfr.append(this.direction);

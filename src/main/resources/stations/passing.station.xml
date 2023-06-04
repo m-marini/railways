@@ -422,7 +422,7 @@
 			<node index="3">XE</node>
 			<node index="2">DE32</node>
 		</curve>
-		<!-- Station platforms -->
+		<!-- StationDef platforms -->
 		<platform name="1" length="10">
 			<node index="1">SO1</node>
 			<node index="1">SE1</node>

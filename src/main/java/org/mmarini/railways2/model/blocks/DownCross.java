@@ -71,8 +71,8 @@ public class DownCross extends AbstractBlock {
     private static final Map<String, OrientedGeometry> GEOMETRY_BY_ID = Map.of(
             "w", new OrientedGeometry(new Point2D.Double(), 0),
             "e", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH, 0), -180),
-            "nw", new OrientedGeometry(new Point2D.Double(0, TRACK_GAP / 2), SWITCH_ANGLE_DEG),
-            "se", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH, -TRACK_GAP / 2), SWITCH_ANGLE_DEG - 180)
+            "nw", new OrientedGeometry(new Point2D.Double(0, TRACK_GAP / 2), -SWITCH_ANGLE_DEG),
+            "se", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH, -TRACK_GAP / 2), 180 - SWITCH_ANGLE_DEG)
     );
     private static final List<NodeBuilderParams> INNER_NODES = List.of(
             NodeBuilderParams.create("nws", SWITCH_GAP, PLATFORM_SWITCH_Y, "nw.nws", "nws.ses", "nws.es"),

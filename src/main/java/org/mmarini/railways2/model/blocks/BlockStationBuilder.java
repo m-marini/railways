@@ -35,7 +35,6 @@ import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Junction;
 import org.mmarini.railways2.model.routes.Route;
 
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.function.Function;
@@ -44,12 +43,11 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.lang.Math.toRadians;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static org.mmarini.Utils.mkString;
-import static org.mmarini.railways2.model.MathUtils.normalizeDeg;
-import static org.mmarini.railways2.model.MathUtils.snap;
+import static org.mmarini.railways2.model.MathUtils.GRID_SIZE;
+import static org.mmarini.railways2.model.MathUtils.snapToGrid;
 import static org.mmarini.railways2.model.RailwayConstants.DEFAULT_TRAIN_FREQUENCY;
 
 /**
@@ -68,63 +66,26 @@ import static org.mmarini.railways2.model.RailwayConstants.DEFAULT_TRAIN_FREQUEN
  * </p>
  */
 public class BlockStationBuilder {
-    public static final double GRID_SIZE = 1e-3;
 
-    /**
-     * Returns the transformation from the block geometry to the world geometry
-     * for the given block geometry expressed in world geometry
-     *
-     * @param worldBlockGeo the world block geometry
-     */
-    static UnaryOperator<OrientedGeometry> block2WorldGeo(OrientedGeometry worldBlockGeo) {
-        Point2D point = worldBlockGeo.getPoint();
-        AffineTransform tr = AffineTransform.getTranslateInstance(point.getX(), point.getY());
-        tr.rotate(toRadians(worldBlockGeo.getOrientation()));
-        int beta2 = worldBlockGeo.getOrientation();
-        return pointBlockGeo -> {
-            int beta0 = normalizeDeg(beta2 + pointBlockGeo.getOrientation());
-            Point2D p0 = tr.transform(pointBlockGeo.getPoint(), null);
-            return new OrientedGeometry(p0, beta0);
-        };
-    }
-
-    /**
-     * Returns the world block geometry given the world point geometry and block point geometry
-     *
-     * @param worldPointGeo the point world geometry
-     * @param blockPointGeo the point block geometry
-     */
-    static OrientedGeometry worldBlockGeo(OrientedGeometry worldPointGeo, OrientedGeometry blockPointGeo) {
-        Point2D p0 = worldPointGeo.getPoint();
-        Point2D p1 = blockPointGeo.getPoint();
-        int alpha0 = worldPointGeo.getOrientation();
-        int alpha1 = blockPointGeo.getOrientation();
-        int alpha2 = normalizeDeg(alpha0 - alpha1);
-        AffineTransform tr = AffineTransform.getTranslateInstance(p0.getX(), p0.getY());
-        tr.rotate(toRadians(alpha2));
-        tr.translate(-p1.getX(), -p1.getY());
-        Point2D p2 = new Point2D.Double();
-        tr.transform(p2, p2);
-        return new OrientedGeometry(p2, alpha2);
-    }
-
-    private final Station station;
+    private final StationDef station;
     private final LazyValue<Map<String, OrientedGeometry>> worldBlockGeometries;
-    private final LazyValue<Map<String, Point2D>> snapPointByBlockPoint;
     private final LazyValue<Map<String, String>> nodeIdByBlockPointId;
     private final LazyValue<Collection<NodeBuilderParams>> junctionNodeParams;
+    private final LazyValue<Map<String, OrientedGeometry>> worldGeometryByBlockPointId;
+    private final LazyValue<Map<String, Tuple2<Point2D, List<String>>>> junctionParamsByJunctionId;
 
     /**
      * Creates the builder
      *
      * @param station the station definition
      */
-    public BlockStationBuilder(Station station) {
+    public BlockStationBuilder(StationDef station) {
         this.station = requireNonNull(station);
-        worldBlockGeometries = new LazyValue<>(this::createsBlockGeometries);
-        snapPointByBlockPoint = new LazyValue<>(this::createSnapPoints);
-        nodeIdByBlockPointId = new LazyValue<>(this::createNodeByBlockPoint);
-        junctionNodeParams = new LazyValue<>(this::createJunctionNodes);
+        this.worldBlockGeometries = new LazyValue<>(this::createsBlockGeometries);
+        this.nodeIdByBlockPointId = new LazyValue<>(this::createNodeIdByBlockPointId);
+        this.junctionNodeParams = new LazyValue<>(this::createJunctionNodes);
+        this.worldGeometryByBlockPointId = new LazyValue<>(this::createWorldGeometryByBlockPointId);
+        this.junctionParamsByJunctionId = new LazyValue<>(this::createJunctionParamsByJunctionId);
     }
 
     /**
@@ -144,7 +105,8 @@ public class BlockStationBuilder {
      */
     public StationStatus build() {
         StationStatus.Builder statusBuilder = new StationStatus.Builder(buildStationMap(), DEFAULT_TRAIN_FREQUENCY);
-        createRoutes().forEach(t -> statusBuilder.addRoute(t._1, t._2.toArray(String[]::new)));
+        createRoutes().forEach(t ->
+                statusBuilder.addRoute(t._1, t._2.toArray(String[]::new)));
         return statusBuilder.build();
     }
 
@@ -152,6 +114,7 @@ public class BlockStationBuilder {
      * Returns the station map
      */
     StationMap buildStationMap() {
+        validateBlocks().validateJunctions();
         StationBuilder builder = new StationBuilder(station.getId());
         // Generates the edges
         createGlobalEdgeParams().forEach(builder::addEdge);
@@ -174,7 +137,7 @@ public class BlockStationBuilder {
     Stream<NodeBuilderParams> createInnerNodeBuilders() {
         return station.getBlocks().stream()
                 .flatMap(block -> {
-                    UnaryOperator<OrientedGeometry> tr = block2WorldGeo(getWorldBlockGeometry(block.getId()));
+                    UnaryOperator<OrientedGeometry> tr = getWorldBlockGeometry(block.getId()).getBlock2World();
                     return block.getInnerParams(p -> tr.apply(new OrientedGeometry(p, 0)).getPoint());
                 });
     }
@@ -185,8 +148,8 @@ public class BlockStationBuilder {
     Stream<Tuple2<Function<Node[], ? extends Route>, List<String>>> createInnerRoutes() {
         return station.getBlocks().stream()
                 .flatMap(block -> block.getInnerRouteParams().stream()
-                        .map(parms ->
-                                parms.setV2(parms._2.stream()
+                        .map(params ->
+                                params.setV2(params._2.stream()
                                         .map(id -> block.getId() + "." + id)
                                         .collect(Collectors.toList()))));
     }
@@ -195,16 +158,54 @@ public class BlockStationBuilder {
      * Returns the junctions
      */
     List<NodeBuilderParams> createJunctionNodes() {
-        return Tuple2.stream(
-                        Tuple2.stream(getNodeIdByBlockPointId())
-                                .collect(Collectors.groupingBy(Tuple2::getV2)))
+        return Tuple2.stream(getJunctionParamsByJunctionId())
                 .map(t -> {
-                    String nodeId = t._1;
-                    String edgeId0 = station.decodeConnection(t._2.get(0)._1).getEdgeId();
-                    String edgeId1 = station.decodeConnection(t._2.get(1)._1).getEdgeId();
-                    Point2D location = getSnapPointsByBlockPoint().get(nodeId);
-                    return NodeBuilderParams.create(nodeId, location.getX(), location.getY(), edgeId0, edgeId1);
+                    String junctionId = t._1;
+                    Point2D location = t._2._1;
+                    List<String> blockPointIds = t._2._2;
+                    String edgeId0 = station.decodeConnection(blockPointIds.get(0)).getEdgeId();
+                    String edgeId1 = station.decodeConnection(t._2._2.get(1)).getEdgeId();
+                    return NodeBuilderParams.create(junctionId, location.getX(), location.getY(), edgeId0, edgeId1);
                 }).collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the junction parameters by junction id
+     */
+    private Map<String, Tuple2<Point2D, List<String>>> createJunctionParamsByJunctionId() {
+        // Groups block points by distance
+        Map<Point2D, List<String>> blockPointMap = new HashMap<>();
+        for (Map.Entry<String, OrientedGeometry> entry : getWorldGeometryByBlockPointId().entrySet()) {
+            String blockPointId = entry.getKey();
+            OrientedGeometry geometry = entry.getValue();
+            // Find reference point
+            Optional<Point2D> refPointOpt = blockPointMap.keySet().stream().filter(
+                    point -> geometry.getPoint().distance(point) < GRID_SIZE / 2
+            ).findAny();
+            // Add reference point and block point
+            refPointOpt.ifPresentOrElse(refPoint -> blockPointMap
+                            .computeIfPresent(refPoint, (point, list) -> {
+                                list.add(blockPointId);
+                                return list;
+                            }),
+                    () ->
+                            blockPointMap.computeIfAbsent(geometry.getPoint(), p -> new ArrayList<>(List.of(blockPointId)))
+
+            );
+        }
+
+        return Tuple2.stream(blockPointMap).
+                map(t -> {
+                    // sort block point id
+                    Point2D point = t._1;
+                    List<String> blockPointIds = t._2.stream()
+                            .sorted()
+                            .collect(Collectors.toList());
+                    // Get the node id (first block id)
+                    String nodeId = blockPointIds.get(0);
+                    return Tuple2.of(nodeId, Tuple2.of(snapToGrid(point), blockPointIds));
+                })
+                .collect(Tuple2.toMap());
     }
 
     /**
@@ -228,48 +229,14 @@ public class BlockStationBuilder {
     }
 
     /**
-     * Returns the node by block point after link validation
+     * Returns node identifier by block point identifier
      */
-    private Map<String, String> createNodeByBlockPoint() {
-        // Creates node id by block point id
-        Map<String, String> result = Tuple2.stream(
-                        // Create block point list by snap point
-                        Tuple2.stream(getSnapPointsByBlockPoint())
-                                .collect(Collectors.groupingBy(Tuple2::getV2)))
-                .flatMap(t -> {
-                    // Find node id = min of block point id
-                    String nodeId = t._2.stream()
-                            .map(Tuple2::getV1)
-                            .min(Comparator.naturalOrder())
-                            .orElseThrow();
-                    // returns block point ids, node id
-                    return t._2.stream().map(t1 -> Tuple2.of(t1._1, nodeId));
-                })
+    private Map<String, String> createNodeIdByBlockPointId() {
+        return Tuple2.stream(getJunctionParamsByJunctionId())
+                .flatMap(t ->
+                        t._2._2.stream()
+                                .map(blockPointId -> Tuple2.of(blockPointId, t._1)))
                 .collect(Tuple2.toMap());
-        // Validates
-        Map<String, List<Tuple2<String, String>>> blockPointsByNode = Tuple2.stream(result)
-                .collect(Collectors.groupingBy(Tuple2::getV2));
-        // Duplicated
-        List<String> duplicated = Tuple2.stream(blockPointsByNode)
-                .filter(t -> t._2.size() > 2)
-                .map(t -> format("[%s]",
-                        mkString(t._2.stream().map(Tuple2::getV1), ",")))
-                .collect(Collectors.toList());
-        if (!duplicated.isEmpty()) {
-            throw new IllegalArgumentException(format("%s have more then one connection",
-                    mkString(duplicated, ", ")));
-        }
-        // Missing
-        List<String> missing = Tuple2.stream(blockPointsByNode)
-                .filter(t -> t._2.size() < 2)
-                .map(t -> t._2.get(0)._1)
-                .sorted()
-                .collect(Collectors.toList());
-        if (!missing.isEmpty()) {
-            throw new IllegalArgumentException(format("[%s] have no connection",
-                    mkString(missing, ", ")));
-        }
-        return result;
     }
 
     /**
@@ -282,18 +249,18 @@ public class BlockStationBuilder {
     }
 
     /**
-     * Returns the snap point by block point
+     * Returns the world geometry by block point
      */
-    private Map<String, Point2D> createSnapPoints() {
+    Map<String, OrientedGeometry> createWorldGeometryByBlockPointId() {
+        // Create global point by block point identifier
         return station.getBlockPoints().stream()
                 .map(blockPoint -> {
                     Block block = blockPoint.getBlock();
                     OrientedGeometry worldBlockGeometry = getWorldBlockGeometry(block.getId());
-                    UnaryOperator<OrientedGeometry> tr = block2WorldGeo(worldBlockGeometry);
+                    UnaryOperator<OrientedGeometry> tr = worldBlockGeometry.getBlock2World();
                     OrientedGeometry entryGeometry = blockPoint.getEntryGeometry();
                     OrientedGeometry worldPointGeo = tr.apply(entryGeometry);
-                    Point2D snapPoint = snap(worldPointGeo.getPoint(), GRID_SIZE);
-                    return Tuple2.of(blockPoint.toString(), snapPoint);
+                    return Tuple2.of(blockPoint.toString(), worldPointGeo);
                 }).collect(Tuple2.toMap());
     }
 
@@ -307,19 +274,8 @@ public class BlockStationBuilder {
                 .map(a -> (Platforms) a)
                 .min(Comparator.comparing(AbstractBlock::getId))
                 .orElseThrow();
-        Map<String, OrientedGeometry> worldBlockGeometries = new HashMap<>();
         OrientedGeometry geometry = new OrientedGeometry(new Point2D.Double(), station.getOrientation());
-        traverseForWorldBlockGeometry(worldBlockGeometries, ref, geometry);
-        // Validates blocks
-        List<String> missing = station.getBlocks().stream()
-                .map(Block::getId)
-                .filter(Predicate.not(worldBlockGeometries::containsKey))
-                .collect(Collectors.toList());
-        if (!missing.isEmpty()) {
-            throw new IllegalArgumentException(format("Missing connection with blocks [%s]",
-                    mkString(missing, ", ")));
-        }
-        return worldBlockGeometries;
+        return traverseForWorldBlockGeometry(new HashMap<>(), ref, geometry);
     }
 
     /**
@@ -330,7 +286,7 @@ public class BlockStationBuilder {
      * then mapping to global node name (the junction naming)
      * </p>
      *
-     * @param blockId     the block id
+     * @param blockId           the block id
      * @param edgeBuilderParams the local edge builder
      */
     EdgeBuilderParams getGlobalEdgeParams(String blockId, EdgeBuilderParams edgeBuilderParams) {
@@ -360,17 +316,26 @@ public class BlockStationBuilder {
     }
 
     /**
+     * Returns the junction parameters (snap point + block point list) of a junction
+     *
+     * @param junctionId the junction id
+     */
+    Tuple2<Point2D, List<String>> getJunctionParams(String junctionId) {
+        return getJunctionParamsByJunctionId().get(junctionId);
+    }
+
+    /**
+     * Returns the junction parameters (snap point + block point list) by junction id (lazy value)
+     */
+    private Map<String, Tuple2<Point2D, List<String>>> getJunctionParamsByJunctionId() {
+        return junctionParamsByJunctionId.get();
+    }
+
+    /**
      * Returns the node definition by block point id
      */
     Map<String, String> getNodeIdByBlockPointId() {
         return nodeIdByBlockPointId.get();
-    }
-
-    /**
-     * Returns the connection points (lazy value)
-     */
-    Map<String, Point2D> getSnapPointsByBlockPoint() {
-        return snapPointByBlockPoint.get();
     }
 
     /**
@@ -385,8 +350,28 @@ public class BlockStationBuilder {
      *
      * @param blockId the block
      */
-    private OrientedGeometry getWorldBlockGeometry(String blockId) {
+    OrientedGeometry getWorldBlockGeometry(String blockId) {
         return getWorldBlockGeometries().get(blockId);
+    }
+
+    /**
+     * Returns the world geometry of the block point
+     *
+     * @param blockPointId the block point identifier
+     */
+    OrientedGeometry getWorldGeometry(String blockPointId) {
+        OrientedGeometry result = getWorldGeometryByBlockPointId().get(blockPointId);
+        if (result == null) {
+            throw new IllegalArgumentException(format("The station does not contain block point [%s]", blockPointId));
+        }
+        return result;
+    }
+
+    /**
+     * Returns the world geometry by block point identifier (lazy value)
+     */
+    private Map<String, OrientedGeometry> getWorldGeometryByBlockPointId() {
+        return worldGeometryByBlockPointId.get();
     }
 
     /**
@@ -396,12 +381,12 @@ public class BlockStationBuilder {
      * @param ref                  the block reference
      * @param worldRefGeometry     the world block reference geometry
      */
-    private void traverseForWorldBlockGeometry(Map<String, OrientedGeometry> worldBlockGeometries, Block ref, OrientedGeometry worldRefGeometry) {
+    private Map<String, OrientedGeometry> traverseForWorldBlockGeometry(Map<String, OrientedGeometry> worldBlockGeometries, Block ref, OrientedGeometry worldRefGeometry) {
         worldBlockGeometries.put(ref.getId(), worldRefGeometry);
         // retrieves the declared junctions for the ref block
         List<BlockJunction> links = station.getJunctions(ref);
         // Get the geometry transformation for the given block
-        UnaryOperator<OrientedGeometry> block2World = block2WorldGeo(worldRefGeometry);
+        UnaryOperator<OrientedGeometry> block2World = worldRefGeometry.getBlock2World();
         // for each connection adds geometry to block without geometry
         for (BlockJunction link : links) {
             BlockPoint selfPoint = link.getByBlock(ref);
@@ -413,10 +398,70 @@ public class BlockStationBuilder {
                 // gets the block connection geometry
                 OrientedGeometry blockConnGeo = otherPoint.getEntryGeometry().opposite();
                 // gets the world block geometry
-                OrientedGeometry worldBlockGeo = worldBlockGeo(worldConnGeo, blockConnGeo);
+                OrientedGeometry worldBlockGeo = blockConnGeo.getWorldBlockGeo(worldConnGeo);
                 // run recursively
                 traverseForWorldBlockGeometry(worldBlockGeometries, otherBlock, worldBlockGeo);
             }
         }
+        return worldBlockGeometries;
+    }
+
+    /**
+     * Validates the blocks
+     */
+    BlockStationBuilder validateBlocks() {
+        // Validates blocks
+        Map<String, OrientedGeometry> geometries = getWorldBlockGeometries();
+        List<String> missing = station.getBlocks().stream()
+                .map(Block::getId)
+                .filter(Predicate.not(geometries::containsKey))
+                .collect(Collectors.toList());
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException(format("Missing connection with blocks [%s]",
+                    mkString(missing, ", ")));
+        }
+        return this;
+    }
+
+    /**
+     * Validates the junctions
+     */
+    BlockStationBuilder validateJunctions() {
+        Map<String, String> result = getNodeIdByBlockPointId();
+        // Validates
+        Map<String, List<Tuple2<String, String>>> blockPointsByNode = Tuple2.stream(result)
+                .collect(Collectors.groupingBy(Tuple2::getV2));
+        // Duplicated
+        List<String> duplicated = Tuple2.stream(blockPointsByNode)
+                .filter(t -> t._2.size() > 2)
+                .map(t -> {
+                    String junctionId = t._1;
+                    Tuple2<Point2D, List<String>> params = getJunctionParams(junctionId);
+                    Point2D p = params._1;
+                    List<Tuple2<String, String>> blockPointIds = t._2;
+                    return format("%s(%.3f, %.3f)-[%s]",
+                            junctionId,
+                            p.getX(), p.getY(),
+                            mkString(blockPointIds.stream()
+                                            .map(Tuple2::getV1)
+                                            .filter(id -> !t._1.equals(id))
+                                    , ", "));
+                })
+                .collect(Collectors.toList());
+        if (!duplicated.isEmpty()) {
+            throw new IllegalArgumentException(format("More then one junction: %s",
+                    mkString(duplicated, ", ")));
+        }
+        // Missing
+        List<String> missing = Tuple2.stream(blockPointsByNode)
+                .filter(t -> t._2.size() < 2)
+                .map(t -> t._2.get(0)._1)
+                .sorted()
+                .collect(Collectors.toList());
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException(format("[%s] have no junction",
+                    mkString(missing, ", ")));
+        }
+        return this;
     }
 }

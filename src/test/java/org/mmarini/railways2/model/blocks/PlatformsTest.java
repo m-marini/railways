@@ -47,7 +47,6 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mmarini.railways.Matchers.pointCloseTo;
 import static org.mmarini.railways.Matchers.tupleOf;
 import static org.mmarini.railways.TestFunctions.text;
@@ -117,24 +116,6 @@ class PlatformsTest {
     }
 
     @Test
-    void getInnerRouteParams() {
-        // Given ...
-        // When ...
-        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
-
-        // Then ...
-        assertThat(routes, hasSize(4));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("signalw1"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("signalw2"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("signale1"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("signale2"))));
-    }
-
-    @Test
     void getEdgeId() {
         // When ...
         String w1 = block.getEdgeId("w1");
@@ -168,11 +149,11 @@ class PlatformsTest {
         ));
         assertThat(e1, orientedGeometry(
                 pointCloseTo(10 * COACH_LENGTH + PLATFORM_GAP + 2 * PLATFORM_SIGNAL_GAP, 0, 10e-3),
-                equalTo(180)
+                equalTo(-180)
         ));
         assertThat(e2, orientedGeometry(
                 pointCloseTo(10 * COACH_LENGTH + PLATFORM_GAP + 2 * PLATFORM_SIGNAL_GAP, TRACK_GAP, 10e-3),
-                equalTo(180)
+                equalTo(-180)
         ));
     }
 
@@ -200,6 +181,24 @@ class PlatformsTest {
                 hasProperty("id", equalTo("id.signale2")),
                 hasProperty("location", pointCloseTo(10 * COACH_LENGTH + PLATFORM_GAP + PLATFORM_SIGNAL_GAP, TRACK_GAP, EPSILON))
         )));
+    }
+
+    @Test
+    void getInnerRouteParams() {
+        // Given ...
+        // When ...
+        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
+
+        // Then ...
+        assertThat(routes, hasSize(4));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("signalw1"))));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("signalw2"))));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("signale1"))));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("signale2"))));
     }
 
     @BeforeEach

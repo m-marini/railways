@@ -162,7 +162,7 @@ public interface Matchers {
             public boolean matches(Object o) {
                 return o instanceof OrientedGeometry
                         && point.matches(((OrientedGeometry) o).getPoint())
-                        || orientation.matches(((OrientedGeometry) o).getOrientation());
+                        && orientation.matches(((OrientedGeometry) o).getOrientation());
             }
         };
     }

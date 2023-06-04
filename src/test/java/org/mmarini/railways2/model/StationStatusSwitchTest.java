@@ -53,7 +53,7 @@ class StationStatusSwitchTest {
     StationStatus status;
 
     /**
-     * Station map
+     * StationDef map
      * <pre>
      *                           --bd-- Exit(d)
      * Entry(a) --ab-- Switch(b) --bc-- Exit(c)

@@ -118,20 +118,6 @@ class SignalsTest {
     }
 
     @Test
-    void getInnerRouteParams() {
-        // Given ...
-        // When ...
-        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
-
-        // Then ...
-        assertThat(routes, hasSize(2));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("signal1"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("signal2"))));
-    }
-
-    @Test
     void getGeometry() {
         // When ...
         OrientedGeometry w1 = block.getEntryGeometry("w1");
@@ -141,20 +127,20 @@ class SignalsTest {
 
         // Then ...
         assertThat(w1, orientedGeometry(
-                pointCloseTo(0, 0, 10e-3),
+                pointCloseTo(0, 0, EPSILON),
                 equalTo(0)
         ));
         assertThat(e1, orientedGeometry(
-                pointCloseTo(0, 0, 10e-3),
-                equalTo(180)
+                pointCloseTo(SIGNAL_GAP * 2, 0, EPSILON),
+                equalTo(-180)
         ));
         assertThat(w2, orientedGeometry(
-                pointCloseTo(0, TRACK_GAP, 10e-3),
+                pointCloseTo(0, TRACK_GAP, EPSILON),
                 equalTo(0)
         ));
         assertThat(e2, orientedGeometry(
-                pointCloseTo(0, TRACK_GAP, 10e-3),
-                equalTo(180)
+                pointCloseTo(SIGNAL_GAP * 2, TRACK_GAP, EPSILON),
+                equalTo(-180)
         ));
     }
 
@@ -174,6 +160,20 @@ class SignalsTest {
                 hasProperty("id", equalTo("id.signal2")),
                 hasProperty("location", pointCloseTo(SIGNAL_GAP, TRACK_GAP, EPSILON))
         )));
+    }
+
+    @Test
+    void getInnerRouteParams() {
+        // Given ...
+        // When ...
+        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
+
+        // Then ...
+        assertThat(routes, hasSize(2));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("signal1"))));
+        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+                contains("signal2"))));
     }
 
     @BeforeEach

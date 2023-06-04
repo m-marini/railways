@@ -71,7 +71,7 @@ public class LeftSwitch extends AbstractBlock {
     );
     private static final List<NodeBuilderParams> INNER_POINTS_BY_ID = List.of(
             NodeBuilderParams.create("switch", SWITCH_GAP, 0, "entry.switch", "switch.through", "switch.d"),
-            NodeBuilderParams.create("d", SWITCH_LENGTH - SWITCH_GAP, PLATFORM_SWITCH_Y, "switch.d", "diverged")
+            NodeBuilderParams.create("d", SWITCH_LENGTH - SWITCH_GAP, PLATFORM_SWITCH_Y, "switch.d", "d.diverged")
     );
 
     /**

@@ -86,7 +86,7 @@ public class Signals extends AbstractBlock {
                         Tuple2.of("w" + (i + 1), new OrientedGeometry(
                                 new Point2D.Double(0, i * TRACK_GAP), 0)),
                         Tuple2.of("e" + (i + 1), new OrientedGeometry(
-                                new Point2D.Double(SIGNAL_GAP * 2, i * TRACK_GAP), 180))))
+                                new Point2D.Double(SIGNAL_GAP * 2, i * TRACK_GAP), -180))))
                 .collect(Tuple2.toMap());
         List<NodeBuilderParams> innerPointById1 = IntStream.range(0, numSignals)
                 .mapToObj(i -> NodeBuilderParams.create(
@@ -119,12 +119,12 @@ public class Signals extends AbstractBlock {
     /**
      * Creates the list of semaphores
      *
-     * @param id               the identifier
-     * @param geometryById     the geometry by identifier
-     * @param innerPointById   the inner point by identifier
-     * @param edgeBuilderParams     the edge builders
-     * @param edgeByBlockPoint the edge by block point
-     * @param innerRouteParams the inner route parameters
+     * @param id                the identifier
+     * @param geometryById      the geometry by identifier
+     * @param innerPointById    the inner point by identifier
+     * @param edgeBuilderParams the edge builders
+     * @param edgeByBlockPoint  the edge by block point
+     * @param innerRouteParams  the inner route parameters
      */
     protected Signals(String id, Map<String, OrientedGeometry> geometryById, List<NodeBuilderParams> innerPointById, List<EdgeBuilderParams> edgeBuilderParams, Map<String, String> edgeByBlockPoint, List<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams) {
         super(id, geometryById, innerPointById, edgeBuilderParams, edgeByBlockPoint, innerRouteParams);

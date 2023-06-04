@@ -64,7 +64,7 @@ class StationStatusCrossRouteTest extends WithStationStatusTest {
     private Exit dRoute;
 
     /**
-     * Station map
+     * StationDef map
      * <pre>
      * Entry(a) --ae-- CrossRoute(e) --be-- Exit(b)
      * Entry(c) --ce--               --de-- Exit(d)

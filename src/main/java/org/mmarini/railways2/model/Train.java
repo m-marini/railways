@@ -73,8 +73,8 @@ public class Train {
     private final double arrivalTime;
     private final double speed;
     private final boolean loaded;
-    private final double loadedTime;    public static final State BRAKING_STATE = new State("BRAKING_STATE", Train::braking);
-    private final Exit exitingNode;
+    private final double loadedTime;
+    private final Exit exitingNode;    public static final State BRAKING_STATE = new State("BRAKING_STATE", Train::braking);
     private final double exitDistance;
     /**
      * Creates the train
@@ -177,7 +177,7 @@ public class Train {
         return newExitDistance >= EXIT_DISTANCE + getLength() ?
                 Optional.empty() :
                 Optional.of(setExitDistance(newExitDistance).setSpeed(newSpeed));
-    }    public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    }
 
     /**
      * Returns the arrival entry
@@ -191,7 +191,7 @@ public class Train {
      */
     public double getArrivalTime() {
         return arrivalTime;
-    }
+    }    public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
 
     /**
      * Returns the train with arrival time set (when the train will arrive at entry point)
@@ -564,9 +564,10 @@ public class Train {
 
 
 
+
+
+
     public static final State RUNNING_STATE = new State("RUNNING", Train::running);
-
-
 
 
     public static final State ENTERING_STATE = new State("ENTERING", Train::entering);
