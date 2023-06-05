@@ -60,7 +60,7 @@ blocks:
   sowerthTracks:
     class: org.mmarini.railways2.model.blocks.Tracks
     numTracks: 2
-    length: 5
+    length: 1
   sowerth:
     class: org.mmarini.railways2.model.blocks.Wayout
 
@@ -72,7 +72,7 @@ blocks:
   nortonTracks:
     class: org.mmarini.railways2.model.blocks.Tracks
     numTracks: 2
-    length: 5
+    length: 1
   norton:
     class: org.mmarini.railways2.model.blocks.Wayout
 
@@ -132,7 +132,7 @@ blocks:
   southendTracks:
     class: org.mmarini.railways2.model.blocks.Tracks
     numTracks: 2
-    length: 5
+    length: 1
   southend:
     class: org.mmarini.railways2.model.blocks.Wayout
 
@@ -144,7 +144,7 @@ blocks:
   neweselTracks:
     class: org.mmarini.railways2.model.blocks.Tracks
     numTracks: 2
-    length: 5
+    length: 1
   newesel:
     class: org.mmarini.railways2.model.blocks.Wayout
 

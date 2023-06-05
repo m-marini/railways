@@ -54,8 +54,8 @@ public class RightPlatformSwitch extends AbstractBlock {
             EdgeBuilderParams.track("switch.t1", "switch", "t1"),
             EdgeBuilderParams.track("t2.through", "t2", "through"),
             EdgeBuilderParams.track("d1.diverged", "d1", "diverged"),
-            EdgeBuilderParams.curve("switch.d1", "switch", "d1", -SWITCH_ANGLE_DEG),
-            EdgeBuilderParams.curve("t1.t2", "t1", "t2", -SWITCH_ANGLE_DEG)
+            EdgeBuilderParams.curve("switch.d1", "switch", "d1", -SWITCH_ANGLE_RAD),
+            EdgeBuilderParams.curve("t1.t2", "t1", "t2", -SWITCH_ANGLE_RAD)
     );
     public static final Map<String, String> EDGE_BY_BLOCK_POINT = Map.of(
             "entry", "entry.switch",

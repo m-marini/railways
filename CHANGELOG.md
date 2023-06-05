@@ -31,3 +31,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Issue #31: StationStatus null pointer
+- Issue #36: Wrong curve drawing

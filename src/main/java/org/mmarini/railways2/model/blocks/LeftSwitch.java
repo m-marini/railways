@@ -52,7 +52,7 @@ public class LeftSwitch extends AbstractBlock {
     public static final List<EdgeBuilderParams> EDGE_BUILDERS = List.of(
             EdgeBuilderParams.track("entry.switch", "entry", "switch"),
             EdgeBuilderParams.track("switch.through", "switch", "through"),
-            EdgeBuilderParams.curve("switch.d", "switch", "d", SWITCH_ANGLE_DEG),
+            EdgeBuilderParams.curve("switch.d", "switch", "d", SWITCH_ANGLE_RAD),
             EdgeBuilderParams.track("d.diverged", "d", "diverged")
     );
     public static final Map<String, String> EDGE_BY_BLOCK_POINT = Map.of(

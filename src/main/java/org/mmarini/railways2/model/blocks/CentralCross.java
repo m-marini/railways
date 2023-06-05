@@ -55,15 +55,15 @@ public class CentralCross extends AbstractBlock {
             EdgeBuilderParams.track("w2.s3", "w2", "s3"),
             EdgeBuilderParams.track("nw.s4", "nw", "s4"),
 
-            EdgeBuilderParams.track("s1.s5", "s1", "s5"),
+            EdgeBuilderParams.curve("s1.s5", "s1", "s5", -SWITCH_ANGLE_RAD),
             EdgeBuilderParams.track("s1.s6", "s1", "s6"),
             EdgeBuilderParams.track("s2.s5", "s2", "s5"),
-            EdgeBuilderParams.track("s2.s6", "s2", "s6"),
+            EdgeBuilderParams.curve("s2.s6", "s2", "s6", SWITCH_ANGLE_RAD),
 
-            EdgeBuilderParams.track("s3.s7", "s3", "s7"),
+            EdgeBuilderParams.curve("s3.s7", "s3", "s7", -SWITCH_ANGLE_RAD),
             EdgeBuilderParams.track("s3.s8", "s3", "s8"),
             EdgeBuilderParams.track("s4.s7", "s4", "s7"),
-            EdgeBuilderParams.track("s4.s8", "s4", "s8"),
+            EdgeBuilderParams.curve("s4.s8", "s4", "s8", SWITCH_ANGLE_RAD),
 
             EdgeBuilderParams.track("s5.s9", "s5", "s9"),
 
@@ -74,15 +74,15 @@ public class CentralCross extends AbstractBlock {
 
             EdgeBuilderParams.track("s8.s12", "s8", "s12"),
 
-            EdgeBuilderParams.track("s9.s13", "s9", "s13"),
+            EdgeBuilderParams.curve("s9.s13", "s9", "s13", -SWITCH_ANGLE_RAD),
             EdgeBuilderParams.track("s9.s14", "s9", "s14"),
             EdgeBuilderParams.track("s10.s13", "s10", "s13"),
-            EdgeBuilderParams.track("s10.s14", "s10", "s14"),
+            EdgeBuilderParams.curve("s10.s14", "s10", "s14", SWITCH_ANGLE_RAD),
 
-            EdgeBuilderParams.track("s11.s15", "s11", "s15"),
+            EdgeBuilderParams.curve("s11.s15", "s11", "s15", -SWITCH_ANGLE_RAD),
             EdgeBuilderParams.track("s11.s16", "s11", "s16"),
             EdgeBuilderParams.track("s12.s15", "s12", "s15"),
-            EdgeBuilderParams.track("s12.s16", "s12", "s16"),
+            EdgeBuilderParams.curve("s12.s16", "s12", "s16", SWITCH_ANGLE_RAD),
 
             EdgeBuilderParams.track("s13.se", "s13", "se"),
             EdgeBuilderParams.track("s14.e1", "s14", "e1"),
