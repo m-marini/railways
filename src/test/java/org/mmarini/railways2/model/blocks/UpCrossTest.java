@@ -144,16 +144,16 @@ class UpCrossTest {
 
         // Then ...
         assertThat(w, orientedGeometry(
-                pointCloseTo(0, TRACK_GAP / 2, EPSILON),
+                pointCloseTo(0, 0, EPSILON),
                 equalTo(0)));
         assertThat(sw, orientedGeometry(
-                pointCloseTo(0, 0, EPSILON),
+                pointCloseTo(0, -TRACK_GAP / 2, EPSILON),
                 equalTo(SWITCH_ANGLE_DEG)));
         assertThat(e, orientedGeometry(
-                pointCloseTo(SWITCH_LENGTH, TRACK_GAP / 2, EPSILON),
+                pointCloseTo(SWITCH_LENGTH, 0, EPSILON),
                 equalTo(-180)));
         assertThat(ne, orientedGeometry(
-                pointCloseTo(SWITCH_LENGTH, TRACK_GAP, EPSILON),
+                pointCloseTo(SWITCH_LENGTH, TRACK_GAP / 2, EPSILON),
                 equalTo(SWITCH_ANGLE_DEG - 180)));
     }
 
