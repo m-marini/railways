@@ -32,12 +32,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.StationStatus;
+import org.mmarini.railways2.model.geometry.Curve;
 import org.mmarini.yaml.Utils;
 import org.mmarini.yaml.schema.Locator;
 
 import java.io.IOException;
 
+import static java.lang.Math.toRadians;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mmarini.railways.Matchers.pointCloseTo;
 import static org.mmarini.railways2.model.RailwayConstants.SEGMENT_LENGTH;
@@ -82,5 +85,20 @@ public class DownvilleTest {
                 pointCloseTo(-6 * SEGMENT_LENGTH - 2 * SIGNAL_GAP, 3 * TRACK_GAP, EPSILON));
         assertThat(geo2.getPoint(),
                 pointCloseTo(-6 * SEGMENT_LENGTH - 2 * SIGNAL_GAP, 3 * TRACK_GAP, EPSILON));
+    }
+
+    @Test
+    void sowerthCurve1() {
+        // Given ...
+        StationDef station = StationDef.create(root, Locator.root());
+        BlockStationBuilder builder = new BlockStationBuilder(station);
+        StationStatus status = builder.build();
+
+        // When ...
+        Curve w1e2 = status.getStationMap().getEdge("sowerthCurves.w1.e1");
+
+
+        // Then ...
+        assertThat(w1e2.getAngle(), closeTo(toRadians(-45), toRadians(1)));
     }
 }

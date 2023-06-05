@@ -124,7 +124,7 @@ public class Curves extends AbstractBlock {
                 .mapToObj(i -> {
                     String id1 = String.valueOf(i + 1);
                     return EdgeBuilderParams.curve("w" + id1 + ".e" + id1,
-                            "w" + id1, "e" + id1, angle);
+                            "w" + id1, "e" + id1, toRadians(angle));
                 })
                 .collect(Collectors.toList());
         Map<String, String> edgeByBlockPoint = IntStream.range(0, numTracks)

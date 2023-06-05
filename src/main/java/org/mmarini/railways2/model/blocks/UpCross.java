@@ -52,10 +52,10 @@ public class UpCross extends AbstractBlock {
     public static final List<EdgeBuilderParams> EDGE_BUILDERS = List.of(
             EdgeBuilderParams.track("sw.sws", "sw", "sws"),
             EdgeBuilderParams.track("w.ws", "w", "ws"),
-            EdgeBuilderParams.track("sws.es", "sws", "es"),
+            EdgeBuilderParams.curve("sws.es", "sws", "es", -SWITCH_ANGLE_RAD),
             EdgeBuilderParams.track("sws.nes", "sws", "nes"),
             EdgeBuilderParams.track("ws.es", "ws", "es"),
-            EdgeBuilderParams.track("ws.nes", "ws", "nes"),
+            EdgeBuilderParams.curve("ws.nes", "ws", "nes", SWITCH_ANGLE_RAD),
             EdgeBuilderParams.track("es.e", "es", "e"),
             EdgeBuilderParams.track("nes.ne", "nes", "ne")
     );
@@ -69,10 +69,10 @@ public class UpCross extends AbstractBlock {
             Tuple2.of(DoubleSlipSwitch::through, List.of("ws", "es", "sws", "nes"))
     );
     private static final Map<String, OrientedGeometry> GEOMETRY_BY_ID = Map.of(
-            "w", new OrientedGeometry(new Point2D.Double(0, TRACK_GAP / 2), 0),
-            "e", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH, TRACK_GAP / 2), -180),
-            "sw", new OrientedGeometry(new Point2D.Double(0, 0), SWITCH_ANGLE_DEG),
-            "ne", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH, TRACK_GAP), SWITCH_ANGLE_DEG - 180)
+            "w", new OrientedGeometry(new Point2D.Double(0, 0), 0),
+            "e", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH, 0), -180),
+            "sw", new OrientedGeometry(new Point2D.Double(0, -TRACK_GAP / 2), SWITCH_ANGLE_DEG),
+            "ne", new OrientedGeometry(new Point2D.Double(SWITCH_LENGTH, TRACK_GAP / 2), SWITCH_ANGLE_DEG - 180)
     );
     private static final List<NodeBuilderParams> INNER_NODES = List.of(
             NodeBuilderParams.create("sws", SWITCH_GAP, -PLATFORM_SWITCH_Y, "sw.sws", "sws.nes", "sws.es"),

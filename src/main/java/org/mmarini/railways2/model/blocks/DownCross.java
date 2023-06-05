@@ -52,10 +52,10 @@ public class DownCross extends AbstractBlock {
     public static final List<EdgeBuilderParams> EDGE_BUILDERS = List.of(
             EdgeBuilderParams.track("w.ws", "w", "ws"),
             EdgeBuilderParams.track("nw.nws", "nw", "nws"),
-            EdgeBuilderParams.track("ws.ses", "ws", "ses"),
+            EdgeBuilderParams.curve("ws.ses", "ws", "ses", -SWITCH_ANGLE_RAD),
             EdgeBuilderParams.track("ws.es", "ws", "es"),
             EdgeBuilderParams.track("nws.ses", "nws", "ses"),
-            EdgeBuilderParams.track("nws.es", "nws", "es"),
+            EdgeBuilderParams.curve("nws.es", "nws", "es", SWITCH_ANGLE_RAD),
             EdgeBuilderParams.track("ses.se", "ses", "se"),
             EdgeBuilderParams.track("es.e", "es", "e")
     );

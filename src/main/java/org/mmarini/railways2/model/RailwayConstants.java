@@ -43,10 +43,16 @@ public interface RailwayConstants extends XmlConstants {
      * Gap between adjacent track (m)
      */
     double TRACK_GAP = 3.22 + TRACK_GAUGE;
+
     /**
      * Angle of standard switch element (DEG)
      */
     int SWITCH_ANGLE_DEG = 3;
+
+    /**
+     * Angle of standard switch element (RAD)
+     */
+    double SWITCH_ANGLE_RAD = toRadians(SWITCH_ANGLE_DEG);
 
     /**
      * Radius of standard switch element (m)
