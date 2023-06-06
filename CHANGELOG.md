@@ -32,3 +32,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Issue #31: StationStatus null pointer
 - Issue #36: Wrong curve drawing
+- Issue #38: Trains hanging in DoubleSlipSwitch
