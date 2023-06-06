@@ -29,23 +29,44 @@
 package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.Test;
+import org.mmarini.railways2.model.geometry.Edge;
 import org.mmarini.railways2.swing.StationExamples;
 import org.mmarini.railways2.swing.WithTrain;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class StationStatus2CrossExitsTest extends WithStationStatusTest {
-    void createStatus(boolean through) {
-        status = new WithTrain(StationExamples.create2CrossExitStation(through))
-                .addTrain(10, "a", "e", "ab", "b", 0)
-                .addTrain(3, "a", "j", "gh", "h", 0)
+    @Test
+    void getTrainEdges() {
+        // Given ...
+        status = new WithTrain(StationExamples.create2CrossExitStation(true))
+                .addTrain(14, "a", "e", "de", "e", 90)
                 .build();
+
+        // When ...
+        List<Edge> edges = status.getTrain("T0").map(status::getTrainEdges).orElseThrow().collect(Collectors.toList());
+
+        // Then ...
+        assertThat(edges, hasSize(4));
+        assertThat(edges, contains(
+                equalTo(edge("de")),
+                equalTo(edge("cd")),
+                equalTo(edge("bc")),
+                equalTo(edge("ab"))));
     }
 
     @Test
     void isSectionClear() {
         // Given ...
-        createStatus(false);
+        status = new WithTrain(StationExamples.create2CrossExitStation(false))
+                .addTrain(10, "a", "e", "ab", "b", 0)
+                .addTrain(3, "a", "j", "gh", "h", 0)
+                .build();
 
         // When ... Then ...
         assertFalse(status.isSectionClear(edge("gh")));

@@ -46,6 +46,7 @@ import java.util.Random;
 import java.util.function.Function;
 
 class SimPanelTest {
+    public static final int SIMULATION_SEED = 1234;
     private static final Logger logger = LoggerFactory.getLogger(SimPanelTest.class);
     private static final Dimension DEFAULT_SIZE = new Dimension(800, 600);
     private static final int FPS = 60;
@@ -84,7 +85,7 @@ class SimPanelTest {
                 .setOnEvent(this::handleEvent)
                 .setOnSpeed(this::handleSpeed);
         engine.setSpeed(1);
-        random = new Random();
+        random = new Random(SIMULATION_SEED);
     }
 
     private void handleEvent(StationStatus status) {

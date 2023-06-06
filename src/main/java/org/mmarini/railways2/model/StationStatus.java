@@ -31,6 +31,8 @@ package org.mmarini.railways2.model;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -51,11 +53,11 @@ import static org.mmarini.railways2.model.Utils.nextPoisson;
  * Retrieves the sections, the edges occupied by trains.
  */
 public class StationStatus {
-
     /**
      * Arrival train frequency (#/s)
      */
     public static final double ARRIVING_TRAIN_FREQUENCY = 10;
+    private static final Logger logger = LoggerFactory.getLogger(StationStatus.class);
     private static final int MIN_TRAIN_ID = 100;
     private static final int MAX_TRAIN_ID = 999;
 
@@ -301,7 +303,7 @@ public class StationStatus {
             if (distance > 0) {
                 // Next direction
                 direction = getRoute(direction.getDestination()) // gets destination route
-                        .getExit(location.getDirection()) // gets next exit for route
+                        .getExit(direction) // gets next exit for route
                         .orElse(null);
             }
         }
@@ -524,6 +526,15 @@ public class StationStatus {
     public StationStatus setTime(double time) {
         return time == this.time ? this :
                 new StationStatus(stationMap, routes, trains, time, trainFrequency, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
+    }
+
+    /**
+     * Returns the train
+     *
+     * @param id the train identifier
+     */
+    public Optional<Train> getTrain(String id) {
+        return trains.stream().filter(t -> id.equals(t.getId())).findAny();
     }
 
     /**
