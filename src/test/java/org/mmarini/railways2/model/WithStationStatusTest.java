@@ -28,11 +28,18 @@
 
 package org.mmarini.railways2.model;
 
+import org.mmarini.railways2.swing.WithTrain;
+
 public class WithStationStatusTest implements WithStationStatus {
     protected StationStatus status;
 
     @Override
     public StationStatus status() {
         return status;
+    }
+
+
+    public WithTrain withTrain() {
+        return new WithTrain(status());
     }
 }

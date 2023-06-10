@@ -129,7 +129,7 @@ public class SimulationContext {
      * @param train the train
      */
     public boolean isNextTracksClear(Train train) {
-        return status.isNextTracksClear(train);
+        return status.isNextSignalClear(train);
     }
 
     /**

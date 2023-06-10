@@ -26,28 +26,15 @@
  *
  */
 
-package org.mmarini.railways2.model;
+package org.mmarini.railways2.swing;
 
-import org.mmarini.railways2.model.geometry.StationMap;
-import org.mmarini.railways2.model.routes.Route;
+import org.junit.jupiter.api.Test;
 
-public interface WithStationStatus extends WithStationMap {
-    default <T extends Route> T route(String id) {
-        try {
-            return status().getRoute(id);
-        } catch (ClassCastException ex) {
-            throw new IllegalArgumentException("Bad id" + id, ex);
-        }
-    }
+import java.util.ResourceBundle;
 
-    @Override
-    default StationMap stationMap() {
-        return status().getStationMap();
-    }
-
-    StationStatus status();
-
-    default Train train(String id) {
-        return status().getTrain(id).orElseThrow();
+public class ResourcesBundleTest {
+    @Test
+    void name() {
+        ResourceBundle bundle = ResourceBundle.getBundle("org.mmarini.railways2.swing.messages");
     }
 }

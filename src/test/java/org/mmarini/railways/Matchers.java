@@ -53,6 +53,16 @@ public interface Matchers {
         return new CustomMatcher<>(format("Optional containing  %s",
                 exp)) {
             @Override
+            public void describeMismatch(Object item, Description description) {
+                if (!(item instanceof Optional
+                        && ((Optional<T>) item).isPresent())) {
+                    super.describeMismatch(item, description);
+                } else {
+                    exp.describeMismatch(((Optional<T>) item).orElseThrow(), description);
+                }
+            }
+
+            @Override
             public boolean matches(Object o) {
                 return o instanceof Optional
                         && ((Optional<T>) o).isPresent()

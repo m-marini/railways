@@ -43,10 +43,10 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static java.lang.Math.*;
-import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
-import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAUGE;
 import static org.mmarini.railways2.model.MathUtils.RAD180;
 import static org.mmarini.railways2.model.MathUtils.RAD_90;
+import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
+import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAUGE;
 import static org.mmarini.railways2.swing.GraphConstants.*;
 
 /**
@@ -87,7 +87,8 @@ public interface Painters {
     Consumer<Graphics2D> LOCKED_DIVERGE_IMAGE_PAINTER = createImagePainter("/img/sw5.png", SWITCH_X, SWITCH_Y, SWITCH_WIDTH, SWITCH_HEIGHT, RAD_90);
     Font LABEL_FONT = Font.decode("dialog bold");
     double LABEL_SCALE = 0.1;
-    double LABEL_GAP = TRACK_GAUGE / 2 / LABEL_SCALE;
+    double LABEL_GAP = TRACK_GAUGE * sqrt(2) / 2 / LABEL_SCALE;
+    Color LABEL_COLOR = new Color(255, 255, 255, 128);
 
     /**
      * Returns the arc of a curve
@@ -161,7 +162,7 @@ public interface Painters {
      * @param route the route
      */
     static Consumer<Graphics2D> createLabelPainter(Route route) {
-        String label = route.getId();
+        String label = Messages.getString(route.getId());
         Point2D location = route.getNodes().get(0).getLocation();
         Direction entryDir = route.getNodes().get(0).getEntries().get(0);
         double orientation = toDegrees(new EdgeLocation(entryDir, 0).getOrientation());
@@ -171,12 +172,18 @@ public interface Painters {
         Rectangle2D bounds = LABEL_FONT.getStringBounds(label, ctx);
         double cx = bounds.getCenterX();
         double cy = bounds.getCenterY();
+        double lowx = bounds.getMinX();
         AffineTransform tr = AffineTransform.getTranslateInstance(location.getX(), location.getY());
         tr.scale(LABEL_SCALE, -LABEL_SCALE);
-        tr.translate(vertical ? LABEL_GAP : -cx, cy - (vertical ? 0 : LABEL_GAP));
+        // aligned to lower right side of route
+        // double lowy = bounds.getMinY();
+        // tr.translate(vertical ? -lowx + LABEL_GAP : -cx, vertical ? -cy : -lowy + LABEL_GAP);
+
+        // aligned to center right side of route
+        tr.translate(vertical ? -lowx + LABEL_GAP : -cx, -cy);
         return transformAndPaint(tr, gr -> {
             gr.setFont(LABEL_FONT);
-            gr.setColor(Color.BLACK);
+            gr.setColor(LABEL_COLOR);
             gr.drawString(label, 0, 0);
         });
     }

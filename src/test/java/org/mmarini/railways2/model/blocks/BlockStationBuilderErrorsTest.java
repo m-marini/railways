@@ -51,7 +51,7 @@ class BlockStationBuilderErrorsTest {
         Map<String, String> links = Map.of(
                 "west.entry", "p.e1");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station);
+        this.builder = new BlockStationBuilder(station, null);
 
         // When ...
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
@@ -69,7 +69,7 @@ class BlockStationBuilderErrorsTest {
                 "west.entry", "p.w1",
                 "east.exit", "p.e1");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station);
+        this.builder = new BlockStationBuilder(station, null);
 
         // When ...
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
@@ -95,7 +95,7 @@ class BlockStationBuilderErrorsTest {
                 "west.entry", "none.e1",
                 "east.exit", "p.e2");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station);
+        this.builder = new BlockStationBuilder(station, null);
 
         // When ...
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
@@ -113,7 +113,7 @@ class BlockStationBuilderErrorsTest {
                 "west.entry", "p.none",
                 "east.exit", "p.e2");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station);
+        this.builder = new BlockStationBuilder(station, null);
 
         // When ...
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->

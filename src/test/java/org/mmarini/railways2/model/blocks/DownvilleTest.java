@@ -32,22 +32,26 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.StationStatus;
+import org.mmarini.railways2.model.Train;
+import org.mmarini.railways2.model.WithStationStatusTest;
 import org.mmarini.railways2.model.geometry.Curve;
 import org.mmarini.yaml.Utils;
 import org.mmarini.yaml.schema.Locator;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.Random;
 
 import static java.lang.Math.toRadians;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.closeTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways.Matchers.pointCloseTo;
-import static org.mmarini.railways2.model.RailwayConstants.SEGMENT_LENGTH;
-import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
+import static org.mmarini.railways2.model.RailwayConstants.*;
 import static org.mmarini.railways2.model.blocks.Signals.SIGNAL_GAP;
 
-public class DownvilleTest {
+public class DownvilleTest extends WithStationStatusTest {
 
     public static final double EPSILON = 1e-3;
     private JsonNode root;
@@ -55,8 +59,24 @@ public class DownvilleTest {
     @Test
     void build() {
         StationDef station = StationDef.create(root, Locator.root());
-        StationStatus status = new BlockStationBuilder(station).build();
+        this.status = new BlockStationBuilder(station, null).build();
         assertEquals("Downville", status.getStationMap().getId());
+    }
+
+    @Test
+    void isNextTrackClear() {
+        // Given ...
+        build();
+        status = withTrain()
+                .addTrain(3, "norton.in", "norton.out", "westUpCross.es.e", "westTrack6.w1", 11.71)
+                .addTrain(3, "norton.in", "norton.out", "westTrack45.w1.e1", "platforms.w4", 193)
+                .build();
+
+        // When ...
+        boolean clear = status.isNextSignalClear(train("TT0"));
+
+        // Then ...
+        assertTrue(clear);
     }
 
     @Test
@@ -74,7 +94,7 @@ public class DownvilleTest {
     void sowerthCurve() {
         // Given ...
         StationDef station = StationDef.create(root, Locator.root());
-        BlockStationBuilder builder = new BlockStationBuilder(station);
+        BlockStationBuilder builder = new BlockStationBuilder(station, null);
 
         // When ...
         OrientedGeometry geo1 = builder.getWorldGeometry("westSignals.w2");
@@ -91,7 +111,7 @@ public class DownvilleTest {
     void sowerthCurve1() {
         // Given ...
         StationDef station = StationDef.create(root, Locator.root());
-        BlockStationBuilder builder = new BlockStationBuilder(station);
+        BlockStationBuilder builder = new BlockStationBuilder(station, null);
         StationStatus status = builder.build();
 
         // When ...
@@ -100,5 +120,39 @@ public class DownvilleTest {
 
         // Then ...
         assertThat(w1e2.getAngle(), closeTo(toRadians(-45), toRadians(1)));
+    }
+
+    @Test
+    void tick() {
+        // Given ...
+        build();
+        status = withTrain()
+                .addTrain(3, "norton.in", "norton.out", "westUpCross.es.e", "westTrack6.w1", 11.71)
+                .addTrain(3, "norton.in", "norton.out", "westTrack45.w1.e1", "platforms.w4", 193)
+                .build();
+
+        // When ...
+        StationStatus status1 = status.tick(0.1, new Random(1234));
+
+        // Then ...
+        Optional<Train> tt0 = status1.getTrain("TT0");
+        assertThat(tt0, optionalOf(hasProperty("speed", equalTo(MAX_SPEED))));
+    }
+
+    @Test
+    void tick1() {
+        // Given ...
+        build();
+        status = withTrain()
+                .addTrain(3, "norton.in", "norton.out", "westUpCross.es.e", "westTrack6.w1", 0)
+                .addTrain(3, "norton.in", "norton.out", "westTrack45.w1.e1", "platforms.w4", 181.9)
+                .build();
+
+        // When ...
+        StationStatus status1 = status.tick(0.1, new Random(1234));
+
+        // Then ...
+        Optional<Train> tt0 = status1.getTrain("TT0");
+        assertThat(tt0, optionalOf(hasProperty("speed", equalTo(MAX_SPEED))));
     }
 }

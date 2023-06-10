@@ -49,7 +49,7 @@ public class StationStatus2CrossExitsTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        List<Edge> edges = status.getTrain("T0").map(status::getTrainEdges).orElseThrow().collect(Collectors.toList());
+        List<Edge> edges = status.getTrainEdges(train("TT0")).collect(Collectors.toList());
 
         // Then ...
         assertThat(edges, hasSize(4));

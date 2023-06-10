@@ -74,8 +74,9 @@ public class Train {
     private final double speed;
     private final boolean loaded;
     private final double loadedTime;
-    private final Exit exitingNode;    public static final State BRAKING_STATE = new State("BRAKING_STATE", Train::braking);
+    private final Exit exitingNode;
     private final double exitDistance;
+
     /**
      * Creates the train
      *
@@ -191,7 +192,7 @@ public class Train {
      */
     public double getArrivalTime() {
         return arrivalTime;
-    }    public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    }
 
     /**
      * Returns the train with arrival time set (when the train will arrive at entry point)
@@ -208,7 +209,7 @@ public class Train {
      */
     public Exit getDestination() {
         return destination;
-    }
+    }    public static final State BRAKING_STATE = new State("BRAKING_STATE", Train::braking);
 
     /**
      * Returns the exit distance
@@ -286,7 +287,7 @@ public class Train {
      *
      * @param speed the speed
      */
-    Train setSpeed(double speed) {
+    public Train setSpeed(double speed) {
         return speed == this.speed ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
     }
@@ -363,7 +364,7 @@ public class Train {
      */
     Optional<Train> loading(SimulationContext context) {
         return Optional.of(context.getNextTime() < loadedTime ? this : stop().setLoaded());
-    }
+    }    public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
 
     /**
      * Returns the train in running state
@@ -394,63 +395,59 @@ public class Train {
      * @param targetSpeed the target speed (m/s)
      */
     Optional<Train> running(SimulationContext context, double targetSpeed) {
+        double movement = speed * context.getDt();
         boolean clearTrack = context.isNextTracksClear(this);
-        if (clearTrack) {
-            // Move head
-            double movement = speed * context.getDt();
-            // Computes the new location in the edge
-            double newDistance = location.getDistance() - movement;
-            // Computes the new speed
-            double newSpeed = speedPhysics(targetSpeed, context.getDt());
-            if (newDistance < 0) {
-                // end of edge reached
-                Node destination1 = location.getDirection().getDestination();
-                Route route = context.getRoute(destination1);
-                if (route instanceof Exit) {
-                    return Optional.of(setState(EXITING_STATE)
-                            .setLocation(null)
-                            .setExitingNode((Exit) route)
-                            .setExitDistance(-newDistance));
-                } else {
-                    // Get the new direction
-                    Optional<Direction> routeDirection = context.getNextExit(location.getDirection());
-                    return routeDirection.map(newDir -> {
-                                Edge newEdge = newDir.getEdge();
-                                // Computes the new location
-                                double newDistance1 = max(newEdge.getLength() + newDistance, 0);
-                                EdgeLocation newLocation = new EdgeLocation(newDir, newDistance1);
-                                // Lock signals of new section
-                                context.lockSignals(newDir);
-                                return setSpeed(newSpeed).setLocation(newLocation);
-                            }
-                    ).or(() -> Optional.of(this));
-                }
+        Direction direction = location.getDirection();
+        Edge edge = direction.getEdge();
+        Node destination = direction.getDestination();
+        Route route = context.getRoute(destination);
+        double newDistance = location.getDistance() - movement;
+        double newSpeed = clearTrack ?
+                speedPhysics(targetSpeed, context.getDt())
+                : max(speedPhysics(0, context.getDt()), APPROACH_SPEED);
+
+        if (newDistance >= 0) {
+            // Move head in the current edge
+            EdgeLocation newLocation = location.setDistance(newDistance);
+            if (targetSpeed > APPROACH_SPEED || newSpeed > APPROACH_SPEED) {
+                return Optional.of(setLocation(newLocation).setSpeed(max(newSpeed, APPROACH_SPEED)));
             } else {
-                // In track
-                EdgeLocation newLocation = location.setDistance(newDistance);
-                if (targetSpeed > APPROACH_SPEED || newSpeed > APPROACH_SPEED) {
-                    return Optional.of(setLocation(newLocation).setSpeed(max(newSpeed, APPROACH_SPEED)));
-                } else {
-                    // Train is braking
-                    return Optional.of(setLocation(newLocation).setSpeed(newSpeed).setState(WAITING_FOR_RUN_STATE));
-                }
-            }
-        } else {
-            // brake train
-            double newDistance = location.getDistance() - context.getDt() * speed;
-            if (newDistance < 0) {
-                // Stop train
-                EdgeLocation newLocation = location.setDistance(0);
-                return Optional.of((location.getDirection().getEdge() instanceof Platform && !loaded) ?
-                        setSpeed(0).setState(Train.LOADING_STATE).setLocation(newLocation) :
-                        setSpeed(0).setState(Train.WAITING_FOR_SIGNAL_STATE).setLocation(newLocation));
-            } else {
-                // decelerate train
-                double newSpeed = max(speedPhysics(0, context.getDt()), APPROACH_SPEED);
-                EdgeLocation newLocation = location.setDistance(newDistance);
-                return Optional.of(setLocation(newLocation).setSpeed(newSpeed));
+                // Train is braking
+                return Optional.of(setLocation(newLocation).setSpeed(newSpeed).setState(WAITING_FOR_RUN_STATE));
             }
         }
+        // end of edge reached
+        if (route instanceof Exit) {
+            // exit node reached
+            return Optional.of(setState(EXITING_STATE)
+                    .setLocation(null)
+                    .setExitingNode((Exit) route)
+                    .setExitDistance(-newDistance));
+        }
+        if (edge instanceof Platform && !loaded) {
+            // platform reached and train not loaded
+            return Optional.of(setState(LOADING_STATE)
+                    .setLocation(location.setDistance(0))
+                    .setSpeed(0));
+        }
+        if (!context.isNextRouteClear(direction)) {
+            // next route is not clear (stop signal)
+            return Optional.of(setState(WAITING_FOR_SIGNAL_STATE)
+                    .setLocation(location.setDistance(0))
+                    .setSpeed(0));
+        }
+        // Get the new direction
+        Optional<Direction> routeDirection = context.getNextExit(location.getDirection());
+        return routeDirection.map(newDir -> {
+                    Edge newEdge = newDir.getEdge();
+                    // Computes the new location
+                    double newDistance1 = max(newEdge.getLength() + newDistance, 0);
+                    EdgeLocation newLocation = new EdgeLocation(newDir, newDistance1);
+                    // Lock signals of new section
+                    context.lockSignals(newDir);
+                    return setSpeed(newSpeed).setLocation(newLocation);
+                }
+        ).or(() -> Optional.of(this));
     }
 
     /**
@@ -532,7 +529,7 @@ public class Train {
         return Optional.of(context.isNextRouteClear(location.getDirection()) ? start() : this);
     }
 
-    protected static class State {
+    public static class State {
 
         private final String id;
         private final BiFunction<Train, SimulationContext, Optional<Train>> function;

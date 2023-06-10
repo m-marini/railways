@@ -45,6 +45,8 @@ import java.time.Duration;
 import java.util.Random;
 import java.util.function.Function;
 
+import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
+
 class SimPanelTest {
     public static final int SIMULATION_SEED = 1234;
     private static final Logger logger = LoggerFactory.getLogger(SimPanelTest.class);
@@ -67,8 +69,10 @@ class SimPanelTest {
                 .build();
          */
 
-        StationStatus status3 = new BlockStationBuilder(StationDef.create(
-                Utils.fromResource("/stations/downville.station.yml"), Locator.root())).build();
+        StationStatus status3 = new WithTrain(new BlockStationBuilder(StationDef.create(
+                Utils.fromResource("/stations/downville.station.yml"), Locator.root()), new Random(SIMULATION_SEED)).build())
+                .build()
+                .setTime(ENTRY_TIMEOUT);
         new SimPanelTest(status3).run();
     }
 

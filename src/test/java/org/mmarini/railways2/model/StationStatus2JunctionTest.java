@@ -66,7 +66,7 @@ class StationStatus2JunctionTest extends WithStationStatusTest {
                 .addTrack("bc", "b", "c")
                 .addTrack("cd", "c", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1)
+        status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Junction::create, "b")
                 .addRoute(Junction::create, "c")

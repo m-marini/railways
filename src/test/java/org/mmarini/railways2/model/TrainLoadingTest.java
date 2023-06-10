@@ -64,7 +64,7 @@ class TrainLoadingTest {
                 .addPlatform("bc", "b", "c")
                 .build();
 
-        status = new StationStatus.Builder(stationMap, 1)
+        status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
