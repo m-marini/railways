@@ -5,7 +5,7 @@ blocks:
   platforms:
     class: org.mmarini.railways2.model.blocks.Platforms
     numPlatforms: 8
-    length: 8
+    length: 14
 
   # west switchyard
   westLeftPlatformSwitch:

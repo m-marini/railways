@@ -76,7 +76,7 @@ public interface StationExamples {
                 .addTrack("hd", "h", "d")
                 .build();
 
-        return new StationStatus.Builder(stationMap, 1)
+        return new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal.createLocks(), "b")
                 .addRoute(DoubleSlipSwitch.create(through), "c", "d", "h", "i")
@@ -144,7 +144,7 @@ public interface StationExamples {
                 .addTrack("t15", "d2", "o2")
                 .build();
 
-        return new StationStatus.Builder(stationMap, 1)
+        return new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "i1")
                 .addRoute(Entry::create, "i2")
                 .addRoute(Entry::create, "i3")
@@ -184,7 +184,7 @@ public interface StationExamples {
         Node b = stationMap.getNode("b");
         Node c = stationMap.getNode("c");
         Edge bc = stationMap.getEdge("bc");
-        return new StationStatus.Builder(stationMap, 1)
+        return new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal.createLocks(new Direction(bc, b)), "b")
                 .addRoute(Signal.createLocks(new Direction(bc, c)), "c")

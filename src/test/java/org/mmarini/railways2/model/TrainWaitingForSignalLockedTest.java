@@ -66,7 +66,7 @@ class TrainWaitingForSignalLockedTest {
                 .build();
         Node b = stationMap.getNode("b");
         Edge bc = stationMap.getEdge("bc");
-        status = new StationStatus.Builder(stationMap, 1)
+        status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(org.mmarini.railways2.model.routes.Entry::create, "a")
                 .addRoute(Signal.createLocks(new Direction(bc, b)), "b")
                 .addRoute(org.mmarini.railways2.model.routes.Exit::create, "c")

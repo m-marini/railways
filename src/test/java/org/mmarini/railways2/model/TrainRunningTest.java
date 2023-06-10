@@ -45,19 +45,17 @@ import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 
-class TrainRunningTest {
+class TrainRunningTest extends WithStationStatusTest {
     static final double DT = 0.1;
     static final double LENGTH = 500;
-    StationMap stationMap;
-    StationStatus status;
 
     @Test
     void accelerate() {
         // Given ...
-        Node b = stationMap.getNode("b");
-        Edge ab = stationMap.getEdge("ab");
-        Entry aRoute = status.getRoute("a");
-        Exit bRoute = status.getRoute("c");
+        Node b = node("b");
+        Edge ab = edge("ab");
+        Entry aRoute = route("a");
+        Exit bRoute = route("c");
         double speed = MAX_SPEED / 8;
         Train train = Train.create("train2", 1, aRoute, bRoute)
                 .setLocation(EdgeLocation.create(ab, b, LENGTH))
@@ -83,14 +81,14 @@ class TrainRunningTest {
      */
     @BeforeEach
     void beforeEach() {
-        stationMap = new StationBuilder("station")
+        StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc")
                 .addTrack("ab", "a", "b")
                 .addTrack("bc", "b", "c")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1)
+        status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
@@ -100,8 +98,8 @@ class TrainRunningTest {
     @Test
     void getStopDistance() {
         // Given ...
-        Entry a = status.getRoute("a");
-        Exit c = status.getRoute("c");
+        Entry a = route("a");
+        Exit c = route("c");
         Train train = Train.create("train2", 1, a, c);
 
         // When ... Then ...
@@ -111,12 +109,12 @@ class TrainRunningTest {
     @Test
     void runningAmongSections() {
         // Given ...
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Entry aRoute = status.getRoute("a");
-        Exit cRoute = status.getRoute("c");
+        Node b = node("b");
+        Node c = node("c");
+        Edge ab = edge("ab");
+        Edge bc = edge("bc");
+        Entry aRoute = route("a");
+        Exit cRoute = route("c");
         double distance = 3; // moving distance=3.6m, distance = 3
         Train train = Train.create("train2", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(ab, b, distance))
@@ -142,10 +140,10 @@ class TrainRunningTest {
     @Test
     void runningClear() {
         // Given ...
-        Node b = stationMap.getNode("b");
-        Edge ab = stationMap.getEdge("ab");
-        Entry aRoute = status.getRoute("a");
-        Exit bRoute = status.getRoute("c");
+        Node b = node("b");
+        Edge ab = edge("ab");
+        Entry aRoute = route("a");
+        Exit bRoute = route("c");
         Train train = Train.create("train2", 1, aRoute, bRoute)
                 .setLocation(EdgeLocation.create(ab, b, LENGTH))
                 .setState(Train.RUNNING_STATE);
@@ -165,12 +163,12 @@ class TrainRunningTest {
     @Test
     void runningNotClear() {
         // Given ...
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Entry aRoute = status.getRoute("a");
-        Exit bRoute = status.getRoute("c");
+        Node b = node("b");
+        Node c = node("c");
+        Edge ab = edge("ab");
+        Edge bc = edge("bc");
+        Entry aRoute = route("a");
+        Exit bRoute = route("c");
         double distance = 4; // moving distance=3.6m, distance = 4
         Train t1 = Train.create("t1", 1, aRoute, bRoute)
                 .setLocation(EdgeLocation.create(ab, b, distance))
@@ -194,12 +192,12 @@ class TrainRunningTest {
     @Test
     void runningThroughExit() {
         // Given ...
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Entry aRoute = status.getRoute("a");
-        Exit cRoute = status.getRoute("c");
+        Node b = node("b");
+        Node c = node("c");
+        Edge ab = edge("ab");
+        Edge bc = edge("bc");
+        Entry aRoute = route("a");
+        Exit cRoute = route("c");
         double distance = 3; // moving distance=3.6m, distance = 3
         Train train = Train.create("train2", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(bc, c, distance))
@@ -222,8 +220,8 @@ class TrainRunningTest {
     @Test
     void speedPhysics0() {
         // Given ...
-        Entry a = status.getRoute("a");
-        Exit b = status.getRoute("c");
+        Entry a = route("a");
+        Exit b = route("c");
         Train train = Train.create("train2", 1, a, b).setSpeed(0);
 
         // When ... Then ...
@@ -234,8 +232,8 @@ class TrainRunningTest {
 
     @Test
     void speedPhysicsFast() {
-        Entry a = status.getRoute("a");
-        Exit b = status.getRoute("c");
+        Entry a = route("a");
+        Exit b = route("c");
         Train train = Train.create("train2", 1, a, b);
 
         assertEquals(MAX_SPEED + DEACCELERATION * DT, train.speedPhysics(0, DT));
@@ -247,23 +245,15 @@ class TrainRunningTest {
     @Test
     void stoppingNotClear() {
         // Given ...
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Entry aRoute = status.getRoute("a");
-        Exit bRoute = status.getRoute("c");
         double distance = 3; // moving distance=3.6m, distance = 3m
-        Train t1 = Train.create("t1", 1, aRoute, bRoute)
-                .setLocation(EdgeLocation.create(ab, b, distance))
-                .setState(Train.RUNNING_STATE);
-        Train t2 = Train.create("t2", 1, aRoute, bRoute)
-                .setLocation(EdgeLocation.create(bc, c, 0))
-                .setState(Train.RUNNING_STATE);
-        status = status.setTrains(t1, t2);
+        status = withTrain()
+                .addTrain(3, "a", "c", "ab", "b", distance)
+                .addTrain(3, "a", "c", "bc", "c", 0)
+                .build();
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status, DT));
+        Train train = train("TT0");
+        Optional<Train> nextOpt = train.tick(new SimulationContext(status, DT));
 
         // Then ...
         assertTrue(nextOpt.isPresent());

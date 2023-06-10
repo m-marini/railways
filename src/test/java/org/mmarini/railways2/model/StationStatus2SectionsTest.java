@@ -69,7 +69,7 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
                 .addTrack("ab", "a", "b")
                 .addTrack("cd", "c", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1)
+        status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Exit::create, "b")
                 .addRoute(Entry::create, "c")
@@ -155,8 +155,8 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
         Random random = mock(Random.class);
         when(random.nextDouble()).thenReturn(1d, 1d, 0d); // 2 train
         when(random.nextInt(anyInt()))
-                .thenReturn(0, 0, 0, 0) // id, len, arrival, destination
-                .thenReturn(1, 3, 1, 1); // id, len, arrival, destination
+                .thenReturn(0, 0, 0, 0) // arriva, idl, len, destination
+                .thenReturn(1, 1, 3, 1); // arrival, id, len, destination
 
         // When ...
         List<Train> trains = status.createNewTrains(new ArrayList<>(), lambda, random);
@@ -185,9 +185,8 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
         Random random = mock(Random.class);
         when(random.nextDouble()).thenReturn(1d, 1d, 0d); // 2 train
         when(random.nextInt(anyInt()))
-                .thenReturn(0, 0, 0, 0) // id, len, arrival, destination
-                .thenReturn(0) // duplicated id
-                .thenReturn(1, 3, 1, 1); // id, len, arrival, destination
+                .thenReturn(0, 0, 0, 0) // arrival, id, len, destination
+                .thenReturn(1, 0, 1, 3, 1); // arrival, dupid, id, len, destination
 
         // When ...
         List<Train> trains = status.createNewTrains(new ArrayList<>(), lambda, random);

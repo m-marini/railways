@@ -56,7 +56,6 @@ public class StationStatus {
     /**
      * Arrival train frequency (#/s)
      */
-    public static final double ARRIVING_TRAIN_FREQUENCY = 10;
     private static final Logger logger = LoggerFactory.getLogger(StationStatus.class);
     private static final int MIN_TRAIN_ID = 100;
     private static final int MAX_TRAIN_ID = 999;
@@ -71,7 +70,8 @@ public class StationStatus {
      * @param trainFrequency the train frequency
      */
     public static StationStatus create(StationMap stationMap, List<Route> routes, List<Train> trains, double time, double trainFrequency) {
-        return new StationStatus(stationMap, routes, trains, time, trainFrequency, null, null, null, null, null, null, null);
+        logger.atDebug().setMessage("Creating station {}").addArgument(stationMap::getId).log();
+        return new StationStatus(stationMap, routes, trains, time, trainFrequency, null, null, null, null, null, null, null, null, null);
     }
 
     private final StationMap stationMap;
@@ -79,6 +79,8 @@ public class StationStatus {
     private final Collection<Train> trains;
     private final double time;
     private final double trainFrequency;
+    private List<Entry> entries;
+    private List<Exit> exits;
     private Map<Node, ? extends Route> routeByNode;
     private Map<Entry, Train> firstTrainByEntry;
     private Collection<Section> sections;
@@ -95,14 +97,24 @@ public class StationStatus {
      * @param trains         the trains
      * @param time           the simulation time instant
      * @param trainFrequency the train frequency
+     * @param entries        the list of entries
+     * @param exits          the list of exits
      * @param routeByNode    the routes by nodes
      */
-    protected StationStatus(StationMap stationMap, Collection<? extends Route> routes, Collection<Train> trains, double time, double trainFrequency, Map<Node, ? extends Route> routeByNode, Map<Entry, Train> firstTrainByEntry, Collection<Section> sections, Map<Edge, Train> trainByEdge, Map<Section, Train> trainBySection, Map<? extends Edge, Section> sectionByEdge, Map<Exit, Train> trainByExit) {
+    protected StationStatus(StationMap stationMap, Collection<? extends Route> routes,
+                            Collection<Train> trains, double time, double trainFrequency,
+                            List<Entry> entries, List<Exit> exits,
+                            Map<Node, ? extends Route> routeByNode,
+                            Map<Entry, Train> firstTrainByEntry, Collection<Section> sections,
+                            Map<Edge, Train> trainByEdge, Map<Section, Train> trainBySection,
+                            Map<? extends Edge, Section> sectionByEdge, Map<Exit, Train> trainByExit) {
         this.stationMap = requireNonNull(stationMap);
         this.routes = requireNonNull(routes);
         this.time = time;
         this.trains = requireNonNull(trains);
         this.trainFrequency = trainFrequency;
+        this.entries = entries;
+        this.exits = exits;
         this.routeByNode = routeByNode;
         this.firstTrainByEntry = firstTrainByEntry;
         this.sections = sections;
@@ -157,30 +169,42 @@ public class StationStatus {
                 .collect(Tuple2.toMap());
     }
 
+    /**
+     * Returns a new train
+     *
+     * @param trains  the train list
+     * @param random  the random number generator
+     * @param arrival the arrival entry
+     */
+    Train createNewTrain(List<Train> trains, Random random, Entry arrival) {
+        List<Exit> exits = getExits();
+        // Generates a unique id
+        String trainId;
+        do {
+            trainId = "T" + (random.nextInt(MAX_TRAIN_ID - MIN_TRAIN_ID + 1) + MIN_TRAIN_ID);
+        } while (trains.stream().map(Train::getId).anyMatch(trainId::equals));
+        // Generates the train length
+        int numCoaches = random.nextInt(MAX_COACH_COUNT - MIN_COACH_COUNT + 1) + MIN_COACH_COUNT;
+        // Generates the arrival and destination of train
+        Exit destination = exits.get(random.nextInt(exits.size()));
+        return Train.create(trainId, numCoaches, arrival, destination)
+                .setArrivalTime(time + ENTRY_TIMEOUT);
+    }
+
+    /**
+     * Returns the list of train with new random created trains
+     *
+     * @param trains the train list
+     * @param lambda the lambda generator factor
+     * @param random the random number generator
+     */
     List<Train> createNewTrains(List<Train> trains, double lambda, Random random) {
         // Generates new trains
         int n = nextPoisson(random, lambda);
-        List<Entry> entries = routes.stream()
-                .filter(r -> r instanceof Entry)
-                .map(r -> (Entry) r)
-                .collect(Collectors.toList());
-        List<Exit> exits = routes.stream()
-                .filter(r -> r instanceof Exit)
-                .map(r -> (Exit) r)
-                .collect(Collectors.toList());
+        List<Entry> entries = getEntries();
         for (int i = 0; i < n; i++) {
-            // Generates a unique id
-            String trainId;
-            do {
-                trainId = "T" + (random.nextInt(MAX_TRAIN_ID - MIN_TRAIN_ID + 1) + MIN_TRAIN_ID);
-            } while (trains.stream().map(Train::getId).anyMatch(trainId::equals));
-            // Generates the train length
-            int numCoaches = random.nextInt(MAX_COACH_COUNT - MIN_COACH_COUNT + 1) + MIN_COACH_COUNT;
-            // Generates the arrival and destination of train
             Entry arrival = entries.get(random.nextInt(entries.size()));
-            Exit destination = exits.get(random.nextInt(exits.size()));
-            trains.add(Train.create(trainId, numCoaches, arrival, destination)
-                    .setArrivalTime(time + ENTRY_TIMEOUT));
+            trains.add(createNewTrain(trains, random, arrival));
         }
         return trains;
     }
@@ -349,12 +373,38 @@ public class StationStatus {
     }
 
     /**
+     * Returns the list of entries
+     */
+    List<Entry> getEntries() {
+        if (entries == null) {
+            entries = getRoutes().stream()
+                    .filter(route -> route instanceof Entry)
+                    .map(entry -> (Entry) entry)
+                    .collect(Collectors.toList());
+        }
+        return entries;
+    }
+
+    /**
      * Returns the next exit for the given direction
      *
      * @param direction the entry direction
      */
     public Optional<Direction> getExit(Direction direction) {
         return getRoute(direction.getDestination()).getExit(direction);
+    }
+
+    /**
+     * Returns the list of exits
+     */
+    List<Exit> getExits() {
+        if (exits == null) {
+            exits = getRoutes().stream()
+                    .filter(route -> route instanceof Exit)
+                    .map(entry -> (Exit) entry)
+                    .collect(Collectors.toList());
+        }
+        return exits;
     }
 
     /**
@@ -446,7 +496,7 @@ public class StationStatus {
      * @param routes the routes
      */
     public StationStatus setRoutes(Collection<? extends Route> routes) {
-        return new StationStatus(stationMap, routes, trains, time, trainFrequency, null, null, null, null, null, null, null);
+        return new StationStatus(stationMap, routes, trains, time, trainFrequency, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -525,7 +575,7 @@ public class StationStatus {
      */
     public StationStatus setTime(double time) {
         return time == this.time ? this :
-                new StationStatus(stationMap, routes, trains, time, trainFrequency, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
+                new StationStatus(stationMap, routes, trains, time, trainFrequency, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
     }
 
     /**
@@ -668,7 +718,7 @@ public class StationStatus {
      * @param trains the trains
      */
     public StationStatus setTrains(Collection<Train> trains) {
-        return new StationStatus(stationMap, routes, trains, time, trainFrequency, routeByNode, null, sections, null, null, sectionByEdge, null);
+        return new StationStatus(stationMap, routes, trains, time, trainFrequency, entries, exits, routeByNode, null, sections, null, null, sectionByEdge, null);
     }
 
     /**
@@ -741,7 +791,43 @@ public class StationStatus {
      *
      * @param train the train
      */
-    public boolean isNextTracksClear(Train train) {
+    public boolean isNextSignalClear(Train train) {
+        EdgeLocation location = train.getLocation().orElseThrow();
+        double edgeLimitDistance = train.getStopDistance();
+        do {
+            Direction direction = location.getDirection();
+            Edge edge = direction.getEdge();
+            edgeLimitDistance -= location.getDistance();
+            if (edgeLimitDistance <= 0) {
+                // current edge shorter then limit distance (clear track)
+                return true;
+            }
+            // current edge longer then limit distance
+            if (!isNextRouteClear(direction)) {
+                // next route not clear (not clear)
+                return false;
+            }
+            if (edge instanceof Platform && !train.isLoaded()) {
+                // current edge is platform and train is not loaded (not clear)
+                return false;
+            }
+            // Find next direction
+            location = getExit(direction)
+                    .map(d -> new EdgeLocation(d, d.getEdge().getLength()))
+                    .orElse(null);
+        } while (location != null);
+        // exit found
+        return true;
+    }
+
+    /**
+     * Returns true if next track is clear
+     * The next track is clear if any signals within the limit distance is clear
+     * and the train has to load at end of platform
+     *
+     * @param train the train
+     */
+    public boolean isNextTracksClearOld(Train train) {
         EdgeLocation location = train.getLocation().orElseThrow();
         Direction direction = location.getDirection();
         double stopDistance = train.getStopDistance();
@@ -839,7 +925,7 @@ public class StationStatus {
         List<Train> newTrains = getTrains().stream()
                 .flatMap(t -> t.tick(ctx).stream())
                 .collect(Collectors.toCollection(ArrayList::new));
-        newTrains = createNewTrains(newTrains, ARRIVING_TRAIN_FREQUENCY * dt, random);
+        newTrains = createNewTrains(newTrains, trainFrequency * dt, random);
         return setTime(time + dt).setTrains(newTrains);
     }
 
@@ -851,18 +937,20 @@ public class StationStatus {
         private final StationMap stationMap;
         private final List<Tuple2<String[], Function<Node[], ? extends Route>>> builders;
         private final double trainFrequency;
+        private final Random random;
 
         /**
          * Creates the status builder
          *
          * @param stationMap     the station map
          * @param trainFrequency the train frequency
+         * @param random         the random number generator
          */
-        public Builder(StationMap stationMap, double trainFrequency) {
-            this.stationMap = stationMap;
+        public Builder(StationMap stationMap, double trainFrequency, Random random) {
+            this.stationMap = requireNonNull(stationMap);
             this.trainFrequency = trainFrequency;
+            this.random = random;
             builders = new ArrayList<>();
-//            this.trainFrequency = trainFrequency;
         }
 
         /**
@@ -877,7 +965,7 @@ public class StationStatus {
         }
 
         /**
-         * Returns the station status by the station map, route builders and no trains
+         * Returns the station status by the station map, route builders and trains (if random generator set)
          */
         public StationStatus build() {
             List<Route> routes1 = builders.stream()
@@ -887,7 +975,15 @@ public class StationStatus {
                                 .toArray(Node[]::new);
                         return t._2.apply(nodes);
                     }).collect(Collectors.toList());
-            return StationStatus.create(stationMap, routes1, List.of(), 0, trainFrequency);
+            StationStatus stationStatus = StationStatus.create(stationMap, routes1, List.of(), 0, trainFrequency);
+            if (random != null) {
+                List<Train> trains = new ArrayList<>();
+                for (Entry entry : stationStatus.getEntries()) {
+                    trains.add(stationStatus.createNewTrain(trains, random, entry));
+                }
+                stationStatus = stationStatus.setTrains(trains);
+            }
+            return stationStatus;
         }
     }
 

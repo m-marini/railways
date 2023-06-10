@@ -107,7 +107,7 @@ class StationStatusSignalTest {
     }
 
     void createStatus(Direction... locks) {
-        status = new StationStatus.Builder(stationMap, 1)
+        status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal.createLocks(locks), "b")
                 .addRoute(Exit::create, "c")

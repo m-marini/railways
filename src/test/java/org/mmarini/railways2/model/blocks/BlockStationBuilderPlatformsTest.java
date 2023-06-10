@@ -700,6 +700,6 @@ class BlockStationBuilderPlatformsTest {
                 "west.entry", "p.w2",
                 "east.entry", "p.e1");
         StationDef station = StationDef.create("station", orientation, blocks, links);
-        this.builder = new BlockStationBuilder(station);
+        this.builder = new BlockStationBuilder(station, null);
     }
 }

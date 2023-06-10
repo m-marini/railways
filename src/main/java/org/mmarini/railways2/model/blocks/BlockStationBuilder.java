@@ -73,14 +73,17 @@ public class BlockStationBuilder {
     private final LazyValue<Collection<NodeBuilderParams>> junctionNodeParams;
     private final LazyValue<Map<String, OrientedGeometry>> worldGeometryByBlockPointId;
     private final LazyValue<Map<String, Tuple2<Point2D, List<String>>>> junctionParamsByJunctionId;
+    private final Random random;
 
     /**
      * Creates the builder
      *
      * @param station the station definition
+     * @param random
      */
-    public BlockStationBuilder(StationDef station) {
+    public BlockStationBuilder(StationDef station, Random random) {
         this.station = requireNonNull(station);
+        this.random = random;
         this.worldBlockGeometries = new LazyValue<>(this::createsBlockGeometries);
         this.nodeIdByBlockPointId = new LazyValue<>(this::createNodeIdByBlockPointId);
         this.junctionNodeParams = new LazyValue<>(this::createJunctionNodes);
@@ -104,7 +107,7 @@ public class BlockStationBuilder {
      * </p>
      */
     public StationStatus build() {
-        StationStatus.Builder statusBuilder = new StationStatus.Builder(buildStationMap(), DEFAULT_TRAIN_FREQUENCY);
+        StationStatus.Builder statusBuilder = new StationStatus.Builder(buildStationMap(), DEFAULT_TRAIN_FREQUENCY, random);
         createRoutes().forEach(t ->
                 statusBuilder.addRoute(t._1, t._2.toArray(String[]::new)));
         return statusBuilder.build();

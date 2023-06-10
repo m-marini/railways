@@ -61,7 +61,7 @@ class StationStatusPlatformTest {
     private Exit dRoute;
 
     void createStatus(Direction... locks) {
-        status = new StationStatus.Builder(stationMap, 1)
+        status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal.createLocks(locks), "b")
                 .addRoute(Signal::create, "c")
@@ -107,7 +107,7 @@ class StationStatusPlatformTest {
                 .setSpeed(10);
 
         // When ...
-        boolean nextTracksClear = status.isNextTracksClear(t1);
+        boolean nextTracksClear = status.isNextSignalClear(t1);
 
         //  Then ...
         assertTrue(nextTracksClear);
@@ -122,7 +122,7 @@ class StationStatusPlatformTest {
                 .setLocation(EdgeLocation.create(ab, b, 0));
 
         // When ...
-        boolean nextTracksClear = status.isNextTracksClear(t1);
+        boolean nextTracksClear = status.isNextSignalClear(t1);
 
         //  Then ...
         assertFalse(nextTracksClear);
@@ -136,10 +136,11 @@ class StationStatusPlatformTest {
 
         Train t1 = Train.create("t1", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(bc, c, 1))
+                .setLoaded()
                 .setSpeed(10);
 
         // When ...
-        boolean nextTracksClear = status.isNextTracksClear(t1);
+        boolean nextTracksClear = status.isNextSignalClear(t1);
 
         //  Then ...
         assertTrue(nextTracksClear);
@@ -155,7 +156,7 @@ class StationStatusPlatformTest {
                 .setLocation(EdgeLocation.create(bc, c, 1));
 
         // When ...
-        boolean nextTracksClear = status.isNextTracksClear(t1);
+        boolean nextTracksClear = status.isNextSignalClear(t1);
 
         //  Then ...
         assertFalse(nextTracksClear);
@@ -171,7 +172,7 @@ class StationStatusPlatformTest {
                 .setSpeed(1);
 
         // When ...
-        boolean nextTracksClear = status.isNextTracksClear(t1);
+        boolean nextTracksClear = status.isNextSignalClear(t1);
 
         //  Then ...
         assertTrue(nextTracksClear);
@@ -188,7 +189,7 @@ class StationStatusPlatformTest {
                 .addNode("c", new Point2D.Double(2 * LENGTH, 0), "bc", "cd")
                 .addNode("d", new Point2D.Double(3 * LENGTH, 0), "cd")
                 .addTrack("ab", "a", "b")
-                .addTrack("bc", "b", "c")
+                .addPlatform("bc", "b", "c")
                 .addTrack("cd", "c", "d")
                 .build();
         this.a = stationMap.getNode("a");

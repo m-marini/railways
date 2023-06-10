@@ -84,7 +84,7 @@ class StationStatusJunctionTest {
         this.c = stationMap.getNode("c");
         this.ab = stationMap.getEdge("ab");
         this.bc = stationMap.getEdge("bc");
-        status = new StationStatus.Builder(stationMap, 1)
+        status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Junction::create, "b")
                 .addRoute(Exit::create, "c")
