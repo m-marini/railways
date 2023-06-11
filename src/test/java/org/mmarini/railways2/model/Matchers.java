@@ -136,7 +136,7 @@ public interface Matchers {
     static Matcher<EdgeLocation> locatedAt(Matcher<Direction> direction, Matcher<Double> distance) {
         requireNonNull(direction);
         requireNonNull(distance);
-        return new CustomMatcher<>(format("Located at %s %s", direction, direction)) {
+        return new CustomMatcher<>(format("Located at %s %s", direction, distance)) {
             @Override
             public boolean matches(Object o) {
                 return o instanceof EdgeLocation

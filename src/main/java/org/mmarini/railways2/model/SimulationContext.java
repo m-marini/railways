@@ -44,8 +44,6 @@ import java.util.stream.Stream;
  * Applies the changes of the status to have an updated status.
  */
 public class SimulationContext {
-    private final double dt;
-    private final Set<Train> trains;
     private final Set<Route> routes;
     private StationStatus status;
 
@@ -53,20 +51,10 @@ public class SimulationContext {
      * Creates the initial simulation context
      *
      * @param status the status
-     * @param dt     the time interval (s)
      */
-    public SimulationContext(StationStatus status, double dt) {
+    public SimulationContext(StationStatus status) {
         this.status = status;
-        this.dt = dt;
-        this.trains = new HashSet<>(status.getTrains());
         this.routes = new HashSet<>(status.getRoutes());
-    }
-
-    /**
-     * Returns the simulation time interval
-     */
-    public double getDt() {
-        return dt;
     }
 
     /**
@@ -76,13 +64,6 @@ public class SimulationContext {
      */
     public Optional<Direction> getNextExit(Direction direction) {
         return status.getExit(direction);
-    }
-
-    /**
-     * Returns the simulation time at next instant (s)
-     */
-    public double getNextTime() {
-        return status.getTime() + dt;
     }
 
     /**
@@ -99,6 +80,24 @@ public class SimulationContext {
      */
     public StationStatus getStatus() {
         return status;
+    }
+
+    /**
+     * Returns the time after a time interval
+     *
+     * @param interval the interval (s)
+     */
+    public double getTimeAfter(double interval) {
+        return status.getTime() + interval;
+    }
+
+    /**
+     * Returns the remaining time interval to the required time (s)
+     *
+     * @param time the required time instant (s)
+     */
+    public double getTimeTo(double time) {
+        return time - status.getTime();
     }
 
     /**

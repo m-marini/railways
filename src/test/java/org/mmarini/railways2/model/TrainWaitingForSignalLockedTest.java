@@ -30,25 +30,23 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Signal;
+import org.mmarini.railways2.swing.WithTrain;
 
 import java.awt.geom.Point2D;
-import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 
-class TrainWaitingForSignalLockedTest {
+class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
     static final double DT = 0.1;
     private static final double LENGTH = 500;
-    StationStatus status;
-    StationMap stationMap;
 
     /**
      * <pre>
@@ -56,16 +54,16 @@ class TrainWaitingForSignalLockedTest {
      * </pre>
      */
     @BeforeEach
-    void beforeEach() {
-        stationMap = new StationBuilder("station")
+    void setUp() {
+        StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc")
                 .addTrack("ab", "a", "b")
                 .addTrack("bc", "b", "c")
                 .build();
-        Node b = stationMap.getNode("b");
         Edge bc = stationMap.getEdge("bc");
+        Node b = stationMap.getNode("b");
         status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(org.mmarini.railways2.model.routes.Entry::create, "a")
                 .addRoute(Signal.createLocks(new Direction(bc, b)), "b")
@@ -76,36 +74,32 @@ class TrainWaitingForSignalLockedTest {
     @Test
     void waitForSignalClear() {
         // Given ...
-        Node b = stationMap.getNode("b");
-        Edge ab = stationMap.getEdge("ab");
-        Entry aRoute = status.getRoute("a");
-        Exit cRoute = status.getRoute("c");
-        Train train = Train.create("train", 1, aRoute, cRoute)
-                .setLocation(EdgeLocation.create(ab, b, 0))
-                .setSpeed(0)
-                .setState(Train.WAITING_FOR_SIGNAL_STATE);
-        status = status.setTrains(train);
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("train", 3, "a", "c")
+                        .at("ab", "b", 0)
+                        .waitForSignal())
+                .build();
 
         // When ...
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status, DT));
+        Tuple2<Train, Double> transition = train("train").changeState(new SimulationContext(status), DT).orElseThrow();
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
-        assertEquals(Train.RUNNING_STATE, next.getState());
-        assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
+        Train train = transition._1;
+        assertEquals(Train.RUNNING_STATE, train.getState());
+        assertEquals(0d, train.getSpeed());
+        assertThat(train.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
+        assertEquals(DT, transition._2);
     }
 
     @Test
     void waitForSignalNotClear() {
         // Given ...
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Entry aRoute = status.getRoute("a");
-        Exit cRoute = status.getRoute("c");
+        Node b = node("b");
+        Node c = node("c");
+        Edge ab = edge("ab");
+        Edge bc = edge("bc");
+        Entry aRoute = route("a");
+        Exit cRoute = route("c");
         Train t1 = Train.create("train", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(ab, b, 0))
                 .setSpeed(0)
@@ -115,13 +109,12 @@ class TrainWaitingForSignalLockedTest {
         status = status.setTrains(t1, t2);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status, DT));
+        Tuple2<Train, Double> next = t1.changeState(new SimulationContext(status), DT).orElseThrow();
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
-        assertEquals(Train.WAITING_FOR_SIGNAL_STATE, next.getState());
-        assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
+        assertEquals(Train.WAITING_FOR_SIGNAL_STATE, next._1.getState());
+        assertEquals(0, next._1.getSpeed());
+        assertThat(next._1.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
+        assertEquals(0d, next._2);
     }
 }

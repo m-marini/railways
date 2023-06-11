@@ -30,68 +30,67 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mmarini.railways2.model.geometry.*;
+import org.mmarini.railways2.model.geometry.StationBuilder;
+import org.mmarini.railways2.model.geometry.StationMap;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
-import org.mmarini.railways2.model.routes.Signal;
+import org.mmarini.railways2.model.routes.Junction;
 
 import java.awt.geom.Point2D;
-import java.util.Optional;
+import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
+import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
 
-class TrainWaitingForRunTest {
-    public static final int LENGTH = 500;
+class TrainRunningMultipleEdgesTest extends WithStationStatusTest {
+    public static final int SEED = 1234;
+    public static final double GAP = 1;
     static final double DT = 0.1;
-    StationStatus status;
-    StationMap stationMap;
+    static final double LENGTH = 500;
 
     /**
      * <pre>
-     *     Entry(a) --ab(500m)-- Signals(b) --bc(500m)-- Exit(c)
+     *     Entry(a) --ab(500m)-- Junction(b) --bc(10m)-- Junction(c) --cd(500m)-- Exit(c)
      * </pre>
      */
     @BeforeEach
-    void beforeEach() {
-        stationMap = new StationBuilder("station")
+    void setUp() {
+        StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
-                .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc")
+                .addNode("c", new Point2D.Double(LENGTH + GAP, 0), "bc", "cd")
+                .addNode("d", new Point2D.Double(LENGTH * 2 + GAP, 0), "cd")
                 .addTrack("ab", "a", "b")
                 .addTrack("bc", "b", "c")
+                .addTrack("cd", "c", "d")
                 .build();
         status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
-                .addRoute(Signal::create, "b")
-                .addRoute(Exit::create, "c")
+                .addRoute(Junction::create, "b")
+                .addRoute(Junction::create, "c")
+                .addRoute(Exit::create, "d")
                 .build();
     }
 
     @Test
-    void waitForRun() {
+    void tick() {
         // Given ...
-        Node b = stationMap.getNode("b");
-        Edge ab = stationMap.getEdge("ab");
-        Entry arrival = status.getRoute("a");
-        Exit destination = status.getRoute("c");
-        Train t1 = Train.create("t1", 1, arrival, destination)
-                .setLocation(EdgeLocation.create(ab, b, 0))
-                .setSpeed(0)
-                .setState(Train.WAITING_FOR_RUN_STATE);
-        status = status.setTrains(t1);
+        status = withTrain()
+                .addTrain(3, "a", "d", "ab", "b", 0)
+                .build();
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
+        StationStatus status1 = status.tick(DT, new Random(SEED));
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
-        assertEquals(Train.WAITING_FOR_RUN_STATE, next.getState());
-        assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
+        Train train = status1.getTrain("TT0").orElseThrow();
+        assertEquals(Train.RUNNING_STATE, train.getState());
+        assertEquals(MAX_SPEED, train.getSpeed());
+        double expDistance = LENGTH - MAX_SPEED * DT + GAP;
+        assertThat(train.getLocation(), optionalOf(locatedAt(
+                "cd", "d", expDistance)));
     }
 }

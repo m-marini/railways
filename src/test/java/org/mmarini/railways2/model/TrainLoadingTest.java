@@ -30,24 +30,26 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mmarini.railways2.model.geometry.*;
+import org.mmarini.Tuple2;
+import org.mmarini.railways2.model.geometry.StationBuilder;
+import org.mmarini.railways2.model.geometry.StationMap;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Signal;
+import org.mmarini.railways2.swing.WithTrain;
 
 import java.awt.geom.Point2D;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
 import static org.mmarini.railways.Matchers.optionalOf;
+import static org.mmarini.railways.Matchers.tupleOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.LOADING_TIME;
 
-class TrainLoadingTest {
+class TrainLoadingTest extends WithStationStatusTest {
     static final double DT = 0.1;
-    StationStatus status;
-    StationMap stationMap;
 
     /**
      * <pre>
@@ -56,7 +58,7 @@ class TrainLoadingTest {
      */
     @BeforeEach
     void beforeEach() {
-        stationMap = new StationBuilder("station")
+        StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(500, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(1000, 0), "bc")
@@ -73,44 +75,82 @@ class TrainLoadingTest {
 
     @Test
     void loaded() {
-        Node b = stationMap.getNode("b");
-        Entry aRoute = status.getRoute("a");
-        Exit cRoute = status.getRoute("c");
-        Edge ab = stationMap.getEdge("ab");
-        Train t1 = Train.create("t1", 1, aRoute, cRoute)
-                .setLocation(EdgeLocation.create(ab, b, 0))
-                .load(0);
-        status = status.setTrains(t1)
+        // Given ...
+        status = withTrain()
+                .addTrain(
+                        new WithTrain.TrainBuilder("train2", 3, "a", "c")
+                                .loading(0)
+                                .at("ab", "b", 0))
+                .build()
                 .setTime(LOADING_TIME);
 
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status, DT));
+        // When ...
+        Optional<Tuple2<Train, Double>> transitionOpt = train("train2").loading(new SimulationContext(status), DT);
 
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
-        assertEquals(Train.WAITING_FOR_RUN_STATE, next.getState());
-        assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
-        assertTrue(next.isLoaded());
+        // Then ...
+        assertThat(transitionOpt, optionalOf(tupleOf(allOf(
+                        hasProperty("state", equalTo(Train.WAITING_FOR_RUN_STATE)),
+                        hasProperty("speed", equalTo(0d)),
+                        hasProperty("unloaded", equalTo(false)),
+                        hasProperty("location", optionalOf(locatedAt("ab", "b", 0)))),
+                equalTo(DT)
+        )));
+    }
+
+
+    @Test
+    void overTimeLoaded() {
+        // Given ...
+        status = withTrain()
+                .addTrain(
+                        new WithTrain.TrainBuilder("train2", 3, "a", "c")
+                                .loading(0)
+                                .at("ab", "b", 0))
+                .build()
+                .setTime(LOADING_TIME - DT / 4);
+
+        // When ...
+        Optional<Tuple2<Train, Double>> transitionOpt = train("train2").loading(new SimulationContext(status), DT);
+
+        // Then ...
+        assertThat(transitionOpt, optionalOf(tupleOf(allOf(
+                        hasProperty("state", equalTo(Train.WAITING_FOR_RUN_STATE)),
+                        hasProperty("speed", equalTo(0d)),
+                        hasProperty("unloaded", equalTo(false)),
+                        hasProperty("location", optionalOf(locatedAt("ab", "b", 0)))),
+                closeTo(DT * 3 / 4, 1e-3)
+        )));
     }
 
     @Test
     void waitForLoad() {
-        Node b = stationMap.getNode("b");
-        Edge ab = stationMap.getEdge("ab");
-        Entry aRoute = status.getRoute("a");
-        Exit cRoute = status.getRoute("c");
-        Train train = Train.create("train2", 1, aRoute, cRoute)
-                .setLocation(EdgeLocation.create(ab, b, 0))
-                .load(0);
-        status = status.setTrains(train);
+        // Given ...
+        status = withTrain()
+                .addTrain(
+                        new WithTrain.TrainBuilder("train2", 3, "a", "c")
+                                .loading(0)
+                                .at("ab", "b", 0))
+                .build();
 
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status, DT));
+        // When ...
+        Optional<Tuple2<Train, Double>> transitionOpt = train("train2").loading(new SimulationContext(status), DT);
 
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
-        assertEquals(Train.LOADING_STATE, next.getState());
-        assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
-        assertFalse(next.isLoaded());
+        // Then ...
+        assertThat(transitionOpt, optionalOf(tupleOf(
+                hasProperty("state", equalTo(Train.LOADING_STATE)),
+                anything()
+        )));
+        assertThat(transitionOpt, optionalOf(tupleOf(
+                hasProperty("unloaded", equalTo(true)),
+                anything()
+        )));
+        assertThat(transitionOpt, optionalOf(tupleOf(
+                hasProperty("location", optionalOf(locatedAt("ab", "b", 0))),
+                anything()
+        )));
+        assertThat(transitionOpt, optionalOf(tupleOf(
+                anything(),
+                equalTo(0d)
+        )));
     }
 }

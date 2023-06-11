@@ -799,7 +799,7 @@ public class StationStatus {
             Edge edge = direction.getEdge();
             edgeLimitDistance -= location.getDistance();
             if (edgeLimitDistance <= 0) {
-                // current edge shorter then limit distance (clear track)
+                // current edge shorter than limit distance (clear track)
                 return true;
             }
             // current edge longer then limit distance
@@ -807,7 +807,7 @@ public class StationStatus {
                 // next route not clear (not clear)
                 return false;
             }
-            if (edge instanceof Platform && !train.isLoaded()) {
+            if (edge instanceof Platform && train.isUnloaded()) {
                 // current edge is platform and train is not loaded (not clear)
                 return false;
             }
@@ -835,7 +835,7 @@ public class StationStatus {
         while (direction != null && edgeLimitDistance > 0) {
             Edge edge = direction.getEdge();
             if (!isNextRouteClear(direction)
-                    || (edge instanceof Platform && !train.isLoaded())) {
+                    || (edge instanceof Platform && train.isUnloaded())) {
                 return false;
             }
             edgeLimitDistance -= edge.getLength();
@@ -921,12 +921,12 @@ public class StationStatus {
      * @param random the random generator
      */
     public StationStatus tick(double dt, Random random) {
-        SimulationContext ctx = new SimulationContext(this, dt);
+        SimulationContext ctx = new SimulationContext(this);
         List<Train> newTrains = getTrains().stream()
-                .flatMap(t -> t.tick(ctx).stream())
+                .flatMap(t -> t.tick(ctx, dt).stream())
                 .collect(Collectors.toCollection(ArrayList::new));
         newTrains = createNewTrains(newTrains, trainFrequency * dt, random);
-        return setTime(time + dt).setTrains(newTrains);
+        return ctx.getStatus().setTime(time + dt).setTrains(newTrains);
     }
 
     /**

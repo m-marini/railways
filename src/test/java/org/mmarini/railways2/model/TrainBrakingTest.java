@@ -87,7 +87,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         status = status.setTrains(t1);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -115,7 +115,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         status = status.setTrains(t1, t2);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -141,7 +141,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         status = status.setTrains(t1);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -164,7 +164,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         Train t0 = status.getTrain("TT0").orElseThrow();
 
         // When ...
-        Optional<Train> nextOpt = t0.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = t0.tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());

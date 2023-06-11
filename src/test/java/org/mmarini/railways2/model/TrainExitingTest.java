@@ -78,7 +78,7 @@ class TrainExitingTest {
         status = status.setTrains(train);
 
         // When ...
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = train.tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -96,7 +96,7 @@ class TrainExitingTest {
         status = status.setTrains(train);
 
         // When ...
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = train.tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -114,7 +114,7 @@ class TrainExitingTest {
         status = status.setTrains(train);
 
         // When ...
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = train.tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -133,7 +133,7 @@ class TrainExitingTest {
         status = status.setTrains(train);
 
         // When ...
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = train.tick(new SimulationContext(status), DT);
 
         assertFalse(nextOpt.isPresent());
     }

@@ -77,7 +77,7 @@ class SimulationContextTest {
         Edge ab = stationMap.getEdge("ab");
         Edge bc = stationMap.getEdge("bc");
         Edge cd = stationMap.getEdge("cd");
-        SimulationContext context = new SimulationContext(status, 0.1);
+        SimulationContext context = new SimulationContext(status);
 
         // When ...
         context.lockSignals(new Direction(bc, c));

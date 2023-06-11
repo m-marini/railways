@@ -127,6 +127,10 @@ public class WithTrain {
             return builder.apply(status);
         }
 
+        public TrainBuilder loading(double time) {
+            return modify(train -> train.load(time));
+        }
+
         public TrainBuilder modify(BiFunction<Train, StationStatus, Train> modifier) {
             Function<StationStatus, Train> builder1 = builder;
             builder = status -> modifier.apply(builder1.apply(status), status);
@@ -145,6 +149,10 @@ public class WithTrain {
 
         public TrainBuilder running() {
             return running(MAX_SPEED);
+        }
+
+        public TrainBuilder waitForSignal() {
+            return modify(train -> train.setState(Train.WAITING_FOR_SIGNAL_STATE).setSpeed(0));
         }
     }
 }
