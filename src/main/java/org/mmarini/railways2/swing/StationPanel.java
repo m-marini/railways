@@ -32,14 +32,13 @@ import org.mmarini.railways2.model.StationStatus;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.function.Consumer;
 
-import static java.lang.Math.*;
+import static java.lang.Math.round;
 import static org.mmarini.railways2.swing.GraphConstants.NONE_PAINTER;
-import static org.mmarini.railways2.swing.Painters.*;
+import static org.mmarini.railways2.swing.Painters.Builder;
 
 /**
  * Displays the station
@@ -120,7 +119,7 @@ public class StationPanel extends JComponent {
         int h = (int) round(bounds.getHeight() * SCALE);
         center = new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
         setPreferredSize(new Dimension(w + BORDER * 2, h + BORDER * 2));
-        painter = createPainters(status);
+        painter = new Builder(status).build();
         repaint();
     }
 }

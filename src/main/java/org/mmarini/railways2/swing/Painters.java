@@ -157,51 +157,6 @@ public interface Painters {
     }
 
     /**
-     * Returns the label painter
-     *
-     * @param route the route
-     */
-    static Consumer<Graphics2D> createLabelPainter(Route route) {
-        String label = Messages.getString(route.getId());
-        Point2D location = route.getNodes().get(0).getLocation();
-        Direction entryDir = route.getNodes().get(0).getEntries().get(0);
-        double orientation = toDegrees(new EdgeLocation(entryDir, 0).getOrientation());
-        boolean vertical = abs(orientation) <= 135 && abs(orientation) >= 45;
-        FontRenderContext ctx = new FontRenderContext(new AffineTransform(),
-                false, false);
-        Rectangle2D bounds = LABEL_FONT.getStringBounds(label, ctx);
-        double cx = bounds.getCenterX();
-        double cy = bounds.getCenterY();
-        double lowx = bounds.getMinX();
-        AffineTransform tr = AffineTransform.getTranslateInstance(location.getX(), location.getY());
-        tr.scale(LABEL_SCALE, -LABEL_SCALE);
-        // aligned to lower right side of route
-        // double lowy = bounds.getMinY();
-        // tr.translate(vertical ? -lowx + LABEL_GAP : -cx, vertical ? -cy : -lowy + LABEL_GAP);
-
-        // aligned to center right side of route
-        tr.translate(vertical ? -lowx + LABEL_GAP : -cx, -cy);
-        return transformAndPaint(tr, gr -> {
-            gr.setFont(LABEL_FONT);
-            gr.setColor(LABEL_COLOR);
-            gr.drawString(label, 0, 0);
-        });
-    }
-
-    /**
-     * Returns the labels painter
-     *
-     * @param status the status
-     */
-    static Consumer<Graphics2D> createLabelsPainter(StationStatus status) {
-        return status.getRoutes().stream()
-                .filter(r -> r instanceof Signal || r instanceof Exit || r instanceof Entry)
-                .map(Painters::createLabelPainter)
-                .reduce(Consumer::andThen)
-                .orElseThrow();
-    }
-
-    /**
      * Returns the line painter for a given track
      *
      * @param track  the edge
@@ -463,47 +418,6 @@ public interface Painters {
      *
      * @param status the station status
      */
-    static Consumer<Graphics2D> createPainters(StationStatus status) {
-        // Generates the stream of train painters
-        Consumer<Graphics2D> trainsPainter = status.getTrainsCoaches()
-                .flatMap(Painters::createTrainPainter)
-                .reduce(Consumer::andThen)
-                .orElse(NONE_PAINTER);
-        // Generates the stream of tracks painters
-        Consumer<Graphics2D> edgesPainter = status.getStationMap().getEdges().values().stream()
-                .map(Painters::createPainter)
-                .reduce(Consumer::andThen)
-                .orElseThrow();
-        // Generates the stream of red lights painters (not clear)
-        Consumer<Graphics2D> redEdgesPainter = status.getStationMap().getEdges().values().stream()
-                .filter(edge -> status.getSection(edge).isEmpty())
-                .map(edge -> createLinePainter(edge, LIGHTS_STROKE, TRACK_RED_COLOR))
-                .reduce(Consumer::andThen)
-                .orElseThrow();
-        // Generates the stream of green lights painters (clear)
-        Consumer<Graphics2D> greenEdgesPainter = status.getStationMap().getEdges().values().stream()
-                .filter(edge -> status.getSection(edge).isPresent())
-                .map(edge -> createLinePainter(edge, LIGHTS_STROKE, TRACK_GREEN_COLOR))
-                .reduce(Consumer::andThen)
-                .orElseThrow();
-
-        // Generate the stream of routes painters
-        Consumer<Graphics2D> routesPainter = status.getRoutes().stream()
-                .flatMap(route -> createPainter(route, status).stream())
-                .reduce(Consumer::andThen)
-                .orElseThrow();
-
-        // Generate the stream of labels painters
-        Consumer<Graphics2D> labelsPainter = createLabelsPainter(status);
-
-        // Concatenates the streams
-        return edgesPainter
-                .andThen(redEdgesPainter)
-                .andThen(greenEdgesPainter)
-                .andThen(routesPainter)
-                .andThen(trainsPainter)
-                .andThen(labelsPainter);
-    }
 
     /**
      * Returns the segment painter
@@ -588,5 +502,111 @@ public interface Painters {
         AffineTransform tr = AffineTransform.getTranslateInstance(translate.getX(), translate.getY());
         tr.rotate(rotate);
         return transformAndPaint(tr, painter);
+    }
+
+    /**
+     * Creates the painters with label translation by station
+     */
+    class Builder {
+        private final StationStatus status;
+
+        /**
+         * Creates the painters builder
+         *
+         * @param status the station status
+         */
+        public Builder(StationStatus status) {
+            this.status = status;
+        }
+
+        /**
+         * Returns the painter of station
+         */
+        Consumer<Graphics2D> build() {
+            // Generates the stream of train painters
+            Consumer<Graphics2D> trainsPainter = status.getTrainsCoaches()
+                    .flatMap(Painters::createTrainPainter)
+                    .reduce(Consumer::andThen)
+                    .orElse(NONE_PAINTER);
+            // Generates the stream of tracks painters
+            Consumer<Graphics2D> edgesPainter = status.getStationMap().getEdges().values().stream()
+                    .map(Painters::createPainter)
+                    .reduce(Consumer::andThen)
+                    .orElseThrow();
+            // Generates the stream of red lights painters (not clear)
+            Consumer<Graphics2D> redEdgesPainter = status.getStationMap().getEdges().values().stream()
+                    .filter(edge -> status.getSection(edge).isEmpty())
+                    .map(edge -> createLinePainter(edge, LIGHTS_STROKE, TRACK_RED_COLOR))
+                    .reduce(Consumer::andThen)
+                    .orElseThrow();
+            // Generates the stream of green lights painters (clear)
+            Consumer<Graphics2D> greenEdgesPainter = status.getStationMap().getEdges().values().stream()
+                    .filter(edge -> status.getSection(edge).isPresent())
+                    .map(edge -> createLinePainter(edge, LIGHTS_STROKE, TRACK_GREEN_COLOR))
+                    .reduce(Consumer::andThen)
+                    .orElseThrow();
+
+            // Generate the stream of routes painters
+            Consumer<Graphics2D> routesPainter = status.getRoutes().stream()
+                    .flatMap(route -> createPainter(route, status).stream())
+                    .reduce(Consumer::andThen)
+                    .orElseThrow();
+
+            // Generate the stream of labels painters
+            Consumer<Graphics2D> labelsPainter = createLabelsPainter(status);
+
+            // Concatenates the streams
+            return edgesPainter
+                    .andThen(redEdgesPainter)
+                    .andThen(greenEdgesPainter)
+                    .andThen(routesPainter)
+                    .andThen(trainsPainter)
+                    .andThen(labelsPainter);
+        }
+
+        /**
+         * Returns the label painter
+         *
+         * @param route the route
+         */
+        private Consumer<Graphics2D> createLabelPainter(Route route) {
+            String label = Messages.getString("station." + status.getStationMap().getId() + "." + route.getId());
+            Point2D location = route.getNodes().get(0).getLocation();
+            Direction entryDir = route.getNodes().get(0).getEntries().get(0);
+            double orientation = toDegrees(new EdgeLocation(entryDir, 0).getOrientation());
+            boolean vertical = abs(orientation) <= 135 && abs(orientation) >= 45;
+            FontRenderContext ctx = new FontRenderContext(new AffineTransform(),
+                    false, false);
+            Rectangle2D bounds = LABEL_FONT.getStringBounds(label, ctx);
+            double cx = bounds.getCenterX();
+            double cy = bounds.getCenterY();
+            double lowx = bounds.getMinX();
+            AffineTransform tr = AffineTransform.getTranslateInstance(location.getX(), location.getY());
+            tr.scale(LABEL_SCALE, -LABEL_SCALE);
+            // aligned to lower right side of route
+            // double lowy = bounds.getMinY();
+            // tr.translate(vertical ? -lowx + LABEL_GAP : -cx, vertical ? -cy : -lowy + LABEL_GAP);
+
+            // aligned to center right side of route
+            tr.translate(vertical ? -lowx + LABEL_GAP : -cx, -cy);
+            return transformAndPaint(tr, gr -> {
+                gr.setFont(LABEL_FONT);
+                gr.setColor(LABEL_COLOR);
+                gr.drawString(label, 0, 0);
+            });
+        }
+
+        /**
+         * Returns the labels painter
+         *
+         * @param status the status
+         */
+        Consumer<Graphics2D> createLabelsPainter(StationStatus status) {
+            return status.getRoutes().stream()
+                    .filter(r -> r instanceof Signal || r instanceof Exit || r instanceof Entry)
+                    .map(this::createLabelPainter)
+                    .reduce(Consumer::andThen)
+                    .orElseThrow();
+        }
     }
 }

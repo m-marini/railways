@@ -39,6 +39,7 @@ import java.awt.geom.Point2D;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mmarini.railways.Matchers.emptyOptional;
 import static org.mmarini.railways.Matchers.optionalOf;
@@ -64,7 +65,7 @@ class TrainRunningTest extends WithStationStatusTest {
         status = status.setTrains(train);
 
         // When ...
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = train.tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -72,27 +73,6 @@ class TrainRunningTest extends WithStationStatusTest {
         assertEquals(Train.RUNNING_STATE, next.getState());
         assertEquals(ACCELERATION * DT + speed, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", LENGTH - speed * DT)));
-    }
-
-    /**
-     * <pre>
-     *     Entry(a) --ab(500m)-- Signals(b) --bc(500m)-- Exit(c)
-     * </pre>
-     */
-    @BeforeEach
-    void beforeEach() {
-        StationMap stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "ab")
-                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
-                .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc")
-                .addTrack("ab", "a", "b")
-                .addTrack("bc", "b", "c")
-                .build();
-        status = new StationStatus.Builder(stationMap, 1, null)
-                .addRoute(Entry::create, "a")
-                .addRoute(Signal::create, "b")
-                .addRoute(Exit::create, "c")
-                .build();
     }
 
     @Test
@@ -120,10 +100,10 @@ class TrainRunningTest extends WithStationStatusTest {
                 .setLocation(EdgeLocation.create(ab, b, distance))
                 .setState(Train.RUNNING_STATE);
         status = status.setTrains(train);
-        SimulationContext context = new SimulationContext(status, DT);
+        SimulationContext context = new SimulationContext(status);
 
         // When ...
-        Optional<Train> nextOpt = train.tick(context);
+        Optional<Train> nextOpt = train.tick(context, DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -140,17 +120,12 @@ class TrainRunningTest extends WithStationStatusTest {
     @Test
     void runningClear() {
         // Given ...
-        Node b = node("b");
-        Edge ab = edge("ab");
-        Entry aRoute = route("a");
-        Exit bRoute = route("c");
-        Train train = Train.create("train2", 1, aRoute, bRoute)
-                .setLocation(EdgeLocation.create(ab, b, LENGTH))
-                .setState(Train.RUNNING_STATE);
-        status = status.setTrains(train);
+        status = withTrain()
+                .addTrain(3, "a", "c", "ab", "b", LENGTH)
+                .build();
 
         // When ...
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = train("TT0").tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -179,7 +154,7 @@ class TrainRunningTest extends WithStationStatusTest {
         status = status.setTrains(t1, t2);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -203,10 +178,10 @@ class TrainRunningTest extends WithStationStatusTest {
                 .setLocation(EdgeLocation.create(bc, c, distance))
                 .setState(Train.RUNNING_STATE);
         status = status.setTrains(train);
-        SimulationContext context = new SimulationContext(status, DT);
+        SimulationContext context = new SimulationContext(status);
 
         // When ...
-        Optional<Train> nextOpt = train.tick(context);
+        Optional<Train> nextOpt = train.tick(context, DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());
@@ -214,7 +189,28 @@ class TrainRunningTest extends WithStationStatusTest {
         assertEquals(Train.EXITING_STATE, next.getState());
         assertEquals(MAX_SPEED, next.getSpeed());
         assertThat(next.getLocation(), emptyOptional());
-        assertEquals(DT * MAX_SPEED - distance, next.getExitDistance());
+        assertThat(next.getExitDistance(), closeTo(DT * MAX_SPEED - distance, 1e-3));
+    }
+
+    /**
+     * <pre>
+     *     Entry(a) --ab(500m)-- Signals(b) --bc(500m)-- Exit(c)
+     * </pre>
+     */
+    @BeforeEach
+    void setUp() {
+        StationMap stationMap = new StationBuilder("station")
+                .addNode("a", new Point2D.Double(), "ab")
+                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
+                .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
+                .build();
+        status = new StationStatus.Builder(stationMap, 1, null)
+                .addRoute(Entry::create, "a")
+                .addRoute(Signal::create, "b")
+                .addRoute(Exit::create, "c")
+                .build();
     }
 
     @Test
@@ -253,7 +249,7 @@ class TrainRunningTest extends WithStationStatusTest {
 
         // When ...
         Train train = train("TT0");
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = train.tick(new SimulationContext(status), DT);
 
         // Then ...
         assertTrue(nextOpt.isPresent());

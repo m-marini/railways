@@ -30,9 +30,11 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
+import org.mmarini.railways2.swing.WithTrain;
 
 import java.awt.geom.Point2D;
 import java.util.Optional;
@@ -47,40 +49,20 @@ import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
 import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
 
-class TrainEnteringTest {
+class TrainEnteringTest extends WithStationStatusTest {
     static final double DT = 0.1;
-    StationStatus status;
-    StationMap stationMap;
-
-    /**
-     * Entry(a) -- 200m -- Exit(b)
-     */
-    @BeforeEach
-    void beforeEach() {
-        stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "ab")
-                .addNode("b", new Point2D.Double(200, 0), "ab")
-                .addTrack("ab", "a", "b")
-                .build();
-        status = new StationStatus.Builder(stationMap, 1, null)
-                .addRoute(Entry::create, "a")
-                .addRoute(Exit::create, "b")
-                .build();
-    }
 
     @Test
     void enteringEnqueued() {
         // Give ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Entry aRoute = status.getRoute(a);
-        Exit bRoute = status.getRoute(b);
+        Entry aRoute = route("a");
+        Exit bRoute = route("b");
         Train t2 = Train.create("t2", 1, aRoute, bRoute).setArrivalTime(ENTRY_TIMEOUT + 1);
         Train t1 = Train.create("t1", 1, aRoute, bRoute);
         status = status.setTrains(t2, t1)
                 .setTime(ENTRY_TIMEOUT + 1);
 
-        Optional<Train> next = t2.tick(new SimulationContext(status, DT));
+        Optional<Train> next = t2.tick(new SimulationContext(status), DT);
         assertTrue(next.isPresent());
         assertThat(next.orElseThrow(), hasProperty("state", equalTo(Train.ENTERING_STATE)));
         assertThat(next.orElseThrow(), hasProperty("arrivalTime", equalTo(ENTRY_TIMEOUT + 1)));
@@ -90,18 +72,17 @@ class TrainEnteringTest {
     @Test
     void enteringNotClear() {
         // Give ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Edge ab = stationMap.getEdge("ab");
-        Entry aRoute = status.getRoute(a);
-        Exit bRoute = status.getRoute(b);
+        Node b = node("b");
+        Edge ab = edge("ab");
+        Entry aRoute = route("a");
+        Exit bRoute = route("b");
         Train t1 = Train.create("t1", 1, aRoute, bRoute);
         Train t2 = Train.create("t2", 1, aRoute, bRoute)
                 .setLocation(EdgeLocation.create(ab, b, 0));
         status = status.setTrains(t1, t2).setTime(ENTRY_TIMEOUT);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
 
         // Than ...
         assertTrue(nextOpt.isPresent());
@@ -115,44 +96,54 @@ class TrainEnteringTest {
     @Test
     void enteringTimeout() {
         // Give ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Edge ab = stationMap.getEdge("ab");
-        Entry aRoute = status.getRoute(a);
-        Exit bRoute = status.getRoute(b);
-        Train t1 = Train.create("t1", 1, aRoute, bRoute);
-        status = status.setTrains(t1)
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "b"))
+                .build()
                 .setTime(ENTRY_TIMEOUT);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status, DT));
+        Tuple2<Train, Double> nextOpt = train("t1")
+                .changeState(new SimulationContext(status), DT)
+                .orElseThrow();
 
-        // Than ...
-        assertTrue(nextOpt.isPresent());
-
-        Train next = nextOpt.orElseThrow();
-        assertEquals(MAX_SPEED, next.getSpeed());
-        assertEquals(Train.RUNNING_STATE, next.getState());
-        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 200 - DT * MAX_SPEED)));
+        // Then ...
+        assertEquals(MAX_SPEED, nextOpt._1.getSpeed());
+        assertEquals(Train.RUNNING_STATE, nextOpt._1.getState());
+        assertThat(nextOpt._1.getLocation(), optionalOf(locatedAt("ab", "b", 200)));
+        assertEquals(DT, nextOpt._2);
     }
 
     @Test
     void enteringWaiting() {
         // Give ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Entry aRoute = status.getRoute(a);
-        Exit bRoute = status.getRoute(b);
+        Entry aRoute = route("a");
+        Exit bRoute = route("b");
         Train t1 = Train.create("t1", 1, aRoute, bRoute);
         status = status.setTrains(t1);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status, DT));
+        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
 
         // Than ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
         assertEquals(Train.ENTERING_STATE, next.getState());
         assertEquals(MAX_SPEED, next.getSpeed());
+    }
+
+    /**
+     * Entry(a) -- 200m -- Exit(b)
+     */
+    @BeforeEach
+    void setUp() {
+        StationMap stationMap = new StationBuilder("station")
+                .addNode("a", new Point2D.Double(), "ab")
+                .addNode("b", new Point2D.Double(200, 0), "ab")
+                .addTrack("ab", "a", "b")
+                .build();
+        status = new StationStatus.Builder(stationMap, 1, null)
+                .addRoute(Entry::create, "a")
+                .addRoute(Exit::create, "b")
+                .build();
     }
 }
