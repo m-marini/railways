@@ -47,9 +47,9 @@ import static org.mmarini.railways2.model.RailwayConstants.*;
  * Identifies the train, locates it, moves it in the dispatched routes
  */
 public class Train {
-    public static final State EXITING_STATE = new State("EXITING", Train::exiting);
-    public static final State WAITING_FOR_RUN_STATE = new State("WAITING_FOR_RUN", Train::waitingForRun);
-    public static final State LOADING_STATE = new State("LOADING_STATE", Train::loading);
+    public static final State STATE_EXITING = new State("EXITING", Train::exiting);
+    public static final State STATE_WAITING_FOR_RUN = new State("WAITING_FOR_RUN", Train::waitingForRun);
+    public static final State STATE_LOADING = new State("LOADING", Train::loading);
 
     /**
      * Returns the train
@@ -61,23 +61,21 @@ public class Train {
      */
     public static Train create(String id, int numCoaches, Entry arrival, Exit destination) {
         return new Train(id, numCoaches, arrival, destination,
-                ENTERING_STATE, ENTRY_TIMEOUT, null, MAX_SPEED, false, 0,
+                STATE_ENTERING, ENTRY_TIMEOUT, null, MAX_SPEED, false, 0,
                 null, 0);
     }
-
-    private final String id;
+    private final String id;    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
     private final int numCoaches;
-    private final Entry arrival;
+    private final Entry arrival;    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
     private final Exit destination;
-    private final State state;
+    private final State state;    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
     private final EdgeLocation location;
     private final double arrivalTime;
     private final double speed;
-    private final boolean loaded;
+    private final boolean loaded;    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
     private final double loadedTime;
     private final Exit exitingNode;
     private final double exitDistance;
-
     /**
      * Creates the train
      *
@@ -118,7 +116,7 @@ public class Train {
      */
     Optional<Tuple2<Train, Double>> braking(SimulationContext context, double dt) {
         return running(context, dt, 0)
-                .map(tuple -> (tuple._1.getState().equals(Train.WAITING_FOR_SIGNAL_STATE)) ?
+                .map(tuple -> (tuple._1.getState().equals(Train.STATE_WAITING_FOR_SIGNAL)) ?
                         tuple.setV1(tuple._1.stop())
                         : tuple);
     }
@@ -132,7 +130,7 @@ public class Train {
      */
     Optional<Tuple2<Train, Double>> changeState(SimulationContext ctx, double dt) {
         return state.apply(this, ctx, dt);
-    }    public static final State RUNNING_STATE = new State("RUNNING", Train::running);
+    }
 
     /**
      * Returns the simulated entering train
@@ -175,7 +173,7 @@ public class Train {
      * @param exitDistance the exit distance
      */
     Train exit(Exit exit, double exitDistance) {
-        return setState(EXITING_STATE).setExitingNode(exit).setExitDistance(exitDistance);
+        return setState(STATE_EXITING).setExitingNode(exit).setExitDistance(exitDistance);
     }
 
     /**
@@ -279,7 +277,7 @@ public class Train {
                 || location != null && location.equals(this.location)
                 || this.location != null && this.location.equals(location) ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }    public static final State WAITING_FOR_SIGNAL_STATE = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    }
 
     /**
      * Returns the number of coaches
@@ -341,14 +339,14 @@ public class Train {
      * Returns true if train is entering (state == ENTERING)
      */
     public boolean isEntering() {
-        return ENTERING_STATE.equals(state);
+        return STATE_ENTERING.equals(state);
     }
 
     /**
      * Returns true if train is exiting
      */
     public boolean isExiting() {
-        return EXITING_STATE.equals(state);
+        return STATE_EXITING.equals(state);
     }
 
     /**
@@ -367,7 +365,7 @@ public class Train {
     public Train load(double time) {
         return setSpeed(0)
                 .setLoadedTime(time + LOADING_TIME)
-                .setState(Train.LOADING_STATE);
+                .setState(Train.STATE_LOADING);
     }
 
     /**
@@ -392,7 +390,7 @@ public class Train {
      * Returns the train in running state
      */
     Train run() {
-        return setState(RUNNING_STATE);
+        return setState(STATE_RUNNING);
     }
 
     /**
@@ -414,7 +412,7 @@ public class Train {
      * </ul>
      *
      * @param context     the simulation context
-     * @param dt          the time tinterval
+     * @param dt          the time interval
      * @param targetSpeed the target speed (m/s)
      */
     Optional<Tuple2<Train, Double>> running(SimulationContext context, double dt, double targetSpeed) {
@@ -440,7 +438,7 @@ public class Train {
             } else {
                 // Train is braking
                 return Optional.of(Tuple2.of(
-                        setLocation(newLocation).setSpeed(newSpeed).setState(WAITING_FOR_RUN_STATE),
+                        setLocation(newLocation).setSpeed(newSpeed).setState(STATE_WAITING_FOR_RUN),
                         0d));
             }
         }
@@ -450,7 +448,7 @@ public class Train {
         if (route instanceof Exit) {
             // exit node reached
             return Optional.of(Tuple2.of(
-                    setState(EXITING_STATE)
+                    setState(STATE_EXITING)
                             .setLocation(null)
                             .setExitingNode((Exit) route)
                             .setExitDistance(0),
@@ -459,14 +457,14 @@ public class Train {
         if (edge instanceof Platform && !loaded) {
             // platform reached and train not loaded
             return Optional.of(Tuple2.of(
-                    setState(LOADING_STATE)
+                    setState(STATE_LOADING)
                             .setLocation(location.setDistance(0))
                             .load(context.getTimeAfter(timeToEndEdge)),
                     remainingTime));
         }
         if (!context.isNextRouteClear(direction)) {
             // next route is not clear (stop signal)
-            return Optional.of(Tuple2.of(setState(WAITING_FOR_SIGNAL_STATE)
+            return Optional.of(Tuple2.of(setState(STATE_WAITING_FOR_SIGNAL)
                             .setLocation(location.setDistance(0))
                             .setSpeed(0),
                     remainingTime));
@@ -490,7 +488,7 @@ public class Train {
     public Train setLoaded() {
         return loaded ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, true, loadedTime, exitingNode, exitDistance);
-    }    public static final State BRAKING_STATE = new State("BRAKING_STATE", Train::braking);
+    }
 
     /**
      * Returns the train with loaded time set
@@ -517,14 +515,14 @@ public class Train {
      * Returns the train started
      */
     private Train start() {
-        return setState(Train.RUNNING_STATE);
+        return setState(Train.STATE_RUNNING);
     }
 
     /**
      * Returns the stopped train
      */
     Train stop() {
-        return setSpeed(0).setState(Train.WAITING_FOR_RUN_STATE);
+        return setSpeed(0).setState(Train.STATE_WAITING_FOR_RUN);
     }
 
     /**
@@ -543,144 +541,6 @@ public class Train {
         } while (train != null && dt > 0);
         return Optional.ofNullable(train);
     }
-
-    /*
-    Optional<Train> running1(SimulationContext context, double targetSpeed) {
-        double movement = speed * context.getDt();
-        boolean clearTrack = context.isNextTracksClear(this);
-        Direction direction = location.getDirection();
-        Edge edge = direction.getEdge();
-        Node destination = direction.getDestination();
-        Route route = context.getRoute(destination);
-        double newDistance = location.getDistance() - movement;
-        double newSpeed = clearTrack ?
-                speedPhysics(targetSpeed, context.getDt())
-                : max(speedPhysics(0, context.getDt()), APPROACH_SPEED);
-
-        if (newDistance >= 0) {
-            // Move head in the current edge
-            EdgeLocation newLocation = location.setDistance(newDistance);
-            if (targetSpeed > APPROACH_SPEED || newSpeed > APPROACH_SPEED) {
-                return Optional.of(setLocation(newLocation).setSpeed(max(newSpeed, APPROACH_SPEED)));
-            } else {
-                // Train is braking
-                return Optional.of(setLocation(newLocation).setSpeed(newSpeed).setState(WAITING_FOR_RUN_STATE));
-            }
-        }
-        // end of edge reached
-        if (route instanceof Exit) {
-            // exit node reached
-            return Optional.of(setState(EXITING_STATE)
-                    .setLocation(null)
-                    .setExitingNode((Exit) route)
-                    .setExitDistance(-newDistance));
-        }
-        if (edge instanceof Platform && !loaded) {
-            // platform reached and train not loaded
-            return Optional.of(setState(LOADING_STATE)
-                    .setLocation(location.setDistance(0))
-                    .setSpeed(0));
-        }
-        if (!context.isNextRouteClear(direction)) {
-            // next route is not clear (stop signal)
-            return Optional.of(setState(WAITING_FOR_SIGNAL_STATE)
-                    .setLocation(location.setDistance(0))
-                    .setSpeed(0));
-        }
-        // Get the new direction
-        Optional<Direction> routeDirection = context.getNextExit(location.getDirection());
-        return routeDirection.map(newDir -> {
-                    Edge newEdge = newDir.getEdge();
-                    // Computes the new location
-                    double newDistance1 = max(newEdge.getLength() + newDistance, 0);
-                    EdgeLocation newLocation = new EdgeLocation(newDir, newDistance1);
-                    // Lock signals of new section
-                    context.lockSignals(newDir);
-                    return setSpeed(newSpeed).setLocation(newLocation);
-                }
-        ).or(() -> Optional.of(this));
-    }
-
-    Optional<Tuple2<Train, Double>> running2(SimulationContext context, double targetSpeed, double movement) {
-        boolean clearTrack = context.isNextTracksClear(this);
-        Direction direction = location.getDirection();
-        Edge edge = direction.getEdge();
-        Node destination = direction.getDestination();
-        Route route = context.getRoute(destination);
-        double newDistance = location.getDistance() - movement;
-        double newSpeed = clearTrack ?
-                speedPhysics(targetSpeed, context.getDt())
-                : max(speedPhysics(0, context.getDt()), APPROACH_SPEED);
-
-        if (newDistance >= 0) {
-            // Move head in the current edge
-            EdgeLocation newLocation = location.setDistance(newDistance);
-            if (targetSpeed > APPROACH_SPEED || newSpeed > APPROACH_SPEED) {
-                return Optional.of(Tuple2.of(
-                        setLocation(newLocation).setSpeed(max(newSpeed, APPROACH_SPEED)),
-                        0d));
-            } else {
-                // Train is braking
-                return Optional.of(Tuple2.of(
-                        setLocation(newLocation).setSpeed(newSpeed).setState(WAITING_FOR_RUN_STATE),
-                        0d));
-            }
-        }
-        // end of edge reached
-        if (route instanceof Exit) {
-            // exit node reached
-            return Optional.of(Tuple2.of(setState(EXITING_STATE)
-                            .setLocation(null)
-                            .setExitingNode((Exit) route)
-                            .setExitDistance(-newDistance),
-                    0d));
-        }
-        if (edge instanceof Platform && !loaded) {
-            // platform reached and train not loaded
-            return Optional.of(Tuple2.of(setState(LOADING_STATE)
-                            .setLocation(location.setDistance(0))
-                            .setSpeed(0),
-                    0d));
-        }
-        if (!context.isNextRouteClear(direction)) {
-            // next route is not clear (stop signal)
-            return Optional.of(Tuple2.of(setState(WAITING_FOR_SIGNAL_STATE)
-                            .setLocation(location.setDistance(0))
-                            .setSpeed(0),
-                    0d));
-        }
-        // Get the new direction
-        Optional<Direction> routeDirection = context.getNextExit(location.getDirection());
-        return routeDirection.map(newDir -> {
-                    Edge newEdge = newDir.getEdge();
-                    // Computes the new location
-                    double newDistance1 = max(newEdge.getLength() + newDistance, 0);
-                    EdgeLocation newLocation = new EdgeLocation(newDir, newDistance1);
-                    // Lock signals of new section
-                    context.lockSignals(newDir);
-                    return Tuple2.of(setSpeed(newSpeed).setLocation(newLocation), 0d);
-                }
-        ).or(() -> Optional.of(Tuple2.of(this, 0d)));
-    }
-
-
-     */
-
-    /*
-    Optional<Train> runningOld(SimulationContext context, double targetSpeed) {
-        double movement = speed * context.getDt();
-        Train train = this;
-        do {
-            Tuple2<Train, Double> step = train.running2(context, targetSpeed, movement).orElse(null);
-            if (step != null) {
-                train = step._1;
-                movement = step._2;
-            }
-        } while (train != null && movement > 0);
-        return Optional.ofNullable(train);
-    }
-
-     */
 
     @Override
     public String toString() {
@@ -751,7 +611,7 @@ public class Train {
 
 
 
-    public static final State ENTERING_STATE = new State("ENTERING", Train::entering);
+
 
 
 }

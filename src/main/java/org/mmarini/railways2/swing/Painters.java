@@ -414,12 +414,6 @@ public interface Painters {
     }
 
     /**
-     * Returns the painter of station status
-     *
-     * @param status the station status
-     */
-
-    /**
      * Returns the segment painter
      *
      * @param segment the segment
@@ -570,7 +564,7 @@ public interface Painters {
          * @param route the route
          */
         private Consumer<Graphics2D> createLabelPainter(Route route) {
-            String label = Messages.getString("station." + status.getStationMap().getId() + "." + route.getId());
+            String label = StationLabels.getLabel(status.getStationMap().getId(), route.getId());
             Point2D location = route.getNodes().get(0).getLocation();
             Direction entryDir = route.getNodes().get(0).getEntries().get(0);
             double orientation = toDegrees(new EdgeLocation(entryDir, 0).getOrientation());

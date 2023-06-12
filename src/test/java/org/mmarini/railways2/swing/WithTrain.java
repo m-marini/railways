@@ -120,7 +120,7 @@ public class WithTrain {
         }
 
         public TrainBuilder braking() {
-            return modify(train -> train.setState(Train.BRAKING_STATE));
+            return modify(train -> train.setState(Train.STATE_BRAKING));
         }
 
         public Train build(StationStatus status) {
@@ -144,7 +144,7 @@ public class WithTrain {
         }
 
         public TrainBuilder running(double speed) {
-            return modify(train -> train.setState(Train.RUNNING_STATE).setSpeed(speed));
+            return modify(train -> train.setState(Train.STATE_RUNNING).setSpeed(speed));
         }
 
         public TrainBuilder running() {
@@ -152,7 +152,7 @@ public class WithTrain {
         }
 
         public TrainBuilder waitForSignal() {
-            return modify(train -> train.setState(Train.WAITING_FOR_SIGNAL_STATE).setSpeed(0));
+            return modify(train -> train.setState(Train.STATE_WAITING_FOR_SIGNAL).setSpeed(0));
         }
     }
 }

@@ -85,7 +85,7 @@ class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
 
         // Then ...
         Train train = transition._1;
-        assertEquals(Train.RUNNING_STATE, train.getState());
+        assertEquals(Train.STATE_RUNNING, train.getState());
         assertEquals(0d, train.getSpeed());
         assertThat(train.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
         assertEquals(DT, transition._2);
@@ -103,7 +103,7 @@ class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
         Train t1 = Train.create("train", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(ab, b, 0))
                 .setSpeed(0)
-                .setState(Train.WAITING_FOR_SIGNAL_STATE);
+                .setState(Train.STATE_WAITING_FOR_SIGNAL);
         Train t2 = Train.create("train1", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(bc, c, 0));
         status = status.setTrains(t1, t2);
@@ -112,7 +112,7 @@ class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
         Tuple2<Train, Double> next = t1.changeState(new SimulationContext(status), DT).orElseThrow();
 
         // Then ...
-        assertEquals(Train.WAITING_FOR_SIGNAL_STATE, next._1.getState());
+        assertEquals(Train.STATE_WAITING_FOR_SIGNAL, next._1.getState());
         assertEquals(0, next._1.getSpeed());
         assertThat(next._1.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
         assertEquals(0d, next._2);

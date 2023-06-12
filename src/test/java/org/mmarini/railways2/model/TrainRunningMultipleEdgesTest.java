@@ -87,7 +87,7 @@ class TrainRunningMultipleEdgesTest extends WithStationStatusTest {
 
         // Then ...
         Train train = status1.getTrain("TT0").orElseThrow();
-        assertEquals(Train.RUNNING_STATE, train.getState());
+        assertEquals(Train.STATE_RUNNING, train.getState());
         assertEquals(MAX_SPEED, train.getSpeed());
         double expDistance = LENGTH - MAX_SPEED * DT + GAP;
         assertThat(train.getLocation(), optionalOf(locatedAt(

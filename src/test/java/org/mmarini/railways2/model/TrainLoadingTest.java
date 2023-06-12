@@ -89,7 +89,7 @@ class TrainLoadingTest extends WithStationStatusTest {
 
         // Then ...
         assertThat(transitionOpt, optionalOf(tupleOf(allOf(
-                        hasProperty("state", equalTo(Train.WAITING_FOR_RUN_STATE)),
+                        hasProperty("state", equalTo(Train.STATE_WAITING_FOR_RUN)),
                         hasProperty("speed", equalTo(0d)),
                         hasProperty("unloaded", equalTo(false)),
                         hasProperty("location", optionalOf(locatedAt("ab", "b", 0)))),
@@ -114,7 +114,7 @@ class TrainLoadingTest extends WithStationStatusTest {
 
         // Then ...
         assertThat(transitionOpt, optionalOf(tupleOf(allOf(
-                        hasProperty("state", equalTo(Train.WAITING_FOR_RUN_STATE)),
+                        hasProperty("state", equalTo(Train.STATE_WAITING_FOR_RUN)),
                         hasProperty("speed", equalTo(0d)),
                         hasProperty("unloaded", equalTo(false)),
                         hasProperty("location", optionalOf(locatedAt("ab", "b", 0)))),
@@ -137,7 +137,7 @@ class TrainLoadingTest extends WithStationStatusTest {
 
         // Then ...
         assertThat(transitionOpt, optionalOf(tupleOf(
-                hasProperty("state", equalTo(Train.LOADING_STATE)),
+                hasProperty("state", equalTo(Train.STATE_LOADING)),
                 anything()
         )));
         assertThat(transitionOpt, optionalOf(tupleOf(

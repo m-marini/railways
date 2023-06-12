@@ -61,7 +61,7 @@ class TrainRunningTest extends WithStationStatusTest {
         Train train = Train.create("train2", 1, aRoute, bRoute)
                 .setLocation(EdgeLocation.create(ab, b, LENGTH))
                 .setSpeed(speed)
-                .setState(Train.RUNNING_STATE);
+                .setState(Train.STATE_RUNNING);
         status = status.setTrains(train);
 
         // When ...
@@ -70,7 +70,7 @@ class TrainRunningTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.RUNNING_STATE, next.getState());
+        assertEquals(Train.STATE_RUNNING, next.getState());
         assertEquals(ACCELERATION * DT + speed, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", LENGTH - speed * DT)));
     }
@@ -98,7 +98,7 @@ class TrainRunningTest extends WithStationStatusTest {
         double distance = 3; // moving distance=3.6m, distance = 3
         Train train = Train.create("train2", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(ab, b, distance))
-                .setState(Train.RUNNING_STATE);
+                .setState(Train.STATE_RUNNING);
         status = status.setTrains(train);
         SimulationContext context = new SimulationContext(status);
 
@@ -108,7 +108,7 @@ class TrainRunningTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.RUNNING_STATE, next.getState());
+        assertEquals(Train.STATE_RUNNING, next.getState());
         assertEquals(MAX_SPEED, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("bc", "c", LENGTH - DT * MAX_SPEED + distance)));
 
@@ -130,7 +130,7 @@ class TrainRunningTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.RUNNING_STATE, next.getState());
+        assertEquals(Train.STATE_RUNNING, next.getState());
         assertEquals(MAX_SPEED, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", LENGTH - DT * MAX_SPEED)));
     }
@@ -147,10 +147,10 @@ class TrainRunningTest extends WithStationStatusTest {
         double distance = 4; // moving distance=3.6m, distance = 4
         Train t1 = Train.create("t1", 1, aRoute, bRoute)
                 .setLocation(EdgeLocation.create(ab, b, distance))
-                .setState(Train.RUNNING_STATE);
+                .setState(Train.STATE_RUNNING);
         Train t2 = Train.create("t2", 1, aRoute, bRoute)
                 .setLocation(EdgeLocation.create(bc, c, 0))
-                .setState(Train.RUNNING_STATE);
+                .setState(Train.STATE_RUNNING);
         status = status.setTrains(t1, t2);
 
         // When ...
@@ -159,7 +159,7 @@ class TrainRunningTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.RUNNING_STATE, next.getState());
+        assertEquals(Train.STATE_RUNNING, next.getState());
         assertEquals(MAX_SPEED + DEACCELERATION * DT, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", distance - DT * MAX_SPEED)));
     }
@@ -176,7 +176,7 @@ class TrainRunningTest extends WithStationStatusTest {
         double distance = 3; // moving distance=3.6m, distance = 3
         Train train = Train.create("train2", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(bc, c, distance))
-                .setState(Train.RUNNING_STATE);
+                .setState(Train.STATE_RUNNING);
         status = status.setTrains(train);
         SimulationContext context = new SimulationContext(status);
 
@@ -186,7 +186,7 @@ class TrainRunningTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.EXITING_STATE, next.getState());
+        assertEquals(Train.STATE_EXITING, next.getState());
         assertEquals(MAX_SPEED, next.getSpeed());
         assertThat(next.getLocation(), emptyOptional());
         assertThat(next.getExitDistance(), closeTo(DT * MAX_SPEED - distance, 1e-3));
@@ -254,7 +254,7 @@ class TrainRunningTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.WAITING_FOR_SIGNAL_STATE, next.getState());
+        assertEquals(Train.STATE_WAITING_FOR_SIGNAL, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
     }

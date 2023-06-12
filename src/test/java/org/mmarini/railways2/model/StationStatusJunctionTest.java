@@ -279,7 +279,7 @@ class StationStatusJunctionTest {
     void getTrainCoachesEntering() {
         // Given ...
         Train train = Train.create("train", 4, aRoute, cRoute)
-                .setState(Train.ENTERING_STATE)
+                .setState(Train.STATE_ENTERING)
                 .setLocation(EdgeLocation.create(ab, b, LENGTH - COACH_LENGTH * 2.5));
         status = status.setTrains(train);
 
@@ -416,7 +416,7 @@ class StationStatusJunctionTest {
     void isNextRouteClearFalse() {
         // Given ...
         Train t1 = Train.create("t1", 1, aRoute, cRoute)
-                .setState(Train.EXITING_STATE)
+                .setState(Train.STATE_EXITING)
                 .setExitingNode(cRoute);
         status = status.setTrains(t1);
 

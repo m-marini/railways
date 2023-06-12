@@ -84,7 +84,7 @@ class TrainWaitingForSignalTest extends WithStationStatusTest {
         Tuple2<Train, Double> next = train("train").changeState(new SimulationContext(status), DT).orElseThrow();
 
         // Then ...
-        assertEquals(Train.RUNNING_STATE, next._1.getState());
+        assertEquals(Train.STATE_RUNNING, next._1.getState());
         assertEquals(0, next._1.getSpeed());
         assertThat(next._1.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
         assertEquals(DT, next._2);
@@ -102,7 +102,7 @@ class TrainWaitingForSignalTest extends WithStationStatusTest {
         Train t1 = Train.create("t1", 1, arrival, destination)
                 .setLocation(EdgeLocation.create(ab, b, 0))
                 .setSpeed(0)
-                .setState(Train.WAITING_FOR_SIGNAL_STATE);
+                .setState(Train.STATE_WAITING_FOR_SIGNAL);
         Train t2 = Train.create("t2", 1, arrival, destination)
                 .setLocation(EdgeLocation.create(bc, c, 0));
 
@@ -114,7 +114,7 @@ class TrainWaitingForSignalTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.WAITING_FOR_SIGNAL_STATE, next.getState());
+        assertEquals(Train.STATE_WAITING_FOR_SIGNAL, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
     }

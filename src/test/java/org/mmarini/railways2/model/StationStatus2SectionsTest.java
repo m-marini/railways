@@ -104,10 +104,10 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
     void createTrainByExit() {
         // Given ...
         Train t1 = Train.create("t1", 1, route("a"), route("b"))
-                .setState(Train.EXITING_STATE)
+                .setState(Train.STATE_EXITING)
                 .setExitingNode(route("b"));
         Train t2 = Train.create("t2", 1, route("a"), route("b"))
-                .setState(Train.EXITING_STATE)
+                .setState(Train.STATE_EXITING)
                 .setExitingNode(route("d"));
         Train t3 = Train.create("t3", 1, route("a"), route("b"));
         status = status.setTrains(t1, t2, t3);
@@ -247,7 +247,7 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
     void isExitClear() {
         // Given ...
         Train t1 = Train.create("t1", 1, route("a"), route("b"))
-                .setState(Train.EXITING_STATE)
+                .setState(Train.STATE_EXITING)
                 .setExitingNode(route("b"));
         Train t2 = Train.create("t2", 1, route("a"), route("b"));
         status = status.setTrains(t1, t2);

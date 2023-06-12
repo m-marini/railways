@@ -82,7 +82,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         double speed = MAX_SPEED / 4;
         Train t1 = Train.create("train2", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(ab, b, LENGTH))
-                .setState(Train.BRAKING_STATE)
+                .setState(Train.STATE_BRAKING)
                 .setSpeed(speed);
         status = status.setTrains(t1);
 
@@ -92,7 +92,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.BRAKING_STATE, next.getState());
+        assertEquals(Train.STATE_BRAKING, next.getState());
         assertEquals(DEACCELERATION * DT + speed, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", LENGTH - speed * DT)));
     }
@@ -108,7 +108,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         double distance = 4; // edge length=500m, moving distance=3.6m, distance = 4m
         Train t1 = Train.create("t1", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(ab, b, distance))
-                .setState(Train.BRAKING_STATE)
+                .setState(Train.STATE_BRAKING)
                 .setSpeed(MAX_SPEED);
         Train t2 = Train.create("t2", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(bc, b, 0));
@@ -120,7 +120,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.BRAKING_STATE, next.getState());
+        assertEquals(Train.STATE_BRAKING, next.getState());
         assertEquals(MAX_SPEED + DEACCELERATION * DT, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", distance - DT * MAX_SPEED)));
     }
@@ -136,7 +136,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         double distance = 10;
         Train t1 = Train.create("t1", 1, aRoute, cRoute)
                 .setLocation(EdgeLocation.create(ab, b, distance))
-                .setState(Train.BRAKING_STATE)
+                .setState(Train.STATE_BRAKING)
                 .setSpeed(speed);
         status = status.setTrains(t1);
 
@@ -146,7 +146,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.WAITING_FOR_RUN_STATE, next.getState());
+        assertEquals(Train.STATE_WAITING_FOR_RUN, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", distance - speed * DT)));
     }
@@ -169,7 +169,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.WAITING_FOR_RUN_STATE, next.getState());
+        assertEquals(Train.STATE_WAITING_FOR_RUN, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
     }

@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #1: Add building blocks
 - Issue #4: Immutable geometry, routes, trains
 - Issue #21: Add double switch
-- Issue #28: Simulator with rx4j### Changed
+- Issue #28: Simulator with rx4j
+- Issue #43: Add train info panel
 
 ### Changed 
 
