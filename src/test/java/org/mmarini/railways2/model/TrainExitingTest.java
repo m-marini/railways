@@ -83,7 +83,7 @@ class TrainExitingTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.EXITING_STATE, next.getState());
+        assertEquals(Train.STATE_EXITING, next.getState());
         assertEquals(MAX_SPEED, next.getSpeed());
         assertEquals(10 + MAX_SPEED * DT, next.getExitDistance());
     }
@@ -101,7 +101,7 @@ class TrainExitingTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.EXITING_STATE, next.getState());
+        assertEquals(Train.STATE_EXITING, next.getState());
         assertEquals(ACCELERATION * DT, next.getSpeed());
         assertEquals(0, next.getExitDistance());
     }
@@ -119,7 +119,7 @@ class TrainExitingTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.EXITING_STATE, next.getState());
+        assertEquals(Train.STATE_EXITING, next.getState());
         assertEquals(MAX_SPEED, next.getSpeed());
         assertEquals(COACH_LENGTH + MAX_SPEED * DT, next.getExitDistance());
     }

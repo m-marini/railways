@@ -81,7 +81,7 @@ class TrainWaitingForRunTest {
         Train t1 = Train.create("t1", 1, arrival, destination)
                 .setLocation(EdgeLocation.create(ab, b, 0))
                 .setSpeed(0)
-                .setState(Train.WAITING_FOR_RUN_STATE);
+                .setState(Train.STATE_WAITING_FOR_RUN);
         status = status.setTrains(t1);
 
         // When ...
@@ -90,7 +90,7 @@ class TrainWaitingForRunTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.WAITING_FOR_RUN_STATE, next.getState());
+        assertEquals(Train.STATE_WAITING_FOR_RUN, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
     }

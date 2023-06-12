@@ -88,7 +88,7 @@ class TrainRunningAtPlatformTest {
         Train train = Train.create("train2", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(bc, c, distance))
                 .setLoaded()
-                .setState(Train.RUNNING_STATE);
+                .setState(Train.STATE_RUNNING);
         status = status.setTrains(train);
 
         // When ...
@@ -97,7 +97,7 @@ class TrainRunningAtPlatformTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.RUNNING_STATE, next.getState());
+        assertEquals(Train.STATE_RUNNING, next.getState());
         assertEquals(MAX_SPEED, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("cd", "d", LENGTH - DT * MAX_SPEED + distance)));
     }
@@ -112,7 +112,7 @@ class TrainRunningAtPlatformTest {
         double distance = 3; //  moving distance=3.6m, distance = 4m
         Train train = Train.create("train2", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(bc, c, distance))
-                .setState(Train.RUNNING_STATE);
+                .setState(Train.STATE_RUNNING);
         status = status.setTrains(train);
 
         // When ...
@@ -121,7 +121,7 @@ class TrainRunningAtPlatformTest {
         // Then ...
         assertTrue(nextOpt.isPresent());
         Train next = nextOpt.orElseThrow();
-        assertEquals(Train.LOADING_STATE, next.getState());
+        assertEquals(Train.STATE_LOADING, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("bc", "c", 0)));
     }

@@ -643,7 +643,7 @@ public class StationStatus {
     TrainComposition getTrainCoaches(Train train) {
         Train.State state = train.getState();
         List<Tuple2<Point2D, Double>> coaches = new ArrayList<>();
-        if (Train.EXITING_STATE.equals(state)) {
+        if (Train.STATE_EXITING.equals(state)) {
             int numExitedCoaches = (int) ceil(train.getExitDistance() / COACH_LENGTH);
             if (numExitedCoaches >= train.getNumCoaches()) {
                 return TrainComposition.EMPTY;
