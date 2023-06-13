@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #28: Simulator with rx4j
 - Issue #43: Add train info panel
 - Issue #48: Add UI controller
+- Issue #50: Add mouse event on map panel
 
 ### Changed 
 

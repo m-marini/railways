@@ -36,6 +36,8 @@ import org.mmarini.railways2.model.blocks.BlockStationBuilder;
 import org.mmarini.railways2.model.blocks.StationDef;
 import org.mmarini.yaml.Utils;
 import org.mmarini.yaml.schema.Locator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -56,6 +58,7 @@ public class UIController {
     public static final int DEFAULT_TAB_WITDH = 600;
     private static final String IMAGE_RESOURCE_NAME = "org/mmarini/railways2/swing/railways.png";
     private static final int FPS = 60;
+    private static final Logger logger = LoggerFactory.getLogger(UIController.class);
 
     /**
      * Adds a tab to the tabbed panel
@@ -108,6 +111,16 @@ public class UIController {
         initVerticalSplit();
         initTabbedPanel();
         initFrame();
+        createSubscriptions();
+    }
+
+    /**
+     * Creates the subscriptions to event flowables
+     */
+    private void createSubscriptions() {
+        mapPanel.readMouseClick()
+                .doOnNext(pt -> logger.atDebug().log("Map point {}", pt))
+                .subscribe();
     }
 
     /**
