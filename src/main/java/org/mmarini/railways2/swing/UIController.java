@@ -28,12 +28,25 @@
 
 package org.mmarini.railways2.swing;
 
+import org.mmarini.Tuple2;
+import org.mmarini.railways2.model.SimulatorEngine;
+import org.mmarini.railways2.model.SimulatorEngineImpl;
+import org.mmarini.railways2.model.StationStatus;
+import org.mmarini.railways2.model.blocks.BlockStationBuilder;
+import org.mmarini.railways2.model.blocks.StationDef;
+import org.mmarini.yaml.Utils;
+import org.mmarini.yaml.schema.Locator;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.time.Duration;
+import java.util.Random;
+import java.util.function.Function;
 
 /**
  * Manages the interaction between user interface and model.
@@ -42,6 +55,7 @@ import java.text.MessageFormat;
 public class UIController {
     public static final int DEFAULT_TAB_WITDH = 600;
     private static final String IMAGE_RESOURCE_NAME = "org/mmarini/railways2/swing/railways.png";
+    private static final int FPS = 60;
 
     /**
      * Adds a tab to the tabbed panel
@@ -57,6 +71,14 @@ public class UIController {
                 Messages.getString(key + ".tip"));
     }
 
+    /**
+     * Returns the initial station status
+     */
+    private static StationStatus createInitialSeed() throws IOException {
+        return new BlockStationBuilder(StationDef.create(
+                Utils.fromResource("/stations/downville.station.yml"), Locator.root()), new Random()).build();
+    }
+
     private final JFrame frame;
     private final MapPanel mapPanel;
     private final StationPanel stationPanel;
@@ -64,8 +86,10 @@ public class UIController {
     private final JTabbedPane tabPanel;
     private final JSplitPane verticalSplit;
     private final JSplitPane horizontalSplit;
+    private final SimulatorEngine<StationStatus, StationStatus> simulator;
+    private final Random random;
 
-    public UIController() {
+    public UIController() throws IOException {
         this.frame = new JFrame();
         this.mapPanel = new MapPanel();
         this.stationPanel = new StationPanel();
@@ -73,10 +97,36 @@ public class UIController {
         this.tabPanel = new JTabbedPane();
         this.verticalSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         this.horizontalSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        StationStatus initialSeed = createInitialSeed();
+        this.simulator = SimulatorEngineImpl.create(initialSeed, this::stepUp, Function.identity())
+                .setEventInterval(Duration.ofMillis(1000 / FPS))
+                .setOnEvent(this::handleSimulationEvent)
+                .setOnSpeed(this::handleSpeed);
+        this.random = new Random();
+        simulator.setSpeed(1);
         initHorizontalSplit();
         initVerticalSplit();
         initTabbedPanel();
         initFrame();
+    }
+
+    /**
+     * Handle the simulation event
+     *
+     * @param stationStatus the station status
+     */
+    private void handleSimulationEvent(StationStatus stationStatus) {
+        trainPanel.setStatus(stationStatus);
+        stationPanel.paintStation(stationStatus);
+        mapPanel.paintStation(stationStatus);
+    }
+
+    /**
+     * Handle the speed monitor event
+     *
+     * @param speed the actual simulation speed
+     */
+    private void handleSpeed(double speed) {
     }
 
     /**
@@ -147,5 +197,19 @@ public class UIController {
      */
     public void run() {
         frame.setVisible(true);
+        simulator.setSpeed(1);
+        simulator.start();
+    }
+
+    /**
+     * Returns the next station status after the given time interval
+     * and the actual simulated time interval
+     *
+     * @param status the initial status
+     * @param dt     the time interval
+     */
+    private Tuple2<StationStatus, Double> stepUp(StationStatus status, double dt) {
+        StationStatus next = status.tick(dt, random);
+        return Tuple2.of(next, dt);
     }
 }

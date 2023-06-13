@@ -31,6 +31,8 @@ package org.mmarini.railways2.swing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 /**
  * The main entry point of the game
  */
@@ -42,7 +44,7 @@ public class Main {
      *
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         logger.atInfo().log(Messages.getString("Railways.name") + " " + Messages.getString("Railways.version"));
         logger.atInfo().log(Messages.getString("Railways.author"));
         new UIController().run();
