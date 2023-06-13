@@ -28,11 +28,20 @@
 
 package org.mmarini.railways2.swing;
 
+import hu.akarnokd.rxjava3.swing.SwingObservable;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Flowable;
 import org.mmarini.railways2.model.StationStatus;
 import org.mmarini.railways2.model.geometry.Edge;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.function.Consumer;
@@ -47,11 +56,14 @@ import static org.mmarini.railways2.swing.Painters.createLinePainter;
 public class MapPanel extends JComponent {
     public static final Color BACKGROUND_COLOR = Color.getHSBColor(0.278f, 0.10f,
             0.671f);
+    private static final Logger logger = LoggerFactory.getLogger(MapPanel.class);
     private static final int BORDER = 10;
     private static final double MIN_WIDTH = 100;
     private static final double MIN_HEIGHT = 100;
+    private final Flowable<Point2D> mouseClick;
     private Rectangle2D mapBounds;
     private Consumer<Graphics2D> painter;
+
 
     /**
      * Creates the map panel
@@ -60,6 +72,44 @@ public class MapPanel extends JComponent {
         painter = NONE_PAINTER;
         setBackground(BACKGROUND_COLOR);
         mapBounds = new Rectangle2D.Double(0, 0, MIN_WIDTH, MIN_HEIGHT);
+        mouseClick = SwingObservable.mouse(this, SwingObservable.MOUSE_CLICK)
+                .toFlowable(BackpressureStrategy.BUFFER)
+                .filter(ev -> ev.getID() == MouseEvent.MOUSE_CLICKED)
+                .map(this::mapMouseEvent);
+        logger.atDebug().log("Created");
+    }
+
+    /**
+     * Returns the transformation from map coordinates to graphics coordiantes
+     */
+    private AffineTransform createTransform() {
+        Dimension size = getSize();
+        Rectangle2D.Float panelRect = new Rectangle2D.Float(
+                BORDER,
+                BORDER,
+                size.width - BORDER - BORDER,
+                size.height - BORDER - BORDER);
+        AffineTransform tr = AffineTransform.getTranslateInstance(panelRect.getCenterX(), panelRect.getCenterY());
+        tr.scale((panelRect.getWidth()) / mapBounds.getWidth(),
+                -panelRect.getHeight() / mapBounds.getHeight());
+        tr.translate(-mapBounds.getCenterX(), -mapBounds.getCenterY());
+        return tr;
+    }
+
+    /**
+     * Returns the point of mouse click in map coordinates
+     *
+     * @param mouseEvent the mouse event
+     */
+    private Point2D mapMouseEvent(MouseEvent mouseEvent) {
+        AffineTransform tr = createTransform();
+        try {
+            tr.invert();
+        } catch (NoninvertibleTransformException e) {
+            throw new RuntimeException(e);
+        }
+        Point point = mouseEvent.getPoint();
+        return tr.transform(point, null);
     }
 
     @Override
@@ -68,6 +118,8 @@ public class MapPanel extends JComponent {
         Dimension size = getSize();
         gr.setColor(getBackground());
         gr.fillRect(0, 0, size.width, size.height);
+        gr.transform(createTransform());
+        /*
         Rectangle2D.Float panelRect = new Rectangle2D.Float(
                 BORDER,
                 BORDER,
@@ -77,6 +129,8 @@ public class MapPanel extends JComponent {
         gr.scale((panelRect.getWidth()) / mapBounds.getWidth(),
                 -panelRect.getHeight() / mapBounds.getHeight());
         gr.translate(-mapBounds.getCenterX(), -mapBounds.getCenterY());
+
+         */
         painter.accept(gr);
     }
 
@@ -111,5 +165,12 @@ public class MapPanel extends JComponent {
                 .andThen(greenPainters)
                 .andThen(trainPainters);
         repaint();
+    }
+
+    /**
+     * Returns the mouse click flowable
+     */
+    public Flowable<Point2D> readMouseClick() {
+        return mouseClick;
     }
 }
