@@ -28,6 +28,8 @@
 
 package org.mmarini.railways2.model.geometry;
 
+import org.mmarini.NotImplementedException;
+
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Objects;
@@ -210,6 +212,11 @@ public class Curve extends AbstractEdge {
     public Point2D getLocation(EdgeLocation location) {
         double a = getAngle(location);
         return new Point2D.Double(center.getX() + radius * cos(a), center.getY() + radius * sin(a));
+    }
+
+    @Override
+    public EdgeLocation getNearestLocation(Point2D point) { // TODO tests
+        throw new NotImplementedException(); // TODO
     }
 
     @Override

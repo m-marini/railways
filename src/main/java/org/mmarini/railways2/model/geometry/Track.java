@@ -105,6 +105,23 @@ public class Track extends AbstractEdge {
     }
 
     @Override
+    public EdgeLocation getNearestLocation(Point2D point) {
+        Point2D p0 = getNode0().getLocation();
+        Point2D p1 = getNode1().getLocation();
+        double x0 = p0.getX();
+        double y0 = p0.getY();
+        double x1 = p1.getX();
+        double y1 = p1.getY();
+        double dx = point.getX() - x0;
+        double dy = point.getY() - y0;
+        double distance = (dx * (x1 - x0) + dy * (y1 - y0)) / length;
+        distance = min(max(0, distance), length);
+        return distance <= length / 2 ?
+                EdgeLocation.create(this, node0, distance) :
+                EdgeLocation.create(this, node1, length - distance);
+    }
+
+    @Override
     public double getOrientation(EdgeLocation location) {
         Point2D p0 = location.getDirection().getOrigin().getLocation();
         Point2D p1 = location.getDirection().getDestination().getLocation();
