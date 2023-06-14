@@ -28,7 +28,9 @@
 
 package org.mmarini.railways2.model.geometry;
 
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -97,6 +99,18 @@ public class StationMap {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * Returns the nearest edge location to the point
+     *
+     * @param point the point
+     */
+    public EdgeLocation getNearestLocation(Point2D point) {
+        return edges.values().stream()
+                .map(edge -> edge.getNearestLocation(point))
+                .min(Comparator.comparingDouble(a -> a.getLocation().distance(point)))
+                .orElseThrow();
     }
 
     /**

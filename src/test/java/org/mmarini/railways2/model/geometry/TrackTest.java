@@ -95,11 +95,11 @@ class TrackTest implements WithStationMap {
     @ParameterizedTest
     @CsvSource({
             "ab,a,0, 0,0",
-            "ab,b,0, 100,100",
-            "ab,a,14.142, 10,10",
-            "ab,a,70.711, 0,100",
-            "ab,a,0, -10,-10",
-            "ab,b,0, 200,200"
+            "ab,a,141.421,  100,100",
+            "ab,a,14.142,   10,10",
+            "ab,a,70.711,   0,100",
+            "ab,a,0,        -10,-10",
+            "ab,a,141.421,  200,200"
     })
     void getNearestLocation(String edge, String to, double distance, double x, double y) {
         // Given ...

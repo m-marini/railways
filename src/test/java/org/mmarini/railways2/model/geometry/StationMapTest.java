@@ -30,6 +30,9 @@ package org.mmarini.railways2.model.geometry;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mmarini.railways2.model.WithStationMap;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -40,9 +43,10 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mmarini.railways.Matchers.pointCloseTo;
+import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
 
-public class StationMapTest {
+public class StationMapTest implements WithStationMap {
 
     StationMap stationMap;
 
@@ -156,41 +160,25 @@ public class StationMapTest {
         assertThat(bounds.getHeight(), closeTo(RADIUS, 1e-3));
     }
 
-/*
-    @Test
-    void curveLength() {
-        assertThat(stationMap.edgeLength(cd), closeTo(RADIUS * PI / 2, 1e-3));
-        assertThat(stationMap.edgeLength("cd"), closeTo(RADIUS * PI / 2, 1e-3));
+    @ParameterizedTest
+    @CsvSource({
+            "-10,0,     ab,aNode,0",
+            "10,10,     ab,aNode,10",
+            "10,-10,    ab,aNode,10",
+            "600,0,    cd,cNode,314.159",
+            "1010,400,   cd,cNode,628.319"
+    })
+    void getNearestLocation(double x, double y, String expEdge, String expNode, double expDistance) {
+        // Given ...
+        // When ...
+        EdgeLocation location = stationMap.getNearestLocation(new Point2D.Double(x, y));
+
+        // Then ...
+        assertThat(location, locatedAt(expEdge, expNode, expDistance));
     }
 
-    @Test
-    void findTerminalNodes() {
-        List<Node> nodes = stationMap.findTerminalNodes(ab);
-        assertThat(nodes, hasItems(aNode, bNode));
+    @Override
+    public StationMap stationMap() {
+        return stationMap;
     }
-
-    @Test
-    void nodeLocation() {
-        assertEquals(new Point2D.Double(), stationMap.nodeLocation("aNode"));
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> stationMap.nodeLocation("x"));
-        assertThat(ex.getMessage(), matchesRegex("Node x not found"));
-    }
-
-    @Test
-    void platformLength() {
-        assertEquals(100D, stationMap.edgeLength(bc));
-        assertEquals(100D, stationMap.edgeLength("bc"));
-    }
-
-    @Test
-    void trackLength() {
-        assertEquals(100D, stationMap.edgeLength(ab));
-        assertEquals(100D, stationMap.edgeLength("ab"));
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> stationMap.edgeLength("x"));
-        assertThat(ex.getMessage(), matchesRegex("Edge x not found"));
-    }
-
- */
 }
