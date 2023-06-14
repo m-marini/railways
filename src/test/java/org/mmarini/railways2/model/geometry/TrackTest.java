@@ -30,6 +30,9 @@ package org.mmarini.railways2.model.geometry;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mmarini.railways2.model.WithStationMap;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -39,8 +42,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mmarini.railways.Matchers.pointCloseTo;
+import static org.mmarini.railways2.model.Matchers.locatedAt;
 
-class TrackTest {
+class TrackTest implements WithStationMap {
     public static final int LENGTH = 100;
     private StationMap stationMap;
     private Track track;
@@ -66,6 +70,48 @@ class TrackTest {
         assertEquals(new Rectangle2D.Double(0, 0, LENGTH, LENGTH), bounds);
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "0, 0,0",
+            "0, 100,100",
+            "0, 10,10",
+            "70.711, 0,100",
+            "14.142, -10,-10",
+            "14.142, 110,110",
+            "141.421, 200,0",
+            "100, 200,100"
+    })
+    void getDistance(double expDistance, double x, double y) {
+        // Given ...
+        Point2D.Double point = new Point2D.Double(x, y);
+
+        // When ...
+        double distance = track.getDistance(point);
+
+        // Then ...
+        assertThat(distance, closeTo(expDistance, 1e-3));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "ab,a,0, 0,0",
+            "ab,a,141.421,  100,100",
+            "ab,a,14.142,   10,10",
+            "ab,a,70.711,   0,100",
+            "ab,a,0,        -10,-10",
+            "ab,a,141.421,  200,200"
+    })
+    void getNearestLocation(String edge, String to, double distance, double x, double y) {
+        // Given ...
+        Point2D.Double point = new Point2D.Double(x, y);
+
+        // When ...
+        EdgeLocation location = track.getNearestLocation(point);
+
+        // Then ...
+        assertThat(location, locatedAt(edge, to, distance));
+    }
+
     @Test
     void length() {
         assertThat(track.getLength(), closeTo(LENGTH * sqrt(2), 1e-3));
@@ -74,8 +120,8 @@ class TrackTest {
     @Test
     void location() {
         // Given ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
+        Node a = node("a");
+        Node b = node("b");
 
         // When ...
         Point2D locationA60 = track.getLocation(EdgeLocation.create(track, a, 60 * sqrt(2)));
@@ -84,5 +130,10 @@ class TrackTest {
         // Then ...
         assertThat(locationA60, pointCloseTo(60, 60, 1e-3));
         assertThat(locationB60, pointCloseTo(40, 40, 1e-3));
+    }
+
+    @Override
+    public StationMap stationMap() {
+        return stationMap;
     }
 }

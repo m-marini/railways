@@ -42,6 +42,8 @@ import static org.mmarini.railways2.model.MathUtils.*;
  */
 public class Curve extends AbstractEdge {
 
+    public static final double EPSILON = 1e-1;
+
     /**
      * Returns the curve builder
      *
@@ -210,6 +212,40 @@ public class Curve extends AbstractEdge {
     public Point2D getLocation(EdgeLocation location) {
         double a = getAngle(location);
         return new Point2D.Double(center.getX() + radius * cos(a), center.getY() + radius * sin(a));
+    }
+
+    @Override
+    public EdgeLocation getNearestLocation(Point2D point) {
+        if (point.distance(center) <= EPSILON) {
+            // point ~= center
+            return EdgeLocation.create(this, node0, 0);
+        }
+        double dx = point.getX() - center.getX();
+        double dy = point.getY() - center.getY();
+        double gamma = atan2(dy, dx);
+        double beta = normalizeRad(gamma - angle0);
+        if (angle >= 0 && beta < 0) {
+            beta += RAD360;
+        }
+        if (angle < 0 && beta > 0) {
+            beta -= RAD360;
+        }
+        if ((angle >= 0 && beta >= 0 && beta <= angle)
+                || (angle < 0 && beta >= angle && beta <= 0)) {
+            return EdgeLocation.create(this, node0, abs(beta * radius));
+        }
+        double bisector = angle >= 0 ?
+                angle / 2 + RAD180 :
+                angle / 2 - RAD180;
+        if (bisector >= 0) {
+            return beta >= bisector ?
+                    EdgeLocation.create(this, node0, 0) :
+                    EdgeLocation.create(this, node0, length);
+        } else {
+            return beta <= bisector ?
+                    EdgeLocation.create(this, node0, 0) :
+                    EdgeLocation.create(this, node0, length);
+        }
     }
 
     @Override

@@ -42,6 +42,15 @@ public interface Edge {
     Rectangle2D getBounds();
 
     /**
+     * Returns the distance from the point
+     *
+     * @param point the point
+     */
+    default double getDistance(Point2D point) {
+        return getNearestLocation(point).getLocation().distance(point);
+    }
+
+    /**
      * Returns the edge identifier
      */
     String getId();
@@ -57,6 +66,13 @@ public interface Edge {
      * @param location the edge location
      */
     Point2D getLocation(EdgeLocation location);
+
+    /**
+     * Returns the nearest location from the point (m)
+     *
+     * @param point the point
+     */
+    EdgeLocation getNearestLocation(Point2D point);
 
     /**
      * Returns the first node

@@ -31,6 +31,7 @@ package org.mmarini.railways2.model.geometry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mmarini.railways2.model.WithStationMap;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -39,13 +40,13 @@ import static java.lang.Math.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.mmarini.railways.Matchers.pointCloseTo;
+import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
 
-class CurveTest {
+class CurveTest implements WithStationMap {
 
+    private StationMap stationMap;
     private Curve curve;
-    private Node a;
-    private Node b;
 
     @Test
     void angles270() {
@@ -221,15 +222,54 @@ class CurveTest {
         assertThat(center, pointCloseTo(0, -RADIUS, 1e-3));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "0,           400,0,-180",
+            "0,           0,0,-180",
+            "1256.637,    800,0,-180",
+            "628.319,     400,400,-180",
+            "628.319,     400,390,-180",
+            "628.319,     400,410,-180",
+            "0,           10,0,-180",
+            "1256.637,    790,0,-180",
+            "0,           -10,0,-180",
+            "1256.637,    810,0,-180",
+            "0,           0,-10,-180",
+            "1256.637,    800,-10,-180",
+
+            "0,           400,0,180",
+            "0,           0,0,180",
+            "1256.637,    800,0,180",
+            "628.319,     400,-400,180",
+            "628.319,     400,-390,180",
+            "628.319,     400,-410,180",
+            "0,           10,0,180",
+            "1256.637,    790,0,180",
+            "0,           -10,0,180",
+            "1256.637,    810,0,180",
+            "0,           0,10,180",
+            "1256.637,    800,10,180"
+    })
+    void getNearestLocation(double distance, double x, double y, int angle) {
+        // Given ...
+        given(0, 0, 2 * RADIUS, 0, angle);
+
+        Point2D.Double point = new Point2D.Double(x, y);
+
+        // When ...
+        EdgeLocation location = curve.getNearestLocation(point);
+
+        // Then ...
+        assertThat(location, locatedAt("curve", "a", distance));
+    }
+
     void given(double x0, double y0, double x1, double y1, double angle) {
-        StationMap stationMap = new StationBuilder("station")
+        this.stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(x0, y0), "curve")
                 .addNode("b", new Point2D.Double(x1, y1), "curve")
                 .addCurve("curve", toRadians(angle), "a", "b")
                 .build();
-        this.a = stationMap.getNode("a");
-        this.b = stationMap.getNode("b");
-        this.curve = stationMap.getEdge("curve");
+        this.curve = edge("curve");
     }
 
     @Test
@@ -453,10 +493,10 @@ class CurveTest {
         given(0, 0, RADIUS, RADIUS, 90);
 
         // When ... Then ...
-        assertThat(curve.getLocation(EdgeLocation.create(curve, b, toRadians(60) * RADIUS)),
+        assertThat(curve.getLocation(location("curve", "b", toRadians(60) * RADIUS)),
                 pointCloseTo(RADIUS * sin(toRadians(30)), RADIUS - RADIUS * cos(toRadians(30)), 1e-3));
 
-        assertThat(curve.getLocation(EdgeLocation.create(curve, a, toRadians(60) * RADIUS)),
+        assertThat(curve.getLocation(location("curve", "a", toRadians(60) * RADIUS)),
                 pointCloseTo(RADIUS * sin(toRadians(60)), RADIUS - RADIUS * cos(toRadians(60)), 1e-3));
     }
 
@@ -471,8 +511,8 @@ class CurveTest {
         given(0, 0, RADIUS, RADIUS, 90);
 
         // When ...
-        double angleB60 = toDegrees(curve.getAngle(EdgeLocation.create(curve, b, toRadians(60) * RADIUS)));
-        double angleA60 = toDegrees(curve.getAngle(EdgeLocation.create(curve, a, toRadians(60) * RADIUS)));
+        double angleB60 = toDegrees(curve.getAngle(location("curve", "b", toRadians(60) * RADIUS)));
+        double angleA60 = toDegrees(curve.getAngle(location("curve", "a", toRadians(60) * RADIUS)));
 
         // Then ...
         assertThat(angleB60, closeTo(-60, 0.1));
@@ -491,8 +531,8 @@ class CurveTest {
         given(0, 0, RADIUS, RADIUS, -90);
 
         // When ...
-        double angleB60 = toDegrees(curve.getAngle(EdgeLocation.create(curve, b, toRadians(60) * RADIUS)));
-        double angleA60 = toDegrees(curve.getAngle(EdgeLocation.create(curve, a, toRadians(60) * RADIUS)));
+        double angleB60 = toDegrees(curve.getAngle(location("curve", "b", toRadians(60) * RADIUS)));
+        double angleA60 = toDegrees(curve.getAngle(location("curve", "a", toRadians(60) * RADIUS)));
 
         // Then ...
         assertThat(angleB60, closeTo(90 + 60, 0.1));
@@ -510,8 +550,8 @@ class CurveTest {
         given(0, 0, RADIUS, RADIUS, -90);
 
         // When ...
-        Point2D locationB60 = curve.getLocation(EdgeLocation.create(curve, b, toRadians(60) * RADIUS));
-        Point2D locationA60 = curve.getLocation(EdgeLocation.create(curve, a, toRadians(60) * RADIUS));
+        Point2D locationB60 = curve.getLocation(location("curve", "b", toRadians(60) * RADIUS));
+        Point2D locationA60 = curve.getLocation(location("curve", "a", toRadians(60) * RADIUS));
 
         // Then ...
         assertThat(locationB60, pointCloseTo(RADIUS - RADIUS * cos(toRadians(30)), RADIUS * sin(toRadians(30)), 1e-3));
@@ -524,12 +564,12 @@ class CurveTest {
         given(0, 0, RADIUS, -RADIUS, 90);
 
         // When ...
-        double orientation1 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(89) * RADIUS));
-        double orientation2 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(45) * RADIUS));
-        double orientation3 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(1) * RADIUS));
-        double orientation4 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(89) * RADIUS));
-        double orientation5 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(45) * RADIUS));
-        double orientation6 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(1) * RADIUS));
+        double orientation1 = curve.getOrientation(location("curve", "a", toRadians(89) * RADIUS));
+        double orientation2 = curve.getOrientation(location("curve", "a", toRadians(45) * RADIUS));
+        double orientation3 = curve.getOrientation(location("curve", "a", toRadians(1) * RADIUS));
+        double orientation4 = curve.getOrientation(location("curve", "b", toRadians(89) * RADIUS));
+        double orientation5 = curve.getOrientation(location("curve", "b", toRadians(45) * RADIUS));
+        double orientation6 = curve.getOrientation(location("curve", "b", toRadians(1) * RADIUS));
 
         // Then ...
         assertThat(toDegrees(orientation1), closeTo(179, 1));
@@ -546,12 +586,12 @@ class CurveTest {
         given(0, 0, RADIUS, RADIUS, -90);
 
         // When ...
-        double orientation1 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(89) * RADIUS));
-        double orientation2 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(45) * RADIUS));
-        double orientation3 = curve.getOrientation(EdgeLocation.create(curve, a, toRadians(1) * RADIUS));
-        double orientation4 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(89) * RADIUS));
-        double orientation5 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(45) * RADIUS));
-        double orientation6 = curve.getOrientation(EdgeLocation.create(curve, b, toRadians(1) * RADIUS));
+        double orientation1 = curve.getOrientation(location("curve", "a", toRadians(89) * RADIUS));
+        double orientation2 = curve.getOrientation(location("curve", "a", toRadians(45) * RADIUS));
+        double orientation3 = curve.getOrientation(location("curve", "a", toRadians(1) * RADIUS));
+        double orientation4 = curve.getOrientation(location("curve", "b", toRadians(89) * RADIUS));
+        double orientation5 = curve.getOrientation(location("curve", "b", toRadians(45) * RADIUS));
+        double orientation6 = curve.getOrientation(location("curve", "b", toRadians(1) * RADIUS));
 
         // Then ...
         assertThat(toDegrees(orientation1), closeTo(-179, 1));
@@ -569,5 +609,10 @@ class CurveTest {
 
         // When ... Then ...
         assertThat(curve.getRadius(), closeTo(RADIUS, 1e-3));
+    }
+
+    @Override
+    public StationMap stationMap() {
+        return this.stationMap;
     }
 }
