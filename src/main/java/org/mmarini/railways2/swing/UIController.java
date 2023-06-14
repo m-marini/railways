@@ -84,7 +84,7 @@ public class UIController {
 
     private final JFrame frame;
     private final MapPanel mapPanel;
-    private final StationPanel stationPanel;
+    private final StationScrollPanel stationScrollPanel;
     private final TrainPane trainPanel;
     private final JTabbedPane tabPanel;
     private final JSplitPane verticalSplit;
@@ -95,7 +95,7 @@ public class UIController {
     public UIController() throws IOException {
         this.frame = new JFrame();
         this.mapPanel = new MapPanel();
-        this.stationPanel = new StationPanel();
+        this.stationScrollPanel = new StationScrollPanel();
         this.trainPanel = new TrainPane();
         this.tabPanel = new JTabbedPane();
         this.verticalSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -112,6 +112,7 @@ public class UIController {
         initTabbedPanel();
         initFrame();
         createSubscriptions();
+        logger.atDebug().log("Created");
     }
 
     /**
@@ -119,7 +120,10 @@ public class UIController {
      */
     private void createSubscriptions() {
         mapPanel.readMouseClick()
-                .doOnNext(pt -> logger.atDebug().log("Map point {}", pt))
+                .doOnNext(stationScrollPanel::scrollTo)
+                .subscribe();
+        stationScrollPanel.readMouseClick()
+                .doOnNext(pt->logger.atDebug().log("Mouse click {}",pt))
                 .subscribe();
     }
 
@@ -130,7 +134,7 @@ public class UIController {
      */
     private void handleSimulationEvent(StationStatus stationStatus) {
         trainPanel.setStatus(stationStatus);
-        stationPanel.paintStation(stationStatus);
+        stationScrollPanel.paintStation(stationStatus);
         mapPanel.paintStation(stationStatus);
     }
 
@@ -202,7 +206,7 @@ public class UIController {
         verticalSplit.setOneTouchExpandable(true);
         verticalSplit.setResizeWeight(0);
         verticalSplit.setTopComponent(horizontalSplit);
-        verticalSplit.setBottomComponent(new JScrollPane(stationPanel));
+        verticalSplit.setBottomComponent(stationScrollPanel);
     }
 
     /**
