@@ -28,10 +28,19 @@
 
 package org.mmarini.railways2.swing;
 
+import hu.akarnokd.rxjava3.swing.SwingObservable;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Flowable;
+import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.StationStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.function.Consumer;
@@ -51,8 +60,11 @@ public class StationPanel extends JComponent {
      * Scale 10 pix/m
      */
     private static final double SCALE = 10;
+    private static final Logger logger = LoggerFactory.getLogger(StationPanel.class);
+    private final Flowable<Tuple2<Point2D, StationStatus>> mouseClick;
     private Point2D center;
     private Consumer<Graphics2D> painter;
+    private StationStatus status;
 
     /**
      * Creates the station panel
@@ -61,6 +73,26 @@ public class StationPanel extends JComponent {
         setBackground(BACKGROUND_COLOR);
         this.center = new Point2D.Double();
         this.painter = NONE_PAINTER;
+        this.mouseClick = SwingObservable.mouse(this, SwingObservable.MOUSE_CLICK)
+                .toFlowable(BackpressureStrategy.BUFFER)
+                .filter(ev -> ev.getID() == MouseEvent.MOUSE_CLICKED)
+                .map(ev -> Tuple2.of(getMapPoint(ev.getPoint()), status));
+    }
+
+    /**
+     * Returns the transformation from map coordinates to view coordinates
+     */
+    AffineTransform createTransform() {
+        Dimension size = getSize();
+        Rectangle2D.Float panelRect = new Rectangle2D.Float(
+                BORDER,
+                BORDER,
+                size.width - BORDER - BORDER,
+                size.height - BORDER - BORDER);
+        AffineTransform tr = AffineTransform.getTranslateInstance(panelRect.getCenterX(), panelRect.getCenterY());
+        tr.scale(SCALE, -SCALE);
+        tr.translate(-center.getX(), -center.getY());
+        return tr;
     }
 
     /**
@@ -80,21 +112,42 @@ public class StationPanel extends JComponent {
         repaint();
     }
 
+    /**
+     * Returns the map point of the view point
+     *
+     * @param point the map point
+     */
+    public Point2D getMapPoint(Point point) {
+        AffineTransform tr = createTransform();
+        try {
+            tr.invert();
+        } catch (NoninvertibleTransformException e) {
+            logger.atError().setCause(e).log();
+            throw new RuntimeException(e);
+        }
+        return tr.transform(point, null);
+    }
+
+    /**
+     * Returns the view point of the map point
+     *
+     * @param point the map point
+     */
+    public Point getViewPoint(Point2D point) {
+        AffineTransform tr = createTransform();
+        Point2D viewPoint = tr.transform(point, null);
+        int x = (int) Math.round(viewPoint.getX());
+        int y = (int) Math.round(viewPoint.getY());
+        return new Point(x, y);
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         Dimension size = getSize();
         Graphics2D gr = (Graphics2D) g.create();
         gr.setColor(getBackground());
         gr.fillRect(0, 0, size.width, size.height);
-        Rectangle2D.Float panelRect = new Rectangle2D.Float(
-                BORDER,
-                BORDER,
-                size.width - BORDER - BORDER,
-                size.height - BORDER - BORDER);
-
-        gr.translate(panelRect.getCenterX(), panelRect.getCenterY());
-        gr.scale(SCALE, -SCALE);
-        gr.translate(-center.getX(), -center.getY());
+        gr.transform(createTransform());
         painter.accept(gr);
     }
 
@@ -114,6 +167,7 @@ public class StationPanel extends JComponent {
      * @param status the station
      */
     public void paintStation(StationStatus status) {
+        this.status = status;
         Rectangle2D bounds = status.getBounds();
         int w = (int) round(bounds.getWidth() * SCALE);
         int h = (int) round(bounds.getHeight() * SCALE);
@@ -121,5 +175,9 @@ public class StationPanel extends JComponent {
         setPreferredSize(new Dimension(w + BORDER * 2, h + BORDER * 2));
         painter = new Builder(status).build();
         repaint();
+    }
+
+    public Flowable<Tuple2<Point2D, StationStatus>> readMouseClick() {
+        return mouseClick;
     }
 }
