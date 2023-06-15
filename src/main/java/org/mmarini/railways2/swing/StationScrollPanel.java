@@ -29,7 +29,6 @@
 package org.mmarini.railways2.swing;
 
 import io.reactivex.rxjava3.core.Flowable;
-import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.StationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +67,7 @@ public class StationScrollPanel extends JScrollPane {
     /**
      * Returns the mouse click flowable events
      */
-    public Flowable<Tuple2<Point2D,StationStatus>> readMouseClick() {
+    public Flowable<MapEvent> readMouseClick() {
         return stationPanel.readMouseClick();
     }
 
@@ -85,5 +84,16 @@ public class StationScrollPanel extends JScrollPane {
         int x = max(0, viewPoint.x - size.width / 2);
         int y = max(0, viewPoint.y - size.height / 2);
         stationPanel.scrollRectToVisible(new Rectangle(x, y, size.width, size.height));
+    }
+
+    /**
+     * Shows the popup menu
+     *
+     * @param popupMenu the popup menu
+     * @param location  the location in map coordinate
+     */
+    public void showPopUp(JPopupMenu popupMenu, Point2D location) {
+        Point loc = stationPanel.getViewPoint(location);
+        popupMenu.show(stationPanel, loc.x, loc.y);
     }
 }

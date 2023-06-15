@@ -32,8 +32,10 @@ import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.SimulatorEngine;
 import org.mmarini.railways2.model.SimulatorEngineImpl;
 import org.mmarini.railways2.model.StationStatus;
+import org.mmarini.railways2.model.Train;
 import org.mmarini.railways2.model.blocks.BlockStationBuilder;
 import org.mmarini.railways2.model.blocks.StationDef;
+import org.mmarini.railways2.model.routes.*;
 import org.mmarini.yaml.Utils;
 import org.mmarini.yaml.schema.Locator;
 import org.slf4j.Logger;
@@ -41,14 +43,22 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Function;
+import java.util.stream.Stream;
+
+import static java.lang.Math.sqrt;
+import static java.lang.String.format;
+import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
+import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAUGE;
 
 /**
  * Manages the interaction between user interface and model.
@@ -59,6 +69,7 @@ public class UIController {
     private static final String IMAGE_RESOURCE_NAME = "org/mmarini/railways2/swing/railways.png";
     private static final int FPS = 60;
     private static final Logger logger = LoggerFactory.getLogger(UIController.class);
+    private static final double ROUTE_DISTANCE_THRESHOLD = TRACK_GAP * sqrt(2) / 2;
 
     /**
      * Adds a tab to the tabbed panel
@@ -92,6 +103,11 @@ public class UIController {
     private final SimulatorEngine<StationStatus, StationStatus> simulator;
     private final Random random;
 
+    /**
+     * Creates the user interface controller
+     *
+     * @throws IOException in case of error
+     */
     public UIController() throws IOException {
         this.frame = new JFrame();
         this.mapPanel = new MapPanel();
@@ -100,6 +116,8 @@ public class UIController {
         this.tabPanel = new JTabbedPane();
         this.verticalSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         this.horizontalSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        JPopupMenu popupMenu = new JPopupMenu();
+
         StationStatus initialSeed = createInitialSeed();
         this.simulator = SimulatorEngineImpl.create(initialSeed, this::stepUp, Function.identity())
                 .setEventInterval(Duration.ofMillis(1000 / FPS))
@@ -107,12 +125,98 @@ public class UIController {
                 .setOnSpeed(this::handleSpeed);
         this.random = new Random();
         simulator.setSpeed(1);
+
+        popupMenu.add(new JMenuItem("Entry"));
+
         initHorizontalSplit();
         initVerticalSplit();
         initTabbedPanel();
         initFrame();
         createSubscriptions();
         logger.atDebug().log("Created");
+    }
+
+    /**
+     * Returns the popup menu to display
+     *
+     * @param event the map event
+     */
+    private JPopupMenu createPopUpMenu(MapEvent event) {
+        // Creates train menu items
+        JPopupMenu popupMenu = new JPopupMenu();
+        event.getSelectedTrain().stream()
+                .flatMap(this::createTrainMenu)
+                .forEach(popupMenu::add);
+
+        // Creates section menu item
+        event.getSelectedSection(TRACK_GAUGE / 2)
+                .map(section -> createSectionMenu(event, section))
+                .ifPresent(popupMenu::add);
+
+        // Creates route menu item
+        event.getNearestRoute(ROUTE_DISTANCE_THRESHOLD)
+                .flatMap(route -> createRouteMenu(event, route))
+                .ifPresent(popupMenu::add);
+
+
+        return popupMenu;
+    }
+
+    /**
+     * Returns the route menu item
+     *
+     * @param event the map event
+     * @param route the route
+     */
+    private Optional<JMenuItem> createRouteMenu(MapEvent event, Route route) {
+        if (route instanceof Switch || route instanceof DoubleSlipSwitch) {
+            String label = StationLabels.getLabel(event.getStationStatus().getStationMap().getId(), route.getId());
+            JMenuItem menu = new JMenuItem(format(
+                    Messages.getString("UIController.toggleSwitchMenuItem.name"),
+                    label));
+            menu.addActionListener(route instanceof Switch ?
+                    ev -> toggleSwitch(route.getId()) :
+                    ev -> toggleDoubleSlipSwitch(route.getId()));
+            return Optional.of(menu);
+        } else if (route instanceof Signal) {
+            boolean lock = true;
+            String label = StationLabels.getLabel(event.getStationStatus().getStationMap().getId(), route.getId());
+            JMenuItem menu = new JMenuItem(format(
+                    lock ?
+                            Messages.getString("UIController.lockSignalMenuItem.name") :
+                            Messages.getString("UIController.unlockSignalMenuItem.name"),
+                    label));
+            menu.addActionListener(lock ?
+                    ev -> unlockSignal(route.getId()) :
+                    ev -> unlockSignal(route.getId()));
+            return Optional.of(menu);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the section menu item
+     *
+     * @param event   the map event
+     * @param section the selected section
+     */
+    private JMenuItem createSectionMenu(MapEvent event, Section section) {
+        StationStatus stationStatus = event.getStationStatus();
+        boolean sectionLocked = stationStatus.isSectionLocked(section.getEdges().get(0));
+        String label = StationLabels.getLabel(event.getStationStatus().getStationMap().getId(), section.getId());
+        JMenuItem sectionMenu = new JMenuItem(sectionLocked ?
+                format(Messages.getString("UIController.unlockSectionMenuItem.name"),
+                        label) :
+                format(Messages.getString("UIController.lockSectionMenuItem.name"),
+                        label));
+        sectionMenu.addActionListener(ev -> {
+            if (sectionLocked) {
+                logger.atDebug().log("unlock {}", section);
+            } else {
+                logger.atDebug().log("lock {}", section);
+            }
+        });
+        return sectionMenu;
     }
 
     /**
@@ -123,8 +227,147 @@ public class UIController {
                 .doOnNext(stationScrollPanel::scrollTo)
                 .subscribe();
         stationScrollPanel.readMouseClick()
-                .doOnNext(pt->logger.atDebug().log("Mouse click {}",pt))
+                .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON1)
+                .doOnNext(this::handleLeftMouseMapEvent)
                 .subscribe();
+        stationScrollPanel.readMouseClick()
+                .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON2)
+                .doOnNext(this::handleCentralMouseMapEvent)
+                .subscribe();
+        stationScrollPanel.readMouseClick()
+                .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON3)
+                .doOnNext(this::handleRightMouseMapEvent)
+                .subscribe();
+    }
+
+    /**
+     * Returns the menu entries for a train
+     *
+     * @param train the selected train
+     */
+    private Stream<JMenuItem> createTrainMenu(Train train) {
+        Stream.Builder<JMenuItem> builder = Stream.builder();
+        Train.State state = train.getState();
+        if (state == Train.STATE_RUNNING || state.equals(Train.STATE_WAITING_FOR_SIGNAL)) {
+            JMenuItem prova = new JMenuItem(
+                    format(Messages.getString("UIController.stopTrainMenuItem.name"), train.getId()));
+            prova.addActionListener(ev -> stopTrain(train.getId()));
+            builder.add(prova);
+        }
+        if (state.equals(Train.STATE_BRAKING) || state.equals(Train.STATE_WAITING_FOR_RUN)) {
+            JMenuItem prova = new JMenuItem(
+                    format(Messages.getString("UIController.startTrainMenuItem.name"), train.getId()));
+            prova.addActionListener(ev -> startTrain(train.getId()));
+            builder.add(prova);
+        }
+        if (state.equals(Train.STATE_WAITING_FOR_RUN)) {
+            JMenuItem prova = new JMenuItem(
+                    format(Messages.getString("UIController.revertTrainMenuItem.name"), train.getId()));
+            prova.addActionListener(ev -> revertTrain(train.getId()));
+            builder.add(prova);
+        }
+        return builder.build();
+    }
+
+    /**
+     * Handles central mouse map event from stationScrollPanel
+     *
+     * @param event the map event
+     */
+    private void handleCentralMouseMapEvent(MapEvent event) {
+        Optional<Train> trainOpt = event.getSelectedTrain();
+        Optional<Route> routeOpt = event.getNearestRoute(ROUTE_DISTANCE_THRESHOLD);
+        Optional<Section> sectionOpt = event.getSelectedSection(TRACK_GAUGE / 2);
+        trainOpt.ifPresentOrElse(
+                this::handleTrainSelection2,
+                () -> routeOpt.ifPresentOrElse(
+                        route -> handleRouteSelection2(event, route),
+                        () -> sectionOpt.ifPresent(
+                                section -> handleSectionSelection2(event, section))));
+    }
+
+    /**
+     * Handles left mouse map event from stationScrollPanel
+     *
+     * @param event the map event
+     */
+    private void handleLeftMouseMapEvent(MapEvent event) {
+        // left button
+        Optional<Route> routeOpt = event.getNearestRoute(ROUTE_DISTANCE_THRESHOLD);
+        Optional<Section> sectionOpt = event.getSelectedSection(TRACK_GAUGE / 2);
+        event.getSelectedTrain().ifPresentOrElse(
+                this::handleTrainSelection,
+                () -> routeOpt.ifPresentOrElse(
+                        route -> handleRouteSelection(event, route),
+                        () -> sectionOpt.ifPresent(
+                                section -> handleSectionSelection(event, section))));
+    }
+
+    /**
+     * Handles right mouse map event from stationScrollPanel
+     *
+     * @param event the map event
+     */
+    private void handleRightMouseMapEvent(MapEvent event) {
+        //  right button = context popup menu
+        JPopupMenu menu = createPopUpMenu(event);
+        stationScrollPanel.showPopUp(menu, event.getNearestEdgeLocation().getLocation());
+    }
+
+    /**
+     * Handles the left mouse button on route
+     *
+     * @param event the map event
+     * @param route the selected route
+     */
+    private void handleRouteSelection(MapEvent event, Route route) {
+        if (route instanceof Switch) {
+            toggleSwitch(route.getId());
+        } else if (route instanceof DoubleSlipSwitch) {
+            toggleDoubleSlipSwitch(route.getId());
+        } else if (route instanceof Signal) {
+            unlockSignal(route.getId());
+        }
+    }
+
+    /**
+     * Handles the central mouse button on route
+     *
+     * @param event the map event
+     * @param route the selected route
+     */
+    private void handleRouteSelection2(MapEvent event, Route route) {
+        if (route instanceof Switch) {
+            toggleSwitch(route.getId());
+        } else if (route instanceof DoubleSlipSwitch) {
+            toggleDoubleSlipSwitch(route.getId());
+        } else if (route instanceof Signal) {
+            lockSignal(route.getId());
+        }
+    }
+
+    /**
+     * Handles left mouse button on section (unlock)
+     *
+     * @param event   the map event
+     * @param section the selected section
+     */
+    private void handleSectionSelection(MapEvent event, Section section) {
+        if (event.getStationStatus().isSectionLocked(section.getEdges().get(0))) {
+            unlockSection(section.getId());
+        }
+    }
+
+    /**
+     * Handles central mouse button on section (lock)
+     *
+     * @param event   the map event
+     * @param section the selected section
+     */
+    private void handleSectionSelection2(MapEvent event, Section section) {
+        if (!event.getStationStatus().isSectionLocked(section.getEdges().get(0))) {
+            lockSection(section.getId());
+        }
     }
 
     /**
@@ -144,6 +387,32 @@ public class UIController {
      * @param speed the actual simulation speed
      */
     private void handleSpeed(double speed) {
+    }
+
+    /**
+     * Handles the mouse left button on train
+     *
+     * @param train the selected train
+     */
+    private void handleTrainSelection(Train train) {
+        Train.State state = train.getState();
+        if (state.equals(Train.STATE_RUNNING) || state.equals(Train.STATE_WAITING_FOR_SIGNAL)) {
+            stopTrain(train.getId());
+        } else if (state.equals(Train.STATE_BRAKING) || state.equals(Train.STATE_WAITING_FOR_RUN)) {
+            startTrain(train.getId());
+        }
+    }
+
+    /**
+     * Handles the mouse central button on train
+     *
+     * @param train the selected train
+     */
+    private void handleTrainSelection2(Train train) {
+        Train.State state = train.getState();
+        if (state.equals(Train.STATE_WAITING_FOR_RUN)) {
+            revertTrain(train.getId());
+        }
     }
 
     /**
@@ -210,12 +479,59 @@ public class UIController {
     }
 
     /**
+     * Unlocks the section
+     *
+     * @param id the section identifier
+     */
+
+    private void lockSection(String id) {
+        simulator.request(status -> {
+//            return status.stopTrain(trainId);
+            logger.atDebug().log("Lock section {}", id);
+            return status;
+        });
+    }
+
+    private void lockSignal(String id) {
+        simulator.request(status -> {
+            logger.atDebug().log("Lock {}", id);
+            return status;
+        });
+    }
+
+    /**
+     * Reverts the train
+     *
+     * @param trainId the train identifier
+     */
+    private void revertTrain(String trainId) {
+        simulator.request(status -> {
+//            return status.stopTrain(trainId);
+            logger.atDebug().log("revert {}", trainId);
+            return status;
+        });
+    }
+
+    /**
      * Runs the app game
      */
     public void run() {
         frame.setVisible(true);
         simulator.setSpeed(1);
         simulator.start();
+    }
+
+    /**
+     * Starts the train
+     *
+     * @param trainId the train identifier
+     */
+    private void startTrain(String trainId) {
+        simulator.request(status -> {
+//            return status.stopTrain(trainId);
+            logger.atDebug().log("starting {}", trainId);
+            return status;
+        });
     }
 
     /**
@@ -228,5 +544,66 @@ public class UIController {
     private Tuple2<StationStatus, Double> stepUp(StationStatus status, double dt) {
         StationStatus next = status.tick(dt, random);
         return Tuple2.of(next, dt);
+    }
+
+    /**
+     * Stops the train
+     *
+     * @param trainId the train identifier
+     */
+    private void stopTrain(String trainId) {
+        simulator.request(status -> {
+//            return status.stopTrain(trainId);
+            logger.atDebug().log("stopping {}", trainId);
+            return status;
+        });
+    }
+
+    /**
+     * Toggles the double slip switch
+     *
+     * @param id the switch identifier
+     */
+    private void toggleDoubleSlipSwitch(String id) {
+        simulator.request(status -> {
+            logger.atDebug().log("Toggle {}", id);
+            return status;
+        });
+    }
+
+    /**
+     * Toggles switch
+     *
+     * @param id the switch identifier
+     */
+    private void toggleSwitch(String id) {
+        simulator.request(status -> {
+            logger.atDebug().log("Toggle {}", id);
+            return status;
+        });
+    }
+
+    /**
+     * Locks the section
+     *
+     * @param id the section identifier
+     */
+    private void unlockSection(String id) {
+        simulator.request(status -> {
+            logger.atDebug().log("Unlock section {}", id);
+            return status;
+        });
+    }
+
+    /**
+     * Unlocks the signal
+     *
+     * @param id the signal identifier
+     */
+    private void unlockSignal(String id) {
+        simulator.request(status -> {
+            logger.atDebug().log("Unlock {}", id);
+            return status;
+        });
     }
 }

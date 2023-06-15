@@ -92,27 +92,27 @@ public class Platforms extends AbstractBlock {
                 .boxed()
                 .flatMap(i -> Stream.of(
                         Tuple2.of(
-                                "w" + (i + 1), new OrientedGeometry(
+                                i + 1 + ".w", new OrientedGeometry(
                                         new Point2D.Double(0, i * TRACK_GAP), 0)),
                         Tuple2.of(
-                                "e" + (i + 1), new OrientedGeometry(
+                                i + 1 + ".e", new OrientedGeometry(
                                         new Point2D.Double(totalLength, i * TRACK_GAP), -180)
                         )))
                 .collect(Tuple2.toMap());
         List<NodeBuilderParams> innerPoints = IntStream.range(0, numPlatforms)
                 .boxed()
                 .flatMap(i -> {
-                    String suffix = String.valueOf(i + 1);
+                    String prefix = String.valueOf(i + 1);
                     return Stream.of(
-                            NodeBuilderParams.create("signalw" + suffix,
+                            NodeBuilderParams.create(prefix + ".signalw",
                                     PLATFORM_SIGNAL_GAP, i * TRACK_GAP,
-                                    "w" + suffix + ".signalw" + suffix,
-                                    "p" + suffix),
+                                    prefix + ".trackw",
+                                    prefix + ".platform"),
                             NodeBuilderParams.create(
-                                    "signale" + suffix,
+                                    prefix + ".signale",
                                     totalLength - PLATFORM_SIGNAL_GAP, i * TRACK_GAP,
-                                    "p" + suffix,
-                                    "signale" + suffix + ".e" + suffix));
+                                    prefix + ".platform",
+                                    prefix + ".tracke"));
                 })
                 .collect(Collectors.toList());
         List<EdgeBuilderParams> edgeBuilderParams = IntStream.range(0, numPlatforms)
@@ -120,27 +120,29 @@ public class Platforms extends AbstractBlock {
                 .flatMap(i -> {
                     String suffixId = String.valueOf(i + 1);
                     return Stream.of(
-                            EdgeBuilderParams.track("w" + suffixId + ".signalw" + suffixId,
-                                    "w" + suffixId, "signalw" + suffixId),
-                            EdgeBuilderParams.platform("p" + suffixId,
-                                    "signalw" + suffixId, "signale" + suffixId),
-                            EdgeBuilderParams.track("signale" + suffixId + ".e" + suffixId,
-                                    "signale" + suffixId, "e" + suffixId)
+                            EdgeBuilderParams.track(suffixId + ".trackw",
+                                    suffixId + ".w", suffixId + ".signalw"),
+                            EdgeBuilderParams.platform(suffixId + ".platform",
+                                    suffixId + ".signalw", suffixId + ".signale"),
+                            EdgeBuilderParams.track(suffixId + ".tracke",
+                                    suffixId + ".signale", suffixId + ".e")
                     );
                 })
                 .collect(Collectors.toList());
         Map<String, String> edgeByBlockPoint = IntStream.range(0, numPlatforms)
                 .boxed()
                 .flatMap(i -> Stream.of(
-                        Tuple2.of("w" + (i + 1), "w" + (i + 1) + ".signalw" + (i + 1)),
-                        Tuple2.of("e" + (i + 1), "signale" + (i + 1) + ".e" + (i + 1))
+                        Tuple2.of(i + 1 + ".w", i + 1 + ".trackw"),
+                        Tuple2.of(i + 1 + ".e", i + 1 + ".tracke")
                 )).collect(Tuple2.toMap());
         List<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams = IntStream.range(0, numPlatforms)
                 .boxed()
                 .flatMap(i -> Stream.of(
-                        Tuple2.<Function<Node[], ? extends Route>, List<String>>of(Signal::create, List.of("signalw" + (i + 1))),
-                        Tuple2.<Function<Node[], ? extends Route>, List<String>>of(Signal::create, List.of("signale" + (i + 1)))
-                ))
+                        Tuple2.<Function<Node[], ? extends Route>, List<String>>of(Signal::create,
+                                List.of(i + 1 + ".signalw")),
+                        Tuple2.<Function<Node[], ? extends Route>, List<String>>of(Signal::create,
+                                List.of(i + 1 + ".signale")
+                        )))
                 .collect(Collectors.toList());
         return new Platforms(id, geometryById, innerPoints, edgeBuilderParams, edgeByBlockPoint, innerRouteParams);
     }

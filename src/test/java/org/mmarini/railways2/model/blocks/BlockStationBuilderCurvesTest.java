@@ -53,8 +53,8 @@ class BlockStationBuilderCurvesTest {
         setUp(0);
 
         // When ...
-        OrientedGeometry geo1 = builder.getWorldGeometry("curves.e1");
-        OrientedGeometry geo2 = builder.getWorldGeometry("curves.e2");
+        OrientedGeometry geo1 = builder.getWorldGeometry("curves.1.e");
+        OrientedGeometry geo2 = builder.getWorldGeometry("curves.2.e");
 
         // Then ...
         assertThat(geo1.getPoint(), pointCloseTo(0, 0, EPSILON));
@@ -73,9 +73,9 @@ class BlockStationBuilderCurvesTest {
         Wayout east = Wayout.create("east");
         List<Block> blocks = List.of(east, platforms, curves, west);
         Map<String, String> links = Map.of(
-                "curves.e1", "p.w1",
-                "west.entry", "curves.w1",
-                "east.entry", "p.e1");
+                "curves.1.e", "p.1.w",
+                "west.entry", "curves.1.w",
+                "east.entry", "p.1.e");
         StationDef station = StationDef.create("station", orientation, blocks, links);
         this.builder = new BlockStationBuilder(station, null);
     }

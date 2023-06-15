@@ -103,12 +103,12 @@ class StationTest {
         // Given ...
 
         // When ...
-        BlockPoint w1 = station.decodeConnection("platforms.w1");
-        BlockPoint e2 = station.decodeConnection("platforms.e2");
+        BlockPoint w1 = station.decodeConnection("platforms.1.w");
+        BlockPoint e2 = station.decodeConnection("platforms.2.e");
 
         // Then ...
-        assertEquals(new BlockPoint(platform, "w1"), w1);
-        assertEquals(new BlockPoint(platform, "e2"), e2);
+        assertEquals(new BlockPoint(platform, "1.w"), w1);
+        assertEquals(new BlockPoint(platform, "2.e"), e2);
     }
 
     @Test
@@ -152,26 +152,26 @@ class StationTest {
         assertThat(junctions, containsInAnyOrder(
                 hasToString("left.entry"),
                 hasToString("left.exit"),
-                hasToString("leftTracks.e1"),
-                hasToString("leftTracks.w1"),
-                hasToString("leftTracks.w2"),
-                hasToString("leftTracks.e2"),
-                hasToString("leftSignals.w1"),
-                hasToString("leftSignals.e1"),
-                hasToString("leftSignals.w2"),
-                hasToString("leftSignals.e2"),
-                hasToString("platforms.e1"),
-                hasToString("platforms.w1"),
-                hasToString("platforms.e2"),
-                hasToString("platforms.w2"),
-                hasToString("rightSignals.e1"),
-                hasToString("rightSignals.w1"),
-                hasToString("rightSignals.e2"),
-                hasToString("rightSignals.w2"),
-                hasToString("rightTracks.e1"),
-                hasToString("rightTracks.w1"),
-                hasToString("rightTracks.e2"),
-                hasToString("rightTracks.w2"),
+                hasToString("leftTracks.1.e"),
+                hasToString("leftTracks.1.w"),
+                hasToString("leftTracks.2.w"),
+                hasToString("leftTracks.2.e"),
+                hasToString("leftSignals.1.w"),
+                hasToString("leftSignals.1.e"),
+                hasToString("leftSignals.2.w"),
+                hasToString("leftSignals.2.e"),
+                hasToString("platforms.1.e"),
+                hasToString("platforms.1.w"),
+                hasToString("platforms.2.e"),
+                hasToString("platforms.2.w"),
+                hasToString("rightSignals.1.e"),
+                hasToString("rightSignals.1.w"),
+                hasToString("rightSignals.2.e"),
+                hasToString("rightSignals.2.w"),
+                hasToString("rightTracks.1.e"),
+                hasToString("rightTracks.1.w"),
+                hasToString("rightTracks.2.e"),
+                hasToString("rightTracks.2.w"),
                 hasToString("right.entry"),
                 hasToString("right.exit")
         ));
@@ -186,12 +186,12 @@ class StationTest {
 
         // Then ...
         assertThat(junctions, containsInAnyOrder(
-                hasToString("leftSignals.w1 - leftTracks.e1"),
-                hasToString("left.entry - leftTracks.w1"),
-                hasToString("rightSignals.e1 - rightTracks.w1"),
-                hasToString("leftSignals.e1 - platforms.w1"),
-                hasToString("platforms.e1 - rightSignals.w1"),
-                hasToString("right.exit - rightTracks.e1")
+                hasToString("leftSignals.1.w - leftTracks.1.e"),
+                hasToString("left.entry - leftTracks.1.w"),
+                hasToString("rightSignals.1.e - rightTracks.1.w"),
+                hasToString("leftSignals.1.e - platforms.1.w"),
+                hasToString("platforms.1.e - rightSignals.1.w"),
+                hasToString("right.exit - rightTracks.1.e")
         ));
     }
 
@@ -209,12 +209,12 @@ class StationTest {
                 Tracks.create("rightTracks", 2, 1),
                 Wayout.create("right"));
         Map<String, String> links = Map.of(
-                "left.entry", "leftTracks.w1",
-                "leftTracks.e1", "leftSignals.w1",
-                "leftSignals.e1", "platforms.w1",
-                "platforms.e1", "rightSignals.w1",
-                "rightSignals.e1", "rightTracks.w1",
-                "rightTracks.e1", "right.exit"
+                "left.entry", "leftTracks.1.w",
+                "leftTracks.1.e", "leftSignals.1.w",
+                "leftSignals.1.e", "platforms.1.w",
+                "platforms.1.e", "rightSignals.1.w",
+                "rightSignals.1.e", "rightTracks.1.w",
+                "rightTracks.1.e", "right.exit"
         );
         this.station = StationDef.create("id", 0, blocks, links);
         this.platform = (Platforms) station.getBlock("platforms").orElseThrow();

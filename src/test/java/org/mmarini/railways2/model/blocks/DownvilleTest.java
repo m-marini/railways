@@ -69,8 +69,8 @@ public class DownvilleTest extends WithStationStatusTest {
         // Given ...
         build();
         status = withTrain()
-                .addTrain(3, "norton.in", "norton.out", "westUpCross.es.e", "westTrack6.w1", 11.71)
-                .addTrain(3, "norton.in", "norton.out", "westTrack45.w1.e1", "platforms.w4", 193)
+                .addTrain(3, "norton.in", "norton.out", "westUpCross.es.e", "westTrack6.1.w", 11.71)
+                .addTrain(3, "norton.in", "norton.out", "westTrack45.1.track", "platforms.4.w", 193)
                 .build();
 
         // When ...
@@ -98,8 +98,8 @@ public class DownvilleTest extends WithStationStatusTest {
         BlockStationBuilder builder = new BlockStationBuilder(station, null);
 
         // When ...
-        OrientedGeometry geo1 = builder.getWorldGeometry("westSignals.w2");
-        OrientedGeometry geo2 = builder.getWorldGeometry("sowerthCurves.e2");
+        OrientedGeometry geo1 = builder.getWorldGeometry("westSignals.2.w");
+        OrientedGeometry geo2 = builder.getWorldGeometry("sowerthCurves.2.e");
 
         // Then ...
         assertThat(geo1.getPoint(),
@@ -116,7 +116,7 @@ public class DownvilleTest extends WithStationStatusTest {
         StationStatus status = builder.build();
 
         // When ...
-        Curve w1e2 = status.getStationMap().getEdge("sowerthCurves.w1.e1");
+        Curve w1e2 = status.getStationMap().getEdge("sowerthCurves.1.track");
 
 
         // Then ...
@@ -128,8 +128,8 @@ public class DownvilleTest extends WithStationStatusTest {
         // Given ...
         build();
         status = withTrain()
-                .addTrain(3, "norton.in", "norton.out", "westUpCross.es.e", "westTrack6.w1", 11.71)
-                .addTrain(3, "norton.in", "norton.out", "westTrack45.w1.e1", "platforms.w4", 193)
+                .addTrain(3, "norton.in", "norton.out", "westUpCross.es.e", "westTrack6.1.w", 11.71)
+                .addTrain(3, "norton.in", "norton.out", "westTrack45.1.track", "platforms.4.w", 193)
                 .build();
 
         // When ...
@@ -145,8 +145,8 @@ public class DownvilleTest extends WithStationStatusTest {
         // Given ...
         build();
         status = withTrain()
-                .addTrain(3, "norton.in", "norton.out", "westUpCross.es.e", "westTrack6.w1", 0)
-                .addTrain(3, "norton.in", "norton.out", "westTrack45.w1.e1", "platforms.w4", 181.9)
+                .addTrain(3, "norton.in", "norton.out", "westUpCross.es.e", "westTrack6.1.w", 0)
+                .addTrain(3, "norton.in", "norton.out", "westTrack45.1.track", "platforms.4.w", 181.9)
                 .build();
 
         // When ...
