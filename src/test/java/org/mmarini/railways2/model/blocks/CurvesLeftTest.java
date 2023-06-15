@@ -84,39 +84,39 @@ class CurvesLeftTest {
         // Then ...
         assertThat(builders, hasSize(2));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("w1.e1")),
-                hasProperty("node0", equalTo("w1")),
-                hasProperty("node1", equalTo("e1"))
+                hasProperty("id", equalTo("1.track")),
+                hasProperty("node0", equalTo("1.w")),
+                hasProperty("node1", equalTo("1.e"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("w2.e2")),
-                hasProperty("node0", equalTo("w2")),
-                hasProperty("node1", equalTo("e2"))
+                hasProperty("id", equalTo("2.track")),
+                hasProperty("node0", equalTo("2.w")),
+                hasProperty("node1", equalTo("2.e"))
         )));
     }
 
     @Test
     void getEdgeId() {
         // When ...
-        String w1 = block.getEdgeId("w1");
-        String e1 = block.getEdgeId("e1");
-        String w2 = block.getEdgeId("w2");
-        String e2 = block.getEdgeId("e2");
+        String w1 = block.getEdgeId("1.w");
+        String e1 = block.getEdgeId("1.e");
+        String w2 = block.getEdgeId("2.w");
+        String e2 = block.getEdgeId("2.e");
 
         // Then ...
-        assertEquals("w1.e1", w1);
-        assertEquals("w2.e2", w2);
-        assertEquals("w1.e1", e1);
-        assertEquals("w2.e2", e2);
+        assertEquals("1.track", w1);
+        assertEquals("2.track", w2);
+        assertEquals("1.track", e1);
+        assertEquals("2.track", e2);
     }
 
     @Test
     void getGeometry() {
         // When ...
-        OrientedGeometry w1 = block.getEntryGeometry("w1");
-        OrientedGeometry e1 = block.getEntryGeometry("e1");
-        OrientedGeometry w2 = block.getEntryGeometry("w2");
-        OrientedGeometry e2 = block.getEntryGeometry("e2");
+        OrientedGeometry w1 = block.getEntryGeometry("1.w");
+        OrientedGeometry e1 = block.getEntryGeometry("1.e");
+        OrientedGeometry w2 = block.getEntryGeometry("2.w");
+        OrientedGeometry e2 = block.getEntryGeometry("2.e");
 
         // Then ...
         double y0 = RADIUS + TRACK_GAP;

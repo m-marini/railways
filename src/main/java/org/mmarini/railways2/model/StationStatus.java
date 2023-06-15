@@ -592,7 +592,7 @@ public class StationStatus {
      *
      * @param edge the edge
      */
-    Optional<Train> getTrain(Edge edge) {
+    public Optional<Train> getTrain(Edge edge) {
         return Optional.ofNullable(getTrainByEdge().get(edge));
     }
 

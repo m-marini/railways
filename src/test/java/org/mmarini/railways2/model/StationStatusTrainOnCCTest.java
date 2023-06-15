@@ -55,7 +55,7 @@ class StationStatusTrainOnCCTest extends WithStationStatusTest {
         status = new BlockStationBuilder(station, null).build();
         status = new WithTrain(status)
                 .addTrain(10, "norton.in", "norton.out", "westCentralCross.s5.s9", "westCentralCross.s9", 22.3)
-                .addTrain(10, "sowerth.in", "norton.out", "westCentralTrack6.w1.e1", "westCentralTrack6.e1", 92.1)
+                .addTrain(10, "sowerth.in", "norton.out", "westCentralTrack6.1.track", "westCentralTrack6.1.e", 92.1)
                 .build();
     }
 

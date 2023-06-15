@@ -97,26 +97,26 @@ class BlockStationBuilderPlatformsTest {
         assertThat(status.getRoute("east.out"), allOf(isA(Exit.class),
                 hasToString("Exit[east.out]")
         ));
-        assertThat(status.getRoute("p.signalw1"), allOf(isA(Signal.class),
-                hasToString("Signal[p.signalw1]")
+        assertThat(status.getRoute("p.1.signalw"), allOf(isA(Signal.class),
+                hasToString("Signal[p.1.signalw]")
         ));
-        assertThat(status.getRoute("p.signalw2"), allOf(isA(Signal.class),
-                hasToString("Signal[p.signalw2]")
+        assertThat(status.getRoute("p.2.signalw"), allOf(isA(Signal.class),
+                hasToString("Signal[p.2.signalw]")
         ));
-        assertThat(status.getRoute("p.signale1"), allOf(isA(Signal.class),
-                hasToString("Signal[p.signale1]")
+        assertThat(status.getRoute("p.1.signale"), allOf(isA(Signal.class),
+                hasToString("Signal[p.1.signale]")
         ));
-        assertThat(status.getRoute("p.signale2"), allOf(isA(Signal.class),
-                hasToString("Signal[p.signale2]")
+        assertThat(status.getRoute("p.2.signale"), allOf(isA(Signal.class),
+                hasToString("Signal[p.2.signale]")
         ));
-        assertThat(status.getRoute("p.signalw1"), allOf(isA(Signal.class),
-                hasToString("Signal[p.signalw1]")
+        assertThat(status.getRoute("p.1.signalw"), allOf(isA(Signal.class),
+                hasToString("Signal[p.1.signalw]")
         ));
-        assertThat(status.getRoute("p.w1"), allOf(isA(Junction.class),
-                hasToString("Junction[p.w1]")
+        assertThat(status.getRoute("p.1.w"), allOf(isA(Junction.class),
+                hasToString("Junction[p.1.w]")
         ));
-        assertThat(status.getRoute("p.w2"), allOf(isA(Junction.class),
-                hasToString("Junction[p.w2]")
+        assertThat(status.getRoute("p.2.w"), allOf(isA(Junction.class),
+                hasToString("Junction[p.2.w]")
         ));
         assertThat(status.getRoute("east.entry"), allOf(isA(Junction.class),
                 hasToString("Junction[east.entry]")
@@ -141,31 +141,31 @@ class BlockStationBuilderPlatformsTest {
                 hasProperty("location", pointCloseTo(-1, TRACK_GAP, EPSILON)),
                 hasProperty("edges", contains(hasToString("Track[west.entry.in]")))
         ));
-        assertThat(map.getNode("p.w1"), allOf(
+        assertThat(map.getNode("p.1.w"), allOf(
                 hasProperty("location", pointCloseTo(0, 0, EPSILON)),
                 hasProperty("edges", containsInAnyOrder(
-                        hasToString("Track[p.w1.signalw1]"),
+                        hasToString("Track[p.1.trackw]"),
                         hasToString("Track[west.exit.out]")
                 ))
         ));
-        assertThat(map.getNode("p.signalw1"), allOf(
+        assertThat(map.getNode("p.1.signalw"), allOf(
                 hasProperty("location", pointCloseTo(PLATFORM_SIGNAL_GAP, 0, EPSILON)),
                 hasProperty("edges", contains(
-                        hasToString("Track[p.w1.signalw1]"),
-                        hasToString("Platform[p.p1]")
+                        hasToString("Track[p.1.trackw]"),
+                        hasToString("Platform[p.1.platform]")
                 ))
         ));
-        assertThat(map.getNode("p.signale1"), allOf(
+        assertThat(map.getNode("p.1.signale"), allOf(
                 hasProperty("location", pointCloseTo(PLATFORM_LENGTH - PLATFORM_SIGNAL_GAP, 0, EPSILON)),
                 hasProperty("edges", contains(
-                        hasToString("Platform[p.p1]"),
-                        hasToString("Track[p.signale1.e1]")
+                        hasToString("Platform[p.1.platform]"),
+                        hasToString("Track[p.1.tracke]")
                 ))
         ));
         assertThat(map.getNode("east.entry"), allOf(
                 hasProperty("location", pointCloseTo(PLATFORM_LENGTH, 0, EPSILON)),
                 hasProperty("edges", containsInAnyOrder(
-                        hasToString("Track[p.signale1.e1]"),
+                        hasToString("Track[p.1.tracke]"),
                         hasToString("Track[east.entry.in]")
                 ))
         ));
@@ -180,31 +180,31 @@ class BlockStationBuilderPlatformsTest {
                 hasProperty("location", pointCloseTo(-1, 0, EPSILON)),
                 hasProperty("edges", contains(hasToString("Track[west.exit.out]")))
         ));
-        assertThat(map.getNode("p.w2"), allOf(
+        assertThat(map.getNode("p.2.w"), allOf(
                 hasProperty("location", pointCloseTo(0, TRACK_GAP, EPSILON)),
                 hasProperty("edges", containsInAnyOrder(
-                        hasToString("Track[p.w2.signalw2]"),
+                        hasToString("Track[p.2.trackw]"),
                         hasToString("Track[west.entry.in]")
                 ))
         ));
-        assertThat(map.getNode("p.signalw2"), allOf(
+        assertThat(map.getNode("p.2.signalw"), allOf(
                 hasProperty("location", pointCloseTo(PLATFORM_SIGNAL_GAP, TRACK_GAP, EPSILON)),
                 hasProperty("edges", contains(
-                        hasToString("Track[p.w2.signalw2]"),
-                        hasToString("Platform[p.p2]")
+                        hasToString("Track[p.2.trackw]"),
+                        hasToString("Platform[p.2.platform]")
                 ))
         ));
-        assertThat(map.getNode("p.signale2"), allOf(
+        assertThat(map.getNode("p.2.signale"), allOf(
                 hasProperty("location", pointCloseTo(PLATFORM_LENGTH - PLATFORM_SIGNAL_GAP, TRACK_GAP, EPSILON)),
                 hasProperty("edges", contains(
-                        hasToString("Platform[p.p2]"),
-                        hasToString("Track[p.signale2.e2]")
+                        hasToString("Platform[p.2.platform]"),
+                        hasToString("Track[p.2.tracke]")
                 ))
         ));
         assertThat(map.getNode("east.exit"), allOf(
                 hasProperty("location", pointCloseTo(PLATFORM_LENGTH, TRACK_GAP, EPSILON)),
                 hasProperty("edges", containsInAnyOrder(
-                        hasToString("Track[p.signale2.e2]"),
+                        hasToString("Track[p.2.tracke]"),
                         hasToString("Track[east.exit.out]")
                 ))
         ));
@@ -217,19 +217,19 @@ class BlockStationBuilderPlatformsTest {
 
         // Edges
         assertThat(map.getEdge("west.exit.out"), allOf(
-                hasProperty("node0", hasToString("Node[p.w1]")),
+                hasProperty("node0", hasToString("Node[p.1.w]")),
                 hasProperty("node1", hasToString("Node[west.out]"))
         ));
-        assertThat(map.getEdge("p.w1.signalw1"), allOf(
-                hasProperty("node0", hasToString("Node[p.w1]")),
-                hasProperty("node1", hasToString("Node[p.signalw1]"))
+        assertThat(map.getEdge("p.1.trackw"), allOf(
+                hasProperty("node0", hasToString("Node[p.1.w]")),
+                hasProperty("node1", hasToString("Node[p.1.signalw]"))
         ));
-        assertThat(map.getEdge("p.p1"), allOf(
-                hasProperty("node0", hasToString("Node[p.signalw1]")),
-                hasProperty("node1", hasToString("Node[p.signale1]"))
+        assertThat(map.getEdge("p.1.platform"), allOf(
+                hasProperty("node0", hasToString("Node[p.1.signalw]")),
+                hasProperty("node1", hasToString("Node[p.1.signale]"))
         ));
-        assertThat(map.getEdge("p.signale1.e1"), allOf(
-                hasProperty("node0", hasToString("Node[p.signale1]")),
+        assertThat(map.getEdge("p.1.tracke"), allOf(
+                hasProperty("node0", hasToString("Node[p.1.signale]")),
                 hasProperty("node1", hasToString("Node[east.entry]"))
         ));
         assertThat(map.getEdge("east.entry.in"), allOf(
@@ -238,19 +238,19 @@ class BlockStationBuilderPlatformsTest {
         ));
 
         assertThat(map.getEdge("west.entry.in"), allOf(
-                hasProperty("node0", hasToString("Node[p.w2]")),
+                hasProperty("node0", hasToString("Node[p.2.w]")),
                 hasProperty("node1", hasToString("Node[west.in]"))
         ));
-        assertThat(map.getEdge("p.w2.signalw2"), allOf(
-                hasProperty("node0", hasToString("Node[p.w2]")),
-                hasProperty("node1", hasToString("Node[p.signalw2]"))
+        assertThat(map.getEdge("p.2.trackw"), allOf(
+                hasProperty("node0", hasToString("Node[p.2.w]")),
+                hasProperty("node1", hasToString("Node[p.2.signalw]"))
         ));
-        assertThat(map.getEdge("p.p2"), allOf(
-                hasProperty("node0", hasToString("Node[p.signalw2]")),
-                hasProperty("node1", hasToString("Node[p.signale2]"))
+        assertThat(map.getEdge("p.2.platform"), allOf(
+                hasProperty("node0", hasToString("Node[p.2.signalw]")),
+                hasProperty("node1", hasToString("Node[p.2.signale]"))
         ));
-        assertThat(map.getEdge("p.signale2.e2"), allOf(
-                hasProperty("node0", hasToString("Node[p.signale2]")),
+        assertThat(map.getEdge("p.2.tracke"), allOf(
+                hasProperty("node0", hasToString("Node[p.2.signale]")),
                 hasProperty("node1", hasToString("Node[east.exit]"))
         ));
         assertThat(map.getEdge("east.exit.out"), allOf(
@@ -271,12 +271,12 @@ class BlockStationBuilderPlatformsTest {
         assertThat(builders, hasSize(10));
         assertThat(builders, hasItem(allOf(
                 hasProperty("id", equalTo("west.entry.in")),
-                hasProperty("node0", equalTo("p.w2")),
+                hasProperty("node0", equalTo("p.2.w")),
                 hasProperty("node1", equalTo("west.in"))
         )));
         assertThat(builders, hasItem(allOf(
                 hasProperty("id", equalTo("west.exit.out")),
-                hasProperty("node0", equalTo("p.w1")),
+                hasProperty("node0", equalTo("p.1.w")),
                 hasProperty("node1", equalTo("west.out"))
         )));
         assertThat(builders, hasItem(allOf(
@@ -290,33 +290,33 @@ class BlockStationBuilderPlatformsTest {
                 hasProperty("node1", equalTo("east.in"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("p.p1")),
-                hasProperty("node0", equalTo("p.signalw1")),
-                hasProperty("node1", equalTo("p.signale1"))
+                hasProperty("id", equalTo("p.1.platform")),
+                hasProperty("node0", equalTo("p.1.signalw")),
+                hasProperty("node1", equalTo("p.1.signale"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("p.p2")),
-                hasProperty("node0", equalTo("p.signalw2")),
-                hasProperty("node1", equalTo("p.signale2"))
+                hasProperty("id", equalTo("p.2.platform")),
+                hasProperty("node0", equalTo("p.2.signalw")),
+                hasProperty("node1", equalTo("p.2.signale"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("p.w1.signalw1")),
-                hasProperty("node0", equalTo("p.w1")),
-                hasProperty("node1", equalTo("p.signalw1"))
+                hasProperty("id", equalTo("p.1.trackw")),
+                hasProperty("node0", equalTo("p.1.w")),
+                hasProperty("node1", equalTo("p.1.signalw"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("p.w2.signalw2")),
-                hasProperty("node0", equalTo("p.w2")),
-                hasProperty("node1", equalTo("p.signalw2"))
+                hasProperty("id", equalTo("p.2.trackw")),
+                hasProperty("node0", equalTo("p.2.w")),
+                hasProperty("node1", equalTo("p.2.signalw"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("p.signale2.e2")),
-                hasProperty("node0", equalTo("p.signale2")),
+                hasProperty("id", equalTo("p.2.tracke")),
+                hasProperty("node0", equalTo("p.2.signale")),
                 hasProperty("node1", equalTo("east.exit"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("p.signale1.e1")),
-                hasProperty("node0", equalTo("p.signale1")),
+                hasProperty("id", equalTo("p.1.tracke")),
+                hasProperty("node0", equalTo("p.1.signale")),
                 hasProperty("node1", equalTo("east.entry"))
         )));
     }
@@ -349,21 +349,21 @@ class BlockStationBuilderPlatformsTest {
                 hasProperty("location", pointCloseTo(-1, 0, EPSILON)),
                 hasProperty("edges", contains("west.exit.out")))));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.signalw1")),
+                hasProperty("id", equalTo("p.1.signalw")),
                 hasProperty("location", pointCloseTo(PLATFORM_SIGNAL_GAP, 0, EPSILON)),
-                hasProperty("edges", contains("p.w1.signalw1", "p.p1")))));
+                hasProperty("edges", contains("p.1.trackw", "p.1.platform")))));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.signale1")),
+                hasProperty("id", equalTo("p.1.signale")),
                 hasProperty("location", pointCloseTo(PLATFORM_LENGTH - PLATFORM_GAP, 0, EPSILON)),
-                hasProperty("edges", contains("p.p1", "p.signale1.e1")))));
+                hasProperty("edges", contains("p.1.platform", "p.1.tracke")))));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.signalw2")),
+                hasProperty("id", equalTo("p.2.signalw")),
                 hasProperty("location", pointCloseTo(PLATFORM_SIGNAL_GAP, TRACK_GAP, EPSILON)),
-                hasProperty("edges", contains("p.w2.signalw2", "p.p2")))));
+                hasProperty("edges", contains("p.2.trackw", "p.2.platform")))));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.signale2")),
+                hasProperty("id", equalTo("p.2.signale")),
                 hasProperty("location", pointCloseTo(PLATFORM_LENGTH - PLATFORM_GAP, TRACK_GAP, EPSILON)),
-                hasProperty("edges", contains("p.p2", "p.signale2.e2")))));
+                hasProperty("edges", contains("p.2.platform", "p.2.tracke")))));
     }
 
     @Test
@@ -385,13 +385,13 @@ class BlockStationBuilderPlatformsTest {
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
                 contains("east.out"))));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("p.signalw1"))));
+                contains("p.1.signalw"))));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("p.signale1"))));
+                contains("p.1.signale"))));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("p.signalw2"))));
+                contains("p.2.signalw"))));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("p.signale2"))));
+                contains("p.2.signale"))));
     }
 
     @Test
@@ -405,9 +405,9 @@ class BlockStationBuilderPlatformsTest {
         // Then ...
         assertThat(junctions, hasSize(4));
         assertThat(junctions, hasItem(tupleOf(isA(Function.class),
-                contains("p.w1"))));
+                contains("p.1.w"))));
         assertThat(junctions, hasItem(tupleOf(isA(Function.class),
-                contains("p.w2"))));
+                contains("p.2.w"))));
         assertThat(junctions, hasItem(tupleOf(isA(Function.class),
                 contains("east.entry"))));
         assertThat(junctions, hasItem(tupleOf(isA(Function.class),
@@ -427,21 +427,21 @@ class BlockStationBuilderPlatformsTest {
         assertThat(nodes, hasSize(12));
         // Junctions
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.w1")),
+                hasProperty("id", equalTo("p.1.w")),
                 hasProperty("location", pointCloseTo(0, 0, EPSILON)),
-                hasProperty("edges", containsInAnyOrder("west.exit.out", "p.w1.signalw1")))));
+                hasProperty("edges", containsInAnyOrder("west.exit.out", "p.1.trackw")))));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.w2")),
+                hasProperty("id", equalTo("p.2.w")),
                 hasProperty("location", pointCloseTo(0, TRACK_GAP, EPSILON)),
-                hasProperty("edges", containsInAnyOrder("west.entry.in", "p.w2.signalw2")))));
+                hasProperty("edges", containsInAnyOrder("west.entry.in", "p.2.trackw")))));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("east.entry")),
                 hasProperty("location", pointCloseTo(length, 0, EPSILON)),
-                hasProperty("edges", containsInAnyOrder("p.signale1.e1", "east.entry.in")))));
+                hasProperty("edges", containsInAnyOrder("p.1.tracke", "east.entry.in")))));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("east.exit")),
                 hasProperty("location", pointCloseTo(length, TRACK_GAP, EPSILON)),
-                hasProperty("edges", containsInAnyOrder("p.signale2.e2", "east.exit.out")))));
+                hasProperty("edges", containsInAnyOrder("p.2.tracke", "east.exit.out")))));
 
         // Inner node
         assertThat(nodes, hasItem(allOf(
@@ -461,22 +461,22 @@ class BlockStationBuilderPlatformsTest {
                 hasProperty("location", pointCloseTo(-1, 0, EPSILON)),
                 hasProperty("edges", contains("west.exit.out")))));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.signalw1")),
+                hasProperty("id", equalTo("p.1.signalw")),
                 hasProperty("location", pointCloseTo(PLATFORM_SIGNAL_GAP, 0, EPSILON)),
-                hasProperty("edges", contains("p.w1.signalw1", "p.p1")))));
+                hasProperty("edges", contains("p.1.trackw", "p.1.platform")))));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.signale1")),
+                hasProperty("id", equalTo("p.1.signale")),
                 hasProperty("location", pointCloseTo(length - PLATFORM_GAP, 0, EPSILON)),
-                hasProperty("edges", contains("p.p1", "p.signale1.e1")))));
+                hasProperty("edges", contains("p.1.platform", "p.1.tracke")))));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.signalw2")),
+                hasProperty("id", equalTo("p.2.signalw")),
                 hasProperty("location", pointCloseTo(PLATFORM_SIGNAL_GAP, TRACK_GAP, EPSILON)),
-                hasProperty("edges", contains("p.w2.signalw2", "p.p2")))));
+                hasProperty("edges", contains("p.2.trackw", "p.2.platform")))));
 
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.signale2")),
+                hasProperty("id", equalTo("p.2.signale")),
                 hasProperty("location", pointCloseTo(length - PLATFORM_GAP, TRACK_GAP, EPSILON)),
-                hasProperty("edges", contains("p.p2", "p.signale2.e2")))));
+                hasProperty("edges", contains("p.2.platform", "p.2.tracke")))));
     }
 
     @Test
@@ -491,7 +491,7 @@ class BlockStationBuilderPlatformsTest {
         // Then ...
         assertNotNull(eb);
         assertEquals("west.t", eb.getId());
-        assertEquals("p.w2", eb.getNode0());
+        assertEquals("p.2.w", eb.getNode0());
         assertEquals("west.in", eb.getNode1());
 
     }
@@ -502,12 +502,12 @@ class BlockStationBuilderPlatformsTest {
         setUp(0);
 
         // When ... // Then ...
-        assertEquals("p.w1", builder.getGlobalNodeId("west.exit"));
-        assertEquals("p.w2", builder.getGlobalNodeId("west.entry"));
-        assertEquals("p.w1", builder.getGlobalNodeId("p.w1"));
-        assertEquals("p.w2", builder.getGlobalNodeId("p.w2"));
-        assertEquals("east.entry", builder.getGlobalNodeId("p.e1"));
-        assertEquals("east.exit", builder.getGlobalNodeId("p.e2"));
+        assertEquals("p.1.w", builder.getGlobalNodeId("west.exit"));
+        assertEquals("p.2.w", builder.getGlobalNodeId("west.entry"));
+        assertEquals("p.1.w", builder.getGlobalNodeId("p.1.w"));
+        assertEquals("p.2.w", builder.getGlobalNodeId("p.2.w"));
+        assertEquals("east.entry", builder.getGlobalNodeId("p.1.e"));
+        assertEquals("east.exit", builder.getGlobalNodeId("p.2.e"));
         assertEquals("east.entry", builder.getGlobalNodeId("east.entry"));
         assertEquals("east.exit", builder.getGlobalNodeId("east.exit"));
     }
@@ -525,21 +525,21 @@ class BlockStationBuilderPlatformsTest {
         assertThat(nodes, hasSize(4));
         // Junctions
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.w1")),
+                hasProperty("id", equalTo("p.1.w")),
                 hasProperty("location", pointCloseTo(0, 0, EPSILON)),
-                hasProperty("edges", containsInAnyOrder("west.exit.out", "p.w1.signalw1")))));
+                hasProperty("edges", containsInAnyOrder("west.exit.out", "p.1.trackw")))));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("p.w2")),
+                hasProperty("id", equalTo("p.2.w")),
                 hasProperty("location", pointCloseTo(0, TRACK_GAP, EPSILON)),
-                hasProperty("edges", containsInAnyOrder("p.w2.signalw2", "west.entry.in")))));
+                hasProperty("edges", containsInAnyOrder("p.2.trackw", "west.entry.in")))));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("east.entry")),
                 hasProperty("location", pointCloseTo(length, 0, EPSILON)),
-                hasProperty("edges", containsInAnyOrder("p.signale1.e1", "east.entry.in")))));
+                hasProperty("edges", containsInAnyOrder("p.1.tracke", "east.entry.in")))));
         assertThat(nodes, hasItem(allOf(
                 hasProperty("id", equalTo("east.exit")),
                 hasProperty("location", pointCloseTo(length, TRACK_GAP, EPSILON)),
-                hasProperty("edges", containsInAnyOrder("p.signale2.e2", "east.exit.out")))));
+                hasProperty("edges", containsInAnyOrder("p.2.tracke", "east.exit.out")))));
     }
 
     @ParameterizedTest
@@ -549,8 +549,8 @@ class BlockStationBuilderPlatformsTest {
         setUp(orientation);
 
         // When ...
-        Tuple2<Point2D, List<String>> pw1 = builder.getJunctionParams("p.w1");
-        Tuple2<Point2D, List<String>> pw2 = builder.getJunctionParams("p.w2");
+        Tuple2<Point2D, List<String>> pw1 = builder.getJunctionParams("p.1.w");
+        Tuple2<Point2D, List<String>> pw2 = builder.getJunctionParams("p.2.w");
         Tuple2<Point2D, List<String>> eastEntry = builder.getJunctionParams("east.entry");
         Tuple2<Point2D, List<String>> eastExit = builder.getJunctionParams("east.exit");
 
@@ -561,16 +561,16 @@ class BlockStationBuilderPlatformsTest {
         double y2 = TRACK_GAP * cos(toRadians(orientation));
         assertThat(pw1, tupleOf(
                 pointSnapTo(0, 0),
-                contains("p.w1", "west.exit")));
+                contains("p.1.w", "west.exit")));
         assertThat(pw2, tupleOf(
                 pointSnapTo(x2, y2),
-                contains("p.w2", "west.entry")));
+                contains("p.2.w", "west.entry")));
         assertThat(eastEntry, tupleOf(
                 pointSnapTo(x1, y1),
-                contains("east.entry", "p.e1")));
+                contains("east.entry", "p.1.e")));
         assertThat(eastExit, tupleOf(
                 pointSnapTo(x1 + x2, y1 + y2),
-                contains("east.exit", "p.e2")));
+                contains("east.exit", "p.2.e")));
     }
 
     @ParameterizedTest
@@ -583,45 +583,45 @@ class BlockStationBuilderPlatformsTest {
         Map<String, String> nodes = builder.getNodeIdByBlockPointId();
 
         // Then ...
-        assertThat(nodes, hasEntry("p.w1", "p.w1"));
-        assertThat(nodes, hasEntry("west.exit", "p.w1"));
-        assertThat(nodes, hasEntry("p.w2", "p.w2"));
-        assertThat(nodes, hasEntry("west.entry", "p.w2"));
+        assertThat(nodes, hasEntry("p.1.w", "p.1.w"));
+        assertThat(nodes, hasEntry("west.exit", "p.1.w"));
+        assertThat(nodes, hasEntry("p.2.w", "p.2.w"));
+        assertThat(nodes, hasEntry("west.entry", "p.2.w"));
         assertThat(nodes, hasEntry("east.entry", "east.entry"));
-        assertThat(nodes, hasEntry("p.e1", "east.entry"));
+        assertThat(nodes, hasEntry("p.1.e", "east.entry"));
         assertThat(nodes, hasEntry("east.exit", "east.exit"));
-        assertThat(nodes, hasEntry("p.e2", "east.exit"));
+        assertThat(nodes, hasEntry("p.2.e", "east.exit"));
         /*
         double length = NUM_COACHES * COACH_LENGTH + PLATFORM_GAP + PLATFORM_SIGNAL_GAP * 2;
         double x0 = length * cos(toRadians(orientation));
         double y0 = length * sin(toRadians(orientation));
         double x1 = -TRACK_GAP * sin(toRadians(orientation));
         double y1 = TRACK_GAP * cos(toRadians(orientation));
-        assertThat(nodes, hasEntry(equalTo("p.w1"), allOf(
-                hasProperty("id", equalTo("p.w1")),
+        assertThat(nodes, hasEntry(equalTo("p.1.w"), allOf(
+                hasProperty("id", equalTo("p.1.w")),
                 hasProperty("location", pointCloseTo(0, 0, EPSILON1)))));
         assertThat(nodes, hasEntry(equalTo("west.exit"), allOf(
-                hasProperty("id", equalTo("p.w1")),
+                hasProperty("id", equalTo("p.1.w")),
                 hasProperty("location", pointCloseTo(0, 0, EPSILON1)))));
 
-        assertThat(nodes, hasEntry(equalTo("p.w2"), allOf(
-                hasProperty("id", equalTo("p.w2")),
+        assertThat(nodes, hasEntry(equalTo("p.2.w"), allOf(
+                hasProperty("id", equalTo("p.2.w")),
                 hasProperty("location", pointCloseTo(x1, y1, EPSILON1)))));
         assertThat(nodes, hasEntry(equalTo("west.entry"), allOf(
-                hasProperty("id", equalTo("p.w2")),
+                hasProperty("id", equalTo("p.2.w")),
                 hasProperty("location", pointCloseTo(x1, y1, EPSILON1)))));
 
         assertThat(nodes, hasEntry(equalTo("east.entry"), allOf(
                 hasProperty("id", equalTo("east.entry")),
                 hasProperty("location", pointCloseTo(x0, y0, EPSILON1)))));
-        assertThat(nodes, hasEntry(equalTo("p.e1"), allOf(
+        assertThat(nodes, hasEntry(equalTo("p.1.e"), allOf(
                 hasProperty("id", equalTo("east.entry")),
                 hasProperty("location", pointCloseTo(x0, y0, EPSILON1)))));
 
         assertThat(nodes, hasEntry(equalTo("east.exit"), allOf(
                 hasProperty("id", equalTo("east.exit")),
                 hasProperty("location", pointCloseTo(x0 + x1, y0 + y1, EPSILON1)))));
-        assertThat(nodes, hasEntry(equalTo("p.e2"), allOf(
+        assertThat(nodes, hasEntry(equalTo("p.2.e"), allOf(
                 hasProperty("id", equalTo("east.exit")),
                 hasProperty("location", pointCloseTo(x0 + x1, y0 + y1, EPSILON1)))));
 
@@ -662,10 +662,10 @@ class BlockStationBuilderPlatformsTest {
         setUp(orientation);
 
         // When ...
-        OrientedGeometry pw1 = builder.getWorldGeometry("p.w1");
-        OrientedGeometry pe1 = builder.getWorldGeometry("p.e1");
-        OrientedGeometry pw2 = builder.getWorldGeometry("p.w2");
-        OrientedGeometry pe2 = builder.getWorldGeometry("p.e2");
+        OrientedGeometry pw1 = builder.getWorldGeometry("p.1.w");
+        OrientedGeometry pe1 = builder.getWorldGeometry("p.1.e");
+        OrientedGeometry pw2 = builder.getWorldGeometry("p.2.w");
+        OrientedGeometry pe2 = builder.getWorldGeometry("p.2.e");
         OrientedGeometry eastEntry = builder.getWorldGeometry("east.entry");
         OrientedGeometry eastExit = builder.getWorldGeometry("east.exit");
         OrientedGeometry westEntry = builder.getWorldGeometry("west.entry");
@@ -687,9 +687,9 @@ class BlockStationBuilderPlatformsTest {
     }
 
     /*
-     * west.entry --- p.w2 --- p.e2 --- east.exit
+     * west.entry --- p.2.w --- p.2.e --- east.exit
      *
-     * west.exit  --- p.w1 --- p.e1 --- east.entry
+     * west.exit  --- p.1.w --- p.1.e --- east.entry
      */
     void setUp(int orientation) {
         Wayout east = Wayout.create("east");
@@ -697,8 +697,8 @@ class BlockStationBuilderPlatformsTest {
         Wayout west = Wayout.create("west");
         List<Block> blocks = List.of(east, platforms, west);
         Map<String, String> links = Map.of(
-                "west.entry", "p.w2",
-                "east.entry", "p.e1");
+                "west.entry", "p.2.w",
+                "east.entry", "p.1.e");
         StationDef station = StationDef.create("station", orientation, blocks, links);
         this.builder = new BlockStationBuilder(station, null);
     }

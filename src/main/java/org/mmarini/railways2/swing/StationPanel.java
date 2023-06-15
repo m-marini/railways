@@ -31,8 +31,8 @@ package org.mmarini.railways2.swing;
 import hu.akarnokd.rxjava3.swing.SwingObservable;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
-import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.StationStatus;
+import org.mmarini.railways2.model.geometry.EdgeLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +61,7 @@ public class StationPanel extends JComponent {
      */
     private static final double SCALE = 10;
     private static final Logger logger = LoggerFactory.getLogger(StationPanel.class);
-    private final Flowable<Tuple2<Point2D, StationStatus>> mouseClick;
+    private final Flowable<MapEvent> mouseClick;
     private Point2D center;
     private Consumer<Graphics2D> painter;
     private StationStatus status;
@@ -75,8 +75,8 @@ public class StationPanel extends JComponent {
         this.painter = NONE_PAINTER;
         this.mouseClick = SwingObservable.mouse(this, SwingObservable.MOUSE_CLICK)
                 .toFlowable(BackpressureStrategy.BUFFER)
-                .filter(ev -> ev.getID() == MouseEvent.MOUSE_CLICKED)
-                .map(ev -> Tuple2.of(getMapPoint(ev.getPoint()), status));
+                .filter(ev -> ev.getID() == MouseEvent.MOUSE_PRESSED)
+                .map(this::mapMouseEvent);
     }
 
     /**
@@ -141,6 +141,18 @@ public class StationPanel extends JComponent {
         return new Point(x, y);
     }
 
+    /**
+     * Returns the map event from the mouse event
+     *
+     * @param mouseEvent the mouse event
+     */
+    private MapEvent mapMouseEvent(MouseEvent mouseEvent) {
+        Point2D mapLocation = getMapPoint(mouseEvent.getPoint());
+        return new MapEvent(mouseEvent,
+                mapLocation,
+                status);
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         Dimension size = getSize();
@@ -177,7 +189,7 @@ public class StationPanel extends JComponent {
         repaint();
     }
 
-    public Flowable<Tuple2<Point2D, StationStatus>> readMouseClick() {
+    public Flowable<MapEvent> readMouseClick() {
         return mouseClick;
     }
 }

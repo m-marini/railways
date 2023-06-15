@@ -83,10 +83,10 @@ public class Tracks extends AbstractBlock {
                 .boxed()
                 .flatMap(i -> Stream.of(
                         Tuple2.of(
-                                "w" + (i + 1), new OrientedGeometry(
+                                i + 1 + ".w", new OrientedGeometry(
                                         new Point2D.Double(0, i * TRACK_GAP), 0)),
                         Tuple2.of(
-                                "e" + (i + 1), new OrientedGeometry(
+                                i + 1 + ".e", new OrientedGeometry(
                                         new Point2D.Double(length * SEGMENT_LENGTH, i * TRACK_GAP), 180)
                         )))
                 .collect(Tuple2.toMap());
@@ -94,13 +94,13 @@ public class Tracks extends AbstractBlock {
         List<EdgeBuilderParams> edgeBuilderParams = IntStream.range(0, numTracks)
                 .mapToObj(i -> {
                     String id1 = String.valueOf(i + 1);
-                    return EdgeBuilderParams.track("w" + id1 + ".e" + id1, "w" + id1, "e" + id1);
+                    return EdgeBuilderParams.track(id1 + ".track", id1 + ".w", id1 + ".e");
                 }).collect(Collectors.toList());
         Map<String, String> edgeByBlockPoint = IntStream.range(0, numTracks)
                 .boxed()
                 .flatMap(i -> Stream.of(
-                        Tuple2.of("w" + (i + 1), "w" + (i + 1) + ".e" + (i + 1)),
-                        Tuple2.of("e" + (i + 1), "w" + (i + 1) + ".e" + (i + 1))
+                        Tuple2.of(i + 1 + ".w", i + 1 + ".track"),
+                        Tuple2.of(i + 1 + ".e", i + 1 + ".track")
                 )).collect(Tuple2.toMap());
         return new Tracks(id, geometryById, edgeBuilderParams, edgeByBlockPoint);
     }

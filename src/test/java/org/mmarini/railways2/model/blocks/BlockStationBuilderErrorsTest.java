@@ -49,7 +49,7 @@ class BlockStationBuilderErrorsTest {
     void missingBlock() {
         // Given ...
         Map<String, String> links = Map.of(
-                "west.entry", "p.e1");
+                "west.entry", "p.1.e");
         StationDef station = StationDef.create("station", 0, blocks, links);
         this.builder = new BlockStationBuilder(station, null);
 
@@ -66,8 +66,8 @@ class BlockStationBuilderErrorsTest {
     void missingConnections1() {
         // Given ...
         Map<String, String> links = Map.of(
-                "west.entry", "p.w1",
-                "east.exit", "p.e1");
+                "west.entry", "p.1.w",
+                "east.exit", "p.1.e");
         StationDef station = StationDef.create("station", 0, blocks, links);
         this.builder = new BlockStationBuilder(station, null);
 
@@ -77,7 +77,7 @@ class BlockStationBuilderErrorsTest {
         );
 
         // Then ...
-        assertThat(ex.getMessage(), matchesRegex("\\[east\\.entry, p\\.e2, p\\.w2, west\\.exit] have no junction"));
+        assertThat(ex.getMessage(), matchesRegex("\\[east\\.entry, p\\.2\\.e, p\\.2\\.w, west\\.exit] have no junction"));
     }
 
     @BeforeEach
@@ -93,7 +93,7 @@ class BlockStationBuilderErrorsTest {
         // Given ...
         Map<String, String> links = Map.of(
                 "west.entry", "none.e1",
-                "east.exit", "p.e2");
+                "east.exit", "p.2.e");
         StationDef station = StationDef.create("station", 0, blocks, links);
         this.builder = new BlockStationBuilder(station, null);
 

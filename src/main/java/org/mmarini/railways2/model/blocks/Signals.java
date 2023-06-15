@@ -83,35 +83,35 @@ public class Signals extends AbstractBlock {
         Map<String, OrientedGeometry> geometryById1 = IntStream.range(0, numSignals)
                 .boxed()
                 .flatMap(i -> Stream.of(
-                        Tuple2.of("w" + (i + 1), new OrientedGeometry(
+                        Tuple2.of(i + 1 + ".w", new OrientedGeometry(
                                 new Point2D.Double(0, i * TRACK_GAP), 0)),
-                        Tuple2.of("e" + (i + 1), new OrientedGeometry(
+                        Tuple2.of(i + 1 + ".e", new OrientedGeometry(
                                 new Point2D.Double(SIGNAL_GAP * 2, i * TRACK_GAP), -180))))
                 .collect(Tuple2.toMap());
         List<NodeBuilderParams> innerPointById1 = IntStream.range(0, numSignals)
                 .mapToObj(i -> NodeBuilderParams.create(
-                        "signal" + (i + 1),
+                        i + 1 + ".signal",
                         SIGNAL_GAP, i * TRACK_GAP,
-                        "w" + (i + 1) + ".signal" + (i + 1),
-                        "signal" + (i + 1) + ".e" + (i + 1)))
+                        i + 1 + ".trackw",
+                        i + 1 + ".tracke"))
                 .collect(Collectors.toList());
         List<EdgeBuilderParams> edgeBuilderParams = IntStream.range(0, numSignals)
                 .boxed()
                 .flatMap(i -> {
                     String suffixId = String.valueOf(i + 1);
                     return Stream.of(
-                            EdgeBuilderParams.track("w" + suffixId + ".signal" + suffixId, "w" + suffixId, "signal" + suffixId),
-                            EdgeBuilderParams.track("signal" + suffixId + ".e" + suffixId, "signal" + suffixId, "e" + suffixId)
+                            EdgeBuilderParams.track(suffixId + ".trackw", suffixId + ".w", suffixId + ".signal"),
+                            EdgeBuilderParams.track(suffixId + ".tracke", suffixId + ".signal", suffixId + ".e")
                     );
                 }).collect(Collectors.toList());
         Map<String, String> edgeByBlockPoint = IntStream.range(0, numSignals)
                 .boxed()
                 .flatMap(i -> Stream.of(
-                        Tuple2.of("w" + (i + 1), "w" + (i + 1) + ".signal" + (i + 1)),
-                        Tuple2.of("e" + (i + 1), "signal" + (i + 1) + ".e" + (i + 1))
+                        Tuple2.of(i + 1 + ".w", i + 1 + ".trackw"),
+                        Tuple2.of(i + 1 + ".e", i + 1 + ".tracke")
                 )).collect(Tuple2.toMap());
         List<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRouteParams = IntStream.range(0, numSignals)
-                .mapToObj(i -> Tuple2.<Function<Node[], ? extends Route>, List<String>>of(Signal::create, List.of("signal" + (i + 1))))
+                .mapToObj(i -> Tuple2.<Function<Node[], ? extends Route>, List<String>>of(Signal::create, List.of(i + 1 + ".signal")))
                 .collect(Collectors.toList());
         return new Signals(id, geometryById1, innerPointById1, edgeBuilderParams, edgeByBlockPoint, innerRouteParams);
     }

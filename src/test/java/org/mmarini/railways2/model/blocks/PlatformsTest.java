@@ -84,59 +84,59 @@ class PlatformsTest {
         // Then ...
         assertThat(builders, hasSize(6));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("w1.signalw1")),
-                hasProperty("node0", equalTo("w1")),
-                hasProperty("node1", equalTo("signalw1"))
+                hasProperty("id", equalTo("1.trackw")),
+                hasProperty("node0", equalTo("1.w")),
+                hasProperty("node1", equalTo("1.signalw"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("p1")),
-                hasProperty("node0", equalTo("signalw1")),
-                hasProperty("node1", equalTo("signale1"))
+                hasProperty("id", equalTo("1.platform")),
+                hasProperty("node0", equalTo("1.signalw")),
+                hasProperty("node1", equalTo("1.signale"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("signale1.e1")),
-                hasProperty("node0", equalTo("signale1")),
-                hasProperty("node1", equalTo("e1"))
+                hasProperty("id", equalTo("1.tracke")),
+                hasProperty("node0", equalTo("1.signale")),
+                hasProperty("node1", equalTo("1.e"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("w2.signalw2")),
-                hasProperty("node0", equalTo("w2")),
-                hasProperty("node1", equalTo("signalw2"))
+                hasProperty("id", equalTo("2.trackw")),
+                hasProperty("node0", equalTo("2.w")),
+                hasProperty("node1", equalTo("2.signalw"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("p2")),
-                hasProperty("node0", equalTo("signalw2")),
-                hasProperty("node1", equalTo("signale2"))
+                hasProperty("id", equalTo("2.platform")),
+                hasProperty("node0", equalTo("2.signalw")),
+                hasProperty("node1", equalTo("2.signale"))
         )));
         assertThat(builders, hasItem(allOf(
-                hasProperty("id", equalTo("signale2.e2")),
-                hasProperty("node0", equalTo("signale2")),
-                hasProperty("node1", equalTo("e2"))
+                hasProperty("id", equalTo("2.tracke")),
+                hasProperty("node0", equalTo("2.signale")),
+                hasProperty("node1", equalTo("2.e"))
         )));
     }
 
     @Test
     void getEdgeId() {
         // When ...
-        String w1 = block.getEdgeId("w1");
-        String e1 = block.getEdgeId("e1");
-        String w2 = block.getEdgeId("w2");
-        String e2 = block.getEdgeId("e2");
+        String w1 = block.getEdgeId("1.w");
+        String e1 = block.getEdgeId("1.e");
+        String w2 = block.getEdgeId("2.w");
+        String e2 = block.getEdgeId("2.e");
 
         // Then ...
-        assertEquals("w1.signalw1", w1);
-        assertEquals("w2.signalw2", w2);
-        assertEquals("signale1.e1", e1);
-        assertEquals("signale2.e2", e2);
+        assertEquals("1.trackw", w1);
+        assertEquals("2.trackw", w2);
+        assertEquals("1.tracke", e1);
+        assertEquals("2.tracke", e2);
     }
 
     @Test
     void getGeometry() {
         // When ...
-        OrientedGeometry w1 = block.getEntryGeometry("w1");
-        OrientedGeometry w2 = block.getEntryGeometry("w2");
-        OrientedGeometry e1 = block.getEntryGeometry("e1");
-        OrientedGeometry e2 = block.getEntryGeometry("e2");
+        OrientedGeometry w1 = block.getEntryGeometry("1.w");
+        OrientedGeometry w2 = block.getEntryGeometry("2.w");
+        OrientedGeometry e1 = block.getEntryGeometry("1.e");
+        OrientedGeometry e2 = block.getEntryGeometry("2.e");
 
         // Then
         assertThat(w1, orientedGeometry(
@@ -166,19 +166,19 @@ class PlatformsTest {
 
         assertThat(nodes, hasSize(4));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("id.signalw1")),
+                hasProperty("id", equalTo("id.1.signalw")),
                 hasProperty("location", pointCloseTo(PLATFORM_SIGNAL_GAP, 0, EPSILON))
         )));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("id.signalw2")),
+                hasProperty("id", equalTo("id.2.signalw")),
                 hasProperty("location", pointCloseTo(PLATFORM_SIGNAL_GAP, TRACK_GAP, EPSILON))
         )));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("id.signale1")),
+                hasProperty("id", equalTo("id.1.signale")),
                 hasProperty("location", pointCloseTo(10 * COACH_LENGTH + PLATFORM_GAP + PLATFORM_SIGNAL_GAP, 0, EPSILON))
         )));
         assertThat(nodes, hasItem(allOf(
-                hasProperty("id", equalTo("id.signale2")),
+                hasProperty("id", equalTo("id.2.signale")),
                 hasProperty("location", pointCloseTo(10 * COACH_LENGTH + PLATFORM_GAP + PLATFORM_SIGNAL_GAP, TRACK_GAP, EPSILON))
         )));
     }
@@ -192,13 +192,13 @@ class PlatformsTest {
         // Then ...
         assertThat(routes, hasSize(4));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("signalw1"))));
+                contains("1.signalw"))));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("signalw2"))));
+                contains("2.signalw"))));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("signale1"))));
+                contains("1.signale"))));
         assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("signale2"))));
+                contains("2.signale"))));
     }
 
     @BeforeEach

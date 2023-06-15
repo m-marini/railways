@@ -150,61 +150,61 @@ blocks:
 
 links:
   # west switchyard
-  westLeftPlatformSwitch.through: platforms.w1
-  westTrack3.e1: platforms.w3
-  westTrack45.e1: platforms.w4
-  westTrack6.e1: platforms.w6
-  westRightPlatformSwitch.diverged: platforms.w7
+  westLeftPlatformSwitch.through: platforms.1.w
+  westTrack3.1.e: platforms.3.w
+  westTrack45.1.e: platforms.4.w
+  westTrack6.1.e: platforms.6.w
+  westRightPlatformSwitch.diverged: platforms.7.w
 
   westDownCross.se: westLeftPlatformSwitch.entry
   westUpCross.ne: westRightPlatformSwitch.entry
 
   westCentralCross.se: westDownCross.nw
-  westCentralTrack3.e1: westDownCross.w
-  westCentralTrack6.e1: westUpCross.w
+  westCentralTrack3.1.e: westDownCross.w
+  westCentralTrack6.1.e: westUpCross.w
 
-  westLeftSwitch.through: westCentralTrack3.w1
-  westRightSwitch.through: westCentralTrack6.w1
-  westCentralTrack45.e1: westCentralCross.w1
-  westSignals.e1: westLeftSwitch.entry
+  westLeftSwitch.through: westCentralTrack3.1.w
+  westRightSwitch.through: westCentralTrack6.1.w
+  westCentralTrack45.1.e: westCentralCross.w1
+  westSignals.1.e: westLeftSwitch.entry
 
   # sowerth lines
-  sowerthCurves.e1: westSignals.w1
-  sowerthTracks.e1: sowerthCurves.w1
-  sowerth.exit: sowerthTracks.w1
+  sowerthCurves.1.e: westSignals.1.w
+  sowerthTracks.1.e: sowerthCurves.1.w
+  sowerth.exit: sowerthTracks.1.w
 
   # norton lines
-  nortonCurves.e1: westSignals.w3
-  nortonTracks.e1: nortonCurves.w1
-  norton.exit: nortonTracks.w1
+  nortonCurves.1.e: westSignals.3.w
+  nortonTracks.1.e: nortonCurves.1.w
+  norton.exit: nortonTracks.1.w
 
   # east switchyard
-  eastRightPlatformSwitch.through: platforms.e1
-  eastLeftPlatformSwitch.through: platforms.e8
-  eastTrack3.w1: platforms.e3
-  eastTrack6.w1: platforms.e6
-  eastTrack45.w1: platforms.e4
+  eastRightPlatformSwitch.through: platforms.1.e
+  eastLeftPlatformSwitch.through: platforms.8.e
+  eastTrack3.1.w: platforms.3.e
+  eastTrack6.1.w: platforms.6.e
+  eastTrack45.1.w: platforms.4.e
 
   eastUpCross.sw: eastRightPlatformSwitch.entry
   eastDownCross.nw: eastLeftPlatformSwitch.entry
 
   eastCentralCross.sw: eastUpCross.ne
-  eastCentralTrack3.w1: eastUpCross.e
-  eastCentralTrack6.w1: eastDownCross.e
+  eastCentralTrack3.1.w: eastUpCross.e
+  eastCentralTrack6.1.w: eastDownCross.e
 
-  eastRightSwitch.through: eastCentralTrack3.e1
-  eastLeftSwitch.through: eastCentralTrack6.e1
-  eastCentralTrack45.w1: eastCentralCross.e1
+  eastRightSwitch.through: eastCentralTrack3.1.e
+  eastLeftSwitch.through: eastCentralTrack6.1.e
+  eastCentralTrack45.1.w: eastCentralCross.e1
 
-  eastSignals.w1: eastRightSwitch.entry
+  eastSignals.1.w: eastRightSwitch.entry
 
   # southend lines
-  southendCurves.w1: eastSignals.e1
-  southendTracks.w1: southendCurves.e1
-  southend.entry: southendTracks.e1
+  southendCurves.1.w: eastSignals.1.e
+  southendTracks.1.w: southendCurves.1.e
+  southend.entry: southendTracks.1.e
 
   # newesel lines
-  neweselCurves.w1: eastSignals.e3
-  neweselTracks.w1: neweselCurves.e1
-  newesel.entry: neweselTracks.e1
+  neweselCurves.1.w: eastSignals.3.e
+  neweselTracks.1.w: neweselCurves.1.e
+  newesel.entry: neweselTracks.1.e
 
