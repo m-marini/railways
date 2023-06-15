@@ -14,11 +14,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #21: Add double switch
 - Issue #28: Simulator with rx4j
 - Issue #43: Add train info panel
+- Issue #45; Add mouse handling to panels
 - Issue #47: Add game panel
 - Issue #48: Add UI controller
 - Issue #50: Add mouse event on map panel
 - Issue #53: Compute distance from edges
-
+  
 ### Changed 
 
 - Issue #3: Stop at platform for loading
