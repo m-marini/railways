@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #48: Add UI controller
 - Issue #50: Add mouse event on map panel
 - Issue #53: Compute distance from edges
+- Issue #56: Add status change by user interaction
   
 ### Changed 
 
