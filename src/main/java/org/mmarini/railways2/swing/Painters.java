@@ -79,7 +79,7 @@ public interface Painters {
     Consumer<Graphics2D> NOT_CLEAR_SIGNAL_IMAGE_PAINTER = createImagePainter("/img/sig2.png", SIGNAL_X, SIGNAL_Y, SIGNAL_WIDTH, SIGNAL_HEIGHT, RAD_90);
     Consumer<Graphics2D> CLEAR_LINE_IMAGE_PAINTER = createImagePainter("/img/line0.png", SIGNAL_X, SIGNAL_Y, SIGNAL_WIDTH, SIGNAL_HEIGHT, RAD_90);
     Consumer<Graphics2D> NOT_CLEAR_LINE_IMAGE_PAINTER = createImagePainter("/img/line1.png", SIGNAL_X, SIGNAL_Y, SIGNAL_WIDTH, SIGNAL_HEIGHT, RAD_90);
-    Consumer<Graphics2D> CLEAR_THROUGH_IMAGE_PAINTER = createImagePainter("/img/sw0.png", SIGNAL_X, 0, SWITCH_WIDTH, SWITCH_HEIGHT, RAD_90);
+    Consumer<Graphics2D> CLEAR_THROUGH_IMAGE_PAINTER = createImagePainter("/img/sw0.png", SIGNAL_X, SWITCH_Y, SWITCH_WIDTH, SWITCH_HEIGHT, RAD_90);
     Consumer<Graphics2D> NOT_CLEAR_THROUGH_IMAGE_PAINTER = createImagePainter("/img/sw1.png", SWITCH_X, SWITCH_Y, SWITCH_WIDTH, SWITCH_HEIGHT, RAD_90);
     Consumer<Graphics2D> LOCKED_THROUGH_IMAGE_PAINTER = createImagePainter("/img/sw2.png", SWITCH_X, SWITCH_Y, SWITCH_WIDTH, SWITCH_HEIGHT, RAD_90);
     Consumer<Graphics2D> CLEAR_DIVERGE_IMAGE_PAINTER = createImagePainter("/img/sw3.png", SWITCH_X, SWITCH_Y, SWITCH_WIDTH, SWITCH_HEIGHT, RAD_90);

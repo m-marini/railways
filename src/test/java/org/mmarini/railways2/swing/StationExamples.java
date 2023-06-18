@@ -33,6 +33,7 @@ import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.*;
 
 import java.awt.geom.Point2D;
+import java.util.Set;
 
 import static org.mmarini.railways2.model.MathUtils.RAD90;
 import static org.mmarini.railways2.model.MathUtils.RAD_90;
@@ -106,7 +107,7 @@ public interface StationExamples {
      * 0         500        530                    550          560           580        590
      * </pre>
      */
-    static StationStatus create3Entry2ExitStation() {
+    static StationStatus create3Entry2ExitStation(String... deviated) {
         StationMap stationMap = new StationBuilder("station")
                 .addNode("i1", new Point2D.Double(0, 0), "p1")
                 .addNode("s1", new Point2D.Double(500, 0), "p1", "t1")
@@ -144,6 +145,8 @@ public interface StationExamples {
                 .addTrack("t15", "d2", "o2")
                 .build();
 
+        Set<String> deviatedSet = Set.of(deviated);
+
         return new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "i1")
                 .addRoute(Entry::create, "i2")
@@ -153,10 +156,10 @@ public interface StationExamples {
                 .addRoute(Signal.createLocks(), "s1")
                 .addRoute(Signal.createLocks(), "s2")
                 .addRoute(Signal.createLocks(), "s3")
-                .addRoute(Switch.create(true), "d1")
-                .addRoute(Switch.create(false), "d2")
-                .addRoute(Switch.create(true), "d3")
-                .addRoute(DoubleSlipSwitch.create(false), "ds1", "ds4", "ds2", "ds3")
+                .addRoute(Switch.create(!deviatedSet.contains("d1")), "d1")
+                .addRoute(Switch.create(!deviatedSet.contains("d2")), "d2")
+                .addRoute(Switch.create(!deviatedSet.contains("d3")), "d3")
+                .addRoute(DoubleSlipSwitch.create(!deviatedSet.contains("ds1")), "ds1", "ds4", "ds2", "ds3")
                 .addRoute(CrossRoute::create, "c")
                 .build();
     }

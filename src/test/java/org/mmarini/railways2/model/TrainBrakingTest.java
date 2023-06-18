@@ -48,6 +48,7 @@ import static org.mmarini.railways2.model.RailwayConstants.DEACCELERATION;
 import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
 
 class TrainBrakingTest extends WithStationStatusTest {
+    public static final int SEED = 1234;
     static final double DT = 0.1;
     private static final double LENGTH = 500;
 
@@ -70,6 +71,32 @@ class TrainBrakingTest extends WithStationStatusTest {
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
                 .build();
+    }
+
+    @Test
+    void brakingStop() {
+        // Given ...
+        Node b = node("b");
+        Edge ab = edge("ab");
+        Entry aRoute = route("a");
+        Exit cRoute = route("c");
+        double speed = -DEACCELERATION * DT * 0.9;
+        double distance = 10;
+        Train t1 = Train.create("t1", 1, aRoute, cRoute)
+                .setLocation(EdgeLocation.create(ab, b, distance))
+                .setState(Train.STATE_BRAKING)
+                .setSpeed(speed);
+        status = status.setTrains(t1);
+
+        // When ...
+        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
+
+        // Then ...
+        assertTrue(nextOpt.isPresent());
+        Train next = nextOpt.orElseThrow();
+        assertEquals(Train.STATE_WAITING_FOR_RUN, next.getState());
+        assertEquals(0, next.getSpeed());
+        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", distance - speed * DT)));
     }
 
     @Test
@@ -126,29 +153,21 @@ class TrainBrakingTest extends WithStationStatusTest {
     }
 
     @Test
-    void stop() {
+    void startTrain() {
         // Given ...
-        Node b = node("b");
-        Edge ab = edge("ab");
-        Entry aRoute = route("a");
-        Exit cRoute = route("c");
-        double speed = -DEACCELERATION * DT * 0.9;
-        double distance = 10;
-        Train t1 = Train.create("t1", 1, aRoute, cRoute)
-                .setLocation(EdgeLocation.create(ab, b, distance))
-                .setState(Train.STATE_BRAKING)
-                .setSpeed(speed);
-        status = status.setTrains(t1);
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "c")
+                        .at("ab", "b", LENGTH)
+                        .braking(MAX_SPEED / 4)
+                )
+                .build();
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
+        StationStatus status1 = status.startTrain("t1");
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
-        assertEquals(Train.STATE_WAITING_FOR_RUN, next.getState());
-        assertEquals(0, next.getSpeed());
-        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", distance - speed * DT)));
+        Train t1 = status1.getTrain("t1").orElseThrow();
+        assertEquals(Train.STATE_RUNNING, t1.getState());
     }
 
     @Test

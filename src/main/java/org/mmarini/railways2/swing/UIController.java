@@ -35,6 +35,7 @@ import org.mmarini.railways2.model.StationStatus;
 import org.mmarini.railways2.model.Train;
 import org.mmarini.railways2.model.blocks.BlockStationBuilder;
 import org.mmarini.railways2.model.blocks.StationDef;
+import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.routes.*;
 import org.mmarini.yaml.Utils;
 import org.mmarini.yaml.schema.Locator;
@@ -46,10 +47,12 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.Random;
 import java.util.function.Function;
@@ -179,17 +182,22 @@ public class UIController {
                     ev -> toggleDoubleSlipSwitch(route.getId()));
             return Optional.of(menu);
         } else if (route instanceof Signal) {
-            boolean lock = true;
-            String label = StationLabels.getLabel(event.getStationStatus().getStationMap().getId(), route.getId());
-            JMenuItem menu = new JMenuItem(format(
-                    lock ?
-                            Messages.getString("UIController.lockSignalMenuItem.name") :
-                            Messages.getString("UIController.unlockSignalMenuItem.name"),
-                    label));
-            menu.addActionListener(lock ?
-                    ev -> unlockSignal(route.getId()) :
-                    ev -> unlockSignal(route.getId()));
-            return Optional.of(menu);
+            Signal signal = (Signal) route;
+            return getNearestOppositeRouteEntry(route, event.getLocation())
+                    .map(entryDir -> {
+                        boolean lock = signal.isLocked(entryDir);
+                        String label = StationLabels.getLabel(event.getStationStatus().getStationMap().getId(), route.getId());
+                        JMenuItem menu = new JMenuItem(format(
+                                lock ?
+                                        Messages.getString("UIController.unlockSignalMenuItem.name") :
+                                        Messages.getString("UIController.lockSignalMenuItem.name"),
+                                label));
+                        String edgeId = entryDir.getEdge().getId();
+                        menu.addActionListener(lock
+                                ? ev -> unlockSignal(route.getId(), edgeId)
+                                : ev -> lockSignal(route.getId(), edgeId));
+                        return menu;
+                    });
         }
         return Optional.empty();
     }
@@ -211,9 +219,9 @@ public class UIController {
                         label));
         sectionMenu.addActionListener(ev -> {
             if (sectionLocked) {
-                logger.atDebug().log("unlock {}", section);
+                unlockSection(section.getId());
             } else {
-                logger.atDebug().log("lock {}", section);
+                lockSection(section.getId());
             }
         });
         return sectionMenu;
@@ -260,13 +268,30 @@ public class UIController {
             prova.addActionListener(ev -> startTrain(train.getId()));
             builder.add(prova);
         }
-        if (state.equals(Train.STATE_WAITING_FOR_RUN)) {
+        if (state.equals(Train.STATE_WAITING_FOR_RUN)
+                || state.equals(Train.STATE_WAITING_FOR_SIGNAL)) {
             JMenuItem prova = new JMenuItem(
                     format(Messages.getString("UIController.revertTrainMenuItem.name"), train.getId()));
             prova.addActionListener(ev -> revertTrain(train.getId()));
             builder.add(prova);
         }
         return builder.build();
+    }
+
+    /**
+     * Returns the nearest edge of the route
+     *
+     * @param route the route
+     * @param point the reference point
+     */
+    private Optional<Direction> getNearestOppositeRouteEntry(Route route, Point2D point) {
+        return route.getValidEntries().stream()
+                .min(Comparator.comparingDouble(
+                        dir -> dir.getEdge().getDistance(point)
+                ))
+                .flatMap(entry ->
+                        route.getEntry(entry.opposite())
+                );
     }
 
     /**
@@ -315,7 +340,7 @@ public class UIController {
     }
 
     /**
-     * Handles the left mouse button on route
+     * Handles the left mouse button on route (signal unlock/switch toggle)
      *
      * @param event the map event
      * @param route the selected route
@@ -326,12 +351,13 @@ public class UIController {
         } else if (route instanceof DoubleSlipSwitch) {
             toggleDoubleSlipSwitch(route.getId());
         } else if (route instanceof Signal) {
-            unlockSignal(route.getId());
+            getNearestOppositeRouteEntry(route, event.getLocation())
+                    .ifPresent(dir -> unlockSignal(route.getId(), dir.getEdge().getId()));
         }
     }
 
     /**
-     * Handles the central mouse button on route
+     * Handles the central mouse button on route (signal lock/switch toggle)
      *
      * @param event the map event
      * @param route the selected route
@@ -342,7 +368,8 @@ public class UIController {
         } else if (route instanceof DoubleSlipSwitch) {
             toggleDoubleSlipSwitch(route.getId());
         } else if (route instanceof Signal) {
-            lockSignal(route.getId());
+            getNearestOppositeRouteEntry(route, event.getLocation())
+                    .ifPresent(entryDir -> lockSignal(route.getId(), entryDir.getEdge().getId()));
         }
     }
 
@@ -409,10 +436,7 @@ public class UIController {
      * @param train the selected train
      */
     private void handleTrainSelection2(Train train) {
-        Train.State state = train.getState();
-        if (state.equals(Train.STATE_WAITING_FOR_RUN)) {
-            revertTrain(train.getId());
-        }
+        revertTrain(train.getId());
     }
 
     /**
@@ -485,18 +509,17 @@ public class UIController {
      */
 
     private void lockSection(String id) {
-        simulator.request(status -> {
-//            return status.stopTrain(trainId);
-            logger.atDebug().log("Lock section {}", id);
-            return status;
-        });
+        simulator.request(status -> status.lockSection(id));
     }
 
-    private void lockSignal(String id) {
-        simulator.request(status -> {
-            logger.atDebug().log("Lock {}", id);
-            return status;
-        });
+    /**
+     * Locks the signal
+     *
+     * @param id     the signal identifier
+     * @param edgeId the signal edge identifier
+     */
+    private void lockSignal(String id, String edgeId) {
+        simulator.request(status -> status.lockSignal(id, edgeId));
     }
 
     /**
@@ -505,11 +528,7 @@ public class UIController {
      * @param trainId the train identifier
      */
     private void revertTrain(String trainId) {
-        simulator.request(status -> {
-//            return status.stopTrain(trainId);
-            logger.atDebug().log("revert {}", trainId);
-            return status;
-        });
+        simulator.request(status -> status.revertTrain(trainId));
     }
 
     /**
@@ -527,11 +546,7 @@ public class UIController {
      * @param trainId the train identifier
      */
     private void startTrain(String trainId) {
-        simulator.request(status -> {
-//            return status.stopTrain(trainId);
-            logger.atDebug().log("starting {}", trainId);
-            return status;
-        });
+        simulator.request(status -> status.startTrain(trainId));
     }
 
     /**
@@ -552,11 +567,7 @@ public class UIController {
      * @param trainId the train identifier
      */
     private void stopTrain(String trainId) {
-        simulator.request(status -> {
-//            return status.stopTrain(trainId);
-            logger.atDebug().log("stopping {}", trainId);
-            return status;
-        });
+        simulator.request(status -> status.stopTrain(trainId));
     }
 
     /**
@@ -565,10 +576,7 @@ public class UIController {
      * @param id the switch identifier
      */
     private void toggleDoubleSlipSwitch(String id) {
-        simulator.request(status -> {
-            logger.atDebug().log("Toggle {}", id);
-            return status;
-        });
+        simulator.request(status -> status.toggleDoubleSlipSwitch(id));
     }
 
     /**
@@ -577,33 +585,25 @@ public class UIController {
      * @param id the switch identifier
      */
     private void toggleSwitch(String id) {
-        simulator.request(status -> {
-            logger.atDebug().log("Toggle {}", id);
-            return status;
-        });
+        simulator.request(status -> status.toggleSwitch(id));
     }
 
     /**
-     * Locks the section
+     * Unlocks the section
      *
      * @param id the section identifier
      */
     private void unlockSection(String id) {
-        simulator.request(status -> {
-            logger.atDebug().log("Unlock section {}", id);
-            return status;
-        });
+        simulator.request(status -> status.unlockSection(id));
     }
 
     /**
      * Unlocks the signal
      *
-     * @param id the signal identifier
+     * @param id     the signal identifier
+     * @param edgeId the signal edge identifier
      */
-    private void unlockSignal(String id) {
-        simulator.request(status -> {
-            logger.atDebug().log("Unlock {}", id);
-            return status;
-        });
+    private void unlockSignal(String id, String edgeId) {
+        simulator.request(status -> status.unlockSignal(id, edgeId));
     }
 }

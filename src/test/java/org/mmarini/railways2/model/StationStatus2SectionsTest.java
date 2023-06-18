@@ -30,12 +30,12 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mmarini.railways2.model.geometry.EdgeLocation;
 import org.mmarini.railways2.model.geometry.StationBuilder;
 import org.mmarini.railways2.model.geometry.StationMap;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Section;
+import org.mmarini.railways2.swing.WithTrain;
 
 import java.awt.geom.Point2D;
 import java.util.*;
@@ -103,14 +103,13 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
     @Test
     void createTrainByExit() {
         // Given ...
-        Train t1 = Train.create("t1", 1, route("a"), route("b"))
-                .setState(Train.STATE_EXITING)
-                .setExitingNode(route("b"));
-        Train t2 = Train.create("t2", 1, route("a"), route("b"))
-                .setState(Train.STATE_EXITING)
-                .setExitingNode(route("d"));
-        Train t3 = Train.create("t3", 1, route("a"), route("b"));
-        status = status.setTrains(t1, t2, t3);
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "b")
+                        .exiting("b"))
+                .addTrain(new WithTrain.TrainBuilder("t2", 3, "a", "b")
+                        .exiting("d"))
+                .addTrain(new WithTrain.TrainBuilder("t3", 3, "a", "b"))
+                .build();
 
         // When ...
         Map<Exit, Train> map = status.createTrainByExit();
@@ -118,18 +117,17 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
         // Than ...
         assertNotNull(map);
         assertEquals(2, map.size());
-        assertThat(map, hasEntry(isRoute("b"), equalTo(t1)));
-        assertThat(map, hasEntry(isRoute("d"), equalTo(t2)));
+        assertThat(map, hasEntry(isRoute("b"), equalTo(train("t1"))));
+        assertThat(map, hasEntry(isRoute("d"), equalTo(train("t2"))));
     }
 
     @Test
     void createTrainBySection() {
         // Give ...
-        Train t1 = Train.create("t1", 1, route("a"), route("b"))
-                .setLocation(EdgeLocation.create(edge("ab"), node("b"), 0));
-        Train t2 = Train.create("t2", 1, route("a"), route("b"))
-                .setLocation(EdgeLocation.create(edge("cd"), node("d"), 0));
-        status = status.setTrains(t1, t2);
+        status = withTrain()
+                .addTrain(3, "a", "b", "ab", "b", 0)
+                .addTrain(3, "a", "b", "cd", "d", 0)
+                .build();
 
         // When ...
         Map<Section, Train> map = status.createTrainBySection();
@@ -139,12 +137,10 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
         assertEquals(2, map.size());
         assertThat(map, hasEntry(
                 hasProperty("id", equalTo("ab")),
-                equalTo(t1)
-        ));
+                equalTo(train("TT0"))));
         assertThat(map, hasEntry(
                 hasProperty("id", equalTo("cd")),
-                equalTo(t2)
-        ));
+                equalTo(train("TT1"))));
     }
 
     @Test

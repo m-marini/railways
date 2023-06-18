@@ -730,6 +730,17 @@ public class StationStatus {
     }
 
     /**
+     * Returns true if the status is conflict
+     */
+    boolean isConsistent() {
+        return getSections().stream()
+                .filter(section -> section.getCrossingSections().stream()
+                        .anyMatch(this::isSectionWithTrain))
+                .findAny()
+                .isEmpty();
+    }
+
+    /**
      * Returns true if the entry is clear for given train
      * The entry is clear if the train is the first in the entry queue
      * and the entry section is clear
@@ -821,32 +832,6 @@ public class StationStatus {
     }
 
     /**
-     * Returns true if next track is clear
-     * The next track is clear if any signals within the limit distance is clear
-     * and the train has to load at end of platform
-     *
-     * @param train the train
-     */
-    public boolean isNextTracksClearOld(Train train) {
-        EdgeLocation location = train.getLocation().orElseThrow();
-        Direction direction = location.getDirection();
-        double stopDistance = train.getStopDistance();
-        double edgeLimitDistance = stopDistance - location.getDistance();
-        while (direction != null && edgeLimitDistance > 0) {
-            Edge edge = direction.getEdge();
-            if (!isNextRouteClear(direction)
-                    || (edge instanceof Platform && train.isUnloaded())) {
-                return false;
-            }
-            edgeLimitDistance -= edge.getLength();
-            // Find next direction
-            direction = getExit(direction).orElse(null);
-        }
-        // Limit distance reached
-        return edgeLimitDistance <= 0;
-    }
-
-    /**
      * Returns true if the section containing the edge is clear (no transiting train) and no trains is transiting in the crossing sections
      *
      * @param edge the edge
@@ -902,6 +887,28 @@ public class StationStatus {
     }
 
     /**
+     * Returns true if the section containing the edge has transiting train
+     *
+     * @param section the section
+     */
+    private boolean isSectionWithTrain(Section section) {
+        return getTrain(section).isPresent();
+    }
+
+    /**
+     * Returns true if the section containing the edge has transiting train
+     *
+     * @param edge the edge
+     */
+    public boolean isSectionWithTrain(Edge edge) {
+        // Searches section
+        return getSection(edge)
+                // Filter for train in the section
+                .filter(this::isSectionWithTrain)
+                .isPresent();
+    }
+
+    /**
      * Returns true if the entry direction of signal is clear
      *
      * @param direction the entry direction
@@ -912,6 +919,138 @@ public class StationStatus {
                 && signal.getExit(direction)
                 .filter(exitDir -> isSectionClear(exitDir.getEdge()))
                 .isPresent();
+    }
+
+    /**
+     * Returns the station status with section locked
+     *
+     * @param section the section
+     */
+    StationStatus lock(Section section) {
+        HashSet<Route> newRoutes = new HashSet<>(getRoutes());
+        Stream.of(section.getExit0(), section.getExit1())
+                .flatMap(dir -> {
+                    // Finds the route terminal of section
+                    Route route = getRoute(dir.getOrigin());
+                    // Find the entry direction into the section
+                    Optional<Direction> entryOpt = route.getExit(dir.opposite()).map(Direction::opposite);
+                    return entryOpt.map(entry -> Tuple2.of(route, entry)).stream();
+                })
+                .filter(t -> t._1 instanceof Signal)
+                .map(t -> ((Signal) t._1).lock(t._2))
+                .forEach(signal -> {
+                    newRoutes.remove(signal);
+                    newRoutes.add(signal);
+                });
+        return setRoutes(newRoutes);
+    }
+
+    /**
+     * Returns the station status with section locked
+     *
+     * @param id the section identifier
+     */
+    public StationStatus lockSection(String id) {
+        return getSections().stream()
+                .filter(section -> section.getId().equals(id))
+                .findAny()
+                .map(this::lock)
+                .orElse(this);
+    }
+
+    /**
+     * Returns the station status with signal locked
+     *
+     * @param id     the signal identifier
+     * @param edgeId the entry edge
+     */
+    public StationStatus lockSignal(String id, String edgeId) {
+        Signal signal = getRoute(id);
+        Edge edge = stationMap.getEdge(edgeId);
+        return signal.getValidEntries().stream()
+                .filter(dir -> dir.getEdge().equals(edge))
+                .findAny()
+                .flatMap(entryDir ->
+                        !signal.isLocked(entryDir)
+                                ? Optional.of(signal.lock(entryDir))
+                                : Optional.empty())
+                .map(newSignal ->
+                        setRoutes(getRoutes().stream().
+                                map(route -> route.equals(signal)
+                                        ? newSignal : route)
+                                .collect(Collectors.toList())))
+                .orElse(this);
+    }
+
+    /**
+     * Returns the station status with train reverted
+     *
+     * @param trainId the train identifier
+     */
+    public StationStatus revertTrain(String trainId) {
+        return getTrain(trainId).map(train -> {
+                    Train.State state = train.getState();
+                    if (state.equals(Train.STATE_WAITING_FOR_RUN) || state.equals(Train.STATE_WAITING_FOR_SIGNAL)) {
+                        Train newTrain = train.getLocation()
+                                .map(EdgeLocation::opposite)
+                                .flatMap(location -> getLocationAt(location, train.getLength()))
+                                .map(train::setLocation)
+                                .map(Train::run)
+                                .orElse(train);
+                        List<Train> newTrains = trains.stream().map(train1 ->
+                                        train.equals(train1) ? newTrain : train1)
+                                .collect(Collectors.toList());
+                        return setTrains(newTrains);
+                    } else {
+                        return this;
+                    }
+                })
+                .orElse(this);
+    }
+
+    /**
+     * Returns the status with the train started
+     *
+     * @param trainId the train identifier
+     */
+    public StationStatus startTrain(String trainId) {
+        return getTrain(trainId).map(train -> {
+                    Train.State state = train.getState();
+                    if (state.equals(Train.STATE_WAITING_FOR_RUN) || state.equals(Train.STATE_BRAKING)) {
+                        List<Train> newTrains = trains.stream().map(train1 ->
+                                        train.equals(train1)
+                                                ? train.run()
+                                                : train1)
+                                .collect(Collectors.toList());
+                        return setTrains(newTrains);
+                    } else {
+                        return this;
+                    }
+                })
+                .orElse(this);
+    }
+
+    /**
+     * Returns the status with train stopped
+     *
+     * @param trainId the train identifier
+     */
+    public StationStatus stopTrain(String trainId) {
+        return getTrain(trainId).map(train -> {
+                    Train.State state = train.getState();
+                    if (state.equals(Train.STATE_RUNNING) ||
+                            state.equals(Train.STATE_WAITING_FOR_SIGNAL)) {
+                        List<Train> newTrains = trains.stream().map(train1 ->
+                                        train.equals(train1)
+                                                ? train.brake()
+                                                : train1)
+                                .collect(Collectors.toList());
+                        return setTrains(newTrains);
+                    } else {
+                        return this;
+                    }
+                })
+                .orElse(this);
     }
 
     /**
@@ -927,6 +1066,105 @@ public class StationStatus {
                 .collect(Collectors.toCollection(ArrayList::new));
         newTrains = createNewTrains(newTrains, trainFrequency * dt, random);
         return ctx.getStatus().setTime(time + dt).setTrains(newTrains);
+    }
+
+    /**
+     * Returns the station status with switch toggled
+     *
+     * @param id the switch identifier
+     */
+    public StationStatus toggleDoubleSlipSwitch(String id) {
+        DoubleSlipSwitch route = getRoute(id);
+        Edge entry0 = route.getNodes().get(0).getEdges().get(0);
+        Edge entry2 = route.getNodes().get(2).getEdges().get(0);
+        if (isSectionWithTrain(entry0) || isSectionWithTrain(entry2)) {
+            return this;
+        }
+        DoubleSlipSwitch newRoute = route.isThrough() ? route.diverging() : route.through();
+        List<Route> newRoutes = getRoutes().stream()
+                .map(route1 -> route1.equals(route) ? newRoute : route1)
+                .collect(Collectors.toList());
+        StationStatus stationStatus = setRoutes(newRoutes);
+        return stationStatus.isConsistent() ? stationStatus : this;
+    }
+
+    /**
+     * Returns the station status with switch toggled
+     *
+     * @param id the switch identifier
+     */
+    public StationStatus toggleSwitch(String id) {
+        Switch route = getRoute(id);
+        Edge entryEdge = route.getNodes().get(0).getEdges().get(0);
+        if (!isSectionClear(entryEdge)) {
+            return this;
+        }
+        Switch newRoute = route.isThrough() ? route.diverging() : route.through();
+        List<Route> newRoutes = getRoutes().stream()
+                .map(route1 -> route1.equals(route) ? newRoute : route1)
+                .collect(Collectors.toList());
+        return setRoutes(newRoutes);
+    }
+
+    /**
+     * Returns the station status with section unlocked
+     *
+     * @param section the section
+     */
+    StationStatus unlock(Section section) {
+        HashSet<Route> newRoutes = new HashSet<>(getRoutes());
+        Stream.of(section.getExit0(), section.getExit1())
+                .flatMap(dir -> {
+                    // Finds the route terminal of section
+                    Route route = getRoute(dir.getOrigin());
+                    // Find the entry direction into the section
+                    Optional<Direction> entryOpt = route.getExit(dir.opposite()).map(Direction::opposite);
+                    return entryOpt.map(entry -> Tuple2.of(route, entry)).stream();
+                })
+                .filter(t -> t._1 instanceof Signal)
+                .map(t -> ((Signal) t._1).unlock(t._2))
+                .forEach(signal -> {
+                    newRoutes.remove(signal);
+                    newRoutes.add(signal);
+                });
+        return setRoutes(newRoutes);
+    }
+
+    /**
+     * Returns the station status with section unlocked
+     *
+     * @param id the section identifier
+     */
+    public StationStatus unlockSection(String id) {
+        return getSections().stream()
+                .filter(section -> section.getId().equals(id))
+                .findAny()
+                .map(this::unlock)
+                .orElse(this);
+    }
+
+    /**
+     * Returns the station status with signal unlocked
+     *
+     * @param id     the signal identifier
+     * @param edgeId the entry edge
+     */
+    public StationStatus unlockSignal(String id, String edgeId) {
+        Signal signal = getRoute(id);
+        Edge edge = stationMap.getEdge(edgeId);
+        return signal.getValidEntries().stream()
+                .filter(dir -> dir.getEdge().equals(edge))
+                .findAny()
+                .flatMap(entryDir ->
+                        signal.isLocked(entryDir)
+                                ? Optional.of(signal.unlock(entryDir))
+                                : Optional.empty())
+                .map(newSignal ->
+                        setRoutes(getRoutes().stream().
+                                map(route -> route.equals(signal)
+                                        ? newSignal : route)
+                                .collect(Collectors.toList())))
+                .orElse(this);
     }
 
     /**

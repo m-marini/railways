@@ -45,10 +45,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
+import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 
 class TrainWaitingForSignalTest extends WithStationStatusTest {
     public static final int LENGTH = 500;
     static final double DT = 0.1;
+
+    @Test
+    void revertTrain() {
+        // Given ...
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("train", 3, "a", "c")
+                        .at("ab", "b", 0)
+                        .waitForSignal())
+                .build();
+
+        // When ...
+        StationStatus status1 = status.revertTrain("train");
+
+        // Then ...
+        Train train = status1.getTrain("train").orElseThrow();
+        assertEquals(Train.STATE_RUNNING, train.getState());
+        assertThat(train.getLocation(), optionalOf(locatedAt("ab", "a", LENGTH - COACH_LENGTH * 3)));
+    }
 
     /**
      * <pre>
@@ -69,6 +88,23 @@ class TrainWaitingForSignalTest extends WithStationStatusTest {
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
                 .build();
+    }
+
+    @Test
+    void stopTrain() {
+        // Given ...
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("train", 3, "a", "c")
+                        .at("ab", "b", 0)
+                        .waitForSignal())
+                .build();
+
+        // When ...
+        StationStatus status1 = status.stopTrain("train");
+
+        // Then ...
+        Train train = status1.getTrain("train").orElseThrow();
+        assertEquals(Train.STATE_BRAKING, train.getState());
     }
 
     @Test

@@ -32,7 +32,6 @@ import hu.akarnokd.rxjava3.swing.SwingObservable;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import org.mmarini.railways2.model.StationStatus;
-import org.mmarini.railways2.model.geometry.EdgeLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
