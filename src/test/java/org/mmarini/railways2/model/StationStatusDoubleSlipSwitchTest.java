@@ -28,10 +28,8 @@
 
 package org.mmarini.railways2.model;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.railways2.model.geometry.Edge;
-import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.StationBuilder;
 import org.mmarini.railways2.model.geometry.StationMap;
 import org.mmarini.railways2.model.routes.DoubleSlipSwitch;
@@ -44,66 +42,25 @@ import java.util.Collection;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-class StationStatusDoubleSlipSwitchTest {
+class StationStatusDoubleSlipSwitchTest extends WithStationStatusTest {
 
     private static final double LENGTH = 100;
-    StationMap stationMap;
-    StationStatus status;
-
-    /**
-     * StationDef map
-     * <pre>
-     * Entry(a) --ab-- b --bc-- c --cd-- Exit(d)
-     *                   --bg-- g
-     *                   --fc-- c
-     * Entry(e) --ef-- f --fg-- g --gh-- Exit(h)
-     * </pre>
-     */
-    @BeforeEach
-    void beforeEach() {
-        stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "ab")
-                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc", "bg")
-                .addNode("c", new Point2D.Double(LENGTH * 2, 0), "cd", "bc", "fc")
-                .addNode("d", new Point2D.Double(LENGTH * 3, 0), "cd")
-                .addNode("e", new Point2D.Double(0, 50), "ef")
-                .addNode("f", new Point2D.Double(LENGTH, 50), "ef", "fg", "fc")
-                .addNode("g", new Point2D.Double(LENGTH * 2, 50), "gh", "fg", "bg")
-                .addNode("h", new Point2D.Double(LENGTH * 3, 50), "gh")
-                .addTrack("ab", "a", "b")
-                .addTrack("bc", "b", "c")
-                .addTrack("cd", "c", "d")
-                .addTrack("ef", "e", "f")
-                .addTrack("fg", "f", "g")
-                .addTrack("gh", "g", "h")
-                .addTrack("bg", "b", "g")
-                .addTrack("fc", "f", "c")
-                .build();
-    }
 
     @Test
     void createSectionsDiverging() {
         // Given ...
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Node d = stationMap.getNode("d");
-        Node e = stationMap.getNode("e");
-        Node f = stationMap.getNode("f");
-        Node g = stationMap.getNode("g");
-        Node h = stationMap.getNode("h");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Edge cd = stationMap.getEdge("cd");
-        Edge ef = stationMap.getEdge("ef");
-        Edge fg = stationMap.getEdge("fg");
-        Edge gh = stationMap.getEdge("gh");
-        Edge bg = stationMap.getEdge("bg");
-        Edge fc = stationMap.getEdge("fc");
         createStatus(false);
         Collection<Section> sections = status.createSections();
 
+        // Then ...
+        Edge ab = edge("ab");
+        Edge cd = edge("cd");
+        Edge ef = edge("ef");
+        Edge gh = edge("gh");
+        Edge bg = edge("bg");
+        Edge fc = edge("fc");
         assertThat(sections, hasSize(2));
         assertThat(sections, hasItem(allOf(
                 hasProperty("id", equalTo("ab")),
@@ -126,15 +83,16 @@ class StationStatusDoubleSlipSwitchTest {
     @Test
     void createSectionsTrough() {
         // Given ...
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Edge cd = stationMap.getEdge("cd");
-        Edge ef = stationMap.getEdge("ef");
-        Edge fg = stationMap.getEdge("fg");
-        Edge gh = stationMap.getEdge("gh");
         createStatus(true);
         Collection<Section> sections = status.createSections();
 
+        // Then ...
+        Edge ab = edge("ab");
+        Edge bc = edge("bc");
+        Edge cd = edge("cd");
+        Edge ef = edge("ef");
+        Edge fg = edge("fg");
+        Edge gh = edge("gh");
         assertThat(sections, hasSize(2));
         assertThat(sections, hasItem(allOf(
                 hasProperty("id", equalTo("ab")),
@@ -154,7 +112,34 @@ class StationStatusDoubleSlipSwitchTest {
                 )))));
     }
 
+    /**
+     * StationDef map
+     * <pre>
+     * Entry(a) --ab-- b --bc-- c --cd-- Exit(d)
+     *                   --bg-- g
+     *                   --fc-- c
+     * Entry(e) --ef-- f --fg-- g --gh-- Exit(h)
+     * </pre>
+     */
     void createStatus(boolean through) {
+        StationMap stationMap = new StationBuilder("station")
+                .addNode("a", new Point2D.Double(), "ab")
+                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc", "bg")
+                .addNode("c", new Point2D.Double(LENGTH * 2, 0), "cd", "bc", "fc")
+                .addNode("d", new Point2D.Double(LENGTH * 3, 0), "cd")
+                .addNode("e", new Point2D.Double(0, 50), "ef")
+                .addNode("f", new Point2D.Double(LENGTH, 50), "ef", "fg", "fc")
+                .addNode("g", new Point2D.Double(LENGTH * 2, 50), "gh", "fg", "bg")
+                .addNode("h", new Point2D.Double(LENGTH * 3, 50), "gh")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
+                .addTrack("cd", "c", "d")
+                .addTrack("ef", "e", "f")
+                .addTrack("fg", "f", "g")
+                .addTrack("gh", "g", "h")
+                .addTrack("bg", "b", "g")
+                .addTrack("fc", "f", "c")
+                .build();
         status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Entry::create, "e")
@@ -162,5 +147,84 @@ class StationStatusDoubleSlipSwitchTest {
                 .addRoute(Exit::create, "d")
                 .addRoute(Exit::create, "h")
                 .build();
+    }
+
+    @Test
+    void isConsistentDiverging() {
+        // Given ...
+        createStatus(false);
+        status = withTrain()
+                .addTrain(3, "a", "d", "ab", "b", LENGTH)
+                .addTrain(3, "a", "d", "ef", "f", LENGTH)
+                .build();
+
+        // When ... Then ...
+        assertFalse(status.isConsistent());
+    }
+
+    @Test
+    void isConsistentThrough() {
+        // Given ...
+        createStatus(true);
+        status = withTrain()
+                .addTrain(3, "a", "d", "ab", "b", LENGTH)
+                .addTrain(3, "a", "d", "ef", "f", LENGTH)
+                .build();
+
+        // When ... Then ...
+        assertFalse(status.isConsistent());
+    }
+
+    @Test
+    void isSectionWithTrain() {
+        // Given ...
+        createStatus(true);
+        status = withTrain()
+                .addTrain(3, "a", "d", "ab", "b", LENGTH)
+                .build();
+
+        // When ... Then ...
+        assertTrue(status.isSectionWithTrain(edge("cd")));
+        assertFalse(status.isSectionWithTrain(edge("gh")));
+        assertFalse(status.isSectionWithTrain(edge("bg")));
+    }
+
+    @Test
+    void toggleToDiverging() {
+        // Given ...
+        createStatus(true);
+
+        // When ...
+        StationStatus status1 = status.toggleDoubleSlipSwitch("b");
+
+        // Then ...
+        assertFalse(status1.<DoubleSlipSwitch>getRoute("b").isThrough());
+    }
+
+    @Test
+    void toggleToThrough() {
+        // Given ...
+        createStatus(false);
+
+        // When ...
+        StationStatus status1 = status.toggleDoubleSlipSwitch("b");
+
+        // Then ...
+        assertTrue(status1.<DoubleSlipSwitch>getRoute("b").isThrough());
+    }
+
+    @Test
+    void toggleUnclear() {
+        // Given ...
+        createStatus(false);
+        status = withTrain()
+                .addTrain(3, "a", "d", "ab", "b", LENGTH)
+                .build();
+
+        // When ...
+        StationStatus status1 = status.toggleDoubleSlipSwitch("b");
+
+        // Then ...
+        assertSame(status, status1);
     }
 }

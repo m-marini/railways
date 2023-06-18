@@ -123,8 +123,17 @@ public class WithTrain {
             return modify(train -> train.setState(Train.STATE_BRAKING));
         }
 
+        public TrainBuilder braking(double speed) {
+            return modify(train -> train.setSpeed(speed).setState(Train.STATE_BRAKING));
+        }
+
         public Train build(StationStatus status) {
             return builder.apply(status);
+        }
+
+        public TrainBuilder exiting(String exit) {
+            return modify((train, status) -> train.setState(Train.STATE_EXITING)
+                    .setExitingNode(status.getRoute(exit)));
         }
 
         public TrainBuilder loading(double time) {
@@ -149,6 +158,10 @@ public class WithTrain {
 
         public TrainBuilder running() {
             return running(MAX_SPEED);
+        }
+
+        public TrainBuilder waitForRun() {
+            return modify(train -> train.setState(Train.STATE_WAITING_FOR_RUN).setSpeed(0));
         }
 
         public TrainBuilder waitForSignal() {

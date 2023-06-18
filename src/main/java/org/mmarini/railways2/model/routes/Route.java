@@ -50,6 +50,20 @@ public interface Route {
     Collection<? extends Edge> getCrossingEdges(Direction direction);
 
     /**
+     * Returns the entry for a given exit direction
+     *
+     * @param exit exit direction
+     */
+    default Optional<? extends Direction> getEntry(Direction exit) {
+        return getValidEntries().stream()
+                .filter(entry ->
+                        getExit(entry).filter(exit::equals)
+                                .isPresent()
+                )
+                .findAny();
+    }
+
+    /**
      * Returns the connected direction of route
      *
      * @param direction the direction

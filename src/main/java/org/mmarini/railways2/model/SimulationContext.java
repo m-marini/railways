@@ -28,23 +28,17 @@
 
 package org.mmarini.railways2.model;
 
-import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.routes.Route;
-import org.mmarini.railways2.model.routes.Signal;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Generates the new station status after a time interval.
  * Applies the changes of the status to have an updated status.
  */
 public class SimulationContext {
-    private final Set<Route> routes;
     private StationStatus status;
 
     /**
@@ -54,7 +48,6 @@ public class SimulationContext {
      */
     public SimulationContext(StationStatus status) {
         this.status = status;
-        this.routes = new HashSet<>(status.getRoutes());
     }
 
     /**
@@ -137,6 +130,7 @@ public class SimulationContext {
      * @param direction the direction
      */
     public void lockSignals(Direction direction) {
+        /*
         Optional<StationStatus> newStatus = status.getSection(direction.getEdge())
                 .map(section -> {
                     Stream.of(section.getExit0(), section.getExit1())
@@ -155,6 +149,10 @@ public class SimulationContext {
                             });
                     return status.setRoutes(routes);
                 });
-        status = newStatus.orElse(status);
+
+         */
+        status = status.getSection(direction.getEdge())
+                .map(status::lock)
+                .orElse(status);
     }
 }

@@ -87,6 +87,20 @@ class TrainRunningTest extends WithStationStatusTest {
     }
 
     @Test
+    void revertTrain() {
+        // Given ...
+        status = withTrain()
+                .addTrain(3, "a", "c", "ab", "b", LENGTH)
+                .build();
+
+        // When ...
+        StationStatus status1 = status.revertTrain("TT0");
+
+        // Then ...
+        assertSame(status, status1);
+    }
+
+    @Test
     void runningAmongSections() {
         // Given ...
         Node b = node("b");
@@ -236,6 +250,35 @@ class TrainRunningTest extends WithStationStatusTest {
         assertEquals(MAX_SPEED, train.speedPhysics(MAX_SPEED, DT));
         assertEquals(MAX_SPEED, train.speedPhysics(MAX_SPEED * 2, DT));
         assertEquals(38.7, train.speedPhysics(38.7, DT));
+    }
+
+    @Test
+    void startTrain() {
+        // Given ...
+        status = withTrain()
+                .addTrain(3, "a", "c", "ab", "b", LENGTH)
+                .build();
+
+        // When ...
+        StationStatus status1 = status.startTrain("t1");
+
+        // Then ...
+        assertSame(status, status1);
+    }
+
+    @Test
+    void stopTrain() {
+        // Given ...
+        status = withTrain()
+                .addTrain(3, "a", "c", "ab", "b", LENGTH)
+                .build();
+
+        // When ...
+        StationStatus status1 = status.stopTrain("TT0");
+
+        // Then ...
+        Train t1 = status1.getTrain("TT0").orElseThrow();
+        assertEquals(Train.STATE_BRAKING, t1.getState());
     }
 
     @Test

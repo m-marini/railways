@@ -64,15 +64,16 @@ public class Train {
                 STATE_ENTERING, ENTRY_TIMEOUT, null, MAX_SPEED, false, 0,
                 null, 0);
     }
-    private final String id;    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+
+    private final String id;
     private final int numCoaches;
-    private final Entry arrival;    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
-    private final Exit destination;
-    private final State state;    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    private final Entry arrival;
+    private final Exit destination;    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    private final State state;
     private final EdgeLocation location;
     private final double arrivalTime;
     private final double speed;
-    private final boolean loaded;    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
+    private final boolean loaded;    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
     private final double loadedTime;
     private final Exit exitingNode;
     private final double exitDistance;
@@ -106,6 +107,13 @@ public class Train {
         this.exitingNode = exitingNode;
         this.exitDistance = exitDistance;
     }
+
+    /**
+     * Returns the braking train
+     */
+    public Train brake() {
+        return setState(Train.STATE_BRAKING);
+    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
 
     /**
      * Returns the braking train status after simulating a time interval
@@ -196,7 +204,7 @@ public class Train {
      */
     public Entry getArrival() {
         return arrival;
-    }
+    }    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
 
     /**
      * Returns the arrival time instant (s)

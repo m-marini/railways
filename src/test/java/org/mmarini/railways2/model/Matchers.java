@@ -40,6 +40,7 @@ import org.mmarini.railways2.model.routes.Section;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.Collection;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -167,10 +168,6 @@ public interface Matchers {
         };
     }
 
-    static Matcher<Section> sectionContaining(Edge... edges) {
-        return sectionContaining(containsInAnyOrder(edges));
-    }
-
     static Matcher<Section> sectionContaining(Matcher<Iterable<? extends Edge>> edges) {
         requireNonNull(edges);
         return new CustomMatcher<>(format("Section containing %s", edges)) {
@@ -178,6 +175,28 @@ public interface Matchers {
             public boolean matches(Object o) {
                 return o instanceof Section
                         && edges.matches(((Section) o).getEdges());
+            }
+        };
+    }
+
+    static Matcher<? extends Section> sectionCrossing(Matcher<Iterable<? extends Section>> crossingSection) {
+        requireNonNull(crossingSection);
+        return new CustomMatcher<>(format("Section crossing %s", crossingSection)) {
+            @Override
+            public boolean matches(Object o) {
+                return o instanceof Section
+                        && crossingSection.matches(((Section) o).getCrossingSections());
+            }
+        };
+    }
+
+    static Matcher<? extends Section> sectionCrossingCollection(Matcher<Collection<? extends Section>> crossingSection) {
+        requireNonNull(crossingSection);
+        return new CustomMatcher<>(format("Section crossing %s", crossingSection)) {
+            @Override
+            public boolean matches(Object o) {
+                return o instanceof Section
+                        && crossingSection.matches(((Section) o).getCrossingSections());
             }
         };
     }

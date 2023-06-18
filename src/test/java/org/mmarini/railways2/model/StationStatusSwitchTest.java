@@ -28,7 +28,6 @@
 
 package org.mmarini.railways2.model;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
@@ -44,47 +43,26 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mmarini.railways.Matchers.*;
 import static org.mmarini.railways2.model.Matchers.isSectionWith;
 
-class StationStatusSwitchTest {
+class StationStatusSwitchTest extends WithStationStatusTest {
 
-    StationMap stationMap;
-    StationStatus status;
-
-    /**
-     * StationDef map
-     * <pre>
-     *                           --bd-- Exit(d)
-     * Entry(a) --ab-- Switch(b) --bc-- Exit(c)
-     * </pre>
-     */
-    @BeforeEach
-    void beforeEach() {
-        stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "ab")
-                .addNode("b", new Point2D.Double(100, 0), "ab", "bc", "bd")
-                .addNode("c", new Point2D.Double(200, 0), "bc")
-                .addNode("d", new Point2D.Double(200, 10), "bd")
-                .addTrack("ab", "a", "b")
-                .addTrack("bc", "b", "c")
-                .addTrack("bd", "b", "d")
-                .build();
-    }
+    public static final double LENGTH = 100;
+    public static final double GAP = 10;
 
     @Test
     void createSectionsDiverging() {
+        // Given ...
         createSwitch(false);
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Node d = stationMap.getNode("d");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Edge bd = stationMap.getEdge("bd");
 
+        // WHen ...
         Collection<Section> sections = status.createSections();
 
+        // Then ...
+        Edge ab = edge("ab");
+        Edge bd = edge("bd");
         assertThat(sections, hasSize(1));
         assertThat(sections, hasItem(allOf(
                 hasProperty("id", equalTo("ab")),
@@ -96,17 +74,15 @@ class StationStatusSwitchTest {
 
     @Test
     void createSectionsThrough() {
+        // Given ...
         createSwitch(true);
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Node d = stationMap.getNode("d");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Edge bd = stationMap.getEdge("bd");
 
+        // When ...
         Collection<Section> sections = status.createSections();
 
+        // Then ...
+        Edge ab = edge("ab");
+        Edge bc = edge("bc");
         assertThat(sections, hasSize(1));
         assertThat(sections, hasItem(allOf(
                 hasProperty("id", equalTo("ab")),
@@ -116,7 +92,23 @@ class StationStatusSwitchTest {
                 hasProperty("crossingSections", empty()))));
     }
 
+    /**
+     * StationDef map
+     * <pre>
+     *                           --bd-- Exit(d)
+     * Entry(a) --ab-- Switch(b) --bc-- Exit(c)
+     * </pre>
+     */
     void createSwitch(boolean through) {
+        StationMap stationMap = new StationBuilder("station")
+                .addNode("a", new Point2D.Double(), "ab")
+                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc", "bd")
+                .addNode("c", new Point2D.Double(2 * LENGTH, 0), "bc")
+                .addNode("d", new Point2D.Double(2 * LENGTH, GAP), "bd")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
+                .addTrack("bd", "b", "d")
+                .build();
         status = new StationStatus.Builder(stationMap, 1, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Switch.create(through), "b")
@@ -127,16 +119,16 @@ class StationStatusSwitchTest {
 
     @Test
     void findSectionDeviated() {
+        // Given ...
         createSwitch(false);
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Node d = stationMap.getNode("d");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Edge bd = stationMap.getEdge("bd");
 
-        Optional<Tuple2<Section, Set<Edge>>> section = status.findSection(new Direction(ab, b));
+        // When ...
+        Optional<Tuple2<Section, Set<Edge>>> section = status.findSection(direction("ab", "b"));
+
+        // Then ...
+        Node b = node("b");
+        Edge bc = edge("bc");
+        Edge bd = edge("bd");
         assertThat(section, optionalOf(tupleOf(
                 isSectionWith("ab", "b", "bd", "b", "ab", "bd"),
                 empty()
@@ -154,16 +146,16 @@ class StationStatusSwitchTest {
 
     @Test
     void findSectionDirect() {
+        // Given ...
         createSwitch(true);
-        Node a = stationMap.getNode("a");
-        Node b = stationMap.getNode("b");
-        Node c = stationMap.getNode("c");
-        Node d = stationMap.getNode("d");
-        Edge ab = stationMap.getEdge("ab");
-        Edge bc = stationMap.getEdge("bc");
-        Edge bd = stationMap.getEdge("bd");
 
-        Optional<Tuple2<Section, Set<Edge>>> section = status.findSection(new Direction(ab, b));
+        // When ...
+        Optional<Tuple2<Section, Set<Edge>>> section = status.findSection(direction("ab", "b"));
+
+        // Then ...
+        Node b = node("b");
+        Edge bc = edge("bc");
+        Edge bd = edge("bd");
         assertThat(section, optionalOf(tupleOf(
                 isSectionWith("ab", "b", "bc", "b", "ab", "bc"),
                 empty()
@@ -176,5 +168,44 @@ class StationStatusSwitchTest {
         )));
 
         assertThat(status.findSection(new Direction(bd, b)), emptyOptional());
+    }
+
+    @Test
+    void toggleSwitchToDiverging() {
+        // Given ...
+        createSwitch(true);
+
+        // When ...
+        StationStatus status1 = status.toggleSwitch("b");
+
+        // Then ...
+        assertFalse(status1.<Switch>getRoute("b").isThrough());
+    }
+
+    @Test
+    void toggleSwitchToThrough() {
+        // Given ...
+        createSwitch(false);
+
+        // When ...
+        StationStatus status1 = status.toggleSwitch("b");
+
+        // Then ...
+        assertTrue(status1.<Switch>getRoute("b").isThrough());
+    }
+
+    @Test
+    void toggleSwitchUnclearThrough() {
+        // Given ...
+        createSwitch(true);
+        status = withTrain()
+                .addTrain(3, "a", "c", "ab", "b", LENGTH)
+                .build();
+
+        // When ...
+        StationStatus status1 = status.toggleSwitch("b");
+
+        // Then ...
+        assertSame(status, status1);
     }
 }
