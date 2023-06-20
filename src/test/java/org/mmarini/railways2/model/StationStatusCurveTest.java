@@ -52,6 +52,7 @@ import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
 class StationStatusCurveTest {
 
     public static final double LENGTH = 100;
+    public static final double GAME_DURATION = 300d;
     private StationMap stationMap;
     private StationStatus status;
     private Node a;
@@ -76,7 +77,7 @@ class StationStatusCurveTest {
         this.a = stationMap.getNode("a");
         this.b = stationMap.getNode("b");
         this.ab = stationMap.getEdge("ab");
-        this.status = new StationStatus.Builder(stationMap, 1, null)
+        this.status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Exit::create, "b")
                 .build();

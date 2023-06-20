@@ -51,6 +51,7 @@ class StationStatusSwitchTest extends WithStationStatusTest {
 
     public static final double LENGTH = 100;
     public static final double GAP = 10;
+    public static final double GAME_DURATION = 300d;
 
     @Test
     void createSectionsDiverging() {
@@ -109,7 +110,7 @@ class StationStatusSwitchTest extends WithStationStatusTest {
                 .addTrack("bc", "b", "c")
                 .addTrack("bd", "b", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Switch.create(through), "b")
                 .addRoute(Exit::create, "c")

@@ -46,21 +46,4 @@ interface Utils {
         }
         return k;
     }
-
-    /**
-     * Returns the random number with poisson distribution
-     *
-     * @param random the random generator
-     * @param lambda the rate of poisson function
-     */
-    static int nextPoisson1(Random random, double lambda) {
-        double l = exp(-lambda);
-        int k = 0;
-        double p = 1;
-        do {
-            k++;
-            p = p * random.nextDouble();
-        } while (p > l);
-        return k - 1;
-    }
 }

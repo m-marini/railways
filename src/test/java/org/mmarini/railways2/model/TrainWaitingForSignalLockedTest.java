@@ -38,13 +38,16 @@ import org.mmarini.railways2.model.routes.Signal;
 import org.mmarini.railways2.swing.WithTrain;
 
 import java.awt.geom.Point2D;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 
 class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
+    public static final int GAME_DURATION = 300;
     static final double DT = 0.1;
     private static final double LENGTH = 500;
 
@@ -64,7 +67,7 @@ class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
                 .build();
         Edge bc = stationMap.getEdge("bc");
         Node b = stationMap.getNode("b");
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(org.mmarini.railways2.model.routes.Entry::create, "a")
                 .addRoute(Signal.createLocks(new Direction(bc, b)), "b")
                 .addRoute(org.mmarini.railways2.model.routes.Exit::create, "c")
@@ -81,14 +84,22 @@ class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        Tuple2<Train, Double> transition = train("train").changeState(new SimulationContext(status), DT).orElseThrow();
+        Tuple2<Optional<Train>, Performance> transition = train("train").changeState(new SimulationContext(status), DT);
 
         // Then ...
-        Train train = transition._1;
+        Train train = transition._1.orElseThrow();
         assertEquals(Train.STATE_RUNNING, train.getState());
         assertEquals(0d, train.getSpeed());
         assertThat(train.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
-        assertEquals(DT, transition._2);
+
+        Performance perf = transition._2;
+        assertEquals(0, perf.getElapsedTime());
+        assertEquals(0, perf.getTotalTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
     }
 
     @Test
@@ -109,12 +120,24 @@ class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
         status = status.setTrains(t1, t2);
 
         // When ...
-        Tuple2<Train, Double> next = t1.changeState(new SimulationContext(status), DT).orElseThrow();
+        Tuple2<Optional<Train>, Performance> nextOpt = t1.changeState(new SimulationContext(status), DT);
 
         // Then ...
-        assertEquals(Train.STATE_WAITING_FOR_SIGNAL, next._1.getState());
-        assertEquals(0, next._1.getSpeed());
-        assertThat(next._1.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
-        assertEquals(0d, next._2);
+        Optional<Train> trainOpt = nextOpt._1;
+        assertTrue(trainOpt.isPresent());
+
+        Train train = trainOpt.orElseThrow();
+        assertEquals(Train.STATE_WAITING_FOR_SIGNAL, train.getState());
+        assertEquals(0, train.getSpeed());
+        assertThat(train.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
+
+        Performance perf = nextOpt._2;
+        assertEquals(DT, perf.getElapsedTime());
+        assertEquals(DT, perf.getTotalTime());
+        assertEquals(DT, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
     }
 }

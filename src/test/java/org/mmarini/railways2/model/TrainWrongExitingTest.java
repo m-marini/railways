@@ -30,68 +30,79 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.StationBuilder;
 import org.mmarini.railways2.model.geometry.StationMap;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
-import org.mmarini.railways2.model.routes.Junction;
+import org.mmarini.railways2.model.routes.Switch;
+import org.mmarini.railways2.swing.WithTrain;
 
 import java.awt.geom.Point2D;
-import java.util.Random;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mmarini.railways.Matchers.optionalOf;
-import static org.mmarini.railways2.model.Matchers.locatedAt;
-import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mmarini.railways2.model.RailwayConstants.*;
 
-class TrainRunningMultipleEdgesTest extends WithStationStatusTest {
-    public static final int SEED = 1234;
-    public static final double GAP = 1;
+class TrainWrongExitingTest extends WithStationStatusTest {
+    public static final int LENGTH = 500;
     public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
-    static final double LENGTH = 500;
 
     /**
      * <pre>
-     *     Entry(a) --ab(500m)-- Junction(b) --bc(10m)-- Junction(c) --cd(500m)-- Exit(c)
+     *     Entry(a) --ab(500m)-- Switch(b) --bc(500m)-- Exit(c)
+     *                                     --bd(500m)-- Exit(d)
      * </pre>
      */
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
-                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
-                .addNode("c", new Point2D.Double(LENGTH + GAP, 0), "bc", "cd")
-                .addNode("d", new Point2D.Double(LENGTH * 2 + GAP, 0), "cd")
+                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc", "bd")
+                .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc")
+                .addNode("d", new Point2D.Double(LENGTH * 2, 10), "bd")
                 .addTrack("ab", "a", "b")
                 .addTrack("bc", "b", "c")
-                .addTrack("cd", "c", "d")
+                .addTrack("bd", "b", "d")
                 .build();
         status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
-                .addRoute(Junction::create, "b")
-                .addRoute(Junction::create, "c")
+                .addRoute(Switch::through, "b")
+                .addRoute(Exit::create, "c")
                 .addRoute(Exit::create, "d")
                 .build();
     }
 
     @Test
-    void tick() {
-        // Given ...
+    void left() {
+        // Giving exiting train just 1 meter before leaving completely the map from the wrong exit
         status = withTrain()
-                .addTrain(3, "a", "d", "ab", "b", 0)
+                .addTrain(new WithTrain.TrainBuilder("train2", 3, "a", "d")
+                        .exiting("c", COACH_LENGTH * 3 + EXIT_DISTANCE - 1))
                 .build();
+        SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        StationStatus status1 = status.tick(DT, new Random(SEED));
+        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(ctx, DT);
 
-        // Then ...
-        Train train = status1.getTrain("TT0").orElseThrow();
-        assertEquals(Train.STATE_RUNNING, train.getState());
-        assertEquals(MAX_SPEED, train.getSpeed());
-        double expDistance = LENGTH - MAX_SPEED * DT + GAP;
-        assertThat(train.getLocation(), optionalOf(locatedAt(
-                "cd", "d", expDistance)));
+        // Then the train should disappear
+        assertTrue(nextOpt._1.isEmpty());
+
+        // And the elapsed time should be the time to reach end of map (1/max speed)
+        // And the total time should be the time to reach end of map (1/max speed)
+        // And the traveled distance should be 1m
+        // And the wrong outgoing train should be 1
+        Performance perf = nextOpt._2;
+        assertThat(perf.getElapsedTime(), closeTo(1 / MAX_SPEED, 1e-3));
+        assertThat(perf.getTotalTime(), closeTo(1 / MAX_SPEED, 1e-3));
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(1, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(1, perf.getTraveledDistance());
     }
 }

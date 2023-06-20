@@ -48,6 +48,7 @@ class StationStatusPlatformTest {
 
     public static final double BLOCK = 10;
     public static final double LENGTH = 6 * BLOCK;
+    public static final double GAME_DURATION = 300d;
     StationMap stationMap;
     StationStatus status;
     private Node a;
@@ -61,7 +62,7 @@ class StationStatusPlatformTest {
     private Exit dRoute;
 
     void createStatus(Direction... locks) {
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal.createLocks(locks), "b")
                 .addRoute(Signal::create, "c")

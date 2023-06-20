@@ -43,12 +43,14 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways.Matchers.tupleOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.LOADING_TIME;
 
 class TrainLoadingTest extends WithStationStatusTest {
+    public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
 
     /**
@@ -66,7 +68,7 @@ class TrainLoadingTest extends WithStationStatusTest {
                 .addPlatform("bc", "b", "c")
                 .build();
 
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
@@ -75,32 +77,8 @@ class TrainLoadingTest extends WithStationStatusTest {
 
     @Test
     void loaded() {
-        // Given ...
-        status = withTrain()
-                .addTrain(
-                        new WithTrain.TrainBuilder("train2", 3, "a", "c")
-                                .loading(0)
-                                .at("ab", "b", 0))
-                .build()
-                .setTime(LOADING_TIME);
-
-        // When ...
-        Optional<Tuple2<Train, Double>> transitionOpt = train("train2").loading(new SimulationContext(status), DT);
-
-        // Then ...
-        assertThat(transitionOpt, optionalOf(tupleOf(allOf(
-                        hasProperty("state", equalTo(Train.STATE_WAITING_FOR_RUN)),
-                        hasProperty("speed", equalTo(0d)),
-                        hasProperty("unloaded", equalTo(false)),
-                        hasProperty("location", optionalOf(locatedAt("ab", "b", 0)))),
-                equalTo(DT)
-        )));
-    }
-
-
-    @Test
-    void overTimeLoaded() {
-        // Given ...
+        // Given the loading train
+        // And the time at DT/2 before loading time
         status = withTrain()
                 .addTrain(
                         new WithTrain.TrainBuilder("train2", 3, "a", "c")
@@ -108,18 +86,30 @@ class TrainLoadingTest extends WithStationStatusTest {
                                 .at("ab", "b", 0))
                 .build()
                 .setTime(LOADING_TIME - DT / 4);
+        SimulationContext context = new SimulationContext(status);
 
         // When ...
-        Optional<Tuple2<Train, Double>> transitionOpt = train("train2").loading(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> transitionOpt = train("train2").changeState(context, DT);
 
-        // Then ...
-        assertThat(transitionOpt, optionalOf(tupleOf(allOf(
+        // Then the train should be loaded in waiting for run
+        assertThat(transitionOpt, tupleOf(optionalOf(allOf(
                         hasProperty("state", equalTo(Train.STATE_WAITING_FOR_RUN)),
                         hasProperty("speed", equalTo(0d)),
                         hasProperty("unloaded", equalTo(false)),
-                        hasProperty("location", optionalOf(locatedAt("ab", "b", 0)))),
-                closeTo(DT * 3 / 4, 1e-3)
-        )));
+                        hasProperty("location", optionalOf(locatedAt("ab", "b", 0))))),
+                anything()));
+
+        // And the elapsed time should be DT/2
+        // And the total time should be DT/2
+        // And the waiting time should be DT/2
+        Performance perf = transitionOpt._2;
+        assertThat(perf.getElapsedTime(), closeTo(DT / 4, 1e-3));
+        assertThat(perf.getTotalTime(), closeTo(DT / 4, 1e-3));
+        assertThat(perf.getTrainWaitingTime(), closeTo(DT / 4, 1e-3));
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
     }
 
     @Test
@@ -131,26 +121,29 @@ class TrainLoadingTest extends WithStationStatusTest {
                                 .loading(0)
                                 .at("ab", "b", 0))
                 .build();
+        SimulationContext context = new SimulationContext(status);
 
         // When ...
-        Optional<Tuple2<Train, Double>> transitionOpt = train("train2").loading(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> transitionOpt = train("train2").changeState(context, DT);
 
         // Then ...
-        assertThat(transitionOpt, optionalOf(tupleOf(
-                hasProperty("state", equalTo(Train.STATE_LOADING)),
-                anything()
-        )));
-        assertThat(transitionOpt, optionalOf(tupleOf(
-                hasProperty("unloaded", equalTo(true)),
-                anything()
-        )));
-        assertThat(transitionOpt, optionalOf(tupleOf(
-                hasProperty("location", optionalOf(locatedAt("ab", "b", 0))),
-                anything()
-        )));
-        assertThat(transitionOpt, optionalOf(tupleOf(
-                anything(),
-                equalTo(0d)
-        )));
+        assertThat(transitionOpt, tupleOf(optionalOf(
+                        hasProperty("state", equalTo(Train.STATE_LOADING))),
+                anything()));
+        assertThat(transitionOpt, tupleOf(optionalOf(
+                        hasProperty("unloaded", equalTo(true))),
+                anything()));
+        assertThat(transitionOpt, tupleOf(optionalOf(
+                        hasProperty("location", optionalOf(locatedAt("ab", "b", 0)))),
+                anything()));
+
+        Performance perf = transitionOpt._2;
+        assertEquals(DT, perf.getElapsedTime());
+        assertEquals(DT, perf.getTotalTime());
+        assertEquals(DT, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
     }
 }

@@ -45,6 +45,7 @@ class BlockStationBuilderCurvesTest {
     public static final int NUM_COACHES = 10;
     public static final double PLATFORM_LENGTH = COACH_LENGTH * NUM_COACHES + PLATFORM_GAP + PLATFORM_SIGNAL_GAP * 2;
     public static final double EPSILON = 1e-3;
+    public static final double GAME_DURATION = 300d;
     private BlockStationBuilder builder;
 
     @Test
@@ -77,6 +78,6 @@ class BlockStationBuilderCurvesTest {
                 "west.entry", "curves.1.w",
                 "east.entry", "p.1.e");
         StationDef station = StationDef.create("station", orientation, blocks, links);
-        this.builder = new BlockStationBuilder(station, null);
+        this.builder = new BlockStationBuilder(station, GAME_DURATION, null);
     }
 }

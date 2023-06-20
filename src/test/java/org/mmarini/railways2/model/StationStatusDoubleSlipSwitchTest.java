@@ -46,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StationStatusDoubleSlipSwitchTest extends WithStationStatusTest {
 
+    public static final double GAME_DURATION = 300d;
     private static final double LENGTH = 100;
 
     @Test
@@ -140,7 +141,7 @@ class StationStatusDoubleSlipSwitchTest extends WithStationStatusTest {
                 .addTrack("bg", "b", "g")
                 .addTrack("fc", "f", "c")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Entry::create, "e")
                 .addRoute(DoubleSlipSwitch.create(through), "b", "c", "f", "g")
