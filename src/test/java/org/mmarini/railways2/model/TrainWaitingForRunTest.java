@@ -30,6 +30,7 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.StationBuilder;
 import org.mmarini.railways2.model.geometry.StationMap;
 import org.mmarini.railways2.model.routes.Entry;
@@ -48,6 +49,7 @@ import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 
 class TrainWaitingForRunTest extends WithStationStatusTest {
     public static final int LENGTH = 500;
+    public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
 
     /**
@@ -64,7 +66,7 @@ class TrainWaitingForRunTest extends WithStationStatusTest {
                 .addTrack("ab", "a", "b")
                 .addTrack("bc", "b", "c")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
@@ -154,14 +156,24 @@ class TrainWaitingForRunTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        Optional<Train> nextOpt = train("t1").tick(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(new SimulationContext(status), DT);
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
+        Optional<Train> trainOpt = nextOpt._1;
+        assertTrue(trainOpt.isPresent());
+
+        Train next = trainOpt.orElseThrow();
         assertEquals(Train.STATE_WAITING_FOR_RUN, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
-    }
 
+        Performance perf = nextOpt._2;
+        assertEquals(DT, perf.getElapsedTime());
+        assertEquals(DT, perf.getTotalTime());
+        assertEquals(DT, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
+    }
 }

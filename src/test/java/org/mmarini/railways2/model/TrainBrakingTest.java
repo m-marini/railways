@@ -30,6 +30,7 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
@@ -48,7 +49,7 @@ import static org.mmarini.railways2.model.RailwayConstants.DEACCELERATION;
 import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
 
 class TrainBrakingTest extends WithStationStatusTest {
-    public static final int SEED = 1234;
+    public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
     private static final double LENGTH = 500;
 
@@ -66,7 +67,7 @@ class TrainBrakingTest extends WithStationStatusTest {
                 .addTrack("ab", "a", "b")
                 .addTrack("bc", "b", "c")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
@@ -76,27 +77,33 @@ class TrainBrakingTest extends WithStationStatusTest {
     @Test
     void brakingStop() {
         // Given ...
-        Node b = node("b");
-        Edge ab = edge("ab");
-        Entry aRoute = route("a");
-        Exit cRoute = route("c");
         double speed = -DEACCELERATION * DT * 0.9;
         double distance = 10;
-        Train t1 = Train.create("t1", 1, aRoute, cRoute)
-                .setLocation(EdgeLocation.create(ab, b, distance))
-                .setState(Train.STATE_BRAKING)
-                .setSpeed(speed);
-        status = status.setTrains(t1);
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "c")
+                        .at("ab", "b", distance)
+                        .braking(speed))
+                .build();
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
+        SimulationContext ctx = new SimulationContext(status);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, DT);
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
+        assertTrue(nextOpt._1.isPresent());
+        Train next = nextOpt._1.orElseThrow();
         assertEquals(Train.STATE_WAITING_FOR_RUN, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", distance - speed * DT)));
+
+        Performance perf = nextOpt._2;
+        assertEquals(DT, perf.getElapsedTime());
+        assertEquals(DT, perf.getTotalTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(1, perf.getTrainStopNumber());
+        assertEquals(speed * DT, perf.getTraveledDistance());
     }
 
     @Test
@@ -112,16 +119,26 @@ class TrainBrakingTest extends WithStationStatusTest {
                 .setState(Train.STATE_BRAKING)
                 .setSpeed(speed);
         status = status.setTrains(t1);
+        SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = t1.changeState(ctx, DT);
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
+        assertTrue(nextOpt._1.isPresent());
+        Train next = nextOpt._1.orElseThrow();
         assertEquals(Train.STATE_BRAKING, next.getState());
         assertEquals(DEACCELERATION * DT + speed, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", LENGTH - speed * DT)));
+
+        Performance perf = nextOpt._2;
+        assertEquals(DT, perf.getElapsedTime());
+        assertEquals(DT, perf.getTotalTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(speed * DT, perf.getTraveledDistance());
     }
 
     @Test
@@ -142,14 +159,24 @@ class TrainBrakingTest extends WithStationStatusTest {
         status = status.setTrains(t1, t2);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
+        SimulationContext ctx = new SimulationContext(status);
+        Tuple2<Optional<Train>, Performance> nextOpt = t1.changeState(ctx, DT);
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
+        assertTrue(nextOpt._1.isPresent());
+        Train next = nextOpt._1.orElseThrow();
         assertEquals(Train.STATE_BRAKING, next.getState());
         assertEquals(MAX_SPEED + DEACCELERATION * DT, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", distance - DT * MAX_SPEED)));
+
+        Performance perf = nextOpt._2;
+        assertEquals(DT, perf.getElapsedTime());
+        assertEquals(DT, perf.getTotalTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(MAX_SPEED * DT, perf.getTraveledDistance());
     }
 
     @Test
@@ -183,13 +210,23 @@ class TrainBrakingTest extends WithStationStatusTest {
         Train t0 = status.getTrain("TT0").orElseThrow();
 
         // When ...
-        Optional<Train> nextOpt = t0.tick(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = t0.changeState(new SimulationContext(status), DT);
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
+        assertTrue(nextOpt._1.isPresent());
+        Train next = nextOpt._1.orElseThrow();
         assertEquals(Train.STATE_WAITING_FOR_RUN, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
+
+        Performance perf = nextOpt._2;
+        double expectedTime = distance / MAX_SPEED;
+        assertEquals(expectedTime, perf.getElapsedTime());
+        assertEquals(expectedTime, perf.getTotalTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(1, perf.getTrainStopNumber());
+        assertEquals(distance, perf.getTraveledDistance());
     }
 }

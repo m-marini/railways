@@ -49,6 +49,7 @@ import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 
 class TrainWaitingForSignalTest extends WithStationStatusTest {
     public static final int LENGTH = 500;
+    public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
 
     @Test
@@ -83,7 +84,7 @@ class TrainWaitingForSignalTest extends WithStationStatusTest {
                 .addTrack("ab", "a", "b")
                 .addTrack("bc", "b", "c")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
@@ -117,13 +118,22 @@ class TrainWaitingForSignalTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        Tuple2<Train, Double> next = train("train").changeState(new SimulationContext(status), DT).orElseThrow();
+        Tuple2<Optional<Train>, Performance> nextOpt = train("train").changeState(new SimulationContext(status), DT);
 
         // Then ...
-        assertEquals(Train.STATE_RUNNING, next._1.getState());
-        assertEquals(0, next._1.getSpeed());
-        assertThat(next._1.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
-        assertEquals(DT, next._2);
+        Train next = nextOpt._1.orElseThrow();
+        assertEquals(Train.STATE_RUNNING, next.getState());
+        assertEquals(0, next.getSpeed());
+        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
+
+        Performance perf = nextOpt._2;
+        assertEquals(0, perf.getElapsedTime());
+        assertEquals(0, perf.getTotalTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
     }
 
     @Test
@@ -145,13 +155,23 @@ class TrainWaitingForSignalTest extends WithStationStatusTest {
         status = status.setTrains(t1, t2);
 
         // When ...
-        Optional<Train> nextOpt = t1.tick(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = t1.changeState(new SimulationContext(status), DT);
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
+        assertTrue(nextOpt._1.isPresent());
+        Train next = nextOpt._1.orElseThrow();
         assertEquals(Train.STATE_WAITING_FOR_SIGNAL, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
+
+        Performance perf = nextOpt._2;
+        assertEquals(DT, perf.getElapsedTime());
+        assertEquals(DT, perf.getTotalTime());
+        assertEquals(DT, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
+
     }
 }

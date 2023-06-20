@@ -41,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SimulationContextTest {
+    public static final double GAME_DURATION = 300d;
     static StationMap stationMap;
     static StationStatus status;
 
@@ -61,7 +62,7 @@ class SimulationContextTest {
                 .addTrack("bc", "b", "c")
                 .addTrack("cd", "c", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Signal::create, "c")

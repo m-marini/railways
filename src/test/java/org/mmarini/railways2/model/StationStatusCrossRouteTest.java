@@ -53,6 +53,7 @@ import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
 
 class StationStatusCrossRouteTest extends WithStationStatusTest {
 
+    public static final double GAME_DURATION = 300d;
     private Node e;
     private Track ae;
     private Track be;
@@ -83,7 +84,7 @@ class StationStatusCrossRouteTest extends WithStationStatusTest {
                 .addTrack("ce", "c", "e")
                 .addTrack("de", "d", "e")
                 .build();
-        this.status = new StationStatus.Builder(stationMap, 1, null)
+        this.status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Exit::create, "b")
                 .addRoute(Entry::create, "c")

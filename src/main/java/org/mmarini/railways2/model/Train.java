@@ -35,6 +35,8 @@ import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Route;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -42,6 +44,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Objects.requireNonNull;
 import static org.mmarini.railways2.model.RailwayConstants.*;
+
 
 /**
  * Identifies the train, locates it, moves it in the dispatched routes
@@ -67,15 +70,15 @@ public class Train {
 
     private final String id;
     private final int numCoaches;
-    private final Entry arrival;
-    private final Exit destination;    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    private final Entry arrival;    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    private final Exit destination;
     private final State state;
     private final EdgeLocation location;
-    private final double arrivalTime;
+    private final double arrivalTime;    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
     private final double speed;
-    private final boolean loaded;    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    private final boolean loaded;
     private final double loadedTime;
-    private final Exit exitingNode;
+    private final Exit exitingNode;    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
     private final double exitDistance;
     /**
      * Creates the train
@@ -113,7 +116,7 @@ public class Train {
      */
     public Train brake() {
         return setState(Train.STATE_BRAKING);
-    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    }
 
     /**
      * Returns the braking train status after simulating a time interval
@@ -122,12 +125,14 @@ public class Train {
      * @param context the simulation context
      * @param dt      the time interval (s)
      */
-    Optional<Tuple2<Train, Double>> braking(SimulationContext context, double dt) {
-        return running(context, dt, 0)
-                .map(tuple -> (tuple._1.getState().equals(Train.STATE_WAITING_FOR_SIGNAL)) ?
-                        tuple.setV1(tuple._1.stop())
-                        : tuple);
-    }
+    Tuple2<Optional<Train>, Performance> braking(SimulationContext context, double dt) {
+        Tuple2<Optional<Train>, Performance> result = running(context, dt, 0);
+        Optional<Train> newTrain = result._1
+                .map(train -> train.getState().equals(Train.STATE_WAITING_FOR_SIGNAL)
+                        ? train.stop() :
+                        train);
+        return result.setV1(newTrain);
+    }    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
 
     /**
      * Returns the train status after simulating a time interval
@@ -136,7 +141,7 @@ public class Train {
      * @param ctx the simulation context
      * @param dt  the time interval (s)
      */
-    Optional<Tuple2<Train, Double>> changeState(SimulationContext ctx, double dt) {
+    Tuple2<Optional<Train>, Performance> changeState(SimulationContext ctx, double dt) {
         return state.apply(this, ctx, dt);
     }
 
@@ -147,23 +152,26 @@ public class Train {
      * @param context the simulation context
      * @param dt      the time interval
      */
-    Optional<Tuple2<Train, Double>> entering(SimulationContext context, double dt) {
+    Tuple2<Optional<Train>, Performance> entering(SimulationContext context, double dt) {
         double timeToArrive = context.getTimeTo(arrivalTime);
         if (timeToArrive > dt) {
             // Train not yet arrived
-            return Optional.of(Tuple2.of(this, 0d));
+            return Tuple2.of(Optional.of(this), Performance.elapsed(dt));
         }
         if (!context.isEntryClear(this)) {
-            // Train must stop at entry (entry busy)
-            return Optional.of(Tuple2.of(setSpeed(0), 0d));
+            // entry busy
+            return speed != 0
+                    ? Tuple2.of(Optional.of(setSpeed(0)),
+                    Performance.elapsed(timeToArrive).addTrainStopNumber(1))
+                    : Tuple2.of(Optional.of(this),
+                    Performance.elapsed(timeToArrive));
         }
         // Enters the edge
         Direction dir = arrival.getValidExits().iterator().next();
         EdgeLocation location = new EdgeLocation(dir, dir.getEdge().getLength());
-        return Optional.of(Tuple2.of(setLocation(location)
-                // Checks if train has arrived and stopped
-                .setSpeed(arrivalTime <= 0 ? 0 : MAX_SPEED)
-                .run(), dt));
+        return Tuple2.of(
+                Optional.of(setLocation(location).run()),
+                Performance.elapsed(max(0, timeToArrive)));
     }
 
     @Override
@@ -191,12 +199,24 @@ public class Train {
      * @param context the simulation context
      * @param dt      the time interval
      */
-    Optional<Tuple2<Train, Double>> exiting(SimulationContext context, double dt) {
+    Tuple2<Optional<Train>, Performance> exiting(SimulationContext context, double dt) {
         double newSpeed = speedPhysics(MAX_SPEED, dt);
-        double newExitDistance = exitDistance + speed * dt;
-        return newExitDistance >= EXIT_DISTANCE + getLength() ?
-                Optional.empty() :
-                Optional.of(Tuple2.of(setExitDistance(newExitDistance).setSpeed(newSpeed), 0d));
+        double ds = speed * dt;
+        double distanceToExit = EXIT_DISTANCE + getLength() - exitDistance;
+        boolean left = ds >= distanceToExit;
+        if (left) {
+            double exitTime = distanceToExit / speed;
+            if (exitingNode.equals(destination)) {
+                return Tuple2.of(Optional.empty(),
+                        Performance.running(exitTime, distanceToExit).addTrainRightOutgoingNumber(1));
+            } else {
+                return Tuple2.of(Optional.empty(),
+                        Performance.running(exitTime, distanceToExit).addTrainWrongOutgoingNumber(1));
+            }
+        }
+        double newExitDistance = exitDistance + ds;
+        return Tuple2.of(Optional.of(setExitDistance(newExitDistance).setSpeed(newSpeed)),
+                Performance.running(dt, ds));
     }
 
     /**
@@ -204,7 +224,7 @@ public class Train {
      */
     public Entry getArrival() {
         return arrival;
-    }    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
+    }
 
     /**
      * Returns the arrival time instant (s)
@@ -237,7 +257,7 @@ public class Train {
         return exitDistance;
     }
 
-    private Train setExitDistance(double exitDistance) {
+    public Train setExitDistance(double exitDistance) {
         return this.exitDistance == exitDistance ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
     }
@@ -383,15 +403,14 @@ public class Train {
      * @param context the simulation context
      * @param dt      the time interval
      */
-    Optional<Tuple2<Train, Double>> loading(SimulationContext context, double dt) {
+    Tuple2<Optional<Train>, Performance> loading(SimulationContext context, double dt) {
         double timeToLoad = context.getTimeTo(loadedTime);
-        return (dt < timeToLoad) ?
+        return (dt < timeToLoad)
                 // Wait for loaded
-                Optional.of(Tuple2.of(this, 0d)) :
+                ? Tuple2.of(Optional.of(this), Performance.waiting(dt))
                 // Load completed
-                Optional.of(Tuple2.of(
-                        stop().setLoaded(),
-                        dt - timeToLoad));
+                : Tuple2.of(Optional.of(stop().setLoaded()),
+                Performance.waiting(timeToLoad));
     }
 
     /**
@@ -406,7 +425,7 @@ public class Train {
      *
      * @param context the simulation context
      */
-    Optional<Tuple2<Train, Double>> running(SimulationContext context, double dt) {
+    Tuple2<Optional<Train>, Performance> running(SimulationContext context, double dt) {
         return running(context, dt, MAX_SPEED);
     }
 
@@ -423,7 +442,7 @@ public class Train {
      * @param dt          the time interval
      * @param targetSpeed the target speed (m/s)
      */
-    Optional<Tuple2<Train, Double>> running(SimulationContext context, double dt, double targetSpeed) {
+    Tuple2<Optional<Train>, Performance> running(SimulationContext context, double dt, double targetSpeed) {
         double timeToEndEdge = location.getDistance() / speed;
         boolean clearTrack = context.isNextTracksClear(this);
         Direction direction = location.getDirection();
@@ -437,17 +456,18 @@ public class Train {
         double newDistance = location.getDistance() - movement;
 
         if (dt < timeToEndEdge) {
-            // Move head in the current edge
+            // Move ahead in the current edge
             EdgeLocation newLocation = location.setDistance(newDistance);
             if (targetSpeed > APPROACH_SPEED || newSpeed > APPROACH_SPEED) {
-                return Optional.of(Tuple2.of(
-                        setLocation(newLocation).setSpeed(max(newSpeed, APPROACH_SPEED)),
-                        0d));
+                return Tuple2.of(Optional.of(
+                                setLocation(newLocation)
+                                        .setSpeed(max(newSpeed, APPROACH_SPEED))),
+                        Performance.running(dt, movement));
             } else {
                 // Train is braking
-                return Optional.of(Tuple2.of(
-                        setLocation(newLocation).setSpeed(newSpeed).setState(STATE_WAITING_FOR_RUN),
-                        0d));
+                return Tuple2.of(Optional.of(
+                                setLocation(newLocation).setSpeed(0).setState(STATE_WAITING_FOR_RUN)),
+                        Performance.running(dt, movement).addTrainStopNumber(1));
             }
         }
 
@@ -455,27 +475,28 @@ public class Train {
         // end of edge reached
         if (route instanceof Exit) {
             // exit node reached
-            return Optional.of(Tuple2.of(
-                    setState(STATE_EXITING)
-                            .setLocation(null)
-                            .setExitingNode((Exit) route)
-                            .setExitDistance(0),
-                    remainingTime));
+            return Tuple2.of(Optional.of(
+                            setState(STATE_EXITING)
+                                    .setLocation(null)
+                                    .setExitingNode((Exit) route)
+                                    .setExitDistance(0)),
+                    Performance.running(timeToEndEdge, location.getDistance()));
         }
         if (edge instanceof Platform && !loaded) {
             // platform reached and train not loaded
-            return Optional.of(Tuple2.of(
-                    setState(STATE_LOADING)
-                            .setLocation(location.setDistance(0))
-                            .load(context.getTimeAfter(timeToEndEdge)),
-                    remainingTime));
+            return Tuple2.of(Optional.of(
+                            setState(STATE_LOADING)
+                                    .setLocation(location.setDistance(0))
+                                    .load(context.getTimeAfter(timeToEndEdge))),
+                    Performance.running(timeToEndEdge, location.getDistance()).addTrainStopNumber(1));
         }
         if (!context.isNextRouteClear(direction)) {
             // next route is not clear (stop signal)
-            return Optional.of(Tuple2.of(setState(STATE_WAITING_FOR_SIGNAL)
+            return Tuple2.of(Optional.of(setState(STATE_WAITING_FOR_SIGNAL)
                             .setLocation(location.setDistance(0))
-                            .setSpeed(0),
-                    remainingTime));
+                            .setSpeed(0)),
+                    Performance.running(timeToEndEdge, location.getDistance())
+                            .addTrainStopNumber(1));
         }
         // Get the new direction
         Optional<Direction> routeDirection = context.getNextExit(location.getDirection());
@@ -485,9 +506,10 @@ public class Train {
                     EdgeLocation newLocation = new EdgeLocation(newDir, newEdge.getLength());
                     // Lock signals of new section
                     context.lockSignals(newDir);
-                    return Tuple2.of(setSpeed(newSpeed).setLocation(newLocation), remainingTime);
+                    return Tuple2.of(Optional.of(setSpeed(newSpeed).setLocation(newLocation)),
+                            Performance.running(timeToEndEdge, location.getDistance()));
                 }
-        ).or(() -> Optional.of(Tuple2.of(this, 0d)));
+        ).orElseThrow();
     }
 
     /**
@@ -539,15 +561,18 @@ public class Train {
      * @param ctx the simulation context
      * @param dt  the time interval (s)
      */
-    public Optional<Train> tick(SimulationContext ctx, double dt) {
+    public Tuple2<Optional<Train>, Performance> tick(SimulationContext ctx, double dt) {
         Train train = this;
+        List<Performance> performances = new ArrayList<>();
         do {
             // Computes the next transition
-            Optional<Tuple2<Train, Double>> transition = train.changeState(ctx, dt);
-            train = transition.map(Tuple2::getV1).orElse(null);
-            dt = transition.map(Tuple2::getV2).orElse(0d);
+            Tuple2<Optional<Train>, Performance> transition = train.changeState(ctx, dt);
+            train = transition._1.orElse(null);
+            Performance performance = transition._2;
+            performances.add(performance);
+            dt -= performance.getElapsedTime();
         } while (train != null && dt > 0);
-        return Optional.ofNullable(train);
+        return Tuple2.of(Optional.ofNullable(train), Performance.sumIterable(performances));
     }
 
     @Override
@@ -566,8 +591,11 @@ public class Train {
      * @param context the simulation context
      * @param dt      the time interval
      */
-    Optional<Tuple2<Train, Double>> waitingForRun(SimulationContext context, double dt) {
-        return Optional.of(Tuple2.of(setSpeed(0), 0d));
+    Tuple2<Optional<Train>, Performance> waitingForRun(SimulationContext context, double dt) {
+        return Tuple2.of(
+                Optional.of(setSpeed(0)),
+                Performance.waiting(dt)
+        );
     }
 
     /**
@@ -577,16 +605,20 @@ public class Train {
      * @param context the simulation context
      * @param dt      the time interval
      */
-    Optional<Tuple2<Train, Double>> waitingForSignal(SimulationContext context, double dt) {
-        return context.isNextRouteClear(location.getDirection()) ?
-                Optional.of(Tuple2.of(start(), dt)) :
-                Optional.of(Tuple2.of(this, 0d));
+    Tuple2<Optional<Train>, Performance> waitingForSignal(SimulationContext context, double dt) {
+        if (context.isNextRouteClear(location.getDirection())) {
+            return Tuple2.of(
+                    Optional.of(start()),
+                    Performance.none()
+            );
+        } else {
+            return Tuple2.of(Optional.of(this), Performance.waiting(dt));
+        }
     }
 
     public static class State {
-
         private final String id;
-        private final Function3<Train, SimulationContext, Double, Optional<Tuple2<Train, Double>>> function;
+        private final Function3<Train, SimulationContext, Double, Tuple2<Optional<Train>, Performance>> function;
 
         /**
          * Creates the trainState
@@ -594,12 +626,12 @@ public class Train {
          * @param id       the trainState id
          * @param function the simulation function
          */
-        protected State(String id, Function3<Train, SimulationContext, Double, Optional<Tuple2<Train, Double>>> function) {
+        protected State(String id, Function3<Train, SimulationContext, Double, Tuple2<Optional<Train>, Performance>> function) {
             this.id = requireNonNull(id);
             this.function = requireNonNull(function);
         }
 
-        Optional<Tuple2<Train, Double>> apply(Train train, SimulationContext context, double dt) {
+        Tuple2<Optional<Train>, Performance> apply(Train train, SimulationContext context, double dt) {
             return function.apply(train, context, dt);
         }
 

@@ -55,6 +55,8 @@ import static org.mmarini.railways2.model.Matchers.isSectionWith;
 
 class StationStatusSignalTest extends WithStationStatusTest {
 
+    public static final double GAME_DURATION = 300d;
+
     @Test
     void createSections() {
         createStatus();
@@ -99,7 +101,7 @@ class StationStatusSignalTest extends WithStationStatusTest {
                         stationMap.getEdge(parms[i * 2]),
                         stationMap.getNode(parms[i * 2 + 1])))
                 .toArray(Direction[]::new);
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal.createLocks(locks), "b")
                 .addRoute(Exit::create, "c")

@@ -130,27 +130,6 @@ public class SimulationContext {
      * @param direction the direction
      */
     public void lockSignals(Direction direction) {
-        /*
-        Optional<StationStatus> newStatus = status.getSection(direction.getEdge())
-                .map(section -> {
-                    Stream.of(section.getExit0(), section.getExit1())
-                            .flatMap(dir -> {
-                                // Finds the route terminal of section
-                                Route route = status.getRoute(dir.getOrigin());
-                                // Find the entry direction into the section
-                                Optional<Direction> entryOpt = route.getExit(dir.opposite()).map(Direction::opposite);
-                                return entryOpt.map(entry -> Tuple2.of(route, entry)).stream();
-                            })
-                            .filter(t -> t._1 instanceof Signal)
-                            .map(t -> ((Signal) t._1).lock(t._2))
-                            .forEach(signal -> {
-                                routes.remove(signal);
-                                routes.add(signal);
-                            });
-                    return status.setRoutes(routes);
-                });
-
-         */
         status = status.getSection(direction.getEdge())
                 .map(status::lock)
                 .orElse(status);

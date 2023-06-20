@@ -30,6 +30,7 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
@@ -46,6 +47,7 @@ import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
 
 class TrainRunningAtPlatformTest {
+    public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
     private static final double LENGTH = 500;
     StationStatus status;
@@ -67,7 +69,7 @@ class TrainRunningAtPlatformTest {
                 .addPlatform("bc", "b", "c")
                 .addTrack("cd", "c", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Junction::create, "b")
                 .addRoute(Junction::create, "c")
@@ -79,11 +81,9 @@ class TrainRunningAtPlatformTest {
     void runningPlatform() {
         // Given ...
         Node c = stationMap.getNode("c");
-        Node d = stationMap.getNode("d");
         Entry aRoute = status.getRoute("a");
         Exit dRoute = status.getRoute("d");
         Edge bc = stationMap.getEdge("bc");
-        Edge cd = stationMap.getEdge("cd");
         double distance = 3; //  moving distance=3.6m, distance = 3m
         Train train = Train.create("train2", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(bc, c, distance))
@@ -92,14 +92,24 @@ class TrainRunningAtPlatformTest {
         status = status.setTrains(train);
 
         // When ...
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(new SimulationContext(status), DT);
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
+        assertTrue(nextOpt._1.isPresent());
+        Train next = nextOpt._1.orElseThrow();
         assertEquals(Train.STATE_RUNNING, next.getState());
         assertEquals(MAX_SPEED, next.getSpeed());
-        assertThat(next.getLocation(), optionalOf(locatedAt("cd", "d", LENGTH - DT * MAX_SPEED + distance)));
+        assertThat(next.getLocation(), optionalOf(locatedAt("cd", "d", LENGTH)));
+
+        Performance perf = nextOpt._2;
+        double expTime = distance / MAX_SPEED;
+        assertEquals(expTime, perf.getElapsedTime());
+        assertEquals(expTime, perf.getTotalTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(distance, perf.getTraveledDistance());
     }
 
     @Test
@@ -116,13 +126,23 @@ class TrainRunningAtPlatformTest {
         status = status.setTrains(train);
 
         // When ...
-        Optional<Train> nextOpt = train.tick(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(new SimulationContext(status), DT);
 
         // Then ...
-        assertTrue(nextOpt.isPresent());
-        Train next = nextOpt.orElseThrow();
+        assertTrue(nextOpt._1.isPresent());
+        Train next = nextOpt._1.orElseThrow();
         assertEquals(Train.STATE_LOADING, next.getState());
         assertEquals(0, next.getSpeed());
         assertThat(next.getLocation(), optionalOf(locatedAt("bc", "c", 0)));
+
+        Performance perf = nextOpt._2;
+        double expTime = distance / MAX_SPEED;
+        assertEquals(expTime, perf.getElapsedTime());
+        assertEquals(expTime, perf.getTotalTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getTrainRightOutgoingNumber());
+        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(1, perf.getTrainStopNumber());
+        assertEquals(distance, perf.getTraveledDistance());
     }
 }

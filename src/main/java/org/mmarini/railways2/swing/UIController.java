@@ -73,6 +73,7 @@ public class UIController {
     private static final int FPS = 60;
     private static final Logger logger = LoggerFactory.getLogger(UIController.class);
     private static final double ROUTE_DISTANCE_THRESHOLD = TRACK_GAP * sqrt(2) / 2;
+    private static final double DEFAULT_GAME_DURATION = 15 * 60;
 
     /**
      * Adds a tab to the tabbed panel
@@ -93,7 +94,7 @@ public class UIController {
      */
     private static StationStatus createInitialSeed() throws IOException {
         return new BlockStationBuilder(StationDef.create(
-                Utils.fromResource("/stations/downville.station.yml"), Locator.root()), new Random()).build();
+                Utils.fromResource("/stations/downville.station.yml"), Locator.root()), DEFAULT_GAME_DURATION, new Random()).build();
     }
 
     private final JFrame frame;

@@ -54,15 +54,6 @@ public class EdgeSegment {
                 new EdgeSegment(edge, length - d0, d1);
     }
 
-    /**
-     * Returns the full segment of an edge
-     *
-     * @param edge the edge
-     */
-    public static EdgeSegment createFullSegment(Edge edge) {
-        return new EdgeSegment(edge, 0, 0);
-    }
-
     private final Edge edge;
     private final double distance0;
     private final double distance1;

@@ -52,6 +52,8 @@ import static org.mockito.Mockito.when;
 
 class StationStatus2SectionsTest extends WithStationStatusTest {
 
+    public static final double GAME_DURATION = 300d;
+
     /**
      * StationDef map
      * <pre>
@@ -69,7 +71,7 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
                 .addTrack("ab", "a", "b")
                 .addTrack("cd", "c", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Exit::create, "b")
                 .addRoute(Entry::create, "c")

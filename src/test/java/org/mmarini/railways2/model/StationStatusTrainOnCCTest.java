@@ -47,12 +47,13 @@ import static org.mmarini.yaml.Utils.fromResource;
 class StationStatusTrainOnCCTest extends WithStationStatusTest {
 
     public static final int SEED = 1234;
+    public static final double GAME_DURATION = 300d;
 
     @BeforeEach
     void beforeEach() throws IOException {
         JsonNode root = fromResource("/stations/downville.station.yml");
         StationDef station = StationDef.create(root, Locator.root());
-        status = new BlockStationBuilder(station, null).build();
+        status = new BlockStationBuilder(station, GAME_DURATION, null).build();
         status = new WithTrain(status)
                 .addTrain(10, "norton.in", "norton.out", "westCentralCross.s5.s9", "westCentralCross.s9", 22.3)
                 .addTrain(10, "sowerth.in", "norton.out", "westCentralTrack6.1.track", "westCentralTrack6.1.e", 92.1)
@@ -72,8 +73,11 @@ class StationStatusTrainOnCCTest extends WithStationStatusTest {
         // When ...
         StationStatus status1 = status.tick(0.1, new Random(SEED));
 
-        // Than ...
-        Train t0 = train("TT0");
+        // Then ...
+        Train t0 = status1.getTrain("TT0").orElseThrow();
+        Performance performance = status1.getPerformance();
         assertEquals(t0.getSpeed(), MAX_SPEED);
+        assertEquals(0.1, performance.getElapsedTime());
+        assertEquals(0, performance.getTrainIncomingNumber());
     }
 }

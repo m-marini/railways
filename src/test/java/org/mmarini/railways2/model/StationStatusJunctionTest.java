@@ -54,6 +54,7 @@ import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
 class StationStatusJunctionTest {
 
     public static final double LENGTH = 100;
+    public static final double GAME_DURATION = 300d;
     StationMap stationMap;
     StationStatus status;
     private Node a;
@@ -84,7 +85,7 @@ class StationStatusJunctionTest {
         this.c = stationMap.getNode("c");
         this.ab = stationMap.getEdge("ab");
         this.bc = stationMap.getEdge("bc");
-        status = new StationStatus.Builder(stationMap, 1, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Junction::create, "b")
                 .addRoute(Exit::create, "c")

@@ -136,6 +136,12 @@ public class WithTrain {
                     .setExitingNode(status.getRoute(exit)));
         }
 
+        public TrainBuilder exiting(String exit, double exitDistance) {
+            return modify((train, status) -> train.setState(Train.STATE_EXITING)
+                    .setExitingNode(status.getRoute(exit))
+                    .setExitDistance(exitDistance));
+        }
+
         public TrainBuilder loading(double time) {
             return modify(train -> train.load(time));
         }
@@ -158,6 +164,14 @@ public class WithTrain {
 
         public TrainBuilder running() {
             return running(MAX_SPEED);
+        }
+
+        public TrainBuilder setArrivalTime(double arrivalTime) {
+            return modify(train -> train.setArrivalTime(arrivalTime));
+        }
+
+        public TrainBuilder setSpeed(double speed) {
+            return modify(train -> train.setSpeed(speed));
         }
 
         public TrainBuilder waitForRun() {

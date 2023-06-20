@@ -55,12 +55,13 @@ import static org.mmarini.railways2.model.blocks.Signals.SIGNAL_GAP;
 public class DownvilleTest extends WithStationStatusTest {
 
     public static final double EPSILON = 1e-3;
+    public static final double GAME_DURATION = 300d;
     private JsonNode root;
 
     @Test
     void build() {
         StationDef station = StationDef.create(root, Locator.root());
-        this.status = new BlockStationBuilder(station, null).build();
+        this.status = new BlockStationBuilder(station, GAME_DURATION, null).build();
         assertEquals("Downville", status.getStationMap().getId());
     }
 
@@ -95,7 +96,7 @@ public class DownvilleTest extends WithStationStatusTest {
     void sowerthCurve() {
         // Given ...
         StationDef station = StationDef.create(root, Locator.root());
-        BlockStationBuilder builder = new BlockStationBuilder(station, null);
+        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, null);
 
         // When ...
         OrientedGeometry geo1 = builder.getWorldGeometry("westSignals.2.w");
@@ -112,7 +113,7 @@ public class DownvilleTest extends WithStationStatusTest {
     void sowerthCurve1() {
         // Given ...
         StationDef station = StationDef.create(root, Locator.root());
-        BlockStationBuilder builder = new BlockStationBuilder(station, null);
+        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, null);
         StationStatus status = builder.build();
 
         // When ...
