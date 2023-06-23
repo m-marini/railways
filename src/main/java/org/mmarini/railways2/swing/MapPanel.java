@@ -73,7 +73,7 @@ public class MapPanel extends JComponent {
         setBackground(BACKGROUND_COLOR);
         mapBounds = new Rectangle2D.Double(0, 0, MIN_WIDTH, MIN_HEIGHT);
         mouseClick = SwingObservable.mouse(this, SwingObservable.MOUSE_CLICK)
-                .toFlowable(BackpressureStrategy.BUFFER)
+                .toFlowable(BackpressureStrategy.LATEST)
                 .filter(ev -> ev.getID() == MouseEvent.MOUSE_CLICKED)
                 .map(this::mapMouseEvent);
         logger.atDebug().log("Created");

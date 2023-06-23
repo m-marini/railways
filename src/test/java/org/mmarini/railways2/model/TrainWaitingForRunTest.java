@@ -169,10 +169,10 @@ class TrainWaitingForRunTest extends WithStationStatusTest {
 
         Performance perf = nextOpt._2;
         assertEquals(DT, perf.getElapsedTime());
-        assertEquals(DT, perf.getTotalTime());
+        assertEquals(DT, perf.getTotalTrainTime());
         assertEquals(DT, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(0, perf.getTraveledDistance());
     }

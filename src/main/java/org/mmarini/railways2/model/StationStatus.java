@@ -72,16 +72,15 @@ public class StationStatus {
      */
     public static StationStatus create(StationMap stationMap, List<Route> routes, double gameDuration, List<Train> trains, double time, double trainFrequency) {
         logger.atDebug().setMessage("Creating station {}").addArgument(stationMap::getId).log();
-        Performance performance = Performance.elapsed(time);
-        return new StationStatus(stationMap, routes, trains, time, trainFrequency, performance, null, null, null, null, null, null, null, null, null);
+        ExtendedPerformance performance = ExtendedPerformance.create(stationMap.getId(), gameDuration).setElapsedTime(time);
+        return new StationStatus(stationMap, routes, trains, trainFrequency, performance, null, null, null, null, null, null, null, null, null);
     }
 
     private final StationMap stationMap;
     private final Collection<? extends Route> routes;
     private final Collection<Train> trains;
-    private final double time;
     private final double trainFrequency;
-    private final Performance performance;
+    private final ExtendedPerformance performance;
     private List<Entry> entries;
     private List<Exit> exits;
     private Map<Node, ? extends Route> routeByNode;
@@ -98,7 +97,6 @@ public class StationStatus {
      * @param stationMap     the station map
      * @param routes         the routes
      * @param trains         the trains
-     * @param time           the simulation time instant
      * @param trainFrequency the train frequency
      * @param performance    the game performance
      * @param entries        the list of entries
@@ -106,15 +104,14 @@ public class StationStatus {
      * @param routeByNode    the routes by nodes
      */
     protected StationStatus(StationMap stationMap, Collection<? extends Route> routes,
-                            Collection<Train> trains, double time, double trainFrequency,
-                            Performance performance, List<Entry> entries, List<Exit> exits,
+                            Collection<Train> trains, double trainFrequency,
+                            ExtendedPerformance performance, List<Entry> entries, List<Exit> exits,
                             Map<Node, ? extends Route> routeByNode,
                             Map<Entry, Train> firstTrainByEntry, Collection<Section> sections,
                             Map<Edge, Train> trainByEdge, Map<Section, Train> trainBySection,
                             Map<? extends Edge, Section> sectionByEdge, Map<Exit, Train> trainByExit) {
         this.stationMap = requireNonNull(stationMap);
         this.routes = requireNonNull(routes);
-        this.time = time;
         this.trains = requireNonNull(trains);
         this.trainFrequency = trainFrequency;
         this.performance = requireNonNull(performance);
@@ -202,7 +199,7 @@ public class StationStatus {
         // Generates the arrival and destination of train
         Exit destination = exits.get(random.nextInt(exits.size()));
         return Train.create(trainId, numCoaches, arrival, destination)
-                .setArrivalTime(time + ENTRY_TIMEOUT);
+                .setArrivalTime(getTime() + ENTRY_TIMEOUT);
     }
 
     /**
@@ -473,7 +470,7 @@ public class StationStatus {
     /**
      * Returns the game performance
      */
-    public Performance getPerformance() {
+    public ExtendedPerformance getPerformance() {
         return performance;
     }
 
@@ -482,8 +479,8 @@ public class StationStatus {
      *
      * @param performance the new performance
      */
-    private StationStatus setPerformance(Performance performance) {
-        return new StationStatus(stationMap, routes, trains, time, trainFrequency, performance, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
+    private StationStatus setPerformance(ExtendedPerformance performance) {
+        return new StationStatus(stationMap, routes, trains, trainFrequency, performance, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
     }
 
     /**
@@ -526,7 +523,7 @@ public class StationStatus {
      * @param routes the routes
      */
     public StationStatus setRoutes(Collection<? extends Route> routes) {
-        return new StationStatus(stationMap, routes, trains, time, trainFrequency, performance, null, null, null, null, null, null, null, null, null);
+        return new StationStatus(stationMap, routes, trains, trainFrequency, performance, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -595,7 +592,7 @@ public class StationStatus {
      * Returns the simulation time instant
      */
     public double getTime() {
-        return time;
+        return performance.getElapsedTime();
     }
 
     /**
@@ -604,8 +601,8 @@ public class StationStatus {
      * @param time the simulation instant
      */
     public StationStatus setTime(double time) {
-        return time == this.time ? this :
-                new StationStatus(stationMap, routes, trains, time, trainFrequency, performance, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
+        return time == this.getTime() ? this :
+                new StationStatus(stationMap, routes, trains, trainFrequency, performance.setElapsedTime(time), entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
     }
 
     /**
@@ -748,7 +745,7 @@ public class StationStatus {
      * @param trains the trains
      */
     public StationStatus setTrains(Collection<Train> trains) {
-        return new StationStatus(stationMap, routes, trains, time, trainFrequency, performance, entries, exits, routeByNode, null, sections, null, null, sectionByEdge, null);
+        return new StationStatus(stationMap, routes, trains, trainFrequency, performance, entries, exits, routeByNode, null, sections, null, null, sectionByEdge, null);
     }
 
     /**
@@ -798,6 +795,13 @@ public class StationStatus {
      */
     public boolean isExitClear(Exit exit) {
         return !getTrainByExit().containsKey(exit);
+    }
+
+    /**
+     * Returns true if the game has finished
+     */
+    public boolean isGameFinished() {
+        return performance.isGameFinished();
     }
 
     /**
@@ -1095,9 +1099,8 @@ public class StationStatus {
                 .map(t -> t.tick(ctx, dt))
                 .collect(Collectors.toList());
         Performance performance = Performance.sumIterable(
-                Stream.concat(
-                                transitions.stream().map(Tuple2::getV2),
-                                Stream.of(this.performance))
+                transitions.stream()
+                        .map(Tuple2::getV2)
                         .collect(Collectors.toList()));
         List<Train> newTrains = transitions.stream()
                 .flatMap(t -> t._1.stream())
@@ -1105,11 +1108,11 @@ public class StationStatus {
         int trainNumber = newTrains.size();
         newTrains = createNewTrains(newTrains, trainFrequency * dt, random);
         int incomingTrainNumber = newTrains.size() - trainNumber;
-        Performance newPerformance = performance.addTrainIncomingNumber(incomingTrainNumber)
+        ExtendedPerformance newPerformance = this.performance.addTrainIncomingNumber(incomingTrainNumber)
+                .add(performance)
                 .setElapsedTime(this.performance.getElapsedTime() + dt);
 
         return ctx.getStatus()
-                .setTime(time + dt)
                 .setTrains(newTrains)
                 .setPerformance(newPerformance);
     }

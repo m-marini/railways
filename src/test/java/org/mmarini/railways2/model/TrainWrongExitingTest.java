@@ -98,10 +98,10 @@ class TrainWrongExitingTest extends WithStationStatusTest {
         // And the wrong outgoing train should be 1
         Performance perf = nextOpt._2;
         assertThat(perf.getElapsedTime(), closeTo(1 / MAX_SPEED, 1e-3));
-        assertThat(perf.getTotalTime(), closeTo(1 / MAX_SPEED, 1e-3));
+        assertThat(perf.getTotalTrainTime(), closeTo(1 / MAX_SPEED, 1e-3));
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(1, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(1, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(1, perf.getTraveledDistance());
     }

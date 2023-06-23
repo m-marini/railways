@@ -86,17 +86,15 @@ public class SimulatorEngineImpl<T, S> implements SimulatorEngine<T, S> {
      * activities
      * </p>
      *
-     * @param <T>         the event type
-     * @param <S>         the seed type
-     * @param initialSeed the initial seed
-     * @param nextSeed    the function returning next seed applying a seed and the time interval
-     * @param emit        the function returning the event applying a seed
+     * @param <T>      the event type
+     * @param <S>      the seed type
+     * @param nextSeed the function returning next seed applying a seed and the time interval
+     * @param emit     the function returning the event applying a seed
      */
-    public static <T, S> SimulatorEngineImpl<T, S> create(S initialSeed,
-                                                          BiFunction<S, Double, Tuple2<S, Double>> nextSeed,
+    public static <T, S> SimulatorEngineImpl<T, S> create(BiFunction<S, Double, Tuple2<S, Double>> nextSeed,
                                                           Function<S, T> emit) {
         return new SimulatorEngineImpl<>(Schedulers.newThread().createWorker(),
-                initialSeed, nextSeed, emit);
+                nextSeed, emit);
     }
 
     private final Worker worker;
@@ -113,17 +111,14 @@ public class SimulatorEngineImpl<T, S> implements SimulatorEngine<T, S> {
     /**
      * Creates the simulator.
      *
-     * @param worker      the assigned worker
-     * @param initialSeed the initial seed
-     * @param nextSeed    the function returning next seed applying a seed and the time interval
-     * @param emit        the function returning the event applying a seed
+     * @param worker   the assigned worker
+     * @param nextSeed the function returning next seed applying a seed and the time interval
+     * @param emit     the function returning the event applying a seed
      */
     protected SimulatorEngineImpl(Worker worker,
-                                  S initialSeed,
                                   BiFunction<S, Double, Tuple2<S, Double>> nextSeed,
                                   Function<S, T> emit) {
         requireNonNull(worker);
-        requireNonNull(initialSeed);
         requireNonNull(nextSeed);
         requireNonNull(emit);
         this.nextSeed = nextSeed;
@@ -131,7 +126,7 @@ public class SimulatorEngineImpl<T, S> implements SimulatorEngine<T, S> {
         this.worker = worker;
         this.queue = new ConcurrentLinkedDeque<>();
         this.speed = 1;
-        this.seed = initialSeed;
+        this.seed = null;
         this.status = Status.IDLE;
     }
 
@@ -143,7 +138,9 @@ public class SimulatorEngineImpl<T, S> implements SimulatorEngine<T, S> {
             ProcessRequest request = queue.poll();
             if (request != null) {
                 seed = request.transition.apply(seed);
-                request.result.onSuccess(seed);
+                if (seed != null) {
+                    request.result.onSuccess(seed);
+                }
             } else {
                 break;
             }
@@ -160,6 +157,11 @@ public class SimulatorEngineImpl<T, S> implements SimulatorEngine<T, S> {
         if (onSpeed != null) {
             onSpeed.accept(speed);
         }
+    }
+
+    @Override
+    public boolean isActive() {
+        return status.equals(Status.ACTIVE);
     }
 
     /**
@@ -267,9 +269,11 @@ public class SimulatorEngineImpl<T, S> implements SimulatorEngine<T, S> {
     }
 
     @Override
-    public Single<S> start() {
+    public Single<S> start(S initialSeed) {
         logger.debug("Starting simulation ...");
+        requireNonNull(initialSeed);
         if (status == Status.IDLE) {
+            this.seed = initialSeed;
             SingleSubject<S> result = SingleSubject.create();
             queue.offer(new ProcessRequest(e -> {
                 status = Status.ACTIVE;

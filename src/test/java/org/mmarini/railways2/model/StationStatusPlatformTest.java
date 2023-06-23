@@ -37,6 +37,7 @@ import org.mmarini.railways2.model.routes.Signal;
 
 import java.awt.geom.Point2D;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,6 +50,8 @@ class StationStatusPlatformTest {
     public static final double BLOCK = 10;
     public static final double LENGTH = 6 * BLOCK;
     public static final double GAME_DURATION = 300d;
+    public static final double DT = 0.1;
+    public static final int SEED = 1234;
     StationMap stationMap;
     StationStatus status;
     private Node a;
@@ -97,6 +100,18 @@ class StationStatusPlatformTest {
                 new EdgeSegment(ab, 4 * BLOCK, 0),
                 new EdgeSegment(bc, 0, 0),
                 new EdgeSegment(cd, 0, 5 * BLOCK)));
+    }
+
+    @Test
+    void isGameFinished() {
+        // Given ...
+        createStatus();
+        status = status.setTime(GAME_DURATION - DT / 2);
+
+        // When ...
+        StationStatus status1 = status.tick(DT, new Random(SEED));
+
+        assertTrue(status1.isGameFinished());
     }
 
     @Test

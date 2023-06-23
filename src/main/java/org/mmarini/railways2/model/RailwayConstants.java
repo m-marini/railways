@@ -139,4 +139,14 @@ public interface RailwayConstants extends XmlConstants {
      * Default train frequency (#/s)
      */
     double DEFAULT_TRAIN_FREQUENCY = 30d / 3600;
+
+    /**
+     * Seconds per minute
+     */
+    int SPM = 60;
+
+    /**
+     * Seconds per hour
+     */
+    int SPH = 3600;
 }

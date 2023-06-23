@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #53: Compute distance from edges
 - Issue #56: Add status change by user interaction
 - Issue #58: Add entry/exit train counters
+- Issue #60: Add end game and extended performance
 
 ### Changed 
 

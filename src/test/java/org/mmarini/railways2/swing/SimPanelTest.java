@@ -81,16 +81,18 @@ class SimPanelTest {
     private final JFrame frame;
     private final SimulatorEngineImpl<StationStatus, StationStatus> engine;
     private final Random random;
+    private final StationStatus initialStatus;
 
     public SimPanelTest(StationStatus status) {
         this.frame = new JFrame(getClass().getSimpleName());
         this.panel = new StationPanel();
-        this.engine = SimulatorEngineImpl.create(status, this::stepUp, Function.identity())
+        this.engine = SimulatorEngineImpl.create(this::stepUp, Function.identity())
                 .setEventInterval(Duration.ofMillis(1000 / FPS))
                 .setOnEvent(this::handleEvent)
                 .setOnSpeed(this::handleSpeed);
         engine.setSpeed(1);
         random = new Random(SIMULATION_SEED);
+        this.initialStatus = status;
     }
 
     private void handleEvent(StationStatus status) {
@@ -108,7 +110,7 @@ class SimPanelTest {
         frame.setSize(DEFAULT_SIZE);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
-        engine.start();
+        engine.start(initialStatus);
     }
 
     private Tuple2<StationStatus, Double> stepUp(StationStatus status, double dt) {

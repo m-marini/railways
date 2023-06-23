@@ -29,10 +29,7 @@
 package org.mmarini.railways2.swing;
 
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.SimulatorEngine;
-import org.mmarini.railways2.model.SimulatorEngineImpl;
-import org.mmarini.railways2.model.StationStatus;
-import org.mmarini.railways2.model.Train;
+import org.mmarini.railways2.model.*;
 import org.mmarini.railways2.model.blocks.BlockStationBuilder;
 import org.mmarini.railways2.model.blocks.StationDef;
 import org.mmarini.railways2.model.geometry.Direction;
@@ -73,7 +70,7 @@ public class UIController {
     private static final int FPS = 60;
     private static final Logger logger = LoggerFactory.getLogger(UIController.class);
     private static final double ROUTE_DISTANCE_THRESHOLD = TRACK_GAP * sqrt(2) / 2;
-    private static final double DEFAULT_GAME_DURATION = 15 * 60;
+    private static final double DEFAULT_GAME_DURATION = 10;
 
     /**
      * Adds a tab to the tabbed panel
@@ -94,9 +91,11 @@ public class UIController {
      */
     private static StationStatus createInitialSeed() throws IOException {
         return new BlockStationBuilder(StationDef.create(
-                Utils.fromResource("/stations/downville.station.yml"), Locator.root()), DEFAULT_GAME_DURATION, new Random()).build();
+                Utils.fromResource("/stations/downville.station.yml"), Locator.root()),
+                DEFAULT_GAME_DURATION, new Random()).build();
     }
 
+    private final SummaryPanel summaryPanel;
     private final JFrame frame;
     private final MapPanel mapPanel;
     private final StationScrollPanel stationScrollPanel;
@@ -105,14 +104,16 @@ public class UIController {
     private final JSplitPane verticalSplit;
     private final JSplitPane horizontalSplit;
     private final SimulatorEngine<StationStatus, StationStatus> simulator;
+    private final PerformancePanel performancePanel;
     private final Random random;
+    private final Configuration configuration;
+    private final HallOfFamePanel hallOfFamePanel;
+    private boolean gameRunning;
 
     /**
      * Creates the user interface controller
-     *
-     * @throws IOException in case of error
      */
-    public UIController() throws IOException {
+    public UIController() {
         this.frame = new JFrame();
         this.mapPanel = new MapPanel();
         this.stationScrollPanel = new StationScrollPanel();
@@ -120,17 +121,21 @@ public class UIController {
         this.tabPanel = new JTabbedPane();
         this.verticalSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         this.horizontalSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        JPopupMenu popupMenu = new JPopupMenu();
+        this.performancePanel = new PerformancePanel();
+        this.summaryPanel = new SummaryPanel();
+        this.hallOfFamePanel = new HallOfFamePanel();
+        this.gameRunning = false;
+        this.configuration = new Configuration();
 
-        StationStatus initialSeed = createInitialSeed();
-        this.simulator = SimulatorEngineImpl.create(initialSeed, this::stepUp, Function.identity())
+        this.simulator = SimulatorEngineImpl.create(this::stepUp, Function.identity())
                 .setEventInterval(Duration.ofMillis(1000 / FPS))
                 .setOnEvent(this::handleSimulationEvent)
                 .setOnSpeed(this::handleSpeed);
         this.random = new Random();
-        simulator.setSpeed(1);
 
-        popupMenu.add(new JMenuItem("Entry"));
+        simulator.setSpeed(1);
+        summaryPanel.setBorder(BorderFactory.createEtchedBorder());
+        hallOfFamePanel.setHallOfFame(configuration.getHallOfFame());
 
         initHorizontalSplit();
         initVerticalSplit();
@@ -236,14 +241,17 @@ public class UIController {
                 .doOnNext(stationScrollPanel::scrollTo)
                 .subscribe();
         stationScrollPanel.readMouseClick()
+                .filter(event -> gameRunning)
                 .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON1)
                 .doOnNext(this::handleLeftMouseMapEvent)
                 .subscribe();
         stationScrollPanel.readMouseClick()
+                .filter(event -> gameRunning)
                 .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON2)
                 .doOnNext(this::handleCentralMouseMapEvent)
                 .subscribe();
         stationScrollPanel.readMouseClick()
+                .filter(event -> gameRunning)
                 .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON3)
                 .doOnNext(this::handleRightMouseMapEvent)
                 .subscribe();
@@ -310,6 +318,28 @@ public class UIController {
                         route -> handleRouteSelection2(event, route),
                         () -> sectionOpt.ifPresent(
                                 section -> handleSectionSelection2(event, section))));
+    }
+
+    /**
+     * Handles the game finished
+     *
+     * @param stationStatus the last status
+     */
+    private void handleGameFinished(StationStatus stationStatus) {
+        logger.atDebug().log("Game finished");
+        ExtendedPerformance perf = stationStatus.getPerformance();
+        summaryPanel.setPerformance(perf);
+        boolean fame = configuration.isFame(perf);
+        summaryPanel.setNameEditable(fame);
+        showMessageKey("UIController.summaryDialog.title", summaryPanel);
+        if (fame) {
+            perf = perf.setPlayer(summaryPanel.getName());
+            configuration.add(perf);
+            hallOfFamePanel.setHallOfFame(configuration.getHallOfFame());
+            HallOfFamePanel hallOfFamePanel = new HallOfFamePanel();
+            hallOfFamePanel.setHallOfFame(configuration.getHallOfFame());
+            showMessageKey("UIController.hallOfFameDialog.title", hallOfFamePanel);
+        }
     }
 
     /**
@@ -404,9 +434,18 @@ public class UIController {
      * @param stationStatus the station status
      */
     private void handleSimulationEvent(StationStatus stationStatus) {
-        trainPanel.setStatus(stationStatus);
-        stationScrollPanel.paintStation(stationStatus);
-        mapPanel.paintStation(stationStatus);
+        if (gameRunning) {
+            if (stationStatus.isGameFinished()) {
+                this.gameRunning = false;
+                simulator.stop().doOnSuccess(this::handleGameFinished)
+                        .subscribe();
+            } else {
+                trainPanel.setStatus(stationStatus);
+                stationScrollPanel.paintStation(stationStatus);
+                mapPanel.paintStation(stationStatus);
+                performancePanel.setPerformance(stationStatus.getPerformance());
+            }
+        }
     }
 
     /**
@@ -488,9 +527,9 @@ public class UIController {
      * Creates the tab panel with the train panel, manager panel and hall of fame
      */
     private void initTabbedPanel() {
-        addTabKey(tabPanel, "InfoPanel.trainPane", trainPanel);
-        addTabKey(tabPanel, "InfoPanel.managerPane", new JPanel());
-        addTabKey(tabPanel, "InfoPanel.hallOfFamePane", new JPanel());
+        addTabKey(tabPanel, "InfoPanel.trainPanel", trainPanel);
+        addTabKey(tabPanel, "InfoPanel.performancePanel", performancePanel);
+        addTabKey(tabPanel, "InfoPanel.hallOfFamePane", hallOfFamePanel);
     }
 
     /**
@@ -538,7 +577,25 @@ public class UIController {
     public void run() {
         frame.setVisible(true);
         simulator.setSpeed(1);
-        simulator.start();
+        try {
+            StationStatus initialSeed = createInitialSeed();
+            logger.atDebug().log("initial seed {}", initialSeed);
+            gameRunning = true;
+            simulator.start(initialSeed);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Shows a message dialog
+     *
+     * @param titleKey the title key message
+     * @param content  the content
+     */
+    private void showMessageKey(String titleKey, JComponent content) {
+        JOptionPane.showMessageDialog(frame, content, Messages.getString(titleKey),
+                JOptionPane.PLAIN_MESSAGE);
     }
 
     /**
