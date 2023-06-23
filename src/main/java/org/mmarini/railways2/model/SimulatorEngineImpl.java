@@ -210,6 +210,7 @@ public class SimulatorEngineImpl<T, S> implements SimulatorEngine<T, S> {
                 simulatedInterval = 0;
             }
         }
+        logger.atDebug().log("Simulation stopped.");
     }
 
     @Override

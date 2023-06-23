@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #58: Add entry/exit train counters
 - Issue #60: Add end game and extended performance
 - Issue #64: Add configuration file
+- Issue #66: Add tool bar and menu
 
 ### Changed 
 

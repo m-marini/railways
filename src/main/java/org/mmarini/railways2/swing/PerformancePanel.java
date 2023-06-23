@@ -34,9 +34,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.text.MessageFormat;
 
 import static java.lang.Math.max;
+import static org.mmarini.railways2.swing.SwingUtils.formatMessage;
 
 /**
  * Shows the performance information
@@ -52,16 +52,6 @@ public class PerformancePanel extends JPanel {
      */
     private static final int SPH = 3600;
     private static final Logger log = LoggerFactory.getLogger(PerformancePanel.class);
-
-    /**
-     * Returns the formatted text by the message key
-     *
-     * @param messageKey the formatting message key
-     * @param args       the arguments
-     */
-    private static String format(String messageKey, Object... args) {
-        return MessageFormat.format(Messages.getString(messageKey), args);
-    }
 
     /**
      * Returns the formatted text of averaged time totals
@@ -82,7 +72,7 @@ public class PerformancePanel extends JPanel {
     private static String formatAverageTime(String messageKey,
                                             double totalTime, int count) {
         double avgTime = totalTime / max(1, count);
-        return format(messageKey,
+        return formatMessage(messageKey,
                 getSeconds(totalTime),
                 getMinutes(totalTime),
                 getHours(totalTime),
@@ -112,7 +102,7 @@ public class PerformancePanel extends JPanel {
     private static String formatAverageTimeAndRatio(String messageKey,
                                                     double totalTime, int count, double reference) {
         double avgTime = totalTime / max(1, count);
-        return format(messageKey,
+        return formatMessage(messageKey,
                 getSeconds(totalTime),
                 getMinutes(totalTime),
                 getHours(totalTime),
@@ -135,7 +125,7 @@ public class PerformancePanel extends JPanel {
      * @param denominator the denominator
      */
     private static String formatRatio(String messageKey, double numerator, double denominator) {
-        return format(messageKey, numerator, getRatio(numerator, denominator));
+        return formatMessage(messageKey, numerator, getRatio(numerator, denominator));
     }
 
     /**
@@ -151,7 +141,7 @@ public class PerformancePanel extends JPanel {
      * @param time       the time (s)
      */
     private static String formatTime(String messageKey, double time) {
-        return format(messageKey, getSeconds(time), getMinutes(time), getHours(time));
+        return formatMessage(messageKey, getSeconds(time), getMinutes(time), getHours(time));
     }
 
     /**
@@ -298,10 +288,10 @@ public class PerformancePanel extends JPanel {
      * @param performance the performance
      */
     public void setPerformance(ExtendedPerformance performance) {
-        this.performance.setText(format(
+        this.performance.setText(formatMessage(
                 "PerformancePanel.performance.message",
                 performance.getPerformance() * SPH));
-        incomeTrainCount.setText(format(
+        incomeTrainCount.setText(formatMessage(
                 "PerformancePanel.incomingTrainNumber.message",
                 performance.getIncomingTrainNumber()));
 

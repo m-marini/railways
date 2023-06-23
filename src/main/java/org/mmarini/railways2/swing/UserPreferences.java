@@ -45,7 +45,7 @@ import static org.mmarini.yaml.schema.Validator.*;
 /**
  * Defines the user options
  */
-public class UserOptions {
+public class UserPreferences {
     public static final Validator VALIDATOR = objectPropertiesRequired(
             Map.of(
                     "simulationSpeed", nonNegativeNumber(),
@@ -61,13 +61,13 @@ public class UserOptions {
      * @param root    the rott
      * @param locator the user options locator
      */
-    public static UserOptions fromJson(JsonNode root, Locator locator) {
+    public static UserPreferences fromJson(JsonNode root, Locator locator) {
         VALIDATOR.apply(locator).accept(root);
         double simulationSpeed1 = locator.path("simulationSpeed").getNode(root).asDouble();
         boolean mute1 = locator.path("mute").getNode(root).asBoolean();
         double gain1 = locator.path("gain").getNode(root).asDouble();
         String lookAndFeelClass1 = locator.path("lookAndFeelClass").getNode(root).asText();
-        return new UserOptions(simulationSpeed1, mute1, gain1, lookAndFeelClass1);
+        return new UserPreferences(simulationSpeed1, mute1, gain1, lookAndFeelClass1);
     }
 
     private final String lookAndFeelClass;
@@ -83,7 +83,7 @@ public class UserOptions {
      * @param gain             the sound gain value (db)
      * @param lookAndFeelClass the look and feel class name
      */
-    public UserOptions(double simulationSpeed, boolean mute, double gain, String lookAndFeelClass) {
+    public UserPreferences(double simulationSpeed, boolean mute, double gain, String lookAndFeelClass) {
         this.lookAndFeelClass = requireNonNull(lookAndFeelClass);
         this.simulationSpeed = simulationSpeed;
         this.mute = mute;
@@ -94,7 +94,7 @@ public class UserOptions {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserOptions that = (UserOptions) o;
+        UserPreferences that = (UserPreferences) o;
         return Double.compare(that.simulationSpeed, simulationSpeed) == 0 && mute == that.mute && Double.compare(that.gain, gain) == 0 && lookAndFeelClass.equals(that.lookAndFeelClass);
     }
 
@@ -110,9 +110,9 @@ public class UserOptions {
      *
      * @param gain the gain value
      */
-    public UserOptions setGain(double gain) {
+    public UserPreferences setGain(double gain) {
         return gain != this.gain
-                ? new UserOptions(simulationSpeed, mute, gain, lookAndFeelClass)
+                ? new UserPreferences(simulationSpeed, mute, gain, lookAndFeelClass)
                 : this;
     }
 
@@ -135,9 +135,9 @@ public class UserOptions {
      *
      * @param simulationSpeed the simulation speed
      */
-    public UserOptions setSimulationSpeed(double simulationSpeed) {
+    public UserPreferences setSimulationSpeed(double simulationSpeed) {
         return simulationSpeed != this.simulationSpeed
-                ? new UserOptions(simulationSpeed, mute, gain, lookAndFeelClass)
+                ? new UserPreferences(simulationSpeed, mute, gain, lookAndFeelClass)
                 : this;
     }
 
@@ -158,9 +158,9 @@ public class UserOptions {
      *
      * @param mute true if sound is muted
      */
-    public UserOptions setMute(boolean mute) {
+    public UserPreferences setMute(boolean mute) {
         return mute != this.mute
-                ? new UserOptions(simulationSpeed, mute, gain, lookAndFeelClass)
+                ? new UserPreferences(simulationSpeed, mute, gain, lookAndFeelClass)
                 : this;
     }
 
@@ -178,7 +178,7 @@ public class UserOptions {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", UserOptions.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", UserPreferences.class.getSimpleName() + "[", "]")
                 .add("simulationSpeed=" + simulationSpeed)
                 .add("mute=" + mute)
                 .add("gain=" + gain)
