@@ -37,27 +37,59 @@ import org.mmarini.yaml.schema.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.mmarini.yaml.Utils.fromFile;
 import static org.mmarini.yaml.Utils.objectMapper;
-import static org.mmarini.yaml.schema.Validator.arrayItems;
-import static org.mmarini.yaml.schema.Validator.objectPropertiesRequired;
+import static org.mmarini.yaml.schema.Validator.*;
 
 /**
  * Handles the configuration by storing and retrieving from file
  */
 public class Configuration {
+
+    public static final String VERSION = "1.0";
     public static final Validator VALIDATOR = objectPropertiesRequired(
-            Map.of("hallOfFame", arrayItems(ExtendedPerformance.VALIDATOR)),
-            List.of("hallOfFame")
+            Map.of(
+                    "version", string(values(VERSION)),
+                    "hallOfFame", arrayItems(ExtendedPerformance.VALIDATOR),
+                    "userOptions", UserOptions.VALIDATOR),
+            List.of("hallOfFame", "userOptions")
     );
     private static final int MAX_ENTRIES = 20;
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
+
+    /**
+     * Returns the default configuration
+     */
+    private static Configuration defaultConfig() {
+        return new Configuration(
+                new UserOptions(1, false, 0,
+                        UIManager.getCrossPlatformLookAndFeelClassName()),
+                List.of()
+        );
+    }
+
+    /**
+     * Returns the configuration from json doc
+     *
+     * @param root    the root
+     * @param locator the configuration node locator
+     */
+    static Configuration fromJson(JsonNode root, Locator locator) {
+        VALIDATOR.apply(locator).accept(root);
+        List<ExtendedPerformance> hallOfFame1 = locator.path("hallOfFame").elements(root)
+                .map(perfLoc -> ExtendedPerformance.fromJson(root, perfLoc))
+                .collect(Collectors.toList());
+        UserOptions userOptions = UserOptions.fromJson(root, locator.path("userOptions"));
+        return new Configuration(userOptions, hallOfFame1);
+    }
 
     /**
      * Returns the config file
@@ -67,14 +99,28 @@ public class Configuration {
                 + ".railways" + File.separator + "config.yml");
     }
 
+    /**
+     * Creates the configuration
+     */
+    public static Configuration load() {
+        try {
+            JsonNode root = fromFile(getConfigFile());
+            return fromJson(root, Locator.root());
+        } catch (Exception e) {
+            logger.atError().setCause(e).log("Error loading configuration");
+            return defaultConfig();
+        }
+    }
+
     private final List<ExtendedPerformance> hallOfFame;
+    private final UserOptions userOptions;
 
     /**
      * Creates the configuration
      */
-    public Configuration() {
-        this.hallOfFame = new ArrayList<>(MAX_ENTRIES + 1);
-        load();
+    protected Configuration(UserOptions userOptions, List<ExtendedPerformance> hallOfFame) {
+        this.userOptions = userOptions;
+        this.hallOfFame = hallOfFame;
     }
 
     /**
@@ -84,14 +130,16 @@ public class Configuration {
      */
     public Configuration add(ExtendedPerformance performance) {
         if (isFame(performance)) {
-            hallOfFame.add(performance);
-            hallOfFame.sort(ExtendedPerformance::compareTo);
-            while (hallOfFame.size() > MAX_ENTRIES) {
-                hallOfFame.remove(hallOfFame.size() - 1);
+            List<ExtendedPerformance> newHallOfFame = new ArrayList<>(hallOfFame);
+            newHallOfFame.add(performance);
+            newHallOfFame.sort(ExtendedPerformance::compareTo);
+            while (newHallOfFame.size() > MAX_ENTRIES) {
+                newHallOfFame.remove(hallOfFame.size() - 1);
             }
-            save();
+            return new Configuration(userOptions, newHallOfFame).save();
+        } else {
+            return this;
         }
-        return this;
     }
 
     /**
@@ -107,15 +155,6 @@ public class Configuration {
     }
 
     /**
-     * Returns the json node of configuration
-     */
-    private JsonNode createJson() {
-        ObjectNode config = objectMapper.createObjectNode();
-        config.set("hallOfFame", createHallOfFameJson());
-        return config;
-    }
-
-    /**
      * Returns the hall of fame
      */
     public List<ExtendedPerformance> getHallOfFame() {
@@ -123,7 +162,25 @@ public class Configuration {
     }
 
     /**
-     * Returns true if the performance is batter than the worst
+     * Returns the user options
+     */
+    public UserOptions getUserOptions() {
+        return userOptions;
+    }
+
+    /**
+     * Returns the configuration with user options
+     *
+     * @param userOptions user options
+     */
+    Configuration setUserOptions(UserOptions userOptions) {
+        return !userOptions.equals(this.userOptions)
+                ? new Configuration(userOptions, hallOfFame).save()
+                : this;
+    }
+
+    /**
+     * Returns true if the performance is better than the worst
      *
      * @param performance the performance
      */
@@ -133,39 +190,52 @@ public class Configuration {
     }
 
     /**
-     * Loads the configuration from json doc
-     *
-     * @param root    the root
-     * @param locator the configuration node locator
+     * Returns the configuration after storing in the file system
      */
-    private void load(JsonNode root, Locator locator) {
-        VALIDATOR.apply(locator).accept(root);
-        hallOfFame.clear();
-        locator.path("hallOfFame").elements(root)
-                .map(perfLoc -> ExtendedPerformance.fromJson(root, perfLoc))
-                .forEach(hallOfFame::add);
-    }
-
-    /**
-     * Loads the configuration from file system
-     */
-    private void load() {
+    private Configuration save() {
         try {
-            JsonNode root = fromFile(getConfigFile());
-            load(root, Locator.root());
-        } catch (Exception e) {
-            logger.atError().setCause(e).log("Error loading configuration");
-        }
-    }
-
-    /**
-     * Store the configuration in the file system
-     */
-    private void save() {
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(getConfigFile(), createJson());
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(getConfigFile(), toJson());
         } catch (IOException e) {
             logger.atError().setCause(e).log("Error saving configuration");
         }
+        return this;
+    }
+
+    /**
+     * Returns the configuration with gain
+     *
+     * @param gain the gain (db)
+     */
+    public Configuration setGain(double gain) {
+        return setUserOptions(userOptions.setGain(gain));
+    }
+
+    /**
+     * Returns the configuration with mute
+     *
+     * @param mute true if mute
+     */
+    public Configuration setMute(boolean mute) {
+        return setUserOptions(userOptions.setMute(mute));
+    }
+
+    /**
+     * Returns the configuration with simulation speed
+     *
+     * @param simulationSpeed the simulation speed
+     */
+    public Configuration setSimulationSpeed(double simulationSpeed) {
+        return setUserOptions(userOptions.setSimulationSpeed(simulationSpeed));
+    }
+
+    /**
+     * Returns the json node of configuration
+     */
+    private JsonNode toJson() {
+        ObjectNode config = objectMapper.createObjectNode();
+        config.put("version", VERSION);
+        config.set("userOptions", userOptions.toJson());
+        config.set("hallOfFame", createHallOfFameJson());
+        return config;
     }
 }

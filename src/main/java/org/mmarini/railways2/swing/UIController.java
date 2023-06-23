@@ -106,7 +106,7 @@ public class UIController {
     private final SimulatorEngine<StationStatus, StationStatus> simulator;
     private final PerformancePanel performancePanel;
     private final Random random;
-    private final Configuration configuration;
+    private Configuration configuration;
     private final HallOfFamePanel hallOfFamePanel;
     private boolean gameRunning;
 
@@ -125,7 +125,7 @@ public class UIController {
         this.summaryPanel = new SummaryPanel();
         this.hallOfFamePanel = new HallOfFamePanel();
         this.gameRunning = false;
-        this.configuration = new Configuration();
+        this.configuration = Configuration.load();
 
         this.simulator = SimulatorEngineImpl.create(this::stepUp, Function.identity())
                 .setEventInterval(Duration.ofMillis(1000 / FPS))
@@ -334,7 +334,7 @@ public class UIController {
         showMessageKey("UIController.summaryDialog.title", summaryPanel);
         if (fame) {
             perf = perf.setPlayer(summaryPanel.getName());
-            configuration.add(perf);
+            configuration = configuration.add(perf);
             hallOfFamePanel.setHallOfFame(configuration.getHallOfFame());
             HallOfFamePanel hallOfFamePanel = new HallOfFamePanel();
             hallOfFamePanel.setHallOfFame(configuration.getHallOfFame());
