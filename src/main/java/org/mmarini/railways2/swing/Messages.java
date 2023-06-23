@@ -1,6 +1,7 @@
 package org.mmarini.railways2.swing;
 
 import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -14,10 +15,14 @@ public class Messages {
             .getBundle(Messages.class.getPackageName() + ".messages");
 
     public static String getString(String key) {
+        return getStringOpt(key).orElse('!' + key + '!');
+    }
+
+    public static Optional<String> getStringOpt(String key) {
         try {
-            return RESOURCE_BUNDLE.getString(key);
+            return Optional.of(RESOURCE_BUNDLE.getString(key));
         } catch (MissingResourceException e) {
-            return '!' + key + '!';
+            return Optional.empty();
         }
     }
 

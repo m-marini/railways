@@ -28,6 +28,8 @@
 
 package org.mmarini.railways2.swing;
 
+import hu.akarnokd.rxjava3.swing.SwingObservable;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.*;
 import org.mmarini.railways2.model.blocks.BlockStationBuilder;
@@ -41,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -59,6 +62,7 @@ import static java.lang.Math.sqrt;
 import static java.lang.String.format;
 import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
 import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAUGE;
+import static org.mmarini.railways2.swing.SwingUtils.*;
 
 /**
  * Manages the interaction between user interface and model.
@@ -106,8 +110,23 @@ public class UIController {
     private final SimulatorEngine<StationStatus, StationStatus> simulator;
     private final PerformancePanel performancePanel;
     private final Random random;
-    private Configuration configuration;
     private final HallOfFamePanel hallOfFamePanel;
+    private final JMenuItem newGameMenu;
+    private final JMenuItem exitMenu;
+    private final JMenuItem lockMenu;
+    private final JMenuItem stopMenu;
+    private final JMenuItem userPreferencesMenu;
+    private final JMenuItem aboutMenu;
+    private final JCheckBoxMenuItem muteMenu;
+    private final JCheckBoxMenuItem autoLockMenu;
+    private final JButton newGameButton;
+    private final JButton lockButton;
+    private final JButton stopButton;
+    private final JButton userPreferencesButton;
+    private final JButton exitButton;
+    private final JToggleButton muteButton;
+    private final JToggleButton autoLockButton;
+    private Configuration configuration;
     private boolean gameRunning;
 
     /**
@@ -126,6 +145,22 @@ public class UIController {
         this.hallOfFamePanel = new HallOfFamePanel();
         this.gameRunning = false;
         this.configuration = Configuration.load();
+        this.newGameMenu = createMenuItem("UIController.newGameAction");
+        this.exitMenu = createMenuItem("UIController.exitAction");
+        this.muteMenu = createCheckBoxMenuItem("UIController.muteAction");
+        this.lockMenu = createMenuItem("UIController.lockAction");
+        this.stopMenu = createMenuItem("UIController.stopAction");
+        this.autoLockMenu = createCheckBoxMenuItem("UIController.autoLockAction");
+        this.userPreferencesMenu = createMenuItem("UIController.userPreferencesAction");
+        this.aboutMenu = createMenuItem("UIController.aboutAction");
+
+        this.newGameButton = createToolBarButton("UIController.newGameAction");
+        this.muteButton = createToolBarToggleButton("UIController.muteAction");
+        this.lockButton = createToolBarButton("UIController.lockAction");
+        this.stopButton = createToolBarButton("UIController.stopAction");
+        this.autoLockButton = createToolBarToggleButton("UIController.autoLockAction");
+        this.userPreferencesButton = createToolBarButton("UIController.userPreferencesAction");
+        this.exitButton = createToolBarButton("UIController.exitAction");
 
         this.simulator = SimulatorEngineImpl.create(this::stepUp, Function.identity())
                 .setEventInterval(Duration.ofMillis(1000 / FPS))
@@ -143,6 +178,45 @@ public class UIController {
         initFrame();
         createSubscriptions();
         logger.atDebug().log("Created");
+    }
+
+    /**
+     * Returns the menu bar
+     */
+    private JMenuBar createMenuBar() {
+        JMenuBar result = new JMenuBar();
+
+        /*
+         * File menu
+         */
+        JMenu fileMenu = new JMenu(Messages.getString("UIController.fileMenu.name"));
+        fileMenu.setMnemonic(Messages.getString("UIController.fileMenu.mnemonic").charAt(0));
+        fileMenu.add(newGameMenu);
+        fileMenu.add(new JPopupMenu.Separator());
+        fileMenu.add(exitMenu);
+        result.add(fileMenu);
+
+        /*
+         * Tools menu
+         */
+        JMenu toolsMenu = new JMenu(Messages.getString("UIController.toolsMenu.name"));
+        toolsMenu.setMnemonic(Messages.getString("UIController.toolsMenu.mnemonic").charAt(0));
+        toolsMenu.add(muteMenu);
+        toolsMenu.add(lockMenu);
+        toolsMenu.add(stopMenu);
+        toolsMenu.add(autoLockMenu);
+        toolsMenu.add(userPreferencesMenu);
+        result.add(toolsMenu);
+
+        /*
+         * Help menu
+         */
+        JMenu helpMenu = new JMenu(Messages.getString("UIController.helpMenu.name"));
+        helpMenu.setMnemonic(Messages.getString("UIController.helpMenu.mnemonic").charAt(0));
+        helpMenu.add(aboutMenu);
+        result.add(helpMenu);
+
+        return result;
     }
 
     /**
@@ -255,6 +329,56 @@ public class UIController {
                 .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON3)
                 .doOnNext(this::handleRightMouseMapEvent)
                 .subscribe();
+        SwingObservable.actions(exitButton).mergeWith(SwingObservable.actions(exitMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleExitAction)
+                .subscribe();
+        SwingObservable.actions(aboutMenu)
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleAboutAction)
+                .subscribe();
+        SwingObservable.actions(newGameButton).mergeWith(SwingObservable.actions(newGameMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleNewGameAction)
+                .subscribe();
+        SwingObservable.actions(lockButton).mergeWith(SwingObservable.actions(lockMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleLockAction)
+                .subscribe();
+        SwingObservable.actions(stopButton).mergeWith(SwingObservable.actions(stopMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleStopAction)
+                .subscribe();
+        SwingObservable.actions(userPreferencesButton).mergeWith(SwingObservable.actions(userPreferencesMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleUserPreferencesAction)
+                .subscribe();
+        SwingObservable.actions(muteButton).mergeWith(SwingObservable.actions(muteMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleMuteAction)
+                .subscribe();
+        SwingObservable.actions(autoLockButton).mergeWith(SwingObservable.actions(autoLockMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleAutoLockAction)
+                .subscribe();
+    }
+
+    /**
+     * Returns the toolbar
+     */
+    private JToolBar createToolBar() {
+        JToolBar toolBar = new JToolBar();
+        toolBar.add(newGameButton);
+        toolBar.add(new JToolBar.Separator());
+        toolBar.add(lockButton);
+        toolBar.add(stopButton);
+        toolBar.add(autoLockButton);
+        toolBar.add(new JToolBar.Separator());
+        toolBar.add(muteButton);
+        toolBar.add(userPreferencesButton);
+        toolBar.add(new JToolBar.Separator());
+        toolBar.add(exitButton);
+        return toolBar;
     }
 
     /**
@@ -304,6 +428,30 @@ public class UIController {
     }
 
     /**
+     * Handles about action
+     *
+     * @param actionEvent the action event
+     */
+    private void handleAboutAction(ActionEvent actionEvent) {
+        String text = formatMessage("UIController.about.text",
+                Messages.getString("Railways.name"),
+                Messages.getString("Railways.version"),
+                Messages.getString("Railways.author"));
+        JOptionPane.showConfirmDialog(frame, text,
+                Messages.getString("UIController.about.title"),
+                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Handles auto lock action
+     *
+     * @param actionEvent the action event
+     */
+    private void handleAutoLockAction(ActionEvent actionEvent) {
+        logger.atDebug().log("auto lock action");
+    }
+
+    /**
      * Handles central mouse map event from stationScrollPanel
      *
      * @param event the map event
@@ -318,6 +466,15 @@ public class UIController {
                         route -> handleRouteSelection2(event, route),
                         () -> sectionOpt.ifPresent(
                                 section -> handleSectionSelection2(event, section))));
+    }
+
+    /**
+     * Handles the exit action
+     *
+     * @param actionEvent the action event
+     */
+    private void handleExitAction(ActionEvent actionEvent) {
+        frame.dispose();
     }
 
     /**
@@ -357,6 +514,33 @@ public class UIController {
                         route -> handleRouteSelection(event, route),
                         () -> sectionOpt.ifPresent(
                                 section -> handleSectionSelection(event, section))));
+    }
+
+    /**
+     * Handles lock action
+     *
+     * @param actionEvent the action event
+     */
+    private void handleLockAction(ActionEvent actionEvent) {
+        logger.atDebug().log("lock action");
+    }
+
+    /**
+     * Handles mute action
+     *
+     * @param actionEvent the action event
+     */
+    private void handleMuteAction(ActionEvent actionEvent) {
+        logger.atDebug().log("mute action");
+    }
+
+    /**
+     * Handles new game action
+     *
+     * @param actionEvent the action event
+     */
+    private void handleNewGameAction(ActionEvent actionEvent) {
+        logger.atDebug().log("new game action");
     }
 
     /**
@@ -457,6 +641,15 @@ public class UIController {
     }
 
     /**
+     * Handles stop action
+     *
+     * @param actionEvent the action event
+     */
+    private void handleStopAction(ActionEvent actionEvent) {
+        logger.atDebug().log("stop action");
+    }
+
+    /**
      * Handles the mouse left button on train
      *
      * @param train the selected train
@@ -480,6 +673,15 @@ public class UIController {
     }
 
     /**
+     * Handles user preferences action
+     *
+     * @param actionEvent the action event
+     */
+    private void handleUserPreferencesAction(ActionEvent actionEvent) {
+        logger.atDebug().log("user preferences action");
+    }
+
+    /**
      * Initialize the game frame
      */
     private void initFrame() {
@@ -496,14 +698,23 @@ public class UIController {
             ImageIcon imageIcon = new ImageIcon(imgResource);
             frame.setIconImage(imageIcon.getImage());
         }
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        frame.setJMenuBar(createMenuBar());
         frame.setSize(screen);
         frame.setLocation(0, 0);
 
         Container content = frame.getContentPane();
+        content.add(createToolBar(), BorderLayout.NORTH);
         content.add(verticalSplit, BorderLayout.CENTER);
         frame.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                simulator.stop().blockingGet();
+                logger.info("Ended");
+            }
+
             @Override
             public void windowOpened(WindowEvent e) {
                 int hWidth = horizontalSplit.getWidth();

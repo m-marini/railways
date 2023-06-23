@@ -59,8 +59,8 @@ public class Configuration {
             Map.of(
                     "version", string(values(VERSION)),
                     "hallOfFame", arrayItems(ExtendedPerformance.VALIDATOR),
-                    "userOptions", UserOptions.VALIDATOR),
-            List.of("hallOfFame", "userOptions")
+                    "userPreferences", UserPreferences.VALIDATOR),
+            List.of("version", "hallOfFame", "userPreferences")
     );
     private static final int MAX_ENTRIES = 20;
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
@@ -70,7 +70,7 @@ public class Configuration {
      */
     private static Configuration defaultConfig() {
         return new Configuration(
-                new UserOptions(1, false, 0,
+                new UserPreferences(1, false, 0,
                         UIManager.getCrossPlatformLookAndFeelClassName()),
                 List.of()
         );
@@ -87,7 +87,7 @@ public class Configuration {
         List<ExtendedPerformance> hallOfFame1 = locator.path("hallOfFame").elements(root)
                 .map(perfLoc -> ExtendedPerformance.fromJson(root, perfLoc))
                 .collect(Collectors.toList());
-        UserOptions userOptions = UserOptions.fromJson(root, locator.path("userOptions"));
+        UserPreferences userOptions = UserPreferences.fromJson(root, locator.path("userPreferences"));
         return new Configuration(userOptions, hallOfFame1);
     }
 
@@ -113,12 +113,12 @@ public class Configuration {
     }
 
     private final List<ExtendedPerformance> hallOfFame;
-    private final UserOptions userOptions;
+    private final UserPreferences userOptions;
 
     /**
      * Creates the configuration
      */
-    protected Configuration(UserOptions userOptions, List<ExtendedPerformance> hallOfFame) {
+    protected Configuration(UserPreferences userOptions, List<ExtendedPerformance> hallOfFame) {
         this.userOptions = userOptions;
         this.hallOfFame = hallOfFame;
     }
@@ -164,7 +164,7 @@ public class Configuration {
     /**
      * Returns the user options
      */
-    public UserOptions getUserOptions() {
+    public UserPreferences getUserOptions() {
         return userOptions;
     }
 
@@ -173,7 +173,7 @@ public class Configuration {
      *
      * @param userOptions user options
      */
-    Configuration setUserOptions(UserOptions userOptions) {
+    Configuration setUserOptions(UserPreferences userOptions) {
         return !userOptions.equals(this.userOptions)
                 ? new Configuration(userOptions, hallOfFame).save()
                 : this;
@@ -234,7 +234,7 @@ public class Configuration {
     private JsonNode toJson() {
         ObjectNode config = objectMapper.createObjectNode();
         config.put("version", VERSION);
-        config.set("userOptions", userOptions.toJson());
+        config.set("userPreferences", userOptions.toJson());
         config.set("hallOfFame", createHallOfFameJson());
         return config;
     }

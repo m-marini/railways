@@ -134,7 +134,7 @@ public class Train {
                         ? train.stop() :
                         train);
         return result.setV1(newTrain);
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     /**
      * Returns the train status after simulating a time interval
@@ -145,7 +145,7 @@ public class Train {
      */
     Tuple2<Optional<Train>, Performance> changeState(SimulationContext ctx, double dt) {
         return state.apply(this, ctx, dt);
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     /**
      * Returns the simulated entering train
@@ -296,7 +296,7 @@ public class Train {
      */
     public Optional<EdgeLocation> getLocation() {
         return Optional.ofNullable(location);
-    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    }
 
     /**
      * Returns the train with location set
@@ -315,7 +315,7 @@ public class Train {
      */
     public int getNumCoaches() {
         return numCoaches;
-    }
+    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
     /**
      * Returns the train speed (m/s)
@@ -522,7 +522,7 @@ public class Train {
                             Performance.running(timeToEndEdge, location.getDistance()));
                 }
         ).orElseThrow();
-    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    }
 
     /**
      * Returns the train in loaded state
@@ -551,7 +551,7 @@ public class Train {
     public double speedPhysics(double targetSpeed, double dt) {
         double acc = min(max((targetSpeed - speed) / dt, DEACCELERATION), ACCELERATION);
         return min(speed + acc * dt, MAX_SPEED);
-    }
+    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
 
     /**
      * Returns the train started

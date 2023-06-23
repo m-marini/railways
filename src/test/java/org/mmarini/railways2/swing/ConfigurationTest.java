@@ -47,7 +47,7 @@ class ConfigurationTest {
     private static final String JSON = text(
             "---",
             "version: \"1.0\"",
-            "userOptions:",
+            "userPreferences:",
             "  simulationSpeed: 1.0",
             "  mute: false",
             "  gain: -3.0",
@@ -75,11 +75,11 @@ class ConfigurationTest {
         Configuration conf = Configuration.fromJson(json, Locator.root());
 
         // Then ...
-        UserOptions userOptions = conf.getUserOptions();
-        assertEquals(1d, userOptions.getSimulationSpeed());
-        assertEquals(-3d, userOptions.getGain());
-        assertFalse(userOptions.isMute());
-        assertEquals("javax.swing.plaf.metal.MetalLookAndFeel", userOptions.getLookAndFeelClass());
+        UserPreferences userPreferences = conf.getUserOptions();
+        assertEquals(1d, userPreferences.getSimulationSpeed());
+        assertEquals(-3d, userPreferences.getGain());
+        assertFalse(userPreferences.isMute());
+        assertEquals("javax.swing.plaf.metal.MetalLookAndFeel", userPreferences.getLookAndFeelClass());
 
         assertThat(conf.getHallOfFame(), hasSize(1));
         ExtendedPerformance perf = conf.getHallOfFame().get(0);
