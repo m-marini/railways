@@ -47,7 +47,7 @@ class ConfigurationTest {
     private static final String JSON = text(
             "---",
             "version: \"1.0\"",
-            "userOptions:",
+            "userPreferences:",
             "  simulationSpeed: 1.0",
             "  mute: false",
             "  gain: -3.0",
