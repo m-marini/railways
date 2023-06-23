@@ -61,7 +61,7 @@ public interface Validator extends Function<Locator, Consumer<JsonNode>> {
     };
     Validator INT = locator -> root -> {
         JsonNode node = locator.getNode(root);
-        assertFor(node.isInt(), locator, "must be an integer (%s)", node.getNodeType());
+        assertFor(node.isInt() || node.isLong(), locator, "must be an integer (%s)", node.getNodeType());
     };
     Validator NUMBER = locator -> root -> {
         JsonNode node = locator.getNode(root);
@@ -204,9 +204,9 @@ public interface Validator extends Function<Locator, Consumer<JsonNode>> {
     /**
      * @param maximum the exclusive maximum value
      */
-    static Validator exclusiveMaximum(int maximum) {
+    static Validator exclusiveMaximum(long maximum) {
         return locator -> root -> {
-            int value = locator.getNode(root).asInt(0);
+            long value = locator.getNode(root).asLong(0);
             assertFor(value < maximum, locator, "must be < %s (%s)", maximum, value);
         };
     }
@@ -234,9 +234,9 @@ public interface Validator extends Function<Locator, Consumer<JsonNode>> {
     /**
      * @param minimum the exclusive minimum value
      */
-    static Validator exclusiveMinimum(int minimum) {
+    static Validator exclusiveMinimum(long minimum) {
         return locator -> root -> {
-            int value = locator.getNode(root).asInt(0);
+            long value = locator.getNode(root).asLong(0);
             assertFor(value > minimum, locator, "must be > %s (%s)", minimum, value);
         };
     }
@@ -335,9 +335,9 @@ public interface Validator extends Function<Locator, Consumer<JsonNode>> {
     /**
      * @param maximum the maximum value
      */
-    static Validator maximum(int maximum) {
+    static Validator maximum(long maximum) {
         return locator -> root -> {
-            int value = locator.getNode(root).asInt(0);
+            long value = locator.getNode(root).asLong(0);
             assertFor(value <= maximum, locator, "must be <= %s (%s)", maximum, value);
         };
     }
@@ -387,9 +387,9 @@ public interface Validator extends Function<Locator, Consumer<JsonNode>> {
     /**
      * @param minimum the minimum value
      */
-    static Validator minimum(int minimum) {
+    static Validator minimum(long minimum) {
         return locator -> root -> {
-            int value = locator.getNode(root).asInt(0);
+            long value = locator.getNode(root).asLong(0);
             assertFor(value >= minimum, locator, "must be >= %s (%s)", minimum, value);
         };
     }

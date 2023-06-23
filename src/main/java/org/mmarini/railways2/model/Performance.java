@@ -29,6 +29,7 @@
 package org.mmarini.railways2.model;
 
 import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * Defines the performance of the game
@@ -73,7 +74,7 @@ public class Performance implements Comparable<Performance> {
      *
      * @param performances the performances
      */
-    public static Performance sumIterable(Iterable<Performance> performances) {
+    public static Performance sumIterable(Iterable<? extends Performance> performances) {
         int trainIncomingNumber = 0;
         int trainRightOutgoingNumber = 0;
         int trainWrongOutgoingNumber = 0;
@@ -83,11 +84,12 @@ public class Performance implements Comparable<Performance> {
         double trainWaitingTime = 0;
         double elapsedTime = 0;
         for (Performance p : performances) {
-            trainIncomingNumber += p.getTrainIncomingNumber();
-            trainRightOutgoingNumber += p.getTrainRightOutgoingNumber();
-            trainWrongOutgoingNumber += p.getTrainWrongOutgoingNumber();
-            totalTime += p.getTotalTime();
+            trainIncomingNumber += p.getIncomingTrainNumber();
+            trainRightOutgoingNumber += p.getRightOutgoingTrainNumber();
+            trainWrongOutgoingNumber += p.getWrongOutgoingTrainNumber();
+            totalTime += p.getTotalTrainTime();
             traveledDistance += p.getTraveledDistance();
+            trainWaitingTime += p.getTrainWaitingTime();
             trainStopNumber += p.getTrainStopNumber();
             elapsedTime += p.getElapsedTime();
         }
@@ -104,35 +106,35 @@ public class Performance implements Comparable<Performance> {
         return new Performance(0, 0, 0, dt, 0, 0, dt, dt);
     }
 
-    private final int trainIncomingNumber;
-    private final int trainRightOutgoingNumber;
-    private final int trainWrongOutgoingNumber;
-    private final double totalTime;
-    private final double traveledDistance;
-    private final int trainStopNumber;
-    private final double trainWaitingTime;
-    private final double elapsedTime;
+    protected final int incomingTrainNumber;
+    protected final int rightOutgoingTrainNumber;
+    protected final int wrongOutgoingTrainNumber;
+    protected final double totalTrainTime;
+    protected final double traveledDistance;
+    protected final int trainStopNumber;
+    protected final double trainWaitingTime;
+    protected final double elapsedTime;
 
     /**
      * Creates the performance record
      *
-     * @param trainIncomingNumber      the number of incoming trains
-     * @param trainRightOutgoingNumber the number of right outgoing trains
-     * @param trainWrongOutgoingNumber the number of wrong outgoing trains
+     * @param incomingTrainNumber      the number of incoming trains
+     * @param rightOutgoingTrainNumber the number of right outgoing trains
+     * @param wrongOutgoingTrainNumber the number of wrong outgoing trains
      * @param totalTime                the total train time (s)
      * @param traveledDistance         the distance traveled (m)
      * @param trainStopNumber          the number of train stops
      * @param trainWaitingTime         the total train waiting time
      * @param elapsedTime              the elapsed time (s)
      */
-    protected Performance(int trainIncomingNumber, int trainRightOutgoingNumber, int trainWrongOutgoingNumber,
+    protected Performance(int incomingTrainNumber, int rightOutgoingTrainNumber, int wrongOutgoingTrainNumber,
                           double totalTime, double traveledDistance,
                           int trainStopNumber, double trainWaitingTime,
                           double elapsedTime) {
-        this.trainIncomingNumber = trainIncomingNumber;
-        this.trainRightOutgoingNumber = trainRightOutgoingNumber;
-        this.trainWrongOutgoingNumber = trainWrongOutgoingNumber;
-        this.totalTime = totalTime;
+        this.incomingTrainNumber = incomingTrainNumber;
+        this.rightOutgoingTrainNumber = rightOutgoingTrainNumber;
+        this.wrongOutgoingTrainNumber = wrongOutgoingTrainNumber;
+        this.totalTrainTime = totalTime;
         this.traveledDistance = traveledDistance;
         this.trainStopNumber = trainStopNumber;
         this.trainWaitingTime = trainWaitingTime;
@@ -149,7 +151,7 @@ public class Performance implements Comparable<Performance> {
      * @param time adding elapsed time (s)
      */
     public Performance addElapsedTime(double time) {
-        return new Performance(trainIncomingNumber, trainRightOutgoingNumber, trainWrongOutgoingNumber, totalTime, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime + time);
+        return new Performance(incomingTrainNumber, rightOutgoingTrainNumber, wrongOutgoingTrainNumber, totalTrainTime, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime + time);
     }
 
     /**
@@ -158,7 +160,7 @@ public class Performance implements Comparable<Performance> {
      * @param time the adding time (s)
      */
     public Performance addTotalTime(double time) {
-        return new Performance(trainIncomingNumber, trainRightOutgoingNumber, trainWrongOutgoingNumber, totalTime + time, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime);
+        return new Performance(incomingTrainNumber, rightOutgoingTrainNumber, wrongOutgoingTrainNumber, totalTrainTime + time, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime);
     }
 
     /**
@@ -167,7 +169,7 @@ public class Performance implements Comparable<Performance> {
      * @param trainNumber the number of new trains
      */
     public Performance addTrainIncomingNumber(int trainNumber) {
-        return new Performance(trainIncomingNumber + trainNumber, trainRightOutgoingNumber, trainWrongOutgoingNumber, totalTime, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime);
+        return new Performance(incomingTrainNumber + trainNumber, rightOutgoingTrainNumber, wrongOutgoingTrainNumber, totalTrainTime, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime);
     }
 
     /**
@@ -176,7 +178,7 @@ public class Performance implements Comparable<Performance> {
      * @param trainNumber the number of new trains
      */
     public Performance addTrainRightOutgoingNumber(int trainNumber) {
-        return new Performance(trainIncomingNumber, trainRightOutgoingNumber + trainNumber, trainWrongOutgoingNumber, totalTime, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime);
+        return new Performance(incomingTrainNumber, rightOutgoingTrainNumber + trainNumber, wrongOutgoingTrainNumber, totalTrainTime, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime);
     }
 
     /**
@@ -185,7 +187,7 @@ public class Performance implements Comparable<Performance> {
      * @param stops number of new stops
      */
     public Performance addTrainStopNumber(int stops) {
-        return new Performance(trainIncomingNumber, trainRightOutgoingNumber, trainWrongOutgoingNumber, totalTime, traveledDistance, trainStopNumber + stops, trainWaitingTime, elapsedTime);
+        return new Performance(incomingTrainNumber, rightOutgoingTrainNumber, wrongOutgoingTrainNumber, totalTrainTime, traveledDistance, trainStopNumber + stops, trainWaitingTime, elapsedTime);
     }
 
     /**
@@ -194,7 +196,7 @@ public class Performance implements Comparable<Performance> {
      * @param time adding waiting time (s)
      */
     public Performance addTrainWaitingTime(double time) {
-        return new Performance(trainIncomingNumber, trainRightOutgoingNumber, trainWrongOutgoingNumber, totalTime, traveledDistance, trainStopNumber, trainWaitingTime + time, elapsedTime);
+        return new Performance(incomingTrainNumber, rightOutgoingTrainNumber, wrongOutgoingTrainNumber, totalTrainTime, traveledDistance, trainStopNumber, trainWaitingTime + time, elapsedTime);
     }
 
     /**
@@ -203,7 +205,7 @@ public class Performance implements Comparable<Performance> {
      * @param trainNumber the number of new trains
      */
     public Performance addTrainWrongOutgoingNumber(int trainNumber) {
-        return new Performance(trainIncomingNumber, trainRightOutgoingNumber, trainWrongOutgoingNumber + trainNumber, totalTime, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime);
+        return new Performance(incomingTrainNumber, rightOutgoingTrainNumber, wrongOutgoingTrainNumber + trainNumber, totalTrainTime, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime);
     }
 
     /**
@@ -212,7 +214,7 @@ public class Performance implements Comparable<Performance> {
      * @param distance the adding distance (m)
      */
     public Performance addTraveledDistance(double distance) {
-        return new Performance(trainIncomingNumber, trainRightOutgoingNumber, trainWrongOutgoingNumber, totalTime, traveledDistance + distance, trainStopNumber, trainWaitingTime, elapsedTime);
+        return new Performance(incomingTrainNumber, rightOutgoingTrainNumber, wrongOutgoingTrainNumber, totalTrainTime, traveledDistance + distance, trainStopNumber, trainWaitingTime, elapsedTime);
     }
 
     @Override
@@ -242,7 +244,7 @@ public class Performance implements Comparable<Performance> {
      */
     public Performance setElapsedTime(double elapsedTime) {
         return elapsedTime != this.elapsedTime
-                ? new Performance(trainIncomingNumber, trainRightOutgoingNumber, trainWrongOutgoingNumber, totalTime, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime)
+                ? new Performance(incomingTrainNumber, rightOutgoingTrainNumber, wrongOutgoingTrainNumber, totalTrainTime, traveledDistance, trainStopNumber, trainWaitingTime, elapsedTime)
                 : this;
 
     }
@@ -251,45 +253,45 @@ public class Performance implements Comparable<Performance> {
      * Returns the frequency of train (#/s)
      */
     public double getFrequency() {
-        return trainIncomingNumber / totalTime;
+        return incomingTrainNumber / elapsedTime;
+    }
+
+    /**
+     * Returns the number of incoming trains
+     */
+    public int getIncomingTrainNumber() {
+        return incomingTrainNumber;
     }
 
     /**
      * Returns the performance kpi (#/s)
      */
     public double getPerformance() {
-        return (totalTime < EPSILON_TIME)
+        return (totalTrainTime < EPSILON_TIME)
                 ? WORST_PERFORMANCE
-                : trainRightOutgoingNumber / totalTime;
-    }
-
-    /**
-     * Returns the number of train in station
-     */
-    public int getStationTrainCount() {
-        return trainIncomingNumber - trainWrongOutgoingNumber
-                - trainRightOutgoingNumber;
-    }
-
-    /**
-     * Returns the total train time (s)
-     */
-    public double getTotalTime() {
-        return totalTime;
-    }
-
-    /**
-     * Returns the number of incoming trains
-     */
-    public int getTrainIncomingNumber() {
-        return trainIncomingNumber;
+                : rightOutgoingTrainNumber / totalTrainTime;
     }
 
     /**
      * Returns the number of right outgoing trains
      */
-    public int getTrainRightOutgoingNumber() {
-        return trainRightOutgoingNumber;
+    public int getRightOutgoingTrainNumber() {
+        return rightOutgoingTrainNumber;
+    }
+
+    /**
+     * Returns the number of train in station
+     */
+    public int getStationTrainNumber() {
+        return incomingTrainNumber - wrongOutgoingTrainNumber
+                - rightOutgoingTrainNumber;
+    }
+
+    /**
+     * Returns the total train time (s)
+     */
+    public double getTotalTrainTime() {
+        return totalTrainTime;
     }
 
     /**
@@ -307,13 +309,6 @@ public class Performance implements Comparable<Performance> {
     }
 
     /**
-     * Returns the number of wrong outgoing trains
-     */
-    public int getTrainWrongOutgoingNumber() {
-        return trainWrongOutgoingNumber;
-    }
-
-    /**
      * Returns the distance traveled (m)
      */
     public double getTraveledDistance() {
@@ -321,18 +316,23 @@ public class Performance implements Comparable<Performance> {
     }
 
     /**
-     * Returns the sum of performance
-     *
-     * @param value the peroformance
+     * Returns the number of wrong outgoing trains
      */
-    public Performance sumIterable(Performance value) {
-        return new Performance(trainIncomingNumber + value.trainIncomingNumber,
-                trainRightOutgoingNumber + value.trainRightOutgoingNumber,
-                trainWrongOutgoingNumber + value.trainWrongOutgoingNumber,
-                totalTime + value.totalTime,
-                traveledDistance + value.traveledDistance,
-                trainStopNumber + value.trainStopNumber,
-                trainWaitingTime + value.trainWaitingTime,
-                elapsedTime + value.elapsedTime);
+    public int getWrongOutgoingTrainNumber() {
+        return wrongOutgoingTrainNumber;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", Performance.class.getSimpleName() + "[", "]")
+                .add("trainIncomingNumber=" + incomingTrainNumber)
+                .add("trainRightOutgoingNumber=" + rightOutgoingTrainNumber)
+                .add("trainWrongOutgoingNumber=" + wrongOutgoingTrainNumber)
+                .add("totalTime=" + totalTrainTime)
+                .add("traveledDistance=" + traveledDistance)
+                .add("trainStopNumber=" + trainStopNumber)
+                .add("trainWaitingTime=" + trainWaitingTime)
+                .add("elapsedTime=" + elapsedTime)
+                .toString();
     }
 }

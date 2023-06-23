@@ -78,6 +78,6 @@ class StationStatusTrainOnCCTest extends WithStationStatusTest {
         Performance performance = status1.getPerformance();
         assertEquals(t0.getSpeed(), MAX_SPEED);
         assertEquals(0.1, performance.getElapsedTime());
-        assertEquals(0, performance.getTrainIncomingNumber());
+        assertEquals(0, performance.getIncomingTrainNumber());
     }
 }

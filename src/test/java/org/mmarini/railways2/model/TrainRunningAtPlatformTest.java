@@ -104,10 +104,10 @@ class TrainRunningAtPlatformTest {
         Performance perf = nextOpt._2;
         double expTime = distance / MAX_SPEED;
         assertEquals(expTime, perf.getElapsedTime());
-        assertEquals(expTime, perf.getTotalTime());
+        assertEquals(expTime, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(distance, perf.getTraveledDistance());
     }
@@ -138,10 +138,10 @@ class TrainRunningAtPlatformTest {
         Performance perf = nextOpt._2;
         double expTime = distance / MAX_SPEED;
         assertEquals(expTime, perf.getElapsedTime());
-        assertEquals(expTime, perf.getTotalTime());
+        assertEquals(expTime, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(1, perf.getTrainStopNumber());
         assertEquals(distance, perf.getTraveledDistance());
     }

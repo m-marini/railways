@@ -35,6 +35,7 @@ import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Signal;
+import org.mmarini.railways2.swing.WithTrain;
 
 import java.awt.geom.Point2D;
 import java.util.Optional;
@@ -50,40 +51,6 @@ class TrainRunningTest extends WithStationStatusTest {
     public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
     static final double LENGTH = 500;
-
-    @Test
-    void accelerate() {
-        // Given ...
-        Node b = node("b");
-        Edge ab = edge("ab");
-        Entry aRoute = route("a");
-        Exit bRoute = route("c");
-        double speed = MAX_SPEED / 8;
-        Train train = Train.create("train2", 1, aRoute, bRoute)
-                .setLocation(EdgeLocation.create(ab, b, LENGTH))
-                .setSpeed(speed)
-                .setState(Train.STATE_RUNNING);
-        status = status.setTrains(train);
-
-        // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(new SimulationContext(status), DT);
-
-        // Then ...
-        assertTrue(nextOpt._1.isPresent());
-        Train next = nextOpt._1.orElseThrow();
-        assertEquals(Train.STATE_RUNNING, next.getState());
-        assertEquals(ACCELERATION * DT + speed, next.getSpeed());
-        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", LENGTH - speed * DT)));
-
-        Performance perf = nextOpt._2;
-        assertEquals(DT, perf.getElapsedTime());
-        assertEquals(DT, perf.getTotalTime());
-        assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
-        assertEquals(0, perf.getTrainStopNumber());
-        assertEquals(speed * DT, perf.getTraveledDistance());
-    }
 
     @Test
     void getStopDistance() {
@@ -143,10 +110,10 @@ class TrainRunningTest extends WithStationStatusTest {
         Performance perf = nextOpt._2;
         double expectedTime = distance / MAX_SPEED;
         assertEquals(expectedTime, perf.getElapsedTime());
-        assertEquals(expectedTime, perf.getTotalTime());
+        assertEquals(expectedTime, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(distance, perf.getTraveledDistance());
     }
@@ -171,12 +138,41 @@ class TrainRunningTest extends WithStationStatusTest {
 
         Performance perf = nextOpt._2;
         assertEquals(DT, perf.getElapsedTime());
-        assertEquals(DT, perf.getTotalTime());
+        assertEquals(DT, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(MAX_SPEED * DT, perf.getTraveledDistance());
+    }
+
+    @Test
+    void runningFromStop() {
+        // Given ...
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("train2", 3, "a", "c")
+                        .at("ab", "b", 0)
+                        .running(0))
+                .build();
+
+        // When ...
+        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(new SimulationContext(status), DT);
+
+        // Then ...
+        assertTrue(nextOpt._1.isPresent());
+        Train next = nextOpt._1.orElseThrow();
+        assertEquals(Train.STATE_RUNNING, next.getState());
+        assertEquals(APPROACH_SPEED, next.getSpeed());
+        assertThat(next.getLocation(), optionalOf(locatedAt("ab", "b", 0)));
+
+        Performance perf = nextOpt._2;
+        assertEquals(DT, perf.getElapsedTime());
+        assertEquals(DT, perf.getTotalTrainTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
     }
 
     @Test
@@ -201,10 +197,10 @@ class TrainRunningTest extends WithStationStatusTest {
 
         Performance perf = nextOpt._2;
         assertEquals(DT, perf.getElapsedTime());
-        assertEquals(DT, perf.getTotalTime());
+        assertEquals(DT, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(MAX_SPEED * DT, perf.getTraveledDistance());
     }
@@ -233,10 +229,10 @@ class TrainRunningTest extends WithStationStatusTest {
         Performance perf = nextOpt._2;
         double expectedTime = distance / MAX_SPEED;
         assertEquals(expectedTime, perf.getElapsedTime());
-        assertEquals(expectedTime, perf.getTotalTime());
+        assertEquals(expectedTime, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(distance, perf.getTraveledDistance());
     }
@@ -340,10 +336,10 @@ class TrainRunningTest extends WithStationStatusTest {
         Performance perf = nextOpt._2;
         double expectedTime = distance / MAX_SPEED;
         assertEquals(expectedTime, perf.getElapsedTime());
-        assertEquals(expectedTime, perf.getTotalTime());
+        assertEquals(expectedTime, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(1, perf.getTrainStopNumber());
         assertEquals(distance, perf.getTraveledDistance());
     }

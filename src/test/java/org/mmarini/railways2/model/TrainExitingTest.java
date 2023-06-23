@@ -76,10 +76,10 @@ class TrainExitingTest extends WithStationStatusTest {
         // And the traveled distance should be the train movement
         Performance perf = nextOpt._2;
         assertEquals(DT, perf.getElapsedTime());
-        assertEquals(DT, perf.getTotalTime());
+        assertEquals(DT, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(MAX_SPEED * DT, perf.getTraveledDistance());
     }
@@ -108,10 +108,10 @@ class TrainExitingTest extends WithStationStatusTest {
         // And the traveled distance should be 0
         Performance perf = nextOpt._2;
         assertEquals(DT, perf.getElapsedTime());
-        assertEquals(DT, perf.getTotalTime());
+        assertEquals(DT, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(0, perf.getTraveledDistance());
     }
@@ -140,10 +140,10 @@ class TrainExitingTest extends WithStationStatusTest {
         // And the traveled distance should be 0
         Performance perf = nextOpt._2;
         assertEquals(DT, perf.getElapsedTime());
-        assertEquals(DT, perf.getTotalTime());
+        assertEquals(DT, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(MAX_SPEED * DT, perf.getTraveledDistance());
     }
@@ -170,10 +170,10 @@ class TrainExitingTest extends WithStationStatusTest {
         // And the right outgoing train should be 1
         Performance perf = nextOpt._2;
         assertThat(perf.getElapsedTime(), closeTo(1 / MAX_SPEED, 1e-3));
-        assertThat(perf.getTotalTime(), closeTo(1 / MAX_SPEED, 1e-3));
+        assertThat(perf.getTotalTrainTime(), closeTo(1 / MAX_SPEED, 1e-3));
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(1, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(1, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(1, perf.getTraveledDistance());
     }

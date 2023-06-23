@@ -77,10 +77,10 @@ class TrainEnteringTest extends WithStationStatusTest {
         // And the elapsed time should be 0
         Performance perf = nextOpt._2;
         assertEquals(0, perf.getElapsedTime());
-        assertEquals(0, perf.getTotalTime());
+        assertEquals(0, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(0, perf.getTraveledDistance());
     }
@@ -110,10 +110,10 @@ class TrainEnteringTest extends WithStationStatusTest {
         // And the elapsed time should be DT/2 and stop counter incremented by 1
         Performance perf = next._2;
         assertThat(perf.getElapsedTime(), closeTo(DT / 2, 1e-3));
-        assertEquals(0, perf.getTotalTime());
+        assertEquals(0, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(1, perf.getTrainStopNumber());
         assertEquals(0, perf.getTraveledDistance());
     }
@@ -145,11 +145,46 @@ class TrainEnteringTest extends WithStationStatusTest {
         // And the elapsed time should be DT/2 and stop counter incremented by 1
         Performance perf = nextOpt._2;
         assertThat(perf.getElapsedTime(), closeTo(DT / 2, 1e-3));
-        assertEquals(0, perf.getTotalTime());
+        assertEquals(0, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(1, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
+    }
+
+    @Test
+    void enteringStoppedNotClear() {
+        // Given the entering train t1 stopped and the train t2 running on the entry track (entry not clear)
+        // and the status just after a second after entry timout
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "b")
+                        .setSpeed(0))
+                .addTrain(new WithTrain.TrainBuilder("t2", 3, "a", "b")
+                        .at("ab", "b", 0)
+                        .running())
+                .build()
+                .setTime(ENTRY_TIMEOUT + 1);
+        SimulationContext ctx = new SimulationContext(status);
+
+        // When ...
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, DT);
+
+        // Than train t2 should be stopped in entering state
+        assertTrue(nextOpt._1.isPresent());
+        Train next = nextOpt._1.orElseThrow();
+        assertEquals(Train.STATE_ENTERING, next.getState());
+        assertEquals(ENTRY_TIMEOUT, next.getArrivalTime());
+        assertEquals(0D, next.getSpeed());
+
+        // And the elapsed time and wait time should be DT and stop counter incremented by 1
+        Performance perf = nextOpt._2;
+        assertThat(perf.getElapsedTime(), closeTo(DT, 1e-3));
+        assertEquals(DT, perf.getTotalTrainTime());
+        assertEquals(DT, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
+        assertEquals(0, perf.getTrainStopNumber());
         assertEquals(0, perf.getTraveledDistance());
     }
 
@@ -176,10 +211,10 @@ class TrainEnteringTest extends WithStationStatusTest {
         // And the elapsed time should be DT/2
         Performance perf = nextOpt._2;
         assertThat(perf.getElapsedTime(), closeTo(DT / 2, 1e-3));
-        assertEquals(0, perf.getTotalTime());
+        assertEquals(0, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(0, perf.getTraveledDistance());
     }
@@ -204,10 +239,10 @@ class TrainEnteringTest extends WithStationStatusTest {
         // And the elapsed time should be DT
         Performance perf = nextOpt._2;
         assertEquals(DT, perf.getElapsedTime());
-        assertEquals(0, perf.getTotalTime());
+        assertEquals(0, perf.getTotalTrainTime());
         assertEquals(0, perf.getTrainWaitingTime());
-        assertEquals(0, perf.getTrainRightOutgoingNumber());
-        assertEquals(0, perf.getTrainWrongOutgoingNumber());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(0, perf.getTraveledDistance());
     }

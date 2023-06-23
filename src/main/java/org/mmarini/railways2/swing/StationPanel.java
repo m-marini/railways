@@ -73,7 +73,7 @@ public class StationPanel extends JComponent {
         this.center = new Point2D.Double();
         this.painter = NONE_PAINTER;
         this.mouseClick = SwingObservable.mouse(this, SwingObservable.MOUSE_CLICK)
-                .toFlowable(BackpressureStrategy.BUFFER)
+                .toFlowable(BackpressureStrategy.LATEST)
                 .filter(ev -> ev.getID() == MouseEvent.MOUSE_PRESSED)
                 .map(this::mapMouseEvent);
     }

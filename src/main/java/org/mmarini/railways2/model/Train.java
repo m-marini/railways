@@ -42,6 +42,7 @@ import java.util.Optional;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 
@@ -70,16 +71,17 @@ public class Train {
 
     private final String id;
     private final int numCoaches;
-    private final Entry arrival;    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    private final Entry arrival;
     private final Exit destination;
     private final State state;
     private final EdgeLocation location;
-    private final double arrivalTime;    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    private final double arrivalTime;
     private final double speed;
     private final boolean loaded;
     private final double loadedTime;
-    private final Exit exitingNode;    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    private final Exit exitingNode;
     private final double exitDistance;
+
     /**
      * Creates the train
      *
@@ -132,7 +134,7 @@ public class Train {
                         ? train.stop() :
                         train);
         return result.setV1(newTrain);
-    }    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     /**
      * Returns the train status after simulating a time interval
@@ -160,12 +162,13 @@ public class Train {
         }
         if (!context.isEntryClear(this)) {
             // entry busy
-            return speed != 0
+            return timeToArrive >= 0 || speed != 0
                     ? Tuple2.of(Optional.of(setSpeed(0)),
                     Performance.elapsed(timeToArrive).addTrainStopNumber(1))
                     : Tuple2.of(Optional.of(this),
-                    Performance.elapsed(timeToArrive));
+                    Performance.waiting(dt));
         }
+        // Entry clear and this is the first train in the queue
         // Enters the edge
         Direction dir = arrival.getValidExits().iterator().next();
         EdgeLocation location = new EdgeLocation(dir, dir.getEdge().getLength());
@@ -293,7 +296,7 @@ public class Train {
      */
     public Optional<EdgeLocation> getLocation() {
         return Optional.ofNullable(location);
-    }
+    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
     /**
      * Returns the train with location set
@@ -405,7 +408,7 @@ public class Train {
      */
     Tuple2<Optional<Train>, Performance> loading(SimulationContext context, double dt) {
         double timeToLoad = context.getTimeTo(loadedTime);
-        return (dt < timeToLoad)
+        return (dt <= timeToLoad)
                 // Wait for loaded
                 ? Tuple2.of(Optional.of(this), Performance.waiting(dt))
                 // Load completed
@@ -443,15 +446,25 @@ public class Train {
      * @param targetSpeed the target speed (m/s)
      */
     Tuple2<Optional<Train>, Performance> running(SimulationContext context, double dt, double targetSpeed) {
-        double timeToEndEdge = location.getDistance() / speed;
         boolean clearTrack = context.isNextTracksClear(this);
+        double newSpeed = clearTrack ?
+                speedPhysics(targetSpeed, dt)
+                : max(speedPhysics(0, dt), APPROACH_SPEED);
+        if (speed == 0) {
+            return (targetSpeed > APPROACH_SPEED || newSpeed > APPROACH_SPEED)
+                    ? Tuple2.of(Optional.of(
+                            setSpeed(max(APPROACH_SPEED, newSpeed))),
+                    Performance.running(dt, 0))
+                    : Tuple2.of(Optional.of(
+                            setSpeed(0).setState(STATE_WAITING_FOR_RUN)),
+                    Performance.none().addTrainStopNumber(1));
+        }
+
+        double timeToEndEdge = location.getDistance() / speed;
         Direction direction = location.getDirection();
         Edge edge = direction.getEdge();
         Node destination = direction.getDestination();
         Route route = context.getRoute(destination);
-        double newSpeed = clearTrack ?
-                speedPhysics(targetSpeed, dt)
-                : max(speedPhysics(0, dt), APPROACH_SPEED);
         double movement = speed * dt;
         double newDistance = location.getDistance() - movement;
 
@@ -471,7 +484,6 @@ public class Train {
             }
         }
 
-        double remainingTime = dt - timeToEndEdge;
         // end of edge reached
         if (route instanceof Exit) {
             // exit node reached
@@ -510,7 +522,7 @@ public class Train {
                             Performance.running(timeToEndEdge, location.getDistance()));
                 }
         ).orElseThrow();
-    }
+    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
 
     /**
      * Returns the train in loaded state
@@ -564,13 +576,23 @@ public class Train {
     public Tuple2<Optional<Train>, Performance> tick(SimulationContext ctx, double dt) {
         Train train = this;
         List<Performance> performances = new ArrayList<>();
+        int n = 0;
         do {
+            ++n;
             // Computes the next transition
             Tuple2<Optional<Train>, Performance> transition = train.changeState(ctx, dt);
             train = transition._1.orElse(null);
             Performance performance = transition._2;
             performances.add(performance);
             dt -= performance.getElapsedTime();
+            if (performance.getElapsedTime() < 0) {
+                // TODO remove asap
+                throw new IllegalArgumentException(format("elapsed = %f", performance.getElapsedTime()));
+            }
+            if (n >= 10) {
+                // TODO remove asap
+                throw new IllegalArgumentException("n = 10");
+            }
         } while (train != null && dt > 0);
         return Tuple2.of(Optional.ofNullable(train), Performance.sumIterable(performances));
     }
@@ -652,6 +674,7 @@ public class Train {
 
 
 
+    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
 
 
 }

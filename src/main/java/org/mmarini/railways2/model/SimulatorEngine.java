@@ -64,6 +64,11 @@ import java.util.function.UnaryOperator;
  */
 public interface SimulatorEngine<T, S> {
     /**
+     * Returns true if the simulator is active
+     */
+    boolean isActive();
+
+    /**
      * Returns the seed after pushing the new seed in the flow
      * <p>
      * Example:
@@ -144,14 +149,16 @@ public interface SimulatorEngine<T, S> {
      * Example:
      * <code>
      * <pre>
-     * engine.start().subscribe(seed->{
+     * engine.start(initialSeed).subscribe(seed->{
      *     ... ; // the function is called at completion of start and the parameter is the initial seed
      * }) ;
      * </pre>
      * </code>
      * </p>
+     *
+     * @param initialSeed the initial seed
      */
-    Single<S> start();
+    Single<S> start(S initialSeed);
 
     /**
      * Returns the last seed after the simulation stopping
