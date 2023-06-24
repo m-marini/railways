@@ -50,6 +50,7 @@ import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
 class TrainPanelTest {
     public static final int SIMULATION_SEED = 1234;
     public static final double GAME_DURATION = 300d;
+    public static final double FREQUENCY = 0.1;
     private static final Logger logger = LoggerFactory.getLogger(TrainPanelTest.class);
     private static final Dimension DEFAULT_SIZE = new Dimension(800, 600);
     private static final int FPS = 60;
@@ -71,7 +72,7 @@ class TrainPanelTest {
          */
 
         StationStatus status3 = new WithTrain(new BlockStationBuilder(StationDef.create(
-                Utils.fromResource("/stations/downville.station.yml"), Locator.root()), GAME_DURATION, new Random(SIMULATION_SEED)).build())
+                Utils.fromResource("/stations/downville.station.yml"), Locator.root()), GAME_DURATION, FREQUENCY, new Random(SIMULATION_SEED)).build())
                 .build()
                 .setTime(ENTRY_TIMEOUT);
         new TrainPanelTest(status3).run();

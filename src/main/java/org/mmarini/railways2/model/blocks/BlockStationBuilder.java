@@ -48,7 +48,6 @@ import static java.util.Objects.requireNonNull;
 import static org.mmarini.Utils.mkString;
 import static org.mmarini.railways2.model.MathUtils.GRID_SIZE;
 import static org.mmarini.railways2.model.MathUtils.snapToGrid;
-import static org.mmarini.railways2.model.RailwayConstants.DEFAULT_TRAIN_FREQUENCY;
 
 /**
  * Creates a station from station definition.
@@ -75,17 +74,20 @@ public class BlockStationBuilder {
     private final LazyValue<Map<String, OrientedGeometry>> worldGeometryByBlockPointId;
     private final LazyValue<Map<String, Tuple2<Point2D, List<String>>>> junctionParamsByJunctionId;
     private final Random random;
+    private final double frequency;
 
     /**
      * Creates the builder
      *
      * @param station      the station definition
      * @param gameDuration the game duration (s)
+     * @param frequency    the train frequency (#/s)
      * @param random       the random number generator
      */
-    public BlockStationBuilder(StationDef station, double gameDuration, Random random) {
+    public BlockStationBuilder(StationDef station, double gameDuration, double frequency, Random random) {
         this.station = requireNonNull(station);
         this.gameDuration = gameDuration;
+        this.frequency = frequency;
         this.random = random;
         this.worldBlockGeometries = new LazyValue<>(this::createsBlockGeometries);
         this.nodeIdByBlockPointId = new LazyValue<>(this::createNodeIdByBlockPointId);
@@ -110,7 +112,7 @@ public class BlockStationBuilder {
      * </p>
      */
     public StationStatus build() {
-        StationStatus.Builder statusBuilder = new StationStatus.Builder(buildStationMap(), DEFAULT_TRAIN_FREQUENCY, gameDuration, random);
+        StationStatus.Builder statusBuilder = new StationStatus.Builder(buildStationMap(), frequency, gameDuration, random);
         createRoutes().forEach(t ->
                 statusBuilder.addRoute(t._1, t._2.toArray(String[]::new)));
         return statusBuilder.build();

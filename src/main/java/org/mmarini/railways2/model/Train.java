@@ -145,7 +145,7 @@ public class Train {
      */
     Tuple2<Optional<Train>, Performance> changeState(SimulationContext ctx, double dt) {
         return state.apply(this, ctx, dt);
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     /**
      * Returns the simulated entering train
@@ -175,7 +175,7 @@ public class Train {
         return Tuple2.of(
                 Optional.of(setLocation(location).run()),
                 Performance.elapsed(max(0, timeToArrive)));
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     @Override
     public boolean equals(Object o) {
@@ -315,7 +315,7 @@ public class Train {
      */
     public int getNumCoaches() {
         return numCoaches;
-    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    }
 
     /**
      * Returns the train speed (m/s)
@@ -332,7 +332,7 @@ public class Train {
     public Train setSpeed(double speed) {
         return speed == this.speed ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }
+    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
     /**
      * Returns the train state
@@ -551,7 +551,7 @@ public class Train {
     public double speedPhysics(double targetSpeed, double dt) {
         double acc = min(max((targetSpeed - speed) / dt, DEACCELERATION), ACCELERATION);
         return min(speed + acc * dt, MAX_SPEED);
-    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    }
 
     /**
      * Returns the train started
@@ -595,7 +595,7 @@ public class Train {
             }
         } while (train != null && dt > 0);
         return Tuple2.of(Optional.ofNullable(train), Performance.sumIterable(performances));
-    }
+    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
 
     @Override
     public String toString() {

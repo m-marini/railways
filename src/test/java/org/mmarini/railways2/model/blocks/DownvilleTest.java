@@ -56,12 +56,13 @@ public class DownvilleTest extends WithStationStatusTest {
 
     public static final double EPSILON = 1e-3;
     public static final double GAME_DURATION = 300d;
+    public static final double FREQUENCY = 0.1;
     private JsonNode root;
 
     @Test
     void build() {
         StationDef station = StationDef.create(root, Locator.root());
-        this.status = new BlockStationBuilder(station, GAME_DURATION, null).build();
+        this.status = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null).build();
         assertEquals("Downville", status.getStationMap().getId());
     }
 
@@ -96,7 +97,7 @@ public class DownvilleTest extends WithStationStatusTest {
     void sowerthCurve() {
         // Given ...
         StationDef station = StationDef.create(root, Locator.root());
-        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, null);
+        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null);
 
         // When ...
         OrientedGeometry geo1 = builder.getWorldGeometry("westSignals.2.w");
@@ -113,7 +114,7 @@ public class DownvilleTest extends WithStationStatusTest {
     void sowerthCurve1() {
         // Given ...
         StationDef station = StationDef.create(root, Locator.root());
-        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, null);
+        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null);
         StationStatus status = builder.build();
 
         // When ...
@@ -134,7 +135,7 @@ public class DownvilleTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        StationStatus status1 = status.tick(0.1, new Random(1234));
+        StationStatus status1 = status.tick(FREQUENCY, new Random(1234));
 
         // Then ...
         Optional<Train> tt0 = status1.getTrain("TT0");
@@ -151,7 +152,7 @@ public class DownvilleTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        StationStatus status1 = status.tick(0.1, new Random(1234));
+        StationStatus status1 = status.tick(FREQUENCY, new Random(1234));
 
         // Then ...
         Optional<Train> tt0 = status1.getTrain("TT0");

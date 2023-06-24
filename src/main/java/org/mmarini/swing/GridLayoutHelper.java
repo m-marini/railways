@@ -17,7 +17,18 @@ import java.util.function.BiFunction;
 import static java.lang.String.format;
 
 /**
- * @author us00852
+ * Helps to create grid bag layout
+ * <p>
+ * Usage:
+ * <code>
+ * <pre>
+ * container = new GridLayoutHelper(new JPanel())
+ *   .modify(...)
+ *   .add(object)
+ *   .getContainer()
+ * </pre>
+ * </code>
+ * </p>
  */
 public class GridLayoutHelper<T extends Container> {
 
@@ -276,6 +287,20 @@ public class GridLayoutHelper<T extends Container> {
         return this;
     }
 
+    /**
+     * Returns the helper afetr added component
+     * <p>
+     * The arguments can be
+     *     <ul>
+     *         <li>Component added with current constraints</li>
+     *         <li>Action adds a JButton with current contraints </li>
+     *         <li>String starting with '+' is parsed for constrains setting</li>
+     *         <li>String adds a JLabel with decode message key if bundle is set</li>
+     *     </ul>
+     * </p>
+     *
+     * @param args the arguments
+     */
     public GridLayoutHelper<T> add(final Object... args) {
         GridBagConstraints gbc = constraints;
         for (final Object o : args)
@@ -320,7 +345,7 @@ public class GridLayoutHelper<T extends Container> {
     }
 
     /**
-     * @return the container
+     * Returns the container
      */
     public T getContainer() {
         return container;
@@ -381,8 +406,40 @@ public class GridLayoutHelper<T extends Container> {
     }
 
     /**
-     * @param mods
-     * @return
+     * Returns the helper modified by parsing.<br>
+     * The syntax of string is:
+     * <ul>
+     *     <li><code>at,[x],[y]</code> sets the location of component in the grid+</li>
+     *     <li><code>ipad,[x],[y]</code> sets the ipad constraint+</li>
+     *     <li><code>span,[w],[h]</code> sets the span width and height</li>
+     *     <li><code>insets,[size]</code> sets the insets</li>
+     *     <li><code>insets,[vertical],[horizontal]</code> sets the insets</li>
+     *     <li><code>insets,[top],[left],[bottom],[right]</code> sets the insets</li>
+     *     <li><code>noinsets</code> clear the insets</li>
+     *     <li><code>weight,[x],[y]</code> sets the weights</li>
+     *     <li><code>hw,[x]</code> sets the horizontal weight</li>
+     *     <li><code>vw,[y]</code> sets the vertical weight</li>
+     *     <li><code>noweight</code> clear the weights</li>
+     *     <li><code>def</code> sets default contraints</li>
+     *     <li><code>n</code> sets north anchor</li>
+     *     <li><code>ne</code> sets north-east anchor</li>
+     *     <li><code>e</code> sets east anchor</li>
+     *     <li><code>se</code> sets south-east anchor</li>
+     *     <li><code>s</code> sets south anchor</li>
+     *     <li><code>sw</code> sets south-west anchor</li>
+     *     <li><code>w</code> sets west anchor</li>
+     *     <li><code>nw</code> sets north-west anchor</li>
+     *     <li><code>center</code> sets center anchor</li>
+     *     <li><code>hspan</code> sets remainder width</li>
+     *     <li><code>vspan</code> sets remainder height</li>
+     *     <li><code>nospan</code> clear span</li>
+     *     <li><code>nofill</code> clear fill</li>
+     *     <li><code>fill</code> set both fill</li>
+     *     <li><code>hfill</code> set horizontal fill</li>
+     *     <li><code>vfill</code> set vertical fill</li>
+     * </ul>
+     *
+     * @param mods the string modifiers
      */
     public GridLayoutHelper<T> modify(final String mods) {
         constraints = modify(constraints, mods);
