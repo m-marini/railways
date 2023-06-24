@@ -42,6 +42,7 @@ class BlockStationBuilderErrorsTest {
 
     public static final int NUM_COACHES = 10;
     public static final double GAME_DURATION = 300d;
+    public static final double FREQUENCY = 0.1d;
 
     private BlockStationBuilder builder;
     private List<? extends Block> blocks;
@@ -52,7 +53,7 @@ class BlockStationBuilderErrorsTest {
         Map<String, String> links = Map.of(
                 "west.entry", "p.1.e");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, null);
+        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null);
 
         // When ...
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
@@ -70,7 +71,7 @@ class BlockStationBuilderErrorsTest {
                 "west.entry", "p.1.w",
                 "east.exit", "p.1.e");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, null);
+        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null);
 
         // When ...
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
@@ -96,7 +97,7 @@ class BlockStationBuilderErrorsTest {
                 "west.entry", "none.e1",
                 "east.exit", "p.2.e");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, null);
+        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null);
 
         // When ...
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> builder.getWorldBlockGeometries());
@@ -112,7 +113,7 @@ class BlockStationBuilderErrorsTest {
                 "west.entry", "p.none",
                 "east.exit", "p.e2");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, null);
+        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null);
 
         // When ...
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->

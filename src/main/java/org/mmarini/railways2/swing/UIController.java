@@ -32,12 +32,8 @@ import hu.akarnokd.rxjava3.swing.SwingObservable;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.*;
-import org.mmarini.railways2.model.blocks.BlockStationBuilder;
-import org.mmarini.railways2.model.blocks.StationDef;
 import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.routes.*;
-import org.mmarini.yaml.Utils;
-import org.mmarini.yaml.schema.Locator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +44,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
-import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.time.Duration;
@@ -74,7 +69,6 @@ public class UIController {
     private static final int FPS = 60;
     private static final Logger logger = LoggerFactory.getLogger(UIController.class);
     private static final double ROUTE_DISTANCE_THRESHOLD = TRACK_GAP * sqrt(2) / 2;
-    private static final double DEFAULT_GAME_DURATION = 10;
 
     /**
      * Adds a tab to the tabbed panel
@@ -88,15 +82,6 @@ public class UIController {
                 null,
                 content,
                 Messages.getString(key + ".tip"));
-    }
-
-    /**
-     * Returns the initial station status
-     */
-    private static StationStatus createInitialSeed() throws IOException {
-        return new BlockStationBuilder(StationDef.create(
-                Utils.fromResource("/stations/downville.station.yml"), Locator.root()),
-                DEFAULT_GAME_DURATION, new Random()).build();
     }
 
     private final SummaryPanel summaryPanel;
@@ -126,8 +111,8 @@ public class UIController {
     private final JButton exitButton;
     private final JToggleButton muteButton;
     private final JToggleButton autoLockButton;
+    private final GameDialog gameDialog;
     private Configuration configuration;
-    private boolean gameRunning;
 
     /**
      * Creates the user interface controller
@@ -143,7 +128,7 @@ public class UIController {
         this.performancePanel = new PerformancePanel();
         this.summaryPanel = new SummaryPanel();
         this.hallOfFamePanel = new HallOfFamePanel();
-        this.gameRunning = false;
+        this.gameDialog = new GameDialog();
         this.configuration = Configuration.load();
         this.newGameMenu = createMenuItem("UIController.newGameAction");
         this.exitMenu = createMenuItem("UIController.exitAction");
@@ -315,17 +300,17 @@ public class UIController {
                 .doOnNext(stationScrollPanel::scrollTo)
                 .subscribe();
         stationScrollPanel.readMouseClick()
-                .filter(event -> gameRunning)
+                .filter(event -> simulator.isActive())
                 .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON1)
                 .doOnNext(this::handleLeftMouseMapEvent)
                 .subscribe();
         stationScrollPanel.readMouseClick()
-                .filter(event -> gameRunning)
+                .filter(event -> simulator.isActive())
                 .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON2)
                 .doOnNext(this::handleCentralMouseMapEvent)
                 .subscribe();
         stationScrollPanel.readMouseClick()
-                .filter(event -> gameRunning)
+                .filter(event -> simulator.isActive())
                 .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON3)
                 .doOnNext(this::handleRightMouseMapEvent)
                 .subscribe();
@@ -540,7 +525,14 @@ public class UIController {
      * @param actionEvent the action event
      */
     private void handleNewGameAction(ActionEvent actionEvent) {
-        logger.atDebug().log("new game action");
+        gameDialog.showDialog().ifPresent(options -> {
+            if (simulator.isActive()) {
+                simulator.stop().subscribe(seed ->
+                        options.createStatus(random).ifPresent(simulator::start));
+            } else {
+                options.createStatus(random).ifPresent(simulator::start);
+            }
+        });
     }
 
     /**
@@ -618,9 +610,8 @@ public class UIController {
      * @param stationStatus the station status
      */
     private void handleSimulationEvent(StationStatus stationStatus) {
-        if (gameRunning) {
+        if (simulator.isActive()) {
             if (stationStatus.isGameFinished()) {
-                this.gameRunning = false;
                 simulator.stop().doOnSuccess(this::handleGameFinished)
                         .subscribe();
             } else {
@@ -788,14 +779,6 @@ public class UIController {
     public void run() {
         frame.setVisible(true);
         simulator.setSpeed(1);
-        try {
-            StationStatus initialSeed = createInitialSeed();
-            logger.atDebug().log("initial seed {}", initialSeed);
-            gameRunning = true;
-            simulator.start(initialSeed);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**

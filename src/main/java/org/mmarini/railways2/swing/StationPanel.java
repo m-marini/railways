@@ -75,6 +75,7 @@ public class StationPanel extends JComponent {
         this.mouseClick = SwingObservable.mouse(this, SwingObservable.MOUSE_CLICK)
                 .toFlowable(BackpressureStrategy.LATEST)
                 .filter(ev -> ev.getID() == MouseEvent.MOUSE_PRESSED)
+                .filter(ev -> status != null)
                 .map(this::mapMouseEvent);
     }
 

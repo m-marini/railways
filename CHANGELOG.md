@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #60: Add end game and extended performance
 - Issue #64: Add configuration file
 - Issue #66: Add tool bar and menu
+- Issue #65: Add game dialog
 
 ### Changed 
 

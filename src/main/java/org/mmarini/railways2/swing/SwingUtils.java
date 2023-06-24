@@ -38,6 +38,30 @@ import java.util.Optional;
 public interface SwingUtils {
 
     /**
+     * Returns the initialized button
+     *
+     * @param key the message key
+     */
+    static JButton createButton(String key) {
+        JButton button = new JButton(Messages.getString(key + ".name"));
+
+        Messages.getStringOpt(key + ".icon")
+                .flatMap(s -> Optional.ofNullable(UIController.class.getResource(s)))
+                .map(ImageIcon::new)
+                .ifPresent(button::setIcon);
+        Messages.getStringOpt(key + ".mnemonic")
+                .map(s -> s.charAt(0))
+                .ifPresent(button::setMnemonic);
+        Messages.getStringOpt(key + ".tip")
+                .ifPresent(button::setToolTipText);
+        Messages.getStringOpt(key + ".selectedIcon")
+                .flatMap(s -> Optional.ofNullable(UIController.class.getResource(s)))
+                .map(ImageIcon::new)
+                .ifPresent(button::setSelectedIcon);
+        return button;
+    }
+
+    /**
      * Returns the initialized checkbox menu item
      *
      * @param key the message key

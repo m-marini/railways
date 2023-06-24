@@ -69,6 +69,7 @@ class BlockStationBuilderPlatformsTest {
     public static final int NUM_COACHES = 10;
     public static final double PLATFORM_LENGTH = COACH_LENGTH * NUM_COACHES + PLATFORM_GAP + PLATFORM_SIGNAL_GAP * 2;
     public static final double GAME_DURATION = 300d;
+    public static final double FREQUENCY = 0.1;
 
     static Stream<Arguments> orientationValues() {
         return createStream(10, 1234,
@@ -701,6 +702,6 @@ class BlockStationBuilderPlatformsTest {
                 "west.entry", "p.2.w",
                 "east.entry", "p.1.e");
         StationDef station = StationDef.create("station", orientation, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, null);
+        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null);
     }
 }

@@ -41,6 +41,7 @@ import java.io.IOException;
 class MapPanelTest {
 
     public static final double GAME_DURATION = 300d;
+    public static final double FREQUENCY = 0.1;
     private static final Dimension DEFAULT_SIZE = new Dimension(800, 600);
 
     public static void main(String[] args) throws IOException {
@@ -59,7 +60,7 @@ class MapPanelTest {
                  */
 
                 new BlockStationBuilder(StationDef.create(
-                        Utils.fromResource("/stations/downville.station.yml"), Locator.root()), GAME_DURATION, null).build()
+                        Utils.fromResource("/stations/downville.station.yml"), Locator.root()), GAME_DURATION, FREQUENCY, null).build()
         ).run();
     }
 
