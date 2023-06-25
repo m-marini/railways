@@ -42,7 +42,6 @@ import java.util.Optional;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 import static org.mmarini.railways2.model.SoundEvent.ARRIVED;
@@ -265,12 +264,12 @@ public class Train {
      */
     double getExitDistance() {
         return exitDistance;
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     public Train setExitDistance(double exitDistance) {
         return this.exitDistance == exitDistance ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     /**
      * Returns the exiting node
@@ -573,7 +572,7 @@ public class Train {
      */
     private Train start() {
         return setState(Train.STATE_RUNNING);
-    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    }
 
     /**
      * Returns the stopped train
@@ -602,7 +601,7 @@ public class Train {
             dt -= performance.getElapsedTime();
         } while (train != null && dt > 0);
         return Tuple2.of(Optional.ofNullable(train), Performance.sumIterable(performances));
-    }
+    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
     @Override
     public String toString() {
