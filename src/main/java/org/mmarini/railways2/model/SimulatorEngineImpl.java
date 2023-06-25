@@ -270,6 +270,14 @@ public class SimulatorEngineImpl<T, S> implements SimulatorEngine<T, S> {
     }
 
     @Override
+    public SimulatorEngine shutdown() {
+        if (isActive()) {
+            stop().blockingGet();
+        }
+        return this;
+    }
+
+    @Override
     public Single<S> start(S initialSeed) {
         logger.debug("Starting simulation ...");
         requireNonNull(initialSeed);
@@ -301,8 +309,7 @@ public class SimulatorEngineImpl<T, S> implements SimulatorEngine<T, S> {
         queue.offer(new ProcessRequest(e -> {
             status = Status.IDLE;
             return e;
-        }
-                , result));
+        }, result));
         if (status == Status.IDLE) {
             deque();
         }

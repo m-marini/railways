@@ -112,6 +112,7 @@ public class UIController {
     private final JToggleButton muteButton;
     private final JToggleButton autoLockButton;
     private final GameDialog gameDialog;
+    private final UserPrefPanel userPrefPanel;
     private Configuration configuration;
 
     /**
@@ -129,6 +130,7 @@ public class UIController {
         this.summaryPanel = new SummaryPanel();
         this.hallOfFamePanel = new HallOfFamePanel();
         this.gameDialog = new GameDialog();
+        userPrefPanel = new UserPrefPanel();
         this.configuration = Configuration.load();
         this.newGameMenu = createMenuItem("UIController.newGameAction");
         this.exitMenu = createMenuItem("UIController.exitAction");
@@ -346,6 +348,23 @@ public class UIController {
                 .toFlowable(BackpressureStrategy.LATEST)
                 .doOnNext(this::handleAutoLockAction)
                 .subscribe();
+
+        frame.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                simulator.shutdown();
+                logger.info("Ended");
+            }
+
+            @Override
+            public void windowOpened(WindowEvent e) {
+                int hWidth = horizontalSplit.getWidth();
+                horizontalSplit.setDividerLocation(hWidth - DEFAULT_TAB_WITDH);
+                verticalSplit.setDividerLocation(0.25);
+            }
+        });
+
     }
 
     /**
@@ -517,6 +536,10 @@ public class UIController {
      */
     private void handleMuteAction(ActionEvent actionEvent) {
         logger.atDebug().log("mute action");
+        boolean mute = !configuration.getUserOptions().isMute();
+        configuration = configuration.setMute(mute);
+        muteButton.setSelected(mute);
+        muteMenu.setSelected(mute);
     }
 
     /**
@@ -670,6 +693,11 @@ public class UIController {
      */
     private void handleUserPreferencesAction(ActionEvent actionEvent) {
         logger.atDebug().log("user preferences action");
+        userPrefPanel.setUserPreferences(configuration.getUserOptions());
+        if (showConfirmDialog("UIController.userPrefDialog.title", userPrefPanel)) {
+            configuration = configuration.setGain(userPrefPanel.getVolume())
+                    .setSimulationSpeed(userPrefPanel.getSpeed());
+        }
     }
 
     /**
@@ -698,21 +726,9 @@ public class UIController {
         Container content = frame.getContentPane();
         content.add(createToolBar(), BorderLayout.NORTH);
         content.add(verticalSplit, BorderLayout.CENTER);
-        frame.addWindowListener(new WindowAdapter() {
-
-            @Override
-            public void windowClosed(WindowEvent e) {
-                simulator.stop().blockingGet();
-                logger.info("Ended");
-            }
-
-            @Override
-            public void windowOpened(WindowEvent e) {
-                int hWidth = horizontalSplit.getWidth();
-                horizontalSplit.setDividerLocation(hWidth - DEFAULT_TAB_WITDH);
-                verticalSplit.setDividerLocation(0.25);
-            }
-        });
+        boolean mute = configuration.getUserOptions().isMute();
+        muteButton.setSelected(mute);
+        muteMenu.setSelected(mute);
     }
 
     /**
@@ -779,17 +795,6 @@ public class UIController {
     public void run() {
         frame.setVisible(true);
         simulator.setSpeed(1);
-    }
-
-    /**
-     * Shows a message dialog
-     *
-     * @param titleKey the title key message
-     * @param content  the content
-     */
-    private void showMessageKey(String titleKey, JComponent content) {
-        JOptionPane.showMessageDialog(frame, content, Messages.getString(titleKey),
-                JOptionPane.PLAIN_MESSAGE);
     }
 
     /**

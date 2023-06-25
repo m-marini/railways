@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author $Author: marco $
- * @version $Id: OptionsPane.java,v 1.3 2012/02/08 22:03:32 marco Exp $
+ * @version $Id: UserPrefPanel.java,v 1.3 2012/02/08 22:03:32 marco Exp $
  */
 public class OptionsPane extends JPanel {
 	public static final double NORMAL_SPEED = 1e-3;

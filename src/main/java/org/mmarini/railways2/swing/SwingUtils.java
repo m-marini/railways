@@ -174,4 +174,27 @@ public interface SwingUtils {
     static String formatMessage(String messageKey, Object... args) {
         return MessageFormat.format(Messages.getString(messageKey), args);
     }
+
+    /**
+     * Returns true if the confirm dialog has been closed b confirmatin (OK button)
+     *
+     * @param titleKey the title key message
+     * @param content  the content
+     */
+    static boolean showConfirmDialog(String titleKey, JComponent content) {
+        int selectedValue = JOptionPane.showConfirmDialog(null, content, Messages.getString(titleKey),
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        return selectedValue == JOptionPane.OK_OPTION;
+    }
+
+    /**
+     * Shows a message dialog
+     *
+     * @param titleKey the title key message
+     * @param content  the content
+     */
+    static void showMessageKey(String titleKey, JComponent content) {
+        JOptionPane.showMessageDialog(null, content, Messages.getString(titleKey),
+                JOptionPane.PLAIN_MESSAGE);
+    }
 }
