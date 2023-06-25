@@ -67,7 +67,7 @@ class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
                 .build();
         Edge bc = stationMap.getEdge("bc");
         Node b = stationMap.getNode("b");
-        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, null)
                 .addRoute(org.mmarini.railways2.model.routes.Entry::create, "a")
                 .addRoute(Signal.createLocks(new Direction(bc, b)), "b")
                 .addRoute(org.mmarini.railways2.model.routes.Exit::create, "c")

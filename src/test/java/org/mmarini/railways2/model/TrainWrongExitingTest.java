@@ -69,7 +69,7 @@ class TrainWrongExitingTest extends WithStationStatusTest {
                 .addTrack("bc", "b", "c")
                 .addTrack("bd", "b", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Switch::through, "b")
                 .addRoute(Exit::create, "c")

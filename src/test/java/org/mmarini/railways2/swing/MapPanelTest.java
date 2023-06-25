@@ -60,7 +60,7 @@ class MapPanelTest {
                  */
 
                 new BlockStationBuilder(StationDef.create(
-                        Utils.fromResource("/stations/downville.station.yml"), Locator.root()), GAME_DURATION, FREQUENCY, null).build()
+                        Utils.fromResource("/stations/downville.station.yml"), Locator.root()), GAME_DURATION, FREQUENCY, null, null).build()
         ).run();
     }
 

@@ -45,6 +45,8 @@ import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static org.mmarini.railways2.model.RailwayConstants.*;
+import static org.mmarini.railways2.model.SoundEvent.ARRIVED;
+import static org.mmarini.railways2.model.SoundEvent.STOPPED;
 
 
 /**
@@ -130,9 +132,14 @@ public class Train {
     Tuple2<Optional<Train>, Performance> braking(SimulationContext context, double dt) {
         Tuple2<Optional<Train>, Performance> result = running(context, dt, 0);
         Optional<Train> newTrain = result._1
-                .map(train -> train.getState().equals(Train.STATE_WAITING_FOR_SIGNAL)
-                        ? train.stop() :
-                        train);
+                .map(train -> {
+                    if (train.getState().equals(Train.STATE_WAITING_FOR_SIGNAL)) {
+                        context.play(STOPPED);
+                        return train.stop();
+                    } else {
+                        return train;
+                    }
+                });
         return result.setV1(newTrain);
     }
 
@@ -183,7 +190,7 @@ public class Train {
         if (o == null || getClass() != o.getClass()) return false;
         Train train = (Train) o;
         return id.equals(train.id);
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     /**
      * Returns the train in exiting state through the given exit at the given distance
@@ -258,7 +265,7 @@ public class Train {
      */
     double getExitDistance() {
         return exitDistance;
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     public Train setExitDistance(double exitDistance) {
         return this.exitDistance == exitDistance ? this :
@@ -349,7 +356,7 @@ public class Train {
     public Train setState(State state) {
         return this.state.equals(state) ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    }
 
     /**
      * Returns the distance to stop the train (m)
@@ -408,12 +415,16 @@ public class Train {
      */
     Tuple2<Optional<Train>, Performance> loading(SimulationContext context, double dt) {
         double timeToLoad = context.getTimeTo(loadedTime);
-        return (dt <= timeToLoad)
-                // Wait for loaded
-                ? Tuple2.of(Optional.of(this), Performance.waiting(dt))
-                // Load completed
-                : Tuple2.of(Optional.of(stop().setLoaded()),
-                Performance.waiting(timeToLoad));
+        if (dt <= timeToLoad) {
+            // Wait for loaded
+            return Tuple2.of(Optional.of(this), Performance.waiting(dt));
+
+        } else {
+            // Load completed
+            context.play(STOPPED);
+            return Tuple2.of(Optional.of(stop().setLoaded()),
+                    Performance.waiting(timeToLoad));
+        }
     }
 
     /**
@@ -451,13 +462,15 @@ public class Train {
                 speedPhysics(targetSpeed, dt)
                 : max(speedPhysics(0, dt), APPROACH_SPEED);
         if (speed == 0) {
-            return (targetSpeed > APPROACH_SPEED || newSpeed > APPROACH_SPEED)
-                    ? Tuple2.of(Optional.of(
-                            setSpeed(max(APPROACH_SPEED, newSpeed))),
-                    Performance.running(dt, 0))
-                    : Tuple2.of(Optional.of(
-                            setSpeed(0).setState(STATE_WAITING_FOR_RUN)),
-                    Performance.none().addTrainStopNumber(1));
+            if (targetSpeed > APPROACH_SPEED || newSpeed > APPROACH_SPEED) {
+                return Tuple2.of(Optional.of(
+                                setSpeed(max(APPROACH_SPEED, newSpeed))),
+                        Performance.running(dt, 0));
+            } else {
+                context.play(STOPPED);
+                return Tuple2.of(Optional.of(stop()),
+                        Performance.none().addTrainStopNumber(1));
+            }
         }
 
         double timeToEndEdge = location.getDistance() / speed;
@@ -478,8 +491,9 @@ public class Train {
                         Performance.running(dt, movement));
             } else {
                 // Train is braking
+                context.play(STOPPED);
                 return Tuple2.of(Optional.of(
-                                setLocation(newLocation).setSpeed(0).setState(STATE_WAITING_FOR_RUN)),
+                                setLocation(newLocation).stop()),
                         Performance.running(dt, movement).addTrainStopNumber(1));
             }
         }
@@ -496,6 +510,7 @@ public class Train {
         }
         if (edge instanceof Platform && !loaded) {
             // platform reached and train not loaded
+            context.play(ARRIVED);
             return Tuple2.of(Optional.of(
                             setState(STATE_LOADING)
                                     .setLocation(location.setDistance(0))
@@ -558,7 +573,7 @@ public class Train {
      */
     private Train start() {
         return setState(Train.STATE_RUNNING);
-    }
+    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
     /**
      * Returns the stopped train
@@ -585,14 +600,6 @@ public class Train {
             Performance performance = transition._2;
             performances.add(performance);
             dt -= performance.getElapsedTime();
-            if (performance.getElapsedTime() < 0) {
-                // TODO remove asap
-                throw new IllegalArgumentException(format("elapsed = %f", performance.getElapsedTime()));
-            }
-            if (n >= 10) {
-                // TODO remove asap
-                throw new IllegalArgumentException("n = 10");
-            }
         } while (train != null && dt > 0);
         return Tuple2.of(Optional.ofNullable(train), Performance.sumIterable(performances));
     }
@@ -636,7 +643,7 @@ public class Train {
         } else {
             return Tuple2.of(Optional.of(this), Performance.waiting(dt));
         }
-    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    }
 
     public static class State {
         private final String id;
@@ -672,6 +679,7 @@ public class Train {
 
 
 
+    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
 
 
     public static final State STATE_BRAKING = new State("BRAKING", Train::braking);

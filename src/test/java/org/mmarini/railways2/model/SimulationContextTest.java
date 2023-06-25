@@ -62,7 +62,7 @@ class SimulationContextTest {
                 .addTrack("bc", "b", "c")
                 .addTrack("cd", "c", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Signal::create, "c")

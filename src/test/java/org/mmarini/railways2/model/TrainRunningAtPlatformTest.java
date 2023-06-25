@@ -35,6 +35,8 @@ import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Junction;
+import org.mockito.Mockito;
+import org.reactivestreams.Subscriber;
 
 import java.awt.geom.Point2D;
 import java.util.Optional;
@@ -45,13 +47,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
+import static org.mockito.Mockito.verify;
 
-class TrainRunningAtPlatformTest {
+class TrainRunningAtPlatformTest extends WithStationStatusTest {
     public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
     private static final double LENGTH = 500;
-    StationStatus status;
-    StationMap stationMap;
+    private Subscriber<SoundEvent> events;
 
     /**
      * <pre>
@@ -60,7 +62,8 @@ class TrainRunningAtPlatformTest {
      */
     @BeforeEach
     void beforeEach() {
-        stationMap = new StationBuilder("station")
+        events = Mockito.mock();
+        StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
                 .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc", "cd")
@@ -69,7 +72,7 @@ class TrainRunningAtPlatformTest {
                 .addPlatform("bc", "b", "c")
                 .addTrack("cd", "c", "d")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, events)
                 .addRoute(Entry::create, "a")
                 .addRoute(Junction::create, "b")
                 .addRoute(Junction::create, "c")
@@ -80,10 +83,10 @@ class TrainRunningAtPlatformTest {
     @Test
     void runningPlatform() {
         // Given ...
-        Node c = stationMap.getNode("c");
+        Node c = stationMap().getNode("c");
         Entry aRoute = status.getRoute("a");
         Exit dRoute = status.getRoute("d");
-        Edge bc = stationMap.getEdge("bc");
+        Edge bc = stationMap().getEdge("bc");
         double distance = 3; //  moving distance=3.6m, distance = 3m
         Train train = Train.create("train2", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(bc, c, distance))
@@ -115,10 +118,10 @@ class TrainRunningAtPlatformTest {
     @Test
     void stoppingPlatform() {
         // Given ...
-        Node c = stationMap.getNode("c");
+        Node c = stationMap().getNode("c");
         Entry aRoute = status.getRoute("a");
         Exit dRoute = status.getRoute("d");
-        Edge bc = stationMap.getEdge("bc");
+        Edge bc = stationMap().getEdge("bc");
         double distance = 3; //  moving distance=3.6m, distance = 4m
         Train train = Train.create("train2", 1, aRoute, dRoute)
                 .setLocation(EdgeLocation.create(bc, c, distance))
@@ -144,5 +147,7 @@ class TrainRunningAtPlatformTest {
         assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(1, perf.getTrainStopNumber());
         assertEquals(distance, perf.getTraveledDistance());
+
+        verify(events).onNext(SoundEvent.ARRIVED);
     }
 }

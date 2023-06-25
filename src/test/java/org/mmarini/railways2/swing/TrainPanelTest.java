@@ -72,7 +72,7 @@ class TrainPanelTest {
          */
 
         StationStatus status3 = new WithTrain(new BlockStationBuilder(StationDef.create(
-                Utils.fromResource("/stations/downville.station.yml"), Locator.root()), GAME_DURATION, FREQUENCY, new Random(SIMULATION_SEED)).build())
+                Utils.fromResource("/stations/downville.station.yml"), Locator.root()), GAME_DURATION, FREQUENCY, new Random(SIMULATION_SEED), null).build())
                 .build()
                 .setTime(ENTRY_TIMEOUT);
         new TrainPanelTest(status3).run();

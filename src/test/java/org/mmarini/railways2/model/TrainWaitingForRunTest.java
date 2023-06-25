@@ -37,6 +37,8 @@ import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Signal;
 import org.mmarini.railways2.swing.WithTrain;
+import org.mockito.Mockito;
+import org.reactivestreams.Subscriber;
 
 import java.awt.geom.Point2D;
 import java.util.Optional;
@@ -46,32 +48,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
+import static org.mockito.Mockito.verify;
 
 class TrainWaitingForRunTest extends WithStationStatusTest {
     public static final int LENGTH = 500;
     public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
-
-    /**
-     * <pre>
-     *     Entry(a) --ab(500m)-- Signals(b) --bc(500m)-- Exit(c)
-     * </pre>
-     */
-    @BeforeEach
-    void beforeEach() {
-        StationMap stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "ab")
-                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
-                .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc")
-                .addTrack("ab", "a", "b")
-                .addTrack("bc", "b", "c")
-                .build();
-        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
-                .addRoute(Entry::create, "a")
-                .addRoute(Signal::create, "b")
-                .addRoute(Exit::create, "c")
-                .build();
-    }
+    private Subscriber<SoundEvent> events;
 
     @Test
     void revertTrain() {
@@ -90,6 +73,7 @@ class TrainWaitingForRunTest extends WithStationStatusTest {
         Train t1 = status1.getTrain("t1").orElseThrow();
         assertEquals(Train.STATE_RUNNING, t1.getState());
         assertThat(t1.getLocation(), optionalOf(locatedAt("ab", "a", LENGTH - COACH_LENGTH * 3)));
+        verify(events).onNext(SoundEvent.LEAVING);
     }
 
     @Test
@@ -109,6 +93,29 @@ class TrainWaitingForRunTest extends WithStationStatusTest {
         Train t1 = status1.getTrain("t1").orElseThrow();
         assertEquals(Train.STATE_RUNNING, t1.getState());
         assertThat(t1.getLocation(), optionalOf(locatedAt("ab", "a", LENGTH - COACH_LENGTH * 3)));
+        verify(events).onNext(SoundEvent.LEAVING);
+    }
+
+    /**
+     * <pre>
+     *     Entry(a) --ab(500m)-- Signals(b) --bc(500m)-- Exit(c)
+     * </pre>
+     */
+    @BeforeEach
+    void setUp() {
+        this.events = Mockito.mock();
+        StationMap stationMap = new StationBuilder("station")
+                .addNode("a", new Point2D.Double(), "ab")
+                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
+                .addNode("c", new Point2D.Double(LENGTH * 2, 0), "bc")
+                .addTrack("ab", "a", "b")
+                .addTrack("bc", "b", "c")
+                .build();
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, events)
+                .addRoute(Entry::create, "a")
+                .addRoute(Signal::create, "b")
+                .addRoute(Exit::create, "c")
+                .build();
     }
 
     @Test
@@ -127,6 +134,7 @@ class TrainWaitingForRunTest extends WithStationStatusTest {
         // Then ...
         Train t1 = status1.getTrain("t1").orElseThrow();
         assertEquals(Train.STATE_RUNNING, t1.getState());
+        verify(events).onNext(SoundEvent.LEAVING);
     }
 
     @Test

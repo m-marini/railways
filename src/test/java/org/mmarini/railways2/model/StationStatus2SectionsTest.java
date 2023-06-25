@@ -36,6 +36,8 @@ import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Section;
 import org.mmarini.railways2.swing.WithTrain;
+import org.mockito.Mockito;
+import org.reactivestreams.Subscriber;
 
 import java.awt.geom.Point2D;
 import java.util.*;
@@ -47,37 +49,12 @@ import static org.mmarini.railways2.model.Matchers.isEdge;
 import static org.mmarini.railways2.model.Matchers.isRoute;
 import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class StationStatus2SectionsTest extends WithStationStatusTest {
 
     public static final double GAME_DURATION = 300d;
-
-    /**
-     * StationDef map
-     * <pre>
-     * Entry(a) --ab--  Exit(b)
-     * Entry(c) --cd--  Exit(d)
-     * </pre>
-     */
-    @BeforeEach
-    void beforeEach() {
-        StationMap stationMap = new StationBuilder("station")
-                .addNode("a", new Point2D.Double(), "ab")
-                .addNode("b", new Point2D.Double(100, 0), "ab")
-                .addNode("c", new Point2D.Double(200, 0), "cd")
-                .addNode("d", new Point2D.Double(300, 0), "cd")
-                .addTrack("ab", "a", "b")
-                .addTrack("cd", "c", "d")
-                .build();
-        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
-                .addRoute(Entry::create, "a")
-                .addRoute(Exit::create, "b")
-                .addRoute(Entry::create, "c")
-                .addRoute(Exit::create, "d")
-                .build();
-    }
+    private Subscriber<SoundEvent> events;
 
     @Test
     void createSections() {
@@ -172,7 +149,7 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
         assertEquals(route("c"), trains.get(1).getArrival());
         assertEquals(route("d"), trains.get(1).getDestination());
         assertEquals(12 + ENTRY_TIMEOUT, trains.get(1).getArrivalTime());
-
+        verify(events, times(2)).onNext(SoundEvent.ARRIVING);
     }
 
     @Test
@@ -202,7 +179,7 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
         assertEquals(route("c"), trains.get(1).getArrival());
         assertEquals(route("d"), trains.get(1).getDestination());
         assertEquals(12 + ENTRY_TIMEOUT, trains.get(1).getArrivalTime());
-
+        verify(events, times(2)).onNext(SoundEvent.ARRIVING);
     }
 
     @Test
@@ -238,7 +215,7 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
         assertEquals(route("a"), trains.get(0).getArrival());
         assertEquals(route("b"), trains.get(0).getDestination());
         assertEquals(12 + ENTRY_TIMEOUT, trains.get(0).getArrivalTime());
-
+        verify(events, times(1)).onNext(SoundEvent.ARRIVING);
     }
 
     @Test
@@ -253,5 +230,31 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
         // When ... Then ...
         assertFalse(status.isExitClear(route("b")));
         assertTrue(status.isExitClear(route("d")));
+    }
+
+    /**
+     * StationDef map
+     * <pre>
+     * Entry(a) --ab--  Exit(b)
+     * Entry(c) --cd--  Exit(d)
+     * </pre>
+     */
+    @BeforeEach
+    void setUp() {
+        this.events = Mockito.mock();
+        StationMap stationMap = new StationBuilder("station")
+                .addNode("a", new Point2D.Double(), "ab")
+                .addNode("b", new Point2D.Double(100, 0), "ab")
+                .addNode("c", new Point2D.Double(200, 0), "cd")
+                .addNode("d", new Point2D.Double(300, 0), "cd")
+                .addTrack("ab", "a", "b")
+                .addTrack("cd", "c", "d")
+                .build();
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, events)
+                .addRoute(Entry::create, "a")
+                .addRoute(Exit::create, "b")
+                .addRoute(Entry::create, "c")
+                .addRoute(Exit::create, "d")
+                .build();
     }
 }

@@ -36,6 +36,8 @@ import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Signal;
 import org.mmarini.railways2.swing.WithTrain;
+import org.mockito.Mockito;
+import org.reactivestreams.Subscriber;
 
 import java.awt.geom.Point2D;
 import java.util.Optional;
@@ -46,11 +48,13 @@ import static org.mmarini.railways.Matchers.emptyOptional;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.*;
+import static org.mockito.Mockito.verify;
 
 class TrainRunningTest extends WithStationStatusTest {
     public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
     static final double LENGTH = 500;
+    private Subscriber<SoundEvent> events;
 
     @Test
     void getStopDistance() {
@@ -244,6 +248,7 @@ class TrainRunningTest extends WithStationStatusTest {
      */
     @BeforeEach
     void setUp() {
+        events = Mockito.mock();
         StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
@@ -251,7 +256,7 @@ class TrainRunningTest extends WithStationStatusTest {
                 .addTrack("ab", "a", "b")
                 .addTrack("bc", "b", "c")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, events)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
@@ -310,6 +315,7 @@ class TrainRunningTest extends WithStationStatusTest {
         // Then ...
         Train t1 = status1.getTrain("TT0").orElseThrow();
         assertEquals(Train.STATE_BRAKING, t1.getState());
+        verify(events).onNext(SoundEvent.BRAKING);
     }
 
     @Test
