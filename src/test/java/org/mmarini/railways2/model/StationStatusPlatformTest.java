@@ -65,7 +65,7 @@ class StationStatusPlatformTest {
     private Exit dRoute;
 
     void createStatus(Direction... locks) {
-        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, null)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal.createLocks(locks), "b")
                 .addRoute(Signal::create, "c")

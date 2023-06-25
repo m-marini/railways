@@ -36,6 +36,8 @@ import org.mmarini.railways2.model.routes.DoubleSlipSwitch;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Section;
+import org.mockito.Mockito;
+import org.reactivestreams.Subscriber;
 
 import java.awt.geom.Point2D;
 import java.util.Collection;
@@ -43,11 +45,13 @@ import java.util.Collection;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 
 class StationStatusDoubleSlipSwitchTest extends WithStationStatusTest {
 
     public static final double GAME_DURATION = 300d;
     private static final double LENGTH = 100;
+    private Subscriber<SoundEvent> events;
 
     @Test
     void createSectionsDiverging() {
@@ -123,6 +127,7 @@ class StationStatusDoubleSlipSwitchTest extends WithStationStatusTest {
      * </pre>
      */
     void createStatus(boolean through) {
+        this.events = Mockito.mock();
         StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc", "bg")
@@ -141,7 +146,7 @@ class StationStatusDoubleSlipSwitchTest extends WithStationStatusTest {
                 .addTrack("bg", "b", "g")
                 .addTrack("fc", "f", "c")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, events)
                 .addRoute(Entry::create, "a")
                 .addRoute(Entry::create, "e")
                 .addRoute(DoubleSlipSwitch.create(through), "b", "c", "f", "g")
@@ -200,6 +205,7 @@ class StationStatusDoubleSlipSwitchTest extends WithStationStatusTest {
 
         // Then ...
         assertFalse(status1.<DoubleSlipSwitch>getRoute("b").isThrough());
+        verify(events).onNext(SoundEvent.SWITCH);
     }
 
     @Test
@@ -212,6 +218,7 @@ class StationStatusDoubleSlipSwitchTest extends WithStationStatusTest {
 
         // Then ...
         assertTrue(status1.<DoubleSlipSwitch>getRoute("b").isThrough());
+        verify(events).onNext(SoundEvent.SWITCH);
     }
 
     @Test

@@ -30,10 +30,12 @@ package org.mmarini.railways2.model.blocks;
 
 import org.mmarini.LazyValue;
 import org.mmarini.Tuple2;
+import org.mmarini.railways2.model.SoundEvent;
 import org.mmarini.railways2.model.StationStatus;
 import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Junction;
 import org.mmarini.railways2.model.routes.Route;
+import org.reactivestreams.Subscriber;
 
 import java.awt.geom.Point2D;
 import java.util.*;
@@ -75,6 +77,7 @@ public class BlockStationBuilder {
     private final LazyValue<Map<String, Tuple2<Point2D, List<String>>>> junctionParamsByJunctionId;
     private final Random random;
     private final double frequency;
+    private final Subscriber<SoundEvent> events;
 
     /**
      * Creates the builder
@@ -83,12 +86,14 @@ public class BlockStationBuilder {
      * @param gameDuration the game duration (s)
      * @param frequency    the train frequency (#/s)
      * @param random       the random number generator
+     * @param events       the event subscriber
      */
-    public BlockStationBuilder(StationDef station, double gameDuration, double frequency, Random random) {
+    public BlockStationBuilder(StationDef station, double gameDuration, double frequency, Random random, Subscriber<SoundEvent> events) {
         this.station = requireNonNull(station);
         this.gameDuration = gameDuration;
         this.frequency = frequency;
         this.random = random;
+        this.events = events;
         this.worldBlockGeometries = new LazyValue<>(this::createsBlockGeometries);
         this.nodeIdByBlockPointId = new LazyValue<>(this::createNodeIdByBlockPointId);
         this.junctionNodeParams = new LazyValue<>(this::createJunctionNodes);
@@ -112,7 +117,8 @@ public class BlockStationBuilder {
      * </p>
      */
     public StationStatus build() {
-        StationStatus.Builder statusBuilder = new StationStatus.Builder(buildStationMap(), frequency, gameDuration, random);
+        StationStatus.Builder statusBuilder = new StationStatus.Builder(buildStationMap(), frequency, gameDuration,
+                random, events);
         createRoutes().forEach(t ->
                 statusBuilder.addRoute(t._1, t._2.toArray(String[]::new)));
         return statusBuilder.build();
@@ -434,7 +440,7 @@ public class BlockStationBuilder {
     /**
      * Validates the junctions
      */
-    BlockStationBuilder validateJunctions() {
+    void validateJunctions() {
         Map<String, String> result = getNodeIdByBlockPointId();
         // Validates
         Map<String, List<Tuple2<String, String>>> blockPointsByNode = Tuple2.stream(result)
@@ -470,6 +476,5 @@ public class BlockStationBuilder {
             throw new IllegalArgumentException(format("[%s] have no junction",
                     mkString(missing, ", ")));
         }
-        return this;
     }
 }

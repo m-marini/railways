@@ -32,12 +32,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import hu.akarnokd.rxjava3.swing.SwingObservable;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import org.mmarini.Tuple2;
+import org.mmarini.railways2.model.SoundEvent;
 import org.mmarini.railways2.model.StationStatus;
 import org.mmarini.railways2.model.blocks.BlockStationBuilder;
 import org.mmarini.railways2.model.blocks.StationDef;
 import org.mmarini.railways2.model.geometry.StationMap;
 import org.mmarini.swing.GridLayoutHelper;
 import org.mmarini.yaml.schema.Locator;
+import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +96,7 @@ public class GameDialog extends JDialog {
     private static List<Tuple2<String, String>> getStationsDef() {
         return STATION_RESOURCES.stream()
                 .flatMap(resource ->
-                        loadStation(resource, 10, 0.1, null)
+                        loadStation(resource, 10, 0.1, null, null)
                                 .map(StationStatus::getStationMap)
                                 .map(StationMap::getId)
                                 .map(id -> Tuple2.of(id, resource))
@@ -110,12 +112,14 @@ public class GameDialog extends JDialog {
      * @param gameDuration the game duration (s)
      * @param frequency    the train frequency (#/s)
      * @param random       the random number generator
+     * @param events       the event subscriber
      */
-    static Optional<StationStatus> loadStation(String resource, double gameDuration, double frequency, Random random) {
+    static Optional<StationStatus> loadStation(String resource, double gameDuration, double frequency,
+                                               Random random, Subscriber<SoundEvent> events) {
         try {
             JsonNode json = fromResource(resource);
             StationDef def = StationDef.create(json, Locator.root());
-            StationStatus result = new BlockStationBuilder(def, gameDuration, frequency, random)
+            StationStatus result = new BlockStationBuilder(def, gameDuration, frequency, random, events)
                     .build();
             return Optional.of(result);
         } catch (Exception e) {

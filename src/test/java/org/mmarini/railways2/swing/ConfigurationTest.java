@@ -75,7 +75,7 @@ class ConfigurationTest {
         Configuration conf = Configuration.fromJson(json, Locator.root());
 
         // Then ...
-        UserPreferences userPreferences = conf.getUserOptions();
+        UserPreferences userPreferences = conf.getUserPreferences();
         assertEquals(1d, userPreferences.getSimulationSpeed());
         assertEquals(-3d, userPreferences.getGain());
         assertFalse(userPreferences.isMute());

@@ -46,7 +46,7 @@ import static java.lang.Math.floor;
 import static java.util.Objects.requireNonNull;
 
 /**
- * The concreat implementations of Simualtor engine
+ * The concrete implementations of simulator engine
  * <p>
  * Examples:
  * <code>
@@ -270,7 +270,7 @@ public class SimulatorEngineImpl<T, S> implements SimulatorEngine<T, S> {
     }
 
     @Override
-    public SimulatorEngine shutdown() {
+    public SimulatorEngine<T, S> shutdown() {
         if (isActive()) {
             stop().blockingGet();
         }

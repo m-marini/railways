@@ -36,6 +36,8 @@ import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Signal;
 import org.mmarini.railways2.swing.WithTrain;
+import org.mockito.Mockito;
+import org.reactivestreams.Subscriber;
 
 import java.awt.geom.Point2D;
 import java.util.Optional;
@@ -47,11 +49,13 @@ import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.DEACCELERATION;
 import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
+import static org.mockito.Mockito.verify;
 
 class TrainBrakingTest extends WithStationStatusTest {
     public static final double GAME_DURATION = 300d;
     static final double DT = 0.1;
     private static final double LENGTH = 500;
+    Subscriber<SoundEvent> events;
 
     /**
      * <pre>
@@ -60,6 +64,7 @@ class TrainBrakingTest extends WithStationStatusTest {
      */
     @BeforeEach
     void beforeEach() {
+        events = Mockito.mock();
         StationMap stationMap = new StationBuilder("station")
                 .addNode("a", new Point2D.Double(), "ab")
                 .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
@@ -67,7 +72,7 @@ class TrainBrakingTest extends WithStationStatusTest {
                 .addTrack("ab", "a", "b")
                 .addTrack("bc", "b", "c")
                 .build();
-        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null)
+        status = new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, events)
                 .addRoute(Entry::create, "a")
                 .addRoute(Signal::create, "b")
                 .addRoute(Exit::create, "c")
@@ -101,6 +106,8 @@ class TrainBrakingTest extends WithStationStatusTest {
         assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(1, perf.getTrainStopNumber());
         assertEquals(0, perf.getTraveledDistance());
+
+        verify(events).onNext(SoundEvent.STOPPED);
     }
 
     @Test
@@ -133,6 +140,8 @@ class TrainBrakingTest extends WithStationStatusTest {
         assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(1, perf.getTrainStopNumber());
         assertEquals(speed * DT, perf.getTraveledDistance());
+
+        verify(events).onNext(SoundEvent.STOPPED);
     }
 
     @Test
@@ -224,6 +233,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         // Then ...
         Train t1 = status1.getTrain("t1").orElseThrow();
         assertEquals(Train.STATE_RUNNING, t1.getState());
+        verify(events).onNext(SoundEvent.LEAVING);
     }
 
     @Test
@@ -257,5 +267,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(1, perf.getTrainStopNumber());
         assertEquals(distance, perf.getTraveledDistance());
+
+        verify(events).onNext(SoundEvent.STOPPED);
     }
 }

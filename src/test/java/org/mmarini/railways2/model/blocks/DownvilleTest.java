@@ -62,7 +62,8 @@ public class DownvilleTest extends WithStationStatusTest {
     @Test
     void build() {
         StationDef station = StationDef.create(root, Locator.root());
-        this.status = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null).build();
+        this.status = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null)
+                .build();
         assertEquals("Downville", status.getStationMap().getId());
     }
 
@@ -97,7 +98,7 @@ public class DownvilleTest extends WithStationStatusTest {
     void sowerthCurve() {
         // Given ...
         StationDef station = StationDef.create(root, Locator.root());
-        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null);
+        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
 
         // When ...
         OrientedGeometry geo1 = builder.getWorldGeometry("westSignals.2.w");
@@ -114,7 +115,7 @@ public class DownvilleTest extends WithStationStatusTest {
     void sowerthCurve1() {
         // Given ...
         StationDef station = StationDef.create(root, Locator.root());
-        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null);
+        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
         StationStatus status = builder.build();
 
         // When ...

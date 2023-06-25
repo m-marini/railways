@@ -134,4 +134,13 @@ public class SimulationContext {
                 .map(status::lock)
                 .orElse(status);
     }
+
+    /**
+     * Generates a sound event
+     *
+     * @param event the event
+     */
+    public void play(SoundEvent event) {
+        status.play(event);
+    }
 }

@@ -113,13 +113,13 @@ public class Configuration {
     }
 
     private final List<ExtendedPerformance> hallOfFame;
-    private final UserPreferences userOptions;
+    private final UserPreferences userPreferences;
 
     /**
      * Creates the configuration
      */
-    protected Configuration(UserPreferences userOptions, List<ExtendedPerformance> hallOfFame) {
-        this.userOptions = userOptions;
+    protected Configuration(UserPreferences userPreferences, List<ExtendedPerformance> hallOfFame) {
+        this.userPreferences = userPreferences;
         this.hallOfFame = hallOfFame;
     }
 
@@ -136,7 +136,7 @@ public class Configuration {
             while (newHallOfFame.size() > MAX_ENTRIES) {
                 newHallOfFame.remove(hallOfFame.size() - 1);
             }
-            return new Configuration(userOptions, newHallOfFame).save();
+            return new Configuration(userPreferences, newHallOfFame).save();
         } else {
             return this;
         }
@@ -164,18 +164,18 @@ public class Configuration {
     /**
      * Returns the user options
      */
-    public UserPreferences getUserOptions() {
-        return userOptions;
+    public UserPreferences getUserPreferences() {
+        return userPreferences;
     }
 
     /**
      * Returns the configuration with user options
      *
-     * @param userOptions user options
+     * @param userPreferences user options
      */
-    Configuration setUserOptions(UserPreferences userOptions) {
-        return !userOptions.equals(this.userOptions)
-                ? new Configuration(userOptions, hallOfFame).save()
+    Configuration setUserPreferences(UserPreferences userPreferences) {
+        return !userPreferences.equals(this.userPreferences)
+                ? new Configuration(userPreferences, hallOfFame).save()
                 : this;
     }
 
@@ -207,7 +207,7 @@ public class Configuration {
      * @param gain the gain (db)
      */
     public Configuration setGain(double gain) {
-        return setUserOptions(userOptions.setGain(gain));
+        return setUserPreferences(userPreferences.setGain(gain));
     }
 
     /**
@@ -216,7 +216,7 @@ public class Configuration {
      * @param mute true if mute
      */
     public Configuration setMute(boolean mute) {
-        return setUserOptions(userOptions.setMute(mute));
+        return setUserPreferences(userPreferences.setMute(mute));
     }
 
     /**
@@ -225,7 +225,7 @@ public class Configuration {
      * @param simulationSpeed the simulation speed
      */
     public Configuration setSimulationSpeed(double simulationSpeed) {
-        return setUserOptions(userOptions.setSimulationSpeed(simulationSpeed));
+        return setUserPreferences(userPreferences.setSimulationSpeed(simulationSpeed));
     }
 
     /**
@@ -234,7 +234,7 @@ public class Configuration {
     private JsonNode toJson() {
         ObjectNode config = objectMapper.createObjectNode();
         config.put("version", VERSION);
-        config.set("userPreferences", userOptions.toJson());
+        config.set("userPreferences", userPreferences.toJson());
         config.set("hallOfFame", createHallOfFameJson());
         return config;
     }

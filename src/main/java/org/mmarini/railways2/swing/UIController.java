@@ -30,6 +30,8 @@ package org.mmarini.railways2.swing;
 
 import hu.akarnokd.rxjava3.swing.SwingObservable;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.processors.PublishProcessor;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.*;
 import org.mmarini.railways2.model.geometry.Direction;
@@ -37,6 +39,7 @@ import org.mmarini.railways2.model.routes.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -48,6 +51,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.function.Function;
@@ -57,6 +61,7 @@ import static java.lang.Math.sqrt;
 import static java.lang.String.format;
 import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
 import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAUGE;
+import static org.mmarini.railways2.model.SoundEvent.*;
 import static org.mmarini.railways2.swing.SwingUtils.*;
 
 /**
@@ -113,6 +118,9 @@ public class UIController {
     private final JToggleButton autoLockButton;
     private final GameDialog gameDialog;
     private final UserPrefPanel userPrefPanel;
+    private final PublishProcessor<SoundEvent> events;
+    private final SoundPlayer soundPlayer;
+    private final Map<SoundEvent, Clip> clipByEvent;
     private Configuration configuration;
 
     /**
@@ -132,6 +140,19 @@ public class UIController {
         this.gameDialog = new GameDialog();
         userPrefPanel = new UserPrefPanel();
         this.configuration = Configuration.load();
+        this.events = PublishProcessor.create();
+        this.soundPlayer = new SoundPlayer();
+        clipByEvent = Stream.of(
+                        Tuple2.of(ARRIVING, Optional.ofNullable(soundPlayer.getArrivingClip())),
+                        Tuple2.of(ARRIVED, Optional.ofNullable(soundPlayer.getArrivedClip())),
+                        Tuple2.of(BRAKING, Optional.ofNullable(soundPlayer.getBrakingClip())),
+                        Tuple2.of(LEAVING, Optional.ofNullable(soundPlayer.getLeavingClip())),
+                        Tuple2.of(STOPPED, Optional.ofNullable(soundPlayer.getStoppedClip())),
+                        Tuple2.of(SWITCH, Optional.ofNullable(soundPlayer.getSwitchClip())))
+                .flatMap(t -> t._2.stream().map(t::setV2))
+                .collect(Tuple2.toMap());
+
+
         this.newGameMenu = createMenuItem("UIController.newGameAction");
         this.exitMenu = createMenuItem("UIController.exitAction");
         this.muteMenu = createCheckBoxMenuItem("UIController.muteAction");
@@ -163,8 +184,86 @@ public class UIController {
         initVerticalSplit();
         initTabbedPanel();
         initFrame();
-        createSubscriptions();
+        createFlows();
         logger.atDebug().log("Created");
+    }
+
+    /**
+     * Creates the subscriptions to event flowables
+     */
+    private void createFlows() {
+        mapPanel.readMouseClick()
+                .doOnNext(stationScrollPanel::scrollTo)
+                .subscribe();
+        stationScrollPanel.readMouseClick()
+                .filter(event -> simulator.isActive())
+                .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON1)
+                .doOnNext(this::handleLeftMouseMapEvent)
+                .subscribe();
+        stationScrollPanel.readMouseClick()
+                .filter(event -> simulator.isActive())
+                .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON2)
+                .doOnNext(this::handleCentralMouseMapEvent)
+                .subscribe();
+        stationScrollPanel.readMouseClick()
+                .filter(event -> simulator.isActive())
+                .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON3)
+                .doOnNext(this::handleRightMouseMapEvent)
+                .subscribe();
+        SwingObservable.actions(exitButton).mergeWith(SwingObservable.actions(exitMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleExitAction)
+                .subscribe();
+        SwingObservable.actions(aboutMenu)
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleAboutAction)
+                .subscribe();
+        SwingObservable.actions(newGameButton).mergeWith(SwingObservable.actions(newGameMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleNewGameAction)
+                .subscribe();
+        SwingObservable.actions(lockButton).mergeWith(SwingObservable.actions(lockMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleLockAction)
+                .subscribe();
+        SwingObservable.actions(stopButton).mergeWith(SwingObservable.actions(stopMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleStopAction)
+                .subscribe();
+        SwingObservable.actions(userPreferencesButton).mergeWith(SwingObservable.actions(userPreferencesMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleUserPreferencesAction)
+                .subscribe();
+        SwingObservable.actions(muteButton).mergeWith(SwingObservable.actions(muteMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleMuteAction)
+                .subscribe();
+        SwingObservable.actions(autoLockButton).mergeWith(SwingObservable.actions(autoLockMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleAutoLockAction)
+                .subscribe();
+        events.
+                flatMap(this::toClip)
+                .doOnNext(soundPlayer::play)
+                .subscribe();
+
+
+        frame.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                simulator.shutdown();
+                logger.info("Ended");
+            }
+
+            @Override
+            public void windowOpened(WindowEvent e) {
+                int hWidth = horizontalSplit.getWidth();
+                horizontalSplit.setDividerLocation(hWidth - DEFAULT_TAB_WITDH);
+                verticalSplit.setDividerLocation(0.25);
+            }
+        });
+
     }
 
     /**
@@ -295,79 +394,6 @@ public class UIController {
     }
 
     /**
-     * Creates the subscriptions to event flowables
-     */
-    private void createSubscriptions() {
-        mapPanel.readMouseClick()
-                .doOnNext(stationScrollPanel::scrollTo)
-                .subscribe();
-        stationScrollPanel.readMouseClick()
-                .filter(event -> simulator.isActive())
-                .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON1)
-                .doOnNext(this::handleLeftMouseMapEvent)
-                .subscribe();
-        stationScrollPanel.readMouseClick()
-                .filter(event -> simulator.isActive())
-                .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON2)
-                .doOnNext(this::handleCentralMouseMapEvent)
-                .subscribe();
-        stationScrollPanel.readMouseClick()
-                .filter(event -> simulator.isActive())
-                .filter(event -> event.getMouseEvent().getButton() == MouseEvent.BUTTON3)
-                .doOnNext(this::handleRightMouseMapEvent)
-                .subscribe();
-        SwingObservable.actions(exitButton).mergeWith(SwingObservable.actions(exitMenu))
-                .toFlowable(BackpressureStrategy.LATEST)
-                .doOnNext(this::handleExitAction)
-                .subscribe();
-        SwingObservable.actions(aboutMenu)
-                .toFlowable(BackpressureStrategy.LATEST)
-                .doOnNext(this::handleAboutAction)
-                .subscribe();
-        SwingObservable.actions(newGameButton).mergeWith(SwingObservable.actions(newGameMenu))
-                .toFlowable(BackpressureStrategy.LATEST)
-                .doOnNext(this::handleNewGameAction)
-                .subscribe();
-        SwingObservable.actions(lockButton).mergeWith(SwingObservable.actions(lockMenu))
-                .toFlowable(BackpressureStrategy.LATEST)
-                .doOnNext(this::handleLockAction)
-                .subscribe();
-        SwingObservable.actions(stopButton).mergeWith(SwingObservable.actions(stopMenu))
-                .toFlowable(BackpressureStrategy.LATEST)
-                .doOnNext(this::handleStopAction)
-                .subscribe();
-        SwingObservable.actions(userPreferencesButton).mergeWith(SwingObservable.actions(userPreferencesMenu))
-                .toFlowable(BackpressureStrategy.LATEST)
-                .doOnNext(this::handleUserPreferencesAction)
-                .subscribe();
-        SwingObservable.actions(muteButton).mergeWith(SwingObservable.actions(muteMenu))
-                .toFlowable(BackpressureStrategy.LATEST)
-                .doOnNext(this::handleMuteAction)
-                .subscribe();
-        SwingObservable.actions(autoLockButton).mergeWith(SwingObservable.actions(autoLockMenu))
-                .toFlowable(BackpressureStrategy.LATEST)
-                .doOnNext(this::handleAutoLockAction)
-                .subscribe();
-
-        frame.addWindowListener(new WindowAdapter() {
-
-            @Override
-            public void windowClosed(WindowEvent e) {
-                simulator.shutdown();
-                logger.info("Ended");
-            }
-
-            @Override
-            public void windowOpened(WindowEvent e) {
-                int hWidth = horizontalSplit.getWidth();
-                horizontalSplit.setDividerLocation(hWidth - DEFAULT_TAB_WITDH);
-                verticalSplit.setDividerLocation(0.25);
-            }
-        });
-
-    }
-
-    /**
      * Returns the toolbar
      */
     private JToolBar createToolBar() {
@@ -413,6 +439,15 @@ public class UIController {
             builder.add(prova);
         }
         return builder.build();
+    }
+
+    /**
+     * Returns the clip of a sound event
+     *
+     * @param soundEvent the sound event
+     */
+    private Optional<Clip> getClip(SoundEvent soundEvent) {
+        return Optional.ofNullable(clipByEvent.get(soundEvent));
     }
 
     /**
@@ -536,10 +571,11 @@ public class UIController {
      */
     private void handleMuteAction(ActionEvent actionEvent) {
         logger.atDebug().log("mute action");
-        boolean mute = !configuration.getUserOptions().isMute();
+        boolean mute = !configuration.getUserPreferences().isMute();
         configuration = configuration.setMute(mute);
         muteButton.setSelected(mute);
         muteMenu.setSelected(mute);
+        soundPlayer.setMute(mute);
     }
 
     /**
@@ -550,10 +586,11 @@ public class UIController {
     private void handleNewGameAction(ActionEvent actionEvent) {
         gameDialog.showDialog().ifPresent(options -> {
             if (simulator.isActive()) {
-                simulator.stop().subscribe(seed ->
-                        options.createStatus(random).ifPresent(simulator::start));
+                simulator.stop().doOnSuccess(seed ->
+                                options.createStatus(random, events).ifPresent(simulator::start))
+                        .subscribe();
             } else {
-                options.createStatus(random).ifPresent(simulator::start);
+                options.createStatus(random, events).ifPresent(simulator::start);
             }
         });
     }
@@ -693,10 +730,13 @@ public class UIController {
      */
     private void handleUserPreferencesAction(ActionEvent actionEvent) {
         logger.atDebug().log("user preferences action");
-        userPrefPanel.setUserPreferences(configuration.getUserOptions());
+        userPrefPanel.setUserPreferences(configuration.getUserPreferences());
         if (showConfirmDialog("UIController.userPrefDialog.title", userPrefPanel)) {
             configuration = configuration.setGain(userPrefPanel.getVolume())
                     .setSimulationSpeed(userPrefPanel.getSpeed());
+            UserPreferences userPreferences = configuration.getUserPreferences();
+            soundPlayer.setGain((float) userPreferences.getGain());
+            simulator.setSpeed(userPreferences.getSimulationSpeed());
         }
     }
 
@@ -726,9 +766,13 @@ public class UIController {
         Container content = frame.getContentPane();
         content.add(createToolBar(), BorderLayout.NORTH);
         content.add(verticalSplit, BorderLayout.CENTER);
-        boolean mute = configuration.getUserOptions().isMute();
+        UserPreferences userPreferences = configuration.getUserPreferences();
+        boolean mute = userPreferences.isMute();
         muteButton.setSelected(mute);
         muteMenu.setSelected(mute);
+        soundPlayer.setMute(mute);
+        soundPlayer.setGain((float) userPreferences.getGain());
+        simulator.setSpeed(userPreferences.getSimulationSpeed());
     }
 
     /**
@@ -825,6 +869,15 @@ public class UIController {
      */
     private void stopTrain(String trainId) {
         simulator.request(status -> status.stopTrain(trainId));
+    }
+
+    /**
+     * Returns the clip flowable from the sound event
+     *
+     * @param soundEvent the sound event
+     */
+    private Flowable<Clip> toClip(SoundEvent soundEvent) {
+        return getClip(soundEvent).map(Flowable::just).orElse(Flowable.empty());
     }
 
     /**

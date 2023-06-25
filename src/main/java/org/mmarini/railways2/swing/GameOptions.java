@@ -28,7 +28,9 @@
 
 package org.mmarini.railways2.swing;
 
+import org.mmarini.railways2.model.SoundEvent;
 import org.mmarini.railways2.model.StationStatus;
+import org.reactivestreams.Subscriber;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -64,9 +66,10 @@ public class GameOptions {
      * Returns the station status of game options
      *
      * @param random the random generator
+     * @param events the event subscriber
      */
-    public Optional<StationStatus> createStatus(Random random) {
-        return GameDialog.loadStation(stationResource, gameDuration * SPM, trainFrequency / SPH, random);
+    public Optional<StationStatus> createStatus(Random random, Subscriber<SoundEvent> events) {
+        return GameDialog.loadStation(stationResource, gameDuration * SPM, trainFrequency / SPH, random, events);
     }
 
     @Override

@@ -79,6 +79,6 @@ class BlockStationBuilderCurvesTest {
                 "west.entry", "curves.1.w",
                 "east.entry", "p.1.e");
         StationDef station = StationDef.create("station", orientation, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null);
+        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
     }
 }
