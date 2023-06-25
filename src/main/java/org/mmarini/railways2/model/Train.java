@@ -175,7 +175,7 @@ public class Train {
         return Tuple2.of(
                 Optional.of(setLocation(location).run()),
                 Performance.elapsed(max(0, timeToArrive)));
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -183,7 +183,7 @@ public class Train {
         if (o == null || getClass() != o.getClass()) return false;
         Train train = (Train) o;
         return id.equals(train.id);
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     /**
      * Returns the train in exiting state through the given exit at the given distance
@@ -332,7 +332,7 @@ public class Train {
     public Train setSpeed(double speed) {
         return speed == this.speed ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    }
 
     /**
      * Returns the train state
@@ -349,7 +349,7 @@ public class Train {
     public Train setState(State state) {
         return this.state.equals(state) ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }
+    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
     /**
      * Returns the distance to stop the train (m)
@@ -595,7 +595,7 @@ public class Train {
             }
         } while (train != null && dt > 0);
         return Tuple2.of(Optional.ofNullable(train), Performance.sumIterable(performances));
-    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    }
 
     @Override
     public String toString() {
@@ -636,7 +636,7 @@ public class Train {
         } else {
             return Tuple2.of(Optional.of(this), Performance.waiting(dt));
         }
-    }
+    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
 
     public static class State {
         private final String id;

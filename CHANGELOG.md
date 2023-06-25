@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #64: Add configuration file
 - Issue #66: Add tool bar and menu
 - Issue #65: Add game dialog
+- Issue #67: Add user preferences dialog
 
 ### Changed 
 
@@ -33,7 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #7: Approaching train state
 - Issue #8: Braking train state
 - Issue #9: Exiting train state
-- Issue #16  Add drawing geometry
+- Issue #16: Add drawing geometry
 - Issue #18: Change section discovery to handle crossing points
 - Issue #23: Add map panel
 - Issue #25: Add station panel
