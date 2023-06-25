@@ -144,6 +144,11 @@ public interface SimulatorEngine<T, S> {
     Single<S> setSpeed(final double speed);
 
     /**
+     * Returns the simulator shut down
+     */
+    SimulatorEngine shutdown();
+
+    /**
      * Returns the first seed after the simulation stopping.
      * <p>
      * Example:
