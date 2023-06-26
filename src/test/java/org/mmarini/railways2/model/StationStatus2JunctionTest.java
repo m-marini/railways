@@ -44,6 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
+import static org.mmarini.railways2.model.Train.STATE_BRAKING;
 
 class StationStatus2JunctionTest extends WithStationStatusTest {
 
@@ -155,5 +156,21 @@ class StationStatus2JunctionTest extends WithStationStatusTest {
         assertEquals(this.<Edge>edge("bc"), segment.getEdge());
         assertEquals(LENGTH - (COACH_LENGTH * 2.5 - 10), segment.getDistance0());
         assertEquals(0, segment.getDistance1());
+    }
+
+    @Test
+    void stopTrains() {
+        // Given ...
+        status = withTrain()
+                .addTrain(3, "a", "d", "ab", "b", LENGTH / 2)
+                .addTrain(3, "a", "d", "bc", "c", 10)
+                .build();
+
+        // When ...
+        StationStatus status1 = status.stopTrains();
+
+        // Then ...
+        assertEquals(STATE_BRAKING, status1.getTrain("TT0").orElseThrow().getState());
+        assertEquals(STATE_BRAKING, status1.getTrain("TT1").orElseThrow().getState());
     }
 }
