@@ -54,6 +54,7 @@ import static org.mmarini.railways2.model.Utils.nextPoisson;
  * Retrieves the sections, the edges occupied by trains.
  */
 public class StationStatus {
+
     /**
      * Arrival train frequency (#/s)
      */
@@ -733,8 +734,20 @@ public class StationStatus {
      * @param train the train
      */
     public Stream<EdgeSegment> getTrainSegments(Train train) {
-        return train.getLocation().stream()
-                .flatMap(location -> getSegments(location.opposite(), train.getLength()));
+        if (!train.isExiting()) {
+            return train.getLocation().stream()
+                    .flatMap(location -> getSegments(location.opposite(), train.getLength()));
+        } else if (train.getExitDistance() >= train.getLength()) {
+            // Train completely exited
+            return Stream.empty();
+        } else {
+            // Train partially exited
+            double exitingTrainLength = train.getLength() - train.getExitDistance();
+            Node exitingNode = train.getExitingNode().getNodes().get(0);
+            Direction exitingDirection = exitingNode.getEntries().get(0);
+            EdgeLocation exitLocation = new EdgeLocation(exitingDirection, 0).opposite();
+            return getSegments(exitLocation, exitingTrainLength);
+        }
     }
 
     /**
