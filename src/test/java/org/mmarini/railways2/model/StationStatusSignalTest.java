@@ -270,6 +270,20 @@ class StationStatusSignalTest extends WithStationStatusTest {
     }
 
     @Test
+    void lockSignals() {
+        // Given ...
+        createStatus();
+
+        // When ...
+        StationStatus status1 = status.lockSignals();
+
+        // Then ...
+        Signal signal = status1.getRoute("b");
+        assertTrue(signal.isLocked(direction("ab", "b")));
+        assertTrue(signal.isLocked(direction("bc", "b")));
+    }
+
+    @Test
     void unlockSection() {
         // Given ...
         createStatus("ab", "b", "bc", "b");

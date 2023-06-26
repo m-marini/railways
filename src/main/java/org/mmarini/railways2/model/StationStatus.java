@@ -47,6 +47,7 @@ import static java.lang.Math.ceil;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static org.mmarini.railways2.model.RailwayConstants.*;
+import static org.mmarini.railways2.model.Train.*;
 import static org.mmarini.railways2.model.Utils.nextPoisson;
 
 /**
@@ -1044,6 +1045,26 @@ public class StationStatus {
     }
 
     /**
+     * Returns the status with all signals locked
+     */
+    public StationStatus lockSignals() {
+        List<Route> newRoutes = routes.stream()
+                .map(route -> {
+                    if (route instanceof Signal) {
+                        Signal signal = (Signal) route;
+                        Signal newSignal = signal;
+                        for (Direction entry : signal.getValidEntries()) {
+                            newSignal = newSignal.lock(entry);
+                        }
+                        return newSignal;
+                    } else {
+                        return route;
+                    }
+                }).collect(Collectors.toList());
+        return setRoutes(newRoutes);
+    }
+
+    /**
      * Generates a sound event
      *
      * @param event the event
@@ -1112,7 +1133,7 @@ public class StationStatus {
     public StationStatus stopTrain(String trainId) {
         return getTrain(trainId).map(train -> {
                     Train.State state = train.getState();
-                    if (state.equals(Train.STATE_RUNNING) ||
+                    if (state.equals(STATE_RUNNING) ||
                             state.equals(Train.STATE_WAITING_FOR_SIGNAL)) {
                         play(SoundEvent.BRAKING);
                         List<Train> newTrains = trains.stream().map(train1 ->
@@ -1126,6 +1147,23 @@ public class StationStatus {
                     }
                 })
                 .orElse(this);
+    }
+
+    /**
+     * Returns the status with all trains braking
+     */
+    public StationStatus stopTrains() {
+        List<Train> newTrains = trains.stream()
+                .map(train -> {
+                    State state = train.getState();
+                    if (STATE_RUNNING.equals(state)
+                            || STATE_WAITING_FOR_SIGNAL.equals(state)) {
+                        return train.brake();
+                    } else {
+                        return train;
+                    }
+                }).collect(Collectors.toList());
+        return setTrains(newTrains);
     }
 
     /**

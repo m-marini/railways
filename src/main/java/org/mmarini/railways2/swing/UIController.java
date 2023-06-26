@@ -420,23 +420,23 @@ public class UIController {
         Stream.Builder<JMenuItem> builder = Stream.builder();
         Train.State state = train.getState();
         if (state == Train.STATE_RUNNING || state.equals(Train.STATE_WAITING_FOR_SIGNAL)) {
-            JMenuItem prova = new JMenuItem(
+            JMenuItem menu = new JMenuItem(
                     format(Messages.getString("UIController.stopTrainMenuItem.name"), train.getId()));
-            prova.addActionListener(ev -> stopTrain(train.getId()));
-            builder.add(prova);
+            menu.addActionListener(ev -> stopTrain(train.getId()));
+            builder.add(menu);
         }
         if (state.equals(Train.STATE_BRAKING) || state.equals(Train.STATE_WAITING_FOR_RUN)) {
-            JMenuItem prova = new JMenuItem(
+            JMenuItem menu = new JMenuItem(
                     format(Messages.getString("UIController.startTrainMenuItem.name"), train.getId()));
-            prova.addActionListener(ev -> startTrain(train.getId()));
-            builder.add(prova);
+            menu.addActionListener(ev -> startTrain(train.getId()));
+            builder.add(menu);
         }
         if (state.equals(Train.STATE_WAITING_FOR_RUN)
                 || state.equals(Train.STATE_WAITING_FOR_SIGNAL)) {
-            JMenuItem prova = new JMenuItem(
+            JMenuItem menu = new JMenuItem(
                     format(Messages.getString("UIController.revertTrainMenuItem.name"), train.getId()));
-            prova.addActionListener(ev -> revertTrain(train.getId()));
-            builder.add(prova);
+            menu.addActionListener(ev -> revertTrain(train.getId()));
+            builder.add(menu);
         }
         return builder.build();
     }
@@ -561,7 +561,7 @@ public class UIController {
      * @param actionEvent the action event
      */
     private void handleLockAction(ActionEvent actionEvent) {
-        logger.atDebug().log("lock action");
+        simulator.request(status -> status.lockSignals());
     }
 
     /**
@@ -697,7 +697,7 @@ public class UIController {
      * @param actionEvent the action event
      */
     private void handleStopAction(ActionEvent actionEvent) {
-        logger.atDebug().log("stop action");
+        simulator.request(status -> status.stopTrains());
     }
 
     /**
