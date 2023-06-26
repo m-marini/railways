@@ -80,7 +80,7 @@ public class MapPanel extends JComponent {
     }
 
     /**
-     * Returns the transformation from map coordinates to graphics coordiantes
+     * Returns the transformation from map coordinates to graphics coordinates
      */
     private AffineTransform createTransform() {
         Dimension size = getSize();
@@ -119,18 +119,6 @@ public class MapPanel extends JComponent {
         gr.setColor(getBackground());
         gr.fillRect(0, 0, size.width, size.height);
         gr.transform(createTransform());
-        /*
-        Rectangle2D.Float panelRect = new Rectangle2D.Float(
-                BORDER,
-                BORDER,
-                size.width - BORDER - BORDER,
-                size.height - BORDER - BORDER);
-        gr.translate(panelRect.getCenterX(), panelRect.getCenterY());
-        gr.scale((panelRect.getWidth()) / mapBounds.getWidth(),
-                -panelRect.getHeight() / mapBounds.getHeight());
-        gr.translate(-mapBounds.getCenterX(), -mapBounds.getCenterY());
-
-         */
         painter.accept(gr);
     }
 

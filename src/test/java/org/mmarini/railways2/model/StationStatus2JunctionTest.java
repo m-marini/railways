@@ -30,13 +30,11 @@ package org.mmarini.railways2.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mmarini.railways2.model.geometry.Edge;
-import org.mmarini.railways2.model.geometry.EdgeLocation;
-import org.mmarini.railways2.model.geometry.StationBuilder;
-import org.mmarini.railways2.model.geometry.StationMap;
+import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Junction;
+import org.mmarini.railways2.swing.WithTrain;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -44,6 +42,8 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 
 class StationStatus2JunctionTest extends WithStationStatusTest {
 
@@ -53,7 +53,7 @@ class StationStatus2JunctionTest extends WithStationStatusTest {
     /**
      * StationDef map
      * <pre>
-     * Entry(a) --ab-- Junction(b) --bc-- Junction(c) --cd-- Exit(d)
+     * Entry(a) --ab(100)-- Junction(b) --bc(100)-- Junction(c) --cd(10m)-- Exit(d)
      * </pre>
      */
     @BeforeEach
@@ -80,7 +80,7 @@ class StationStatus2JunctionTest extends WithStationStatusTest {
         // Given ...
         Train t = Train.create("t", 10, route("a"), route("d"))
                 .setLocation(EdgeLocation.create(edge("cd"), node("d"), 1));
-        status.setTrains(t);
+        status = status.setTrains(t);
 
         // When ...
         List<Edge> edges = status.getTrainEdges(t).collect(Collectors.toList());
@@ -90,5 +90,70 @@ class StationStatus2JunctionTest extends WithStationStatusTest {
         assertThat(edges, contains(equalTo(edge("cd")),
                 equalTo(edge("bc")),
                 equalTo(edge("ab"))));
+    }
+
+    @Test
+    void getTrainSegmentsAmongeEdges() {
+        // Given ...
+        status = withTrain()
+                .addTrain(3, "a", "d", "bc", "c", LENGTH - COACH_LENGTH / 2)
+                .build();
+
+        // When ...
+        List<EdgeSegment> segments = status.getTrainSegments(train(("TT0"))).collect(Collectors.toList());
+
+        // Then ...
+        // Then ...
+        assertThat(segments, hasSize(2));
+        EdgeSegment segment = segments.get(0);
+        assertEquals(this.<Edge>edge("bc"), segment.getEdge());
+        assertEquals(0, segment.getDistance0());
+        assertEquals(LENGTH - COACH_LENGTH / 2, segment.getDistance1());
+        segment = segments.get(1);
+        assertEquals(this.<Edge>edge("ab"), segment.getEdge());
+        assertEquals(0, LENGTH - COACH_LENGTH * 2.5, segment.getDistance0());
+        assertEquals(0, segment.getDistance1());
+    }
+
+    @Test
+    void getTrainSegmentsEntering() {
+        // Given ...
+        status = withTrain()
+                .addTrain(3, "a", "d", "ab", "b", LENGTH - COACH_LENGTH / 2)
+                .build();
+
+        // When ...
+        List<EdgeSegment> segments = status.getTrainSegments(train(("TT0"))).collect(Collectors.toList());
+
+        // Then ...
+        assertThat(segments, hasSize(1));
+        EdgeSegment segment = segments.get(0);
+        assertEquals(this.<Edge>edge("ab"), segment.getEdge());
+        assertEquals(0d, segment.getDistance0());
+        assertEquals(LENGTH - COACH_LENGTH / 2, segment.getDistance1());
+    }
+
+    @Test
+    void getTrainSegmentsExiting() {
+        // Given ...
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("t", 3, "a", "d")
+                        .exiting("d", COACH_LENGTH / 2))
+                .build();
+
+        // When ...
+        List<EdgeSegment> segments = status.getTrainSegments(train(("t"))).collect(Collectors.toList());
+
+        // Then ...
+        // Then ...
+        assertThat(segments, hasSize(2));
+        EdgeSegment segment = segments.get(0);
+        assertEquals(this.<Edge>edge("cd"), segment.getEdge());
+        assertEquals(0, segment.getDistance0());
+        assertEquals(0, segment.getDistance1());
+        segment = segments.get(1);
+        assertEquals(this.<Edge>edge("bc"), segment.getEdge());
+        assertEquals(LENGTH - (COACH_LENGTH * 2.5 - 10), segment.getDistance0());
+        assertEquals(0, segment.getDistance1());
     }
 }
