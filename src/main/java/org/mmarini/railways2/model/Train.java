@@ -34,6 +34,7 @@ import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Route;
+import org.mmarini.railways2.model.routes.Signal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -269,7 +270,7 @@ public class Train {
     public Train setExitDistance(double exitDistance) {
         return this.exitDistance == exitDistance ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     /**
      * Returns the exiting node
@@ -281,7 +282,7 @@ public class Train {
     public Train setExitingNode(Exit exitingNode) {
         return exitingNode.equals(this.exitingNode) ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     /**
      * Returns the train identifier
@@ -527,15 +528,16 @@ public class Train {
         // Get the new direction
         Optional<Direction> routeDirection = context.getNextExit(location.getDirection());
         return routeDirection.map(newDir -> {
-                    Edge newEdge = newDir.getEdge();
-                    // Computes the new location
-                    EdgeLocation newLocation = new EdgeLocation(newDir, newEdge.getLength());
-                    // Lock signals of new section
-                    context.lockSignals(newDir);
-                    return Tuple2.of(Optional.of(setSpeed(newSpeed).setLocation(newLocation)),
-                            Performance.running(timeToEndEdge, location.getDistance()));
-                }
-        ).orElseThrow();
+            Edge newEdge = newDir.getEdge();
+            // Computes the new location
+            EdgeLocation newLocation = new EdgeLocation(newDir, newEdge.getLength());
+            // Lock signals of new section
+            if (route instanceof Signal) {
+                context.lockSignals(newDir);
+            }
+            return Tuple2.of(Optional.of(setSpeed(newSpeed).setLocation(newLocation)),
+                    Performance.running(timeToEndEdge, location.getDistance()));
+        }).orElseThrow();
     }
 
     /**
@@ -601,7 +603,7 @@ public class Train {
             dt -= performance.getElapsedTime();
         } while (train != null && dt > 0);
         return Tuple2.of(Optional.ofNullable(train), Performance.sumIterable(performances));
-    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    }
 
     @Override
     public String toString() {
@@ -671,7 +673,7 @@ public class Train {
         public String toString() {
             return id;
         }
-    }
+    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
 
 
