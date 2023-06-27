@@ -282,14 +282,14 @@ public class Train {
     public Train setExitingNode(Exit exitingNode) {
         return exitingNode.equals(this.exitingNode) ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     /**
      * Returns the train identifier
      */
     public String getId() {
         return id;
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     /**
      * Returns the length of train (m)
@@ -532,7 +532,7 @@ public class Train {
             // Computes the new location
             EdgeLocation newLocation = new EdgeLocation(newDir, newEdge.getLength());
             // Lock signals of new section
-            if (route instanceof Signal) {
+            if (route instanceof Signal && context.isAutolock()) {
                 context.lockSignals(newDir);
             }
             return Tuple2.of(Optional.of(setSpeed(newSpeed).setLocation(newLocation)),
@@ -673,11 +673,11 @@ public class Train {
         public String toString() {
             return id;
         }
-    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    }
 
 
 
-
+    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
 
     public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
