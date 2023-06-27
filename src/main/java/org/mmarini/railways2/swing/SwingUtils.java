@@ -84,7 +84,9 @@ public interface SwingUtils {
         Messages.getStringOpt(key + ".selectedIcon")
                 .flatMap(s -> Optional.ofNullable(UIController.class.getResource(s)))
                 .map(ImageIcon::new)
-                .ifPresent(menu::setSelectedIcon);
+                .ifPresent(icon->
+                        menu.setSelectedIcon(icon));
+                        //menu::setSelectedIcon);
         return menu;
     }
 

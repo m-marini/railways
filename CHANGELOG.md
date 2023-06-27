@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #65: Add game dialog
 - Issue #67: Add user preferences dialog
 - Issue #70: Add lock, stop actions
+- Issue #71: Add autolock action
 
 ### Changed 
 

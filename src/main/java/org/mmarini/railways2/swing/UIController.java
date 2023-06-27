@@ -122,6 +122,7 @@ public class UIController {
     private final SoundPlayer soundPlayer;
     private final Map<SoundEvent, Clip> clipByEvent;
     private Configuration configuration;
+    private boolean autolock;
 
     /**
      * Creates the user interface controller
@@ -142,6 +143,7 @@ public class UIController {
         this.configuration = Configuration.load();
         this.events = PublishProcessor.create();
         this.soundPlayer = new SoundPlayer();
+        this.autolock = true;
         clipByEvent = Stream.of(
                         Tuple2.of(ARRIVING, Optional.ofNullable(soundPlayer.getArrivingClip())),
                         Tuple2.of(ARRIVED, Optional.ofNullable(soundPlayer.getArrivedClip())),
@@ -488,6 +490,13 @@ public class UIController {
      */
     private void handleAutoLockAction(ActionEvent actionEvent) {
         logger.atDebug().log("auto lock action");
+        autolock = !autolock;
+        autoLockButton.setSelected(autolock);
+        autoLockMenu.setSelected(autolock);
+        autoLockMenu.setIcon(autoLockButton.getSelectedIcon());
+        if (simulator.isActive()) {
+            simulator.request(status -> status.setAutoLock(autolock));
+        }
     }
 
     /**
@@ -584,15 +593,16 @@ public class UIController {
      * @param actionEvent the action event
      */
     private void handleNewGameAction(ActionEvent actionEvent) {
-        gameDialog.showDialog().ifPresent(options -> {
-            if (simulator.isActive()) {
-                simulator.stop().doOnSuccess(seed ->
-                                options.createStatus(random, events).ifPresent(simulator::start))
-                        .subscribe();
-            } else {
-                options.createStatus(random, events).ifPresent(simulator::start);
-            }
-        });
+        gameDialog.showDialog().ifPresent(options -> options.createStatus(random, events)
+                .map(status1 -> status1.setAutoLock(autolock))
+                .ifPresent(status1 -> {
+                    if (simulator.isActive()) {
+                        simulator.stop().doOnSuccess(seed -> simulator.start(status1))
+                                .subscribe();
+                    } else {
+                        simulator.start(status1);
+                    }
+                }));
     }
 
     /**
@@ -770,6 +780,8 @@ public class UIController {
         boolean mute = userPreferences.isMute();
         muteButton.setSelected(mute);
         muteMenu.setSelected(mute);
+        autoLockButton.setSelected(autolock);
+        autoLockMenu.setSelected(autolock);
         soundPlayer.setMute(mute);
         soundPlayer.setGain((float) userPreferences.getGain());
         simulator.setSpeed(userPreferences.getSimulationSpeed());

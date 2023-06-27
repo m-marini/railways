@@ -94,6 +94,13 @@ public class SimulationContext {
     }
 
     /**
+     * Returns true if autolock set
+     */
+    public boolean isAutolock() {
+        return status.isAutolock();
+    }
+
+    /**
      * Returns true if the entry is clear
      * The entry is clear if the waiting for entry train is the first in the entry queue
      * and the entry section is clear

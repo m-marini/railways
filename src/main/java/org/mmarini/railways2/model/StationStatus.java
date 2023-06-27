@@ -77,7 +77,7 @@ public class StationStatus {
     public static StationStatus create(StationMap stationMap, List<Route> routes, double gameDuration, List<Train> trains, double time, double trainFrequency, Subscriber<SoundEvent> events) {
         logger.atDebug().setMessage("Creating station {}").addArgument(stationMap::getId).log();
         ExtendedPerformance performance = ExtendedPerformance.create(stationMap.getId(), gameDuration).setElapsedTime(time);
-        return new StationStatus(stationMap, routes, trains, trainFrequency, performance,
+        return new StationStatus(stationMap, routes, trains, true, trainFrequency, performance,
                 events, null, null, null, null, null, null, null, null, null
         );
     }
@@ -88,6 +88,7 @@ public class StationStatus {
     private final double trainFrequency;
     private final ExtendedPerformance performance;
     private final Subscriber<SoundEvent> events;
+    private final boolean autolock;
     private List<Entry> entries;
     private List<Exit> exits;
     private Map<Node, ? extends Route> routeByNode;
@@ -104,6 +105,7 @@ public class StationStatus {
      * @param stationMap        the station map
      * @param routes            the routes
      * @param trains            the trains
+     * @param autolock
      * @param trainFrequency    the train frequency
      * @param performance       the game performance
      * @param events            the event subscriber
@@ -118,7 +120,7 @@ public class StationStatus {
      * @param trainByExit       the train by exit
      */
     protected StationStatus(StationMap stationMap, Collection<? extends Route> routes,
-                            Collection<Train> trains, double trainFrequency,
+                            Collection<Train> trains, boolean autolock, double trainFrequency,
                             ExtendedPerformance performance, Subscriber<SoundEvent> events, List<Entry> entries, List<Exit> exits,
                             Map<Node, ? extends Route> routeByNode,
                             Map<Entry, Train> firstTrainByEntry, Collection<Section> sections,
@@ -127,6 +129,7 @@ public class StationStatus {
         this.stationMap = requireNonNull(stationMap);
         this.routes = requireNonNull(routes);
         this.trains = requireNonNull(trains);
+        this.autolock = autolock;
         this.trainFrequency = trainFrequency;
         this.performance = requireNonNull(performance);
         this.entries = entries;
@@ -496,7 +499,7 @@ public class StationStatus {
      * @param performance the new performance
      */
     private StationStatus setPerformance(ExtendedPerformance performance) {
-        return new StationStatus(stationMap, routes, trains, trainFrequency, performance, events, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
+        return new StationStatus(stationMap, routes, trains, autolock, trainFrequency, performance, events, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
     }
 
     /**
@@ -539,7 +542,7 @@ public class StationStatus {
      * @param routes the routes
      */
     public StationStatus setRoutes(Collection<? extends Route> routes) {
-        return new StationStatus(stationMap, routes, trains, trainFrequency, performance, events, null, null, null, null, null, null, null, null, null);
+        return new StationStatus(stationMap, routes, trains, autolock, trainFrequency, performance, events, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -618,7 +621,7 @@ public class StationStatus {
      */
     public StationStatus setTime(double time) {
         return time == this.getTime() ? this :
-                new StationStatus(stationMap, routes, trains, trainFrequency, performance.setElapsedTime(time), events, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
+                new StationStatus(stationMap, routes, trains, autolock, trainFrequency, performance.setElapsedTime(time), events, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
     }
 
     /**
@@ -773,7 +776,7 @@ public class StationStatus {
      * @param trains the trains
      */
     public StationStatus setTrains(Collection<Train> trains) {
-        return new StationStatus(stationMap, routes, trains, trainFrequency, performance, events, entries, exits, routeByNode, null, sections, null, null, sectionByEdge, null);
+        return new StationStatus(stationMap, routes, trains, autolock, trainFrequency, performance, events, entries, exits, routeByNode, null, sections, null, null, sectionByEdge, null);
     }
 
     /**
@@ -782,6 +785,13 @@ public class StationStatus {
     public Stream<TrainComposition> getTrainsCoaches() {
         return getTrains().stream()
                 .map(this::getTrainCoaches);
+    }
+
+    /**
+     * Returns true if autolock set
+     */
+    public boolean isAutolock() {
+        return autolock;
     }
 
     /**
@@ -1100,6 +1110,17 @@ public class StationStatus {
                     }
                 })
                 .orElse(this);
+    }
+
+    /**
+     * Returns the status with autolock set
+     *
+     * @param autolock true if autolock
+     */
+    public StationStatus setAutoLock(boolean autolock) {
+        return autolock != this.autolock
+                ? new StationStatus(stationMap, routes, trains, autolock, trainFrequency, performance, events, null, null, null, null, null, null, null, null, null)
+                : this;
     }
 
     /**
