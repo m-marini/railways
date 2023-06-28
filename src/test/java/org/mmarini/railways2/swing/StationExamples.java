@@ -47,6 +47,34 @@ public interface StationExamples {
 
     /**
      * <pre>
+     * Entry(a) --platform-- Signals(b) --track-- Switch(c) --track-- DeadEnd(d)
+     *                                                      --track-- Exit(e)
+     * </pre>
+     */
+    static StationStatus createDeadEndStation() {
+        StationMap stationMap = new StationBuilder("station")
+                .addNode("a", new Point2D.Double(0, 0), "ab")
+                .addNode("b", new Point2D.Double(LENGTH, 0), "ab", "bc")
+                .addNode("c", new Point2D.Double(LENGTH + GAP, 0), "bc", "cd", "ce")
+                .addNode("d", new Point2D.Double(LENGTH + GAP + CROSS_LENGTH, 0), "cd")
+                .addNode("e", new Point2D.Double(LENGTH + GAP + CROSS_LENGTH + GAP, TRACK_GAP), "ce")
+                .addPlatform("ab", "a", "b")
+                .addTrack("bc", "b", "c")
+                .addTrack("cd", "c", "d")
+                .addTrack("ce", "c", "e")
+                .build();
+
+        return new StationStatus.Builder(stationMap, 1, GAME_DURATION, null, null)
+                .addRoute(Entry::create, "a")
+                .addRoute(Signal::create, "b")
+                .addRoute(Switch::through, "c")
+                .addRoute(DeadEnd::create, "d")
+                .addRoute(Exit::create, "e")
+                .build();
+    }
+
+    /**
+     * <pre>
      * Entry(a) --platform-- Signals(b) --track-- DoubleSwitch(c) --------track-------- DoubleSwitch(d) --track-- Exit(e)
      *                                                           --track--   --track--
      *                                                                     X
