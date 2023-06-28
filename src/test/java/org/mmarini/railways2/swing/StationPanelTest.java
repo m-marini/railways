@@ -48,10 +48,11 @@ class StationPanelTest {
                 .addTrain(3, "a", "j", "gh", "h", 0)
                 .build();
 
-         */
         StationStatus status3 = new WithTrain(StationExamples.create3Entry2ExitStation())
                 .build();
-        new StationPanelTest(status3).run();
+         */
+        StationStatus status4 = StationExamples.createDeadEndStation();
+        new StationPanelTest(status4).run();
     }
 
     private final StationPanel panel;

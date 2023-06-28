@@ -57,12 +57,16 @@ public interface Painters {
     int COACH_Y = -125;
     int SIGNAL_X = -25;
     int SIGNAL_Y = -20;
-    double SIGNAL_WIDTH = 0.9;
-    double SIGNAL_HEIGHT = 2;
+    int DEAD_END_X = -23;
+    int DEAD_END_Y = -20;
     int SWITCH_X = -25;
     int SWITCH_Y = -20;
     double SWITCH_WIDTH = 0.9;
     double SWITCH_HEIGHT = 1.8;
+    double SIGNAL_WIDTH = 0.9;
+    double SIGNAL_HEIGHT = 2;
+    double DEAD_END_WIDTH = 4.6;
+    double DEAD_END_HEIGHT = 2.;
 
     BasicStroke STROKE0 = new BasicStroke(0f);
     BasicStroke LIGHTS_STROKE = new BasicStroke(0,
@@ -85,6 +89,7 @@ public interface Painters {
     Consumer<Graphics2D> CLEAR_DIVERGE_IMAGE_PAINTER = createImagePainter("/img/sw3.png", SWITCH_X, SWITCH_Y, SWITCH_WIDTH, SWITCH_HEIGHT, RAD_90);
     Consumer<Graphics2D> NOT_CLEAR_DIVERGE_IMAGE_PAINTER = createImagePainter("/img/sw4.png", SWITCH_X, SWITCH_Y, SWITCH_WIDTH, SWITCH_HEIGHT, RAD_90);
     Consumer<Graphics2D> LOCKED_DIVERGE_IMAGE_PAINTER = createImagePainter("/img/sw5.png", SWITCH_X, SWITCH_Y, SWITCH_WIDTH, SWITCH_HEIGHT, RAD_90);
+    Consumer<Graphics2D> DEAD_END_IMAGE_PAINTER = createImagePainter("/img/end.png", DEAD_END_X, DEAD_END_Y, DEAD_END_WIDTH, DEAD_END_HEIGHT, RAD_90);
     Font LABEL_FONT = Font.decode("dialog bold");
     double LABEL_SCALE = 0.1;
     double LABEL_GAP = TRACK_GAUGE * sqrt(2) / 2 / LABEL_SCALE;
@@ -296,6 +301,20 @@ public interface Painters {
     }
 
     /**
+     * Returns the dead end route painter
+     *
+     * @param deadEnd the dead end
+     * @param status  the station status
+     */
+    static Consumer<Graphics2D> createPainter(DeadEnd deadEnd, StationStatus status) {
+        Node node = deadEnd.getNodes().get(0);
+        Point2D location = node.getLocation();
+        Direction entryDirection = node.getEntries().get(0);
+        double orientation = new EdgeLocation(entryDirection, 0).getOrientation();
+        return transformAndPaint(location, orientation, DEAD_END_IMAGE_PAINTER);
+    }
+
+    /**
      * Returns the signal route painter
      *
      * @param signal the signal
@@ -402,6 +421,8 @@ public interface Painters {
             return Optional.of(createPainter((Entry) route, status));
         } else if (route instanceof Exit) {
             return Optional.of(createPainter((Exit) route, status));
+        } else if (route instanceof DeadEnd) {
+            return Optional.of(createPainter((DeadEnd) route, status));
         } else if (route instanceof Signal) {
             return Optional.of(createPainter((Signal) route, status));
         } else if (route instanceof Switch) {

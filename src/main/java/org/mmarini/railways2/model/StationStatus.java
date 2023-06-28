@@ -856,7 +856,7 @@ public class StationStatus {
      */
     boolean isNextRouteClear(Direction direction) {
         Route route = getRoute(direction.getDestination());
-        if (route instanceof Entry) {
+        if (route instanceof Entry || route instanceof DeadEnd) {
             return false;
         } else if (route instanceof Exit) {
             return isExitClear((Exit) route);
