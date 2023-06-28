@@ -31,15 +31,16 @@ package org.mmarini.railways2.model.blocks;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
-import org.mmarini.railways2.model.geometry.Node;
-import org.mmarini.railways2.model.geometry.NodeBuilderParams;
+import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.Route;
 import org.mmarini.yaml.schema.Locator;
+import org.mockito.Mockito;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -57,6 +58,7 @@ import static org.mmarini.railways2.model.blocks.Platforms.PLATFORM_GAP;
 import static org.mmarini.railways2.model.blocks.Platforms.PLATFORM_SIGNAL_GAP;
 import static org.mmarini.yaml.Utils.createObject;
 import static org.mmarini.yaml.Utils.fromText;
+import static org.mockito.Mockito.when;
 
 class TerminalPlatformsTest {
 
@@ -103,6 +105,31 @@ class TerminalPlatformsTest {
                 hasProperty("node0", equalTo("2.signal")),
                 hasProperty("node1", equalTo("2.e"))
         )));
+
+        Node node0 = Mockito.mock();
+        Node node1 = Mockito.mock();
+        when(node0.getLocation()).thenReturn(new Point2D.Double());
+        when(node1.getLocation()).thenReturn(new Point2D.Double(0, 100));
+        List<Edge> edges = builders.stream().map(b -> b.getBuilder().apply(node0, node1))
+                .collect(Collectors.toList());
+
+        assertThat(edges, hasSize(4));
+        assertThat(edges, hasItem(allOf(
+                hasProperty("id", equalTo("1.platform")),
+                isA(Platform.class))
+        ));
+        assertThat(edges, hasItem(allOf(
+                hasProperty("id", equalTo("2.platform")),
+                isA(Platform.class))
+        ));
+        assertThat(edges, hasItem(allOf(
+                hasProperty("id", equalTo("1.track")),
+                isA(Track.class))
+        ));
+        assertThat(edges, hasItem(allOf(
+                hasProperty("id", equalTo("2.track")),
+                isA(Track.class))
+        ));
     }
 
     @Test
@@ -128,7 +155,7 @@ class TerminalPlatformsTest {
                 equalTo(-180)
         ));
         assertThat(e2, orientedGeometry(
-                pointCloseTo(10 * COACH_LENGTH + PLATFORM_GAP + PLATFORM_SIGNAL_GAP, TRACK_GAP, 10e-3),
+                pointCloseTo(10 * COACH_LENGTH + PLATFORM_GAP + PLATFORM_SIGNAL_GAP, -TRACK_GAP, 10e-3),
                 equalTo(-180)
         ));
     }
@@ -163,17 +190,17 @@ class TerminalPlatformsTest {
     void getInnerRouteParams() {
         // Given ...
         // When ...
-        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = block.getInnerRouteParams();
+        Collection<Tuple2<Function<Node[], ? extends Route>, List<String>>> routeParams = block.getInnerRouteParams();
 
         // Then ...
-        assertThat(routes, hasSize(4));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+        assertThat(routeParams, hasSize(4));
+        assertThat(routeParams, hasItem(tupleOf(isA(Function.class),
                 contains("1.deadEnd"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+        assertThat(routeParams, hasItem(tupleOf(isA(Function.class),
                 contains("2.deadEnd"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+        assertThat(routeParams, hasItem(tupleOf(isA(Function.class),
                 contains("1.signal"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
+        assertThat(routeParams, hasItem(tupleOf(isA(Function.class),
                 contains("2.signal"))));
     }
 
