@@ -46,7 +46,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.function.Consumer;
 
-import static org.mmarini.railways2.swing.GraphConstants.*;
+import static java.lang.Math.min;
+import static org.mmarini.railways2.swing.GraphConstants.NONE_PAINTER;
 import static org.mmarini.railways2.swing.Painters.TRACK_STROKE;
 import static org.mmarini.railways2.swing.Painters.createLinePainter;
 
@@ -90,8 +91,10 @@ public class MapPanel extends JComponent {
                 size.width - BORDER - BORDER,
                 size.height - BORDER - BORDER);
         AffineTransform tr = AffineTransform.getTranslateInstance(panelRect.getCenterX(), panelRect.getCenterY());
-        tr.scale((panelRect.getWidth()) / mapBounds.getWidth(),
-                -panelRect.getHeight() / mapBounds.getHeight());
+        double sx = panelRect.getWidth() / mapBounds.getWidth();
+        double sy = panelRect.getHeight() / mapBounds.getHeight();
+        double scale = min(sx, sy);
+        tr.scale(scale, -scale);
         tr.translate(-mapBounds.getCenterX(), -mapBounds.getCenterY());
         return tr;
     }
@@ -139,14 +142,14 @@ public class MapPanel extends JComponent {
         Collection<? extends Edge> edges = status.getStationMap().getEdges().values();
         Consumer<Graphics2D> redPainters = edges.stream()
                 .filter(e -> status.getSection(e).isEmpty())
-                .map(edge -> createLinePainter(edge, TRACK_STROKE, TRACK_RED_COLOR))
+                .map(edge -> createLinePainter(edge, TRACK_STROKE, false))
                 .reduce(Consumer::andThen)
-                .orElseThrow();
+                .orElse(NONE_PAINTER);
         Consumer<Graphics2D> greenPainters = edges.stream()
                 .filter(e -> status.getSection(e).isPresent())
-                .map(edge -> createLinePainter(edge, TRACK_STROKE, TRACK_GREEN_COLOR))
+                .map(edge -> createLinePainter(edge, TRACK_STROKE, true))
                 .reduce(Consumer::andThen)
-                .orElseThrow();
+                .orElse(NONE_PAINTER);
         Consumer<Graphics2D> trainPainters = Painters.createLineTrainPainters(status);
 
         painter = redPainters

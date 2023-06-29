@@ -473,7 +473,7 @@ public class BlockStationBuilder {
                 .sorted()
                 .collect(Collectors.toList());
         if (!missing.isEmpty()) {
-            throw new IllegalArgumentException(format("[%s] have no junction",
+            throw new IllegalArgumentException(format("No junctions for nodes [%s]",
                     mkString(missing, ", ")));
         }
     }

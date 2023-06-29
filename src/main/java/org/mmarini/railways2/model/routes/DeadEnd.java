@@ -41,7 +41,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Stops the train at the end of edge
  */
-public class DeadEnd extends AbstractSingleNodeRoute implements SectionTerminal{
+public class DeadEnd extends AbstractSingleNodeRoute implements SectionTerminal {
     public static final int NUM_CONNECTIONS = 1;
 
     /**

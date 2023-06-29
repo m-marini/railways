@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #70: Add lock, stop actions
 - Issue #71: Add autolock action
 - Issue #74: Add dead end route and terminal platform
+- Issue #81: Add Jackville stations
 
 ### Changed 
 

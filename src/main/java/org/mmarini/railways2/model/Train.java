@@ -43,6 +43,7 @@ import java.util.Optional;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 import static org.mmarini.railways2.model.SoundEvent.ARRIVED;
@@ -56,6 +57,9 @@ public class Train {
     public static final State STATE_EXITING = new State("EXITING", Train::exiting);
     public static final State STATE_WAITING_FOR_RUN = new State("WAITING_FOR_RUN", Train::waitingForRun);
     public static final State STATE_LOADING = new State("LOADING", Train::loading);
+    private static final double MIN_DT = 1e-6;
+    private static final int MAX_ITERATIONS = 5;
+    private static final double MIN_TIME = 1e-6;
 
     /**
      * Returns the train
@@ -195,11 +199,10 @@ public class Train {
     /**
      * Returns the train in exiting state through the given exit at the given distance
      *
-     * @param exit         the exit route
-     * @param exitDistance the exit distance
+     * @param exit the exit route
      */
-    Train exit(Exit exit, double exitDistance) {
-        return setState(STATE_EXITING).setExitingNode(exit).setExitDistance(exitDistance);
+    Train exit(Exit exit) {
+        return setState(STATE_EXITING).setExitingNode(exit).setExitDistance(37.5);
     }
 
     /**
@@ -289,7 +292,7 @@ public class Train {
      */
     public String getId() {
         return id;
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     /**
      * Returns the length of train (m)
@@ -339,7 +342,7 @@ public class Train {
     public Train setSpeed(double speed) {
         return speed == this.speed ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     /**
      * Returns the train state
@@ -600,8 +603,14 @@ public class Train {
             train = transition._1.orElse(null);
             Performance performance = transition._2;
             performances.add(performance);
-            dt -= performance.getElapsedTime();
-        } while (train != null && dt > 0);
+            double elapsedTime = performance.getElapsedTime();
+            dt -= elapsedTime;
+            if (n > MAX_ITERATIONS) {
+                throw new IllegalStateException(
+                        format("Too iterations n=%d elapsedTime=%g",
+                                n, elapsedTime));
+            }
+        } while (train != null && dt > MIN_DT);
         return Tuple2.of(Optional.ofNullable(train), Performance.sumIterable(performances));
     }
 
@@ -674,6 +683,7 @@ public class Train {
             return id;
         }
     }
+
 
 
 

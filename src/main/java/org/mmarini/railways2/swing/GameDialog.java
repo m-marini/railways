@@ -73,7 +73,8 @@ public class GameDialog extends JDialog {
     public static final String SHORT_GAME_DURATION = "GameDialog.gameDuration.short";
 
     private static final List<String> STATION_RESOURCES = List.of(
-            "/stations/downville.station.yml"
+            "/stations/downville.station.yml",
+            "/stations/jackville.station.yml"
     );
     private static final List<String> GAME_DURATION_KEYS = List.of(
             SHORT_GAME_DURATION,
@@ -396,6 +397,7 @@ public class GameDialog extends JDialog {
         stationList.setModel(stationModel);
         stations.stream()
                 .map(Tuple2::getV1)
+                .map(id -> Messages.getString("station." + id))
                 .forEach(stationModel::addElement);
         stationList.setSelectedIndex(0);
 

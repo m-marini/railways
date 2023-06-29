@@ -1,0 +1,255 @@
+---
+name: jackville
+orientation: 0
+blocks:
+  platforms:
+    class: org.mmarini.railways2.model.blocks.TerminalPlatforms
+    numPlatforms: 8
+    length: 14
+
+  # Switching yard1
+  rightSwitch1:
+    class: org.mmarini.railways2.model.blocks.RightSwitch
+  westTrack2:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 1
+  westTrack3:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  westTrack54:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 3
+  westTrack6:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  westTrack7:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 1
+  leftSwitch8:
+    class: org.mmarini.railways2.model.blocks.LeftSwitch
+
+  # Switching yard2
+  centralTrack1:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 6
+  downCross2:
+    class: org.mmarini.railways2.model.blocks.DownCross
+  upCross7:
+    class: org.mmarini.railways2.model.blocks.UpCross
+  centralTrack8:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 6
+
+  # Switching yard3
+  centralTrack2:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 4
+  downCross3:
+    class: org.mmarini.railways2.model.blocks.DownCross
+  upCross6:
+    class: org.mmarini.railways2.model.blocks.UpCross
+  centralTrack7:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 4
+
+  # Switching yard4
+  centralTrack3:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  centralCross:
+    class: org.mmarini.railways2.model.blocks.CentralCross
+  centralTrack6:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+
+  # Switching yard5
+  upCross3:
+    class: org.mmarini.railways2.model.blocks.UpCross
+  eastTrack54:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 3
+  downCross6:
+    class: org.mmarini.railways2.model.blocks.DownCross
+
+  # Switching yard6
+  upCross2:
+    class: org.mmarini.railways2.model.blocks.UpCross
+  eastTrack3:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  eastTrack6:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 2
+  downCross7:
+    class: org.mmarini.railways2.model.blocks.DownCross
+
+  # Switching yard 7
+  leftSwitch1:
+    class: org.mmarini.railways2.model.blocks.LeftSwitch
+  eastTrack2:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 1
+  eastTrack7:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 1
+    length: 1
+  rightSwitch8:
+    class: org.mmarini.railways2.model.blocks.RightSwitch
+
+  # Switching yard signals
+  signals:
+    class: org.mmarini.railways2.model.blocks.Signals
+    numSignals: 8
+
+  # Waitouts tracks
+  wesgrowNewportCurves:
+    class: org.mmarini.railways2.model.blocks.Curves
+    numTracks: 4
+    angle: 30
+  wesgrowCurves:
+    class: org.mmarini.railways2.model.blocks.Curves
+    numTracks: 2
+    angle: 60
+  newportTracks:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 5
+  neerthEprownCurves:
+    class: org.mmarini.railways2.model.blocks.Curves
+    numTracks: 4
+    angle: -30
+  neerthTracks:
+    class: org.mmarini.railways2.model.blocks.Tracks
+    numTracks: 2
+    length: 5
+  eprownCurves:
+    class: org.mmarini.railways2.model.blocks.Curves
+    numTracks: 2
+    angle: -60
+
+  # Wayouts
+  wesgrow:
+    class: org.mmarini.railways2.model.blocks.Wayout
+  newport:
+    class: org.mmarini.railways2.model.blocks.Wayout
+  neerth:
+    class: org.mmarini.railways2.model.blocks.Wayout
+  eprown:
+    class: org.mmarini.railways2.model.blocks.Wayout
+
+links:
+  # Switching yard1
+  rightSwitch1.entry:
+    platforms.1.e
+  westTrack2.1.w:
+    platforms.2.e
+  westTrack3.1.w:
+    platforms.3.e
+  westTrack54.1.w:
+    platforms.5.e
+  westTrack6.1.w:
+    platforms.6.e
+  westTrack7.1.w:
+    platforms.7.e
+  leftSwitch8.entry:
+    platforms.8.e
+
+  # Switching yard2
+  centralTrack1.1.w:
+    rightSwitch1.through
+  downCross2.w:
+    westTrack2.1.e
+  upCross7.w:
+    westTrack7.1.e
+  centralTrack8.1.w:
+    leftSwitch8.through
+
+  # Switching yard3
+  centralTrack2.1.w:
+    downCross2.e
+  downCross3.w:
+    westTrack3.1.e
+  upCross6.w:
+    westTrack6.1.e
+  centralTrack7.1.w:
+    upCross7.e
+
+  # Switching yard4
+  centralTrack3.1.w:
+    downCross3.e
+  centralCross.w1:
+    westTrack54.1.e
+  centralTrack6.1.w:
+    upCross6.e
+
+  # Switching yard5
+  upCross3.w:
+    centralTrack3.1.e
+  eastTrack54.1.w:
+    centralCross.e1
+  downCross6.w:
+    centralTrack6.1.e
+
+  # Switching yard6
+  upCross2.w:
+    centralTrack2.1.e
+  eastTrack3.1.w:
+    upCross3.e
+  eastTrack6.1.w:
+    downCross6.e
+  downCross7.w:
+    centralTrack7.1.e
+
+  # Switching yard7
+  leftSwitch1.through:
+    centralTrack1.1.e
+  eastTrack2.1.w:
+    upCross2.e
+  eastTrack7.1.w:
+    downCross7.e
+  rightSwitch8.through:
+    centralTrack8.1.e
+
+  # Switching yard signals
+  signals.1.w:
+    rightSwitch8.entry
+
+  # Waitouts tracks
+  wesgrowNewportCurves.1.w:
+    signals.5.e
+  wesgrowCurves.1.w:
+    wesgrowNewportCurves.3.e
+  newportTracks.1.w:
+    wesgrowNewportCurves.1.e
+  neerthEprownCurves.1.w:
+    signals.1.e
+  neerthTracks.1.w:
+    neerthEprownCurves.3.e
+  eprownCurves.1.w:
+    neerthEprownCurves.1.e
+
+  # Wayouts
+  wesgrow.exit:
+    wesgrowCurves.2.e
+  newport.exit:
+    newportTracks.2.e
+  neerth.exit:
+    neerthTracks.2.e
+  eprown.exit:
+    eprownCurves.2.e
+---

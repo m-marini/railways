@@ -202,17 +202,17 @@ public interface Painters {
     /**
      * Returns the painter of edge
      *
-     * @param edge   the edge
-     * @param stroke the stroke
-     * @param color  the color
+     * @param edge    the edge
+     * @param stroke  the stroke
+     * @param enabled true if the line is enabled (consistent section)
      */
-    static Consumer<Graphics2D> createLinePainter(Edge edge, Stroke stroke, Color color) {
+    static Consumer<Graphics2D> createLinePainter(Edge edge, Stroke stroke, boolean enabled) {
         if (edge instanceof Curve) {
-            return createLinePainter((Curve) edge, stroke, color);
+            return createLinePainter((Curve) edge, stroke, enabled ? TRACK_GREEN_COLOR : TRACK_RED_COLOR);
         } else if (edge instanceof Platform) {
-            return createLinePainter((Platform) edge, stroke, color);
+            return createLinePainter((Platform) edge, stroke, enabled ? PLATFORM_GREEN_COLOR : PLATFORM_RED_COLOR);
         } else {
-            return createLinePainter((Track) edge, stroke, color);
+            return createLinePainter((Track) edge, stroke, enabled ? TRACK_GREEN_COLOR : TRACK_RED_COLOR);
         }
     }
 
@@ -551,15 +551,15 @@ public interface Painters {
             // Generates the stream of red lights painters (not clear)
             Consumer<Graphics2D> redEdgesPainter = status.getStationMap().getEdges().values().stream()
                     .filter(edge -> status.getSection(edge).isEmpty())
-                    .map(edge -> createLinePainter(edge, LIGHTS_STROKE, TRACK_RED_COLOR))
+                    .map(edge -> createLinePainter(edge, LIGHTS_STROKE, false))
                     .reduce(Consumer::andThen)
-                    .orElseThrow();
+                    .orElse(NONE_PAINTER);
             // Generates the stream of green lights painters (clear)
             Consumer<Graphics2D> greenEdgesPainter = status.getStationMap().getEdges().values().stream()
                     .filter(edge -> status.getSection(edge).isPresent())
-                    .map(edge -> createLinePainter(edge, LIGHTS_STROKE, TRACK_GREEN_COLOR))
+                    .map(edge -> createLinePainter(edge, LIGHTS_STROKE, true))
                     .reduce(Consumer::andThen)
-                    .orElseThrow();
+                    .orElse(NONE_PAINTER);
 
             // Generate the stream of routes painters
             Consumer<Graphics2D> routesPainter = status.getRoutes().stream()
@@ -618,7 +618,10 @@ public interface Painters {
          */
         Consumer<Graphics2D> createLabelsPainter(StationStatus status) {
             return status.getRoutes().stream()
-                    .filter(r -> r instanceof Signal || r instanceof Exit || r instanceof Entry)
+                    .filter(r -> r instanceof Signal
+                            || r instanceof Exit
+                            || r instanceof Entry
+                            || r instanceof DeadEnd)
                     .map(this::createLabelPainter)
                     .reduce(Consumer::andThen)
                     .orElseThrow();

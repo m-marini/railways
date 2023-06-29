@@ -302,7 +302,7 @@ class StationStatusJunctionTest {
     void getTrainCoachesExiting() {
         // Given ...
         Train train = Train.create("train", 4, aRoute, cRoute)
-                .exit(cRoute, COACH_LENGTH * 1.5);
+                .exit(cRoute);
         status = status.setTrains(train);
 
         // When ...
