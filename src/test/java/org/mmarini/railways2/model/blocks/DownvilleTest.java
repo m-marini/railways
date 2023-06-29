@@ -64,7 +64,7 @@ public class DownvilleTest extends WithStationStatusTest {
         StationDef station = StationDef.create(root, Locator.root());
         this.status = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null)
                 .build();
-        assertEquals("Downville", status.getStationMap().getId());
+        assertEquals("downville", status.getStationMap().getId());
     }
 
     @Test
@@ -86,7 +86,7 @@ public class DownvilleTest extends WithStationStatusTest {
     @Test
     void parseYaml() {
         StationDef station = StationDef.create(root, Locator.root());
-        assertEquals("Downville", station.getId());
+        assertEquals("downville", station.getId());
     }
 
     @BeforeEach

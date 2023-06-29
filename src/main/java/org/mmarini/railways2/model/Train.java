@@ -166,7 +166,7 @@ public class Train {
      * @param dt      the time interval
      */
     Tuple2<Optional<Train>, Performance> entering(SimulationContext context, double dt) {
-        double timeToArrive = max(MIN_TIME, context.getTimeTo(arrivalTime));
+        double timeToArrive = context.getTimeTo(arrivalTime);
         if (timeToArrive > dt) {
             // Train not yet arrived
             return Tuple2.of(Optional.of(this), Performance.elapsed(dt));
@@ -332,7 +332,7 @@ public class Train {
      */
     public double getSpeed() {
         return speed;
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     /**
      * Returns the train with the given speed
@@ -342,7 +342,7 @@ public class Train {
     public Train setSpeed(double speed) {
         return speed == this.speed ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     /**
      * Returns the train state
