@@ -168,7 +168,7 @@ public class TrainTableModel extends AbstractTableModel {
             case 3:
                 return getLocation(train);
             case 4:
-                return Messages.getString("station." + stationId + "." + train.getDestination().getId());
+                return StationLabels.getLabel(stationId, train.getDestination().getId());
             case 5:
                 return Messages
                         .getString("TrainTableModel.value.status." + train.getState().getId());

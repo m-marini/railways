@@ -79,7 +79,7 @@ class BlockStationBuilderErrorsTest {
         );
 
         // Then ...
-        assertThat(ex.getMessage(), matchesRegex("\\[east\\.entry, p\\.2\\.e, p\\.2\\.w, west\\.exit] have no junction"));
+        assertThat(ex.getMessage(), matchesRegex("No junctions for nodes \\[east\\.entry, p\\.2\\.e, p\\.2\\.w, west\\.exit\\]"));
     }
 
     @BeforeEach

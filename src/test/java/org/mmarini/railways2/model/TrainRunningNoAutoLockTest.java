@@ -37,8 +37,6 @@ import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Junction;
 import org.mmarini.railways2.model.routes.Signal;
-import org.mockito.Mockito;
-import org.reactivestreams.Subscriber;
 
 import java.awt.geom.Point2D;
 import java.util.Optional;

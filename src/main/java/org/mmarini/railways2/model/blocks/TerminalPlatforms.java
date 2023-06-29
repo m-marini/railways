@@ -61,7 +61,7 @@ import static org.mmarini.yaml.schema.Validator.positiveInteger;
  *     DeadEnd([n].deadEnd)    -- Platform([n].platform) -- Signal([n].signal) -- Track([n].track) -- [n].e
  * </pre>
  */
-public class TerminalPlatforms extends AbstractBlock {
+public class TerminalPlatforms extends Platforms {
     public static final Validator VALIDATOR = objectPropertiesRequired(Map.of(
                     "numPlatforms", positiveInteger(),
                     "length", positiveInteger()),

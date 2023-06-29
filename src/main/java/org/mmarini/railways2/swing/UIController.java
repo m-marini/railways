@@ -123,6 +123,7 @@ public class UIController {
     private final Map<SoundEvent, Clip> clipByEvent;
     private Configuration configuration;
     private boolean autolock;
+    private boolean layoutRequired;
 
     /**
      * Creates the user interface controller
@@ -261,7 +262,8 @@ public class UIController {
             @Override
             public void windowOpened(WindowEvent e) {
                 int hWidth = horizontalSplit.getWidth();
-                horizontalSplit.setDividerLocation(hWidth - DEFAULT_TAB_WITDH);
+//                horizontalSplit.setDividerLocation(hWidth - DEFAULT_TAB_WITDH);
+                horizontalSplit.setDividerLocation(0.5);
                 verticalSplit.setDividerLocation(0.25);
             }
         });
@@ -596,6 +598,7 @@ public class UIController {
         gameDialog.showDialog().ifPresent(options -> options.createStatus(random, events)
                 .map(status1 -> status1.setAutoLock(autolock))
                 .ifPresent(status1 -> {
+                    this.layoutRequired = true;
                     if (simulator.isActive()) {
                         simulator.stop().doOnSuccess(seed -> simulator.start(status1))
                                 .subscribe();
@@ -689,6 +692,10 @@ public class UIController {
                 stationScrollPanel.paintStation(stationStatus);
                 mapPanel.paintStation(stationStatus);
                 performancePanel.setPerformance(stationStatus.getPerformance());
+            }
+            if (layoutRequired) {
+                layoutRequired = false;
+                stationScrollPanel.doLayout();
             }
         }
     }
