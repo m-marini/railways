@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased] yyyy-mm-dd
 
+## [2.0.0] 2023-06-29
+
 ### Added
 
 - Issue #1: Add building blocks
