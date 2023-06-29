@@ -30,7 +30,7 @@ package org.mmarini.railways2.model.routes;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mmarini.railways.Matchers;
+import org.mmarini.railways2.Matchers;
 import org.mmarini.railways2.model.geometry.*;
 
 import java.awt.geom.Point2D;
@@ -40,7 +40,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.mmarini.railways.Matchers.emptyOptional;
+import static org.mmarini.railways2.Matchers.emptyOptional;
 
 class JunctionTest {
 

@@ -44,8 +44,8 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mmarini.railways.Matchers.emptyOptional;
-import static org.mmarini.railways.Matchers.optionalOf;
+import static org.mmarini.railways2.Matchers.emptyOptional;
+import static org.mmarini.railways2.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 import static org.mockito.Mockito.verify;

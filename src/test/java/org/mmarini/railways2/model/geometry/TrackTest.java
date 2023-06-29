@@ -41,7 +41,7 @@ import static java.lang.Math.sqrt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mmarini.railways.Matchers.pointCloseTo;
+import static org.mmarini.railways2.Matchers.pointCloseTo;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 
 class TrackTest implements WithStationMap {

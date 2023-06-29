@@ -39,7 +39,7 @@ import java.awt.geom.Rectangle2D;
 import static java.lang.Math.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
-import static org.mmarini.railways.Matchers.pointCloseTo;
+import static org.mmarini.railways2.Matchers.pointCloseTo;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
 

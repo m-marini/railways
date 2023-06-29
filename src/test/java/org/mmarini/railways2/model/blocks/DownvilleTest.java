@@ -47,8 +47,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mmarini.railways.Matchers.optionalOf;
-import static org.mmarini.railways.Matchers.pointCloseTo;
+import static org.mmarini.railways2.Matchers.optionalOf;
+import static org.mmarini.railways2.Matchers.pointCloseTo;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 import static org.mmarini.railways2.model.blocks.Signals.SIGNAL_GAP;
 

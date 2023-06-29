@@ -46,7 +46,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mmarini.railways.TestFunctions.text;
+import static org.mmarini.railways2.TestFunctions.text;
 
 class StationTest {
 

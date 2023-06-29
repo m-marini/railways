@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed 
 
+- Issue #2: Code for immutable objects
 - Issue #3: Stop at platform for loading
 - Issue #6: Lock signals when train changes section
 - Issue #7: Approaching train state

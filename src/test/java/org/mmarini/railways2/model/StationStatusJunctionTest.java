@@ -44,8 +44,8 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mmarini.railways.Matchers.optionalOf;
-import static org.mmarini.railways.Matchers.tupleOf;
+import static org.mmarini.railways2.Matchers.optionalOf;
+import static org.mmarini.railways2.Matchers.tupleOf;
 import static org.mmarini.railways2.model.Matchers.isSectionWith;
 import static org.mmarini.railways2.model.MathUtils.RAD180;
 import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
@@ -111,7 +111,7 @@ class StationStatusJunctionTest {
         assertThat(loc2, optionalOf(
                 Tuple2.of(new Point2D.Double(LENGTH, 0), RAD180)
         ));
-        assertThat(loc3, org.mmarini.railways.Matchers.emptyOptional());
+        assertThat(loc3, org.mmarini.railways2.Matchers.emptyOptional());
         assertThat(loc4, optionalOf(
                 Tuple2.of(new Point2D.Double(LENGTH, 0), 0d)
         ));
@@ -238,7 +238,7 @@ class StationStatusJunctionTest {
         assertThat(ab_10, optionalOf(EdgeLocation.create(ab, b, LENGTH - 10)));
         assertThat(ab0, optionalOf(EdgeLocation.create(ab, b, 0)));
         assertThat(ab10, optionalOf(EdgeLocation.create(bc, c, LENGTH - 10)));
-        assertThat(none, org.mmarini.railways.Matchers.emptyOptional());
+        assertThat(none, org.mmarini.railways2.Matchers.emptyOptional());
     }
 
     @Test
@@ -295,7 +295,7 @@ class StationStatusJunctionTest {
         assertThat(coaches.getCoaches(), contains(
                 Tuple2.of(new Point2D.Double(COACH_LENGTH, 0), 0d)
         ));
-        assertThat(coaches.getTail(), org.mmarini.railways.Matchers.emptyOptional());
+        assertThat(coaches.getTail(), org.mmarini.railways2.Matchers.emptyOptional());
     }
 
     @Test
@@ -310,7 +310,7 @@ class StationStatusJunctionTest {
 
         // Then
         assertNotNull(coaches);
-        assertThat(coaches.getHead(), org.mmarini.railways.Matchers.emptyOptional());
+        assertThat(coaches.getHead(), org.mmarini.railways2.Matchers.emptyOptional());
         assertThat(coaches.getCoaches(), contains(
                 Tuple2.of(new Point2D.Double(2 * LENGTH - COACH_LENGTH, 0), 0d)
         ));
