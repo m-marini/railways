@@ -50,6 +50,7 @@ import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways.Matchers.tupleOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
 import static org.mmarini.railways2.model.RailwayConstants.LOADING_TIME;
+import static org.mmarini.railways2.model.RailwayConstants.MIN_TIME_INTERVAL;
 import static org.mockito.Mockito.verify;
 
 class TrainLoadingTest extends WithStationStatusTest {
@@ -84,17 +85,18 @@ class TrainLoadingTest extends WithStationStatusTest {
     void loaded() {
         // Given the loading train
         // And the time at DT/2 before loading time
+        double t0 = LOADING_TIME - DT / 4;
         status = withTrain()
                 .addTrain(
                         new WithTrain.TrainBuilder("train2", 3, "a", "c")
                                 .loading(0)
                                 .at("ab", "b", 0))
                 .build()
-                .setTime(LOADING_TIME - DT / 4);
+                .setTime(t0);
         SimulationContext context = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> transitionOpt = train("train2").changeState(context, DT);
+        Tuple2<Optional<Train>, Performance> transitionOpt = train("train2").changeState(context, t0, DT);
 
         // Then the train should be loaded in waiting for run
         assertThat(transitionOpt, tupleOf(optionalOf(allOf(
@@ -120,6 +122,46 @@ class TrainLoadingTest extends WithStationStatusTest {
     }
 
     @Test
+    void loaded1() {
+        // Given the loading train
+        // And the time at MIN_TIME_INTERVAL/4 before loading time
+        double t0 = LOADING_TIME - MIN_TIME_INTERVAL / 4;
+        status = withTrain()
+                .addTrain(
+                        new WithTrain.TrainBuilder("train2", 3, "a", "c")
+                                .loading(0)
+                                .at("ab", "b", 0))
+                .build()
+                .setTime(t0);
+        SimulationContext context = new SimulationContext(status);
+
+        // When ...
+        Tuple2<Optional<Train>, Performance> transitionOpt = train("train2").changeState(context, t0, DT);
+
+        // Then the train should be loaded in waiting for run
+        assertThat(transitionOpt, tupleOf(optionalOf(allOf(
+                        hasProperty("state", equalTo(Train.STATE_WAITING_FOR_RUN)),
+                        hasProperty("speed", equalTo(0d)),
+                        hasProperty("unloaded", equalTo(false)),
+                        hasProperty("location", optionalOf(locatedAt("ab", "b", 0))))),
+                anything()));
+
+        // And the elapsed time should be DT/2
+        // And the total time should be DT/2
+        // And the waiting time should be DT/2
+        Performance perf = transitionOpt._2;
+        assertThat(perf.getElapsedTime(), closeTo(MIN_TIME_INTERVAL, 1e-3));
+        assertThat(perf.getTotalTrainTime(), closeTo(MIN_TIME_INTERVAL, 1e-3));
+        assertThat(perf.getTrainWaitingTime(), closeTo(MIN_TIME_INTERVAL, 1e-3));
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
+
+        verify(events).onNext(SoundEvent.STOPPED);
+    }
+
+    @Test
     void waitForLoad() {
         // Given ...
         status = withTrain()
@@ -131,7 +173,7 @@ class TrainLoadingTest extends WithStationStatusTest {
         SimulationContext context = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> transitionOpt = train("train2").changeState(context, DT);
+        Tuple2<Optional<Train>, Performance> transitionOpt = train("train2").changeState(context, 0, DT);
 
         // Then ...
         assertThat(transitionOpt, tupleOf(optionalOf(

@@ -89,7 +89,7 @@ class TrainBrakingTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(new SimulationContext(status), 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -123,7 +123,7 @@ class TrainBrakingTest extends WithStationStatusTest {
 
         // When ...
         SimulationContext ctx = new SimulationContext(status);
-        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -160,7 +160,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = t1.changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = t1.changeState(ctx, 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -198,7 +198,7 @@ class TrainBrakingTest extends WithStationStatusTest {
 
         // When ...
         SimulationContext ctx = new SimulationContext(status);
-        Tuple2<Optional<Train>, Performance> nextOpt = t1.changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = t1.changeState(ctx, 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -249,7 +249,7 @@ class TrainBrakingTest extends WithStationStatusTest {
         Train t0 = status.getTrain("TT0").orElseThrow();
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = t0.changeState(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = t0.changeState(new SimulationContext(status), 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());

@@ -62,7 +62,7 @@ class TrainExitingTest extends WithStationStatusTest {
         SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(ctx, 0, DT);
 
         // Then the train should move at max speed
         assertTrue(nextOpt._1.isPresent());
@@ -94,7 +94,7 @@ class TrainExitingTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(new SimulationContext(status), 0, DT);
 
         // Then the train should not move but speed should accelerate
         assertTrue(nextOpt._1.isPresent());
@@ -126,7 +126,7 @@ class TrainExitingTest extends WithStationStatusTest {
         SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(ctx, 0, DT);
 
         // Then the train should move at max speed
         assertTrue(nextOpt._1.isPresent());
@@ -159,7 +159,7 @@ class TrainExitingTest extends WithStationStatusTest {
 
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(ctx, 0, DT);
 
         // Then the train should disappear
         assertTrue(nextOpt._1.isEmpty());

@@ -95,7 +95,7 @@ class TrainRunningAtPlatformTest extends WithStationStatusTest {
         status = status.setTrains(train);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(new SimulationContext(status), 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -129,7 +129,7 @@ class TrainRunningAtPlatformTest extends WithStationStatusTest {
         status = status.setTrains(train);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(new SimulationContext(status), 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());

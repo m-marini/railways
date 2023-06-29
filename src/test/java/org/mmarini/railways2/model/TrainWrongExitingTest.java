@@ -87,7 +87,7 @@ class TrainWrongExitingTest extends WithStationStatusTest {
         SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(ctx, 0, DT);
 
         // Then the train should disappear
         assertTrue(nextOpt._1.isEmpty());

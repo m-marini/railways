@@ -30,17 +30,22 @@
 package org.mmarini;
 
 /**
- * @param <T1>
- * @param <T2>
- * @param <T3>
- * @param <R>
+ * Functional interface of functions with 4 parameters
+ *
+ * @param <T1> parameter 1 type
+ * @param <T2> parameter 2 type
+ * @param <T3> parameter 3 type
+ * @param <T4> parameter 4 type
+ * @param <R>  result type
  */
 public interface Function4<T1, T2, T3, T4, R> {
     /**
-     * @param t1
-     * @param t2
-     * @param t3
-     * @param t4
+     * Returns the function result
+     *
+     * @param t1 argument 1
+     * @param t2 argument 2
+     * @param t3 argument 3
+     * @param t4 argument 4
      */
     R apply(T1 t1, T2 t2, T3 t3, T4 t4);
 }

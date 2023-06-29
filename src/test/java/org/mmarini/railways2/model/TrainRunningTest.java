@@ -98,7 +98,7 @@ class TrainRunningTest extends WithStationStatusTest {
         SimulationContext context = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(context, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(context, 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -131,7 +131,7 @@ class TrainRunningTest extends WithStationStatusTest {
 
         // When ...
         SimulationContext ctx = new SimulationContext(status);
-        Tuple2<Optional<Train>, Performance> nextOpt = train("TT0").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("TT0").changeState(ctx, 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -160,7 +160,7 @@ class TrainRunningTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("train2").changeState(new SimulationContext(status), 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -190,7 +190,7 @@ class TrainRunningTest extends WithStationStatusTest {
         SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("TT0").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("TT0").changeState(ctx, 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -219,7 +219,7 @@ class TrainRunningTest extends WithStationStatusTest {
         SimulationContext context = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("TT0").changeState(context, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("TT0").changeState(context, 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -330,7 +330,7 @@ class TrainRunningTest extends WithStationStatusTest {
         // When ...
         Train train = train("TT0");
         SimulationContext ctx = new SimulationContext(status);
-        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train.changeState(ctx, 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());

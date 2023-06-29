@@ -164,7 +164,7 @@ class TrainWaitingForRunTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(new SimulationContext(status), 0, DT);
 
         // Then ...
         Optional<Train> trainOpt = nextOpt._1;

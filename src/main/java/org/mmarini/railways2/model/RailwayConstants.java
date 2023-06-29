@@ -88,13 +88,18 @@ public interface RailwayConstants extends XmlConstants {
      * </p>
      */
     double SWITCH_LENGTH = DIVERGED_LENGTH + 2 * SWITCH_GAP;
-
     /**
      * Length of standard segment element (m)
      */
     double SEGMENT_LENGTH = SWITCH_LENGTH;
 
-
+    /**
+     * Minimum time interval (20us)
+     * <p>
+     * Train travels ~ 1mm at speed of 130 km/h
+     * </p>
+     */
+    double MIN_TIME_INTERVAL = 20e-6;
     /**
      * Exit distance (m)
      */
