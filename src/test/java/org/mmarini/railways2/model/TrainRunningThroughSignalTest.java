@@ -64,7 +64,7 @@ class TrainRunningThroughSignalTest extends WithStationStatusTest {
         SimulationContext context = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("TT0").changeState(context, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("TT0").changeState(context, 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());
@@ -97,7 +97,7 @@ class TrainRunningThroughSignalTest extends WithStationStatusTest {
         SimulationContext context = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("TT0").changeState(context, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("TT0").changeState(context, 0, DT);
 
         // Then ...
         assertTrue(nextOpt._1.isPresent());

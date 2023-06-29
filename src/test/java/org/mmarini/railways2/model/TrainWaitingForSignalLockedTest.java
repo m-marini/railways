@@ -84,7 +84,7 @@ class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
                 .build();
 
         // When ...
-        Tuple2<Optional<Train>, Performance> transition = train("train").changeState(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> transition = train("train").changeState(new SimulationContext(status), 0, DT);
 
         // Then ...
         Train train = transition._1.orElseThrow();
@@ -120,7 +120,7 @@ class TrainWaitingForSignalLockedTest extends WithStationStatusTest {
         status = status.setTrains(t1, t2);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = t1.changeState(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = t1.changeState(new SimulationContext(status), 0, DT);
 
         // Then ...
         Optional<Train> trainOpt = nextOpt._1;

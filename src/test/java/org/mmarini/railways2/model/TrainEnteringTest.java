@@ -46,11 +46,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mmarini.railways.Matchers.optionalOf;
 import static org.mmarini.railways2.model.Matchers.locatedAt;
-import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
-import static org.mmarini.railways2.model.RailwayConstants.MAX_SPEED;
+import static org.mmarini.railways2.model.RailwayConstants.*;
 
 class TrainEnteringTest extends WithStationStatusTest {
     public static final int GAME_DURATION = 300;
+    public static final double EPSILON_DT = 4.4e-15;
     static final double DT = 0.1;
 
     @Test
@@ -66,7 +66,7 @@ class TrainEnteringTest extends WithStationStatusTest {
         SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, ENTRY_TIMEOUT + 1, DT);
 
         // Than the train t1 should enter the entry tracks at 0 speed
         assertTrue(nextOpt._1.isPresent());
@@ -98,7 +98,7 @@ class TrainEnteringTest extends WithStationStatusTest {
                 .setTime(ENTRY_TIMEOUT + 1 - DT / 2);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> next = train("t2").changeState(new SimulationContext(status), DT);
+        Tuple2<Optional<Train>, Performance> next = train("t2").changeState(new SimulationContext(status), ENTRY_TIMEOUT + 1 - DT / 2, DT);
 
         // Than train t2 should be stopped in entering state
         assertTrue(next._1.isPresent());
@@ -122,17 +122,18 @@ class TrainEnteringTest extends WithStationStatusTest {
     void enteringNotClear() {
         // Given the entering train t1 and the train t2 running on the entry track (entry not clear)
         // and the status just before DT/2 seconds before entry timout
+        double t0 = ENTRY_TIMEOUT - DT / 2;
         status = withTrain()
                 .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "b"))
                 .addTrain(new WithTrain.TrainBuilder("t2", 3, "a", "b")
                         .at("ab", "b", 0)
                         .running())
                 .build()
-                .setTime(ENTRY_TIMEOUT - DT / 2);
+                .setTime(t0);
         SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, t0, DT);
 
         // Than train t2 should be stopped in entering state
         assertTrue(nextOpt._1.isPresent());
@@ -154,9 +155,46 @@ class TrainEnteringTest extends WithStationStatusTest {
     }
 
     @Test
+    void enteringNotClear1() {
+        // Given the entering train t1 and the train t2 running on the entry track (entry not clear)
+        // and the status just before DT/2 seconds before entry timout
+        double t0 = ENTRY_TIMEOUT - EPSILON_DT;
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "b"))
+                .addTrain(new WithTrain.TrainBuilder("t2", 3, "a", "b")
+                        .at("ab", "b", 0)
+                        .running())
+                .build()
+                .setTime(t0);
+        SimulationContext ctx = new SimulationContext(status);
+
+        // When ...
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, t0, DT);
+
+        // Than train t2 should be stopped in entering state
+        assertTrue(nextOpt._1.isPresent());
+
+        Train next = nextOpt._1.orElseThrow();
+        assertEquals(Train.STATE_ENTERING, next.getState());
+        assertEquals(ENTRY_TIMEOUT, next.getArrivalTime());
+        assertEquals(0D, next.getSpeed());
+
+        // And the elapsed time should be DT/2 and stop counter incremented by 1
+        Performance perf = nextOpt._2;
+        assertThat(perf.getElapsedTime(), equalTo(MIN_TIME_INTERVAL));
+        assertEquals(0, perf.getTotalTrainTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
+        assertEquals(1, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
+    }
+
+    @Test
     void enteringStoppedNotClear() {
         // Given the entering train t1 stopped and the train t2 running on the entry track (entry not clear)
         // and the status just after a second after entry timout
+        double t0 = ENTRY_TIMEOUT + 1;
         status = withTrain()
                 .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "b")
                         .setSpeed(0))
@@ -164,11 +202,11 @@ class TrainEnteringTest extends WithStationStatusTest {
                         .at("ab", "b", 0)
                         .running())
                 .build()
-                .setTime(ENTRY_TIMEOUT + 1);
+                .setTime(t0);
         SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, t0, DT);
 
         // Than train t2 should be stopped in entering state
         assertTrue(nextOpt._1.isPresent());
@@ -189,17 +227,84 @@ class TrainEnteringTest extends WithStationStatusTest {
     }
 
     @Test
-    void enteringTimeout() {
+    void enteringTickClear1() {
+        // Given the entering train t1 and the train t2 running on the entry track (entry not clear)
+        // and the status just before DT/2 seconds before entry timout
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "b"))
+                .addTrain(new WithTrain.TrainBuilder("t2", 3, "a", "b")
+                        .at("ab", "b", 0)
+                        .running())
+                .build()
+                .setTime(ENTRY_TIMEOUT - EPSILON_DT);
+        SimulationContext ctx = new SimulationContext(status);
+
+        // When ...
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").tick(ctx, DT);
+
+        // Than train t2 should be stopped in entering state
+        assertTrue(nextOpt._1.isPresent());
+
+        Train next = nextOpt._1.orElseThrow();
+        assertEquals(Train.STATE_ENTERING, next.getState());
+        assertEquals(ENTRY_TIMEOUT, next.getArrivalTime());
+        assertEquals(0D, next.getSpeed());
+
+        // And the elapsed time should be DT/2 and stop counter incremented by 1
+        Performance perf = nextOpt._2;
+        assertThat(perf.getElapsedTime(), closeTo(DT, EPSILON_DT / 4));
+        assertThat(perf.getTotalTrainTime(), closeTo(DT - MIN_TIME_INTERVAL, EPSILON_DT / 4));
+        assertThat(perf.getTrainWaitingTime(), closeTo(DT - MIN_TIME_INTERVAL, EPSILON_DT / 4));
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
+        assertEquals(1, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
+    }
+
+    @Test
+    void enteringTickTimeout1() {
         // Given the entering train t1
         // and the status just before DT/2 seconds before entry timout
         status = withTrain()
                 .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "b"))
                 .build()
-                .setTime(ENTRY_TIMEOUT - DT / 2);
+                .setTime(ENTRY_TIMEOUT - EPSILON_DT);
         SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").tick(ctx, DT);
+
+        // Than train t1 should enter in entry track at full speed
+        assertTrue(nextOpt._1.isPresent());
+        Train train = nextOpt._1.orElseThrow();
+        assertEquals(Train.STATE_RUNNING, train.getState());
+        assertEquals(MAX_SPEED, train.getSpeed());
+        assertThat(train.getLocation(), optionalOf(locatedAt("ab", "b", 200 - MAX_SPEED * (DT - EPSILON_DT))));
+
+        // And the elapsed time should be DT/2
+        Performance perf = nextOpt._2;
+        assertThat(perf.getElapsedTime(), closeTo(DT, EPSILON_DT / 4));
+        assertThat(perf.getTotalTrainTime(), closeTo(DT - MIN_TIME_INTERVAL, EPSILON_DT / 4));
+        assertThat(perf.getTrainWaitingTime(), equalTo(0d));
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertThat(perf.getTraveledDistance(), closeTo(MAX_SPEED * (DT - MIN_TIME_INTERVAL), MAX_SPEED * EPSILON_DT));
+    }
+
+    @Test
+    void enteringTimeout() {
+        // Given the entering train t1
+        // and the status just before DT/2 seconds before entry timout
+        double t0 = ENTRY_TIMEOUT - DT / 2;
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "b"))
+                .build()
+                .setTime(t0);
+        SimulationContext ctx = new SimulationContext(status);
+
+        // When ...
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, t0, DT);
 
         // Than train t1 should enter in entry track at full speed
         assertTrue(nextOpt._1.isPresent());
@@ -220,6 +325,38 @@ class TrainEnteringTest extends WithStationStatusTest {
     }
 
     @Test
+    void enteringTimeout1() {
+        // Given the entering train t1
+        // and the status just before DT/2 seconds before entry timout
+        double t0 = ENTRY_TIMEOUT - EPSILON_DT;
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("t1", 3, "a", "b"))
+                .build()
+                .setTime(t0);
+        SimulationContext ctx = new SimulationContext(status);
+
+        // When ...
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, t0, DT);
+
+        // Than train t1 should enter in entry track at full speed
+        assertTrue(nextOpt._1.isPresent());
+        Train train = nextOpt._1.orElseThrow();
+        assertEquals(Train.STATE_RUNNING, train.getState());
+        assertEquals(MAX_SPEED, train.getSpeed());
+        assertThat(train.getLocation(), optionalOf(locatedAt("ab", "b", 200)));
+
+        // And the elapsed time should be DT/2
+        Performance perf = nextOpt._2;
+        assertThat(perf.getElapsedTime(), equalTo(MIN_TIME_INTERVAL));
+        assertEquals(0, perf.getTotalTrainTime());
+        assertEquals(0, perf.getTrainWaitingTime());
+        assertEquals(0, perf.getRightOutgoingTrainNumber());
+        assertEquals(0, perf.getWrongOutgoingTrainNumber());
+        assertEquals(0, perf.getTrainStopNumber());
+        assertEquals(0, perf.getTraveledDistance());
+    }
+
+    @Test
     void enteringWaiting() {
         // Given the entering train t1
         status = withTrain()
@@ -228,7 +365,7 @@ class TrainEnteringTest extends WithStationStatusTest {
         SimulationContext ctx = new SimulationContext(status);
 
         // When ...
-        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, DT);
+        Tuple2<Optional<Train>, Performance> nextOpt = train("t1").changeState(ctx, 0, DT);
 
         // Than the train t2 should remain in entering state at full speed
         assertTrue(nextOpt._1.isPresent());

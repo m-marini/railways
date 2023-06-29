@@ -55,3 +55,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Issue #41: Train stops at central cross block
 - Issue #62: Exiting train disappears from map panel
 - Issue #61: Wrong signal lock at train crossing section
+- Issue #83: Incoming train stuck up

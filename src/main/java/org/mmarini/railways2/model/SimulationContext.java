@@ -76,21 +76,10 @@ public class SimulationContext {
     }
 
     /**
-     * Returns the time after a time interval
-     *
-     * @param interval the interval (s)
+     * Returns the current time instant (s)
      */
-    public double getTimeAfter(double interval) {
-        return status.getTime() + interval;
-    }
-
-    /**
-     * Returns the remaining time interval to the required time (s)
-     *
-     * @param time the required time instant (s)
-     */
-    public double getTimeTo(double time) {
-        return time - status.getTime();
+    public double getTime() {
+        return status.getTime();
     }
 
     /**
