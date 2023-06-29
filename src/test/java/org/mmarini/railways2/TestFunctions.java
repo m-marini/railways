@@ -28,9 +28,6 @@
 
 package org.mmarini.railways2;
 
-import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
-
 public interface TestFunctions {
 
     /*

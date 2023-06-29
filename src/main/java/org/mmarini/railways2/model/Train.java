@@ -77,8 +77,8 @@ public class Train {
     private final int numCoaches;
     private final Entry arrival;
     private final Exit destination;
-    private final State state;    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
-    private final EdgeLocation location;
+    private final State state;
+    private final EdgeLocation location;    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
     private final double arrivalTime;
     private final double speed;
     private final boolean loaded;
@@ -121,7 +121,7 @@ public class Train {
      */
     public Train brake() {
         return setState(Train.STATE_BRAKING);
-    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    }
 
     /**
      * Returns the braking train status after simulating a time interval
@@ -154,7 +154,7 @@ public class Train {
      */
     Tuple2<Optional<Train>, Performance> changeState(SimulationContext ctx, double t0, double dt) {
         return state.apply(this, ctx, t0, dt);
-    }
+    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
     /**
      * Returns the simulated entering train
@@ -255,7 +255,7 @@ public class Train {
     public Train setArrivalTime(double arrivalTime) {
         return this.arrivalTime == arrivalTime ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    }
 
     /**
      * Returns the destination of train
@@ -274,7 +274,7 @@ public class Train {
     public Train setExitDistance(double exitDistance) {
         return this.exitDistance == exitDistance ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }
+    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
 
     /**
      * Returns the exiting node
@@ -319,7 +319,7 @@ public class Train {
                 || location != null && location.equals(this.location)
                 || this.location != null && this.location.equals(location) ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
+    }
 
     /**
      * Returns the number of coaches
@@ -350,7 +350,7 @@ public class Train {
      */
     public State getState() {
         return state;
-    }
+    }    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
 
     /**
      * Returns the train in the given state
