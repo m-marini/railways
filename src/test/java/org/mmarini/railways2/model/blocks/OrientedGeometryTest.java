@@ -38,7 +38,7 @@ import java.util.stream.Stream;
 import static java.lang.Math.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mmarini.railways.Matchers.pointCloseTo;
+import static org.mmarini.railways2.Matchers.pointCloseTo;
 import static org.mmarini.railways2.model.Matchers.orientedGeometry;
 import static org.mmarini.railways2.model.RailwayConstants.RADIUS;
 import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;

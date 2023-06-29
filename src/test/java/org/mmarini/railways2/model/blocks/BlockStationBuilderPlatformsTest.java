@@ -55,7 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mmarini.ArgumentsGenerator.createStream;
 import static org.mmarini.ArgumentsGenerator.uniform;
-import static org.mmarini.railways.Matchers.*;
+import static org.mmarini.railways2.Matchers.*;
 import static org.mmarini.railways2.model.Matchers.orientedGeometry;
 import static org.mmarini.railways2.model.MathUtils.normalizeDeg;
 import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;

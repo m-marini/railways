@@ -46,8 +46,8 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mmarini.railways.Matchers.optionalOf;
-import static org.mmarini.railways.Matchers.tupleOf;
+import static org.mmarini.railways2.Matchers.optionalOf;
+import static org.mmarini.railways2.Matchers.tupleOf;
 import static org.mmarini.railways2.model.Matchers.*;
 import static org.mmarini.railways2.model.RailwayConstants.ENTRY_TIMEOUT;
 

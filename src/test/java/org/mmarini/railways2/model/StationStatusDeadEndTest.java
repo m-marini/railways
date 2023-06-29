@@ -43,8 +43,8 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mmarini.railways.Matchers.optionalOf;
-import static org.mmarini.railways.Matchers.tupleOf;
+import static org.mmarini.railways2.Matchers.optionalOf;
+import static org.mmarini.railways2.Matchers.tupleOf;
 import static org.mmarini.railways2.model.Matchers.isSectionWith;
 
 class StationStatusDeadEndTest extends WithStationStatusTest {

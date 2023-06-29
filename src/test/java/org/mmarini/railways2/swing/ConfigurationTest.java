@@ -39,7 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mmarini.railways.TestFunctions.text;
+import static org.mmarini.railways2.TestFunctions.text;
 import static org.mmarini.yaml.Utils.fromText;
 
 class ConfigurationTest {

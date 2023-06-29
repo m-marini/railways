@@ -46,7 +46,7 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mmarini.railways.Matchers.*;
+import static org.mmarini.railways2.Matchers.*;
 import static org.mmarini.railways2.model.Matchers.isSectionWith;
 import static org.mockito.Mockito.verify;
 

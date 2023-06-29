@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mmarini.railways.Matchers.pointCloseTo;
+import static org.mmarini.railways2.Matchers.pointCloseTo;
 import static org.mmarini.railways2.model.RailwayConstants.COACH_LENGTH;
 import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
 import static org.mmarini.railways2.model.blocks.Platforms.PLATFORM_GAP;

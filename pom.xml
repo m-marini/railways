@@ -62,7 +62,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.mmarini.railways.swing.GameFrame</mainClass>
+                            <mainClass>org.mmarini.railways2.swing.Main</mainClass>
                             <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>
