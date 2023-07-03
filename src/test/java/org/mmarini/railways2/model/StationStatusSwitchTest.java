@@ -203,7 +203,7 @@ class StationStatusSwitchTest extends WithStationStatusTest {
     }
 
     @Test
-    void toggleSwitchUnclearThrough() {
+    void toggleSwitchTrainInSection() {
         // Given ...
         createSwitch(true);
         status = withTrain()

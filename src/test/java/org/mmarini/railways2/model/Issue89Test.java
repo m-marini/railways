@@ -26,41 +26,8 @@
  *
  */
 
-package org.mmarini.railways2.model.blocks;
+package org.mmarini.railways2.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mmarini.railways2.model.WithStationStatusTest;
-import org.mmarini.yaml.Utils;
-import org.mmarini.yaml.schema.Locator;
+public class Issue89Test {
 
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-public class JackvilleTest extends WithStationStatusTest {
-
-    public static final double EPSILON = 1e-3;
-    public static final double GAME_DURATION = 300d;
-    public static final double FREQUENCY = 0.1;
-    private JsonNode root;
-
-    @Test
-    void build() {
-        StationDef station = StationDef.create(root, Locator.root());
-        this.status = new BlockBuilder(station).buildStatus(GAME_DURATION, FREQUENCY, null, null);
-        assertEquals("jackville", status.getStationMap().getId());
-    }
-
-    @Test
-    void parseYaml() {
-        StationDef station = StationDef.create(root, Locator.root());
-        assertEquals("jackville", station.getId());
-    }
-
-    @BeforeEach
-    void setUp() throws IOException {
-        this.root = Utils.fromResource("/stations/jackville.station.yml");
-    }
 }

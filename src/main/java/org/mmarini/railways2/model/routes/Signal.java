@@ -28,8 +28,12 @@
 
 package org.mmarini.railways2.model.routes;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.Direction;
+import org.mmarini.railways2.model.geometry.Edge;
 import org.mmarini.railways2.model.geometry.Node;
 
 import java.util.*;
@@ -37,6 +41,7 @@ import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static org.mmarini.yaml.Utils.objectMapper;
 
 /**
  * Dissects two edges in boh direction
@@ -118,6 +123,18 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
         return Optional.ofNullable(exitByEntry.get(direction));
     }
 
+    @Override
+    public ObjectNode getJson() {
+        ObjectNode result = super.getJson();
+        ArrayNode locksNode = objectMapper.createArrayNode();
+        locks.stream()
+                .map(Direction::getEdge)
+                .map(Edge::getId)
+                .forEach(locksNode::add);
+        result.set("locks", locksNode);
+        return result;
+    }
+
     /**
      * Returns true id the exit is locked
      *
@@ -151,6 +168,18 @@ public class Signal extends AbstractSingleNodeRoute implements SectionTerminal {
             newLocks.add(direction);
             return new Signal(node, newLocks, exitByEntry);
         }
+    }
+
+    /**
+     * Returns the signal with locks
+     *
+     * @param locks the locks
+     */
+    public Signal setLocks(Direction... locks) {
+        for (Direction lock : locks) {
+            validateLock(lock);
+        }
+        return new Signal(node, Set.of(locks), exitByEntry);
     }
 
     /**

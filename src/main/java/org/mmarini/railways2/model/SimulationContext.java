@@ -86,7 +86,7 @@ public class SimulationContext {
      * Returns true if autolock set
      */
     public boolean isAutolock() {
-        return status.isAutolock();
+        return status.isAutoLock();
     }
 
     /**

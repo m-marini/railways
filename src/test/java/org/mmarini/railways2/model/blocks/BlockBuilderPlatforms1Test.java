@@ -33,18 +33,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mmarini.Tuple2;
-import org.mmarini.railways2.model.StationStatus;
 import org.mmarini.railways2.model.geometry.EdgeBuilderParams;
-import org.mmarini.railways2.model.geometry.Node;
 import org.mmarini.railways2.model.geometry.NodeBuilderParams;
 import org.mmarini.railways2.model.geometry.StationMap;
-import org.mmarini.railways2.model.routes.*;
 
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,73 +59,22 @@ import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
 import static org.mmarini.railways2.model.blocks.Platforms.PLATFORM_GAP;
 import static org.mmarini.railways2.model.blocks.Platforms.PLATFORM_SIGNAL_GAP;
 
-class BlockStationBuilderPlatformsTest {
+class BlockBuilderPlatforms1Test {
 
     public static final double EPSILON = 1e-3;
     public static final int NUM_COACHES = 10;
     public static final double PLATFORM_LENGTH = COACH_LENGTH * NUM_COACHES + PLATFORM_GAP + PLATFORM_SIGNAL_GAP * 2;
     public static final double GAME_DURATION = 300d;
-    public static final double FREQUENCY = 0.1;
 
     static Stream<Arguments> orientationValues() {
         return createStream(10, 1234,
                 uniform(-180, 179));
     }
 
-    private BlockStationBuilder builder;
+    private BlockBuilder builder;
 
     @Test
     void build() {
-        // Given ...
-        setUp(0);
-
-        // When ...
-        StationStatus status = builder.build();
-
-        // Then ...
-        assertThat(status.getRoute("west.in"), allOf(isA(Entry.class),
-                hasToString("Entry[west.in]")
-        ));
-        assertThat(status.getRoute("west.out"), allOf(isA(Exit.class),
-                hasToString("Exit[west.out]")
-        ));
-        assertThat(status.getRoute("east.in"), allOf(isA(Entry.class),
-                hasToString("Entry[east.in]")
-        ));
-        assertThat(status.getRoute("east.out"), allOf(isA(Exit.class),
-                hasToString("Exit[east.out]")
-        ));
-        assertThat(status.getRoute("p.1.signalw"), allOf(isA(Signal.class),
-                hasToString("Signal[p.1.signalw]")
-        ));
-        assertThat(status.getRoute("p.2.signalw"), allOf(isA(Signal.class),
-                hasToString("Signal[p.2.signalw]")
-        ));
-        assertThat(status.getRoute("p.1.signale"), allOf(isA(Signal.class),
-                hasToString("Signal[p.1.signale]")
-        ));
-        assertThat(status.getRoute("p.2.signale"), allOf(isA(Signal.class),
-                hasToString("Signal[p.2.signale]")
-        ));
-        assertThat(status.getRoute("p.1.signalw"), allOf(isA(Signal.class),
-                hasToString("Signal[p.1.signalw]")
-        ));
-        assertThat(status.getRoute("p.1.w"), allOf(isA(Junction.class),
-                hasToString("Junction[p.1.w]")
-        ));
-        assertThat(status.getRoute("p.2.w"), allOf(isA(Junction.class),
-                hasToString("Junction[p.2.w]")
-        ));
-        assertThat(status.getRoute("east.entry"), allOf(isA(Junction.class),
-                hasToString("Junction[east.entry]")
-        ));
-        assertThat(status.getRoute("east.exit"), allOf(isA(Junction.class),
-                hasToString("Junction[east.exit]")
-        ));
-    }
-
-    @Test
-    void buildStationMap() {
         // Given ...
         setUp(0);
 
@@ -369,54 +314,6 @@ class BlockStationBuilderPlatformsTest {
     }
 
     @Test
-    void createInnerRoutes() {
-        // Given ...
-        setUp(0);
-
-        // When ...
-        List<Tuple2<Function<Node[], ? extends Route>, List<String>>> routes = builder.createInnerRoutes().collect(Collectors.toList());
-
-        // Then ...
-        assertThat(routes, hasSize(8));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("west.in"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("west.out"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("east.in"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("east.out"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("p.1.signalw"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("p.1.signale"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("p.2.signalw"))));
-        assertThat(routes, hasItem(tupleOf(isA(Function.class),
-                contains("p.2.signale"))));
-    }
-
-    @Test
-    void createJunctionRoutes() {
-        // Given ...
-        setUp(0);
-
-        // When ...
-        List<Tuple2<Function<Node[], ? extends Route>, List<String>>> junctions = builder.createJunctionRoutes().collect(Collectors.toList());
-
-        // Then ...
-        assertThat(junctions, hasSize(4));
-        assertThat(junctions, hasItem(tupleOf(isA(Function.class),
-                contains("p.1.w"))));
-        assertThat(junctions, hasItem(tupleOf(isA(Function.class),
-                contains("p.2.w"))));
-        assertThat(junctions, hasItem(tupleOf(isA(Function.class),
-                contains("east.entry"))));
-        assertThat(junctions, hasItem(tupleOf(isA(Function.class),
-                contains("east.exit"))));
-    }
-
-    @Test
     void createNodeBuilders() {
         // Given ...
         setUp(0);
@@ -593,41 +490,6 @@ class BlockStationBuilderPlatformsTest {
         assertThat(nodes, hasEntry("p.1.e", "east.entry"));
         assertThat(nodes, hasEntry("east.exit", "east.exit"));
         assertThat(nodes, hasEntry("p.2.e", "east.exit"));
-        /*
-        double length = NUM_COACHES * COACH_LENGTH + PLATFORM_GAP + PLATFORM_SIGNAL_GAP * 2;
-        double x0 = length * cos(toRadians(orientation));
-        double y0 = length * sin(toRadians(orientation));
-        double x1 = -TRACK_GAP * sin(toRadians(orientation));
-        double y1 = TRACK_GAP * cos(toRadians(orientation));
-        assertThat(nodes, hasEntry(equalTo("p.1.w"), allOf(
-                hasProperty("id", equalTo("p.1.w")),
-                hasProperty("location", pointCloseTo(0, 0, EPSILON1)))));
-        assertThat(nodes, hasEntry(equalTo("west.exit"), allOf(
-                hasProperty("id", equalTo("p.1.w")),
-                hasProperty("location", pointCloseTo(0, 0, EPSILON1)))));
-
-        assertThat(nodes, hasEntry(equalTo("p.2.w"), allOf(
-                hasProperty("id", equalTo("p.2.w")),
-                hasProperty("location", pointCloseTo(x1, y1, EPSILON1)))));
-        assertThat(nodes, hasEntry(equalTo("west.entry"), allOf(
-                hasProperty("id", equalTo("p.2.w")),
-                hasProperty("location", pointCloseTo(x1, y1, EPSILON1)))));
-
-        assertThat(nodes, hasEntry(equalTo("east.entry"), allOf(
-                hasProperty("id", equalTo("east.entry")),
-                hasProperty("location", pointCloseTo(x0, y0, EPSILON1)))));
-        assertThat(nodes, hasEntry(equalTo("p.1.e"), allOf(
-                hasProperty("id", equalTo("east.entry")),
-                hasProperty("location", pointCloseTo(x0, y0, EPSILON1)))));
-
-        assertThat(nodes, hasEntry(equalTo("east.exit"), allOf(
-                hasProperty("id", equalTo("east.exit")),
-                hasProperty("location", pointCloseTo(x0 + x1, y0 + y1, EPSILON1)))));
-        assertThat(nodes, hasEntry(equalTo("p.2.e"), allOf(
-                hasProperty("id", equalTo("east.exit")),
-                hasProperty("location", pointCloseTo(x0 + x1, y0 + y1, EPSILON1)))));
-
-         */
     }
 
     @ParameterizedTest
@@ -702,6 +564,6 @@ class BlockStationBuilderPlatformsTest {
                 "west.entry", "p.2.w",
                 "east.entry", "p.1.e");
         StationDef station = StationDef.create("station", orientation, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
+        this.builder = new BlockBuilder(station);
     }
 }

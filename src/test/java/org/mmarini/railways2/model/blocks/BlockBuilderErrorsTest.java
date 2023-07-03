@@ -38,13 +38,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesRegex;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class BlockStationBuilderErrorsTest {
+class BlockBuilderErrorsTest {
 
     public static final int NUM_COACHES = 10;
     public static final double GAME_DURATION = 300d;
-    public static final double FREQUENCY = 0.1d;
 
-    private BlockStationBuilder builder;
+    private BlockBuilder builder;
     private List<? extends Block> blocks;
 
     @Test
@@ -53,11 +52,10 @@ class BlockStationBuilderErrorsTest {
         Map<String, String> links = Map.of(
                 "west.entry", "p.1.e");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
+        BlockBuilder builder = new BlockBuilder(station);
 
         // When ...
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                builder.validateBlocks()
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, builder::validateBlocks
         );
 
         // Then ...
@@ -71,15 +69,14 @@ class BlockStationBuilderErrorsTest {
                 "west.entry", "p.1.w",
                 "east.exit", "p.1.e");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
+        builder = new BlockBuilder(station);
 
         // When ...
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                builder.validateJunctions()
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, builder::validateJunctions
         );
 
         // Then ...
-        assertThat(ex.getMessage(), matchesRegex("No junctions for nodes \\[east\\.entry, p\\.2\\.e, p\\.2\\.w, west\\.exit\\]"));
+        assertThat(ex.getMessage(), matchesRegex("No junctions for nodes \\[east\\.entry, p\\.2\\.e, p\\.2\\.w, west\\.exit]"));
     }
 
     @BeforeEach
@@ -97,10 +94,10 @@ class BlockStationBuilderErrorsTest {
                 "west.entry", "none.e1",
                 "east.exit", "p.2.e");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
+        builder = new BlockBuilder(station);
 
         // When ...
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> builder.getWorldBlockGeometries());
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, builder::getWorldBlockGeometries);
 
         // Then ...
         assertThat(ex.getMessage(), matchesRegex("Block \\[none] not found"));
@@ -113,11 +110,10 @@ class BlockStationBuilderErrorsTest {
                 "west.entry", "p.none",
                 "east.exit", "p.e2");
         StationDef station = StationDef.create("station", 0, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
+        builder = new BlockBuilder(station);
 
         // When ...
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
-                builder.getWorldBlockGeometries()
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, builder::getWorldBlockGeometries
         );
 
         // Then ...

@@ -47,6 +47,12 @@ import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
 
 /**
  * Describes a way out (one entry and one exit)
+ * <p>
+ * <pre>
+ * (exit)  --- Track(exit.out, 1m) -- Exit(out)
+ * (entry) +-- Track(entry.in, 1m) -- Entry(in)
+ * </pre>
+ * </p>
  */
 public class Wayout extends AbstractBlock {
 
@@ -81,6 +87,11 @@ public class Wayout extends AbstractBlock {
         return create(id);
     }
 
+    /**
+     * Returns the wayout block
+     *
+     * @param id the identifier
+     */
     public static Wayout create(String id) {
         return new Wayout(id);
     }

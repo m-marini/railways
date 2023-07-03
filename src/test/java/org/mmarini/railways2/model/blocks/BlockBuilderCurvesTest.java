@@ -40,14 +40,14 @@ import static org.mmarini.railways2.model.RailwayConstants.TRACK_GAP;
 import static org.mmarini.railways2.model.blocks.Platforms.PLATFORM_GAP;
 import static org.mmarini.railways2.model.blocks.Platforms.PLATFORM_SIGNAL_GAP;
 
-class BlockStationBuilderCurvesTest {
+class BlockBuilderCurvesTest {
 
     public static final int NUM_COACHES = 10;
     public static final double PLATFORM_LENGTH = COACH_LENGTH * NUM_COACHES + PLATFORM_GAP + PLATFORM_SIGNAL_GAP * 2;
     public static final double EPSILON = 1e-3;
     public static final double GAME_DURATION = 300d;
     public static final double FREQUENCY = 0.1;
-    private BlockStationBuilder builder;
+    private BlockBuilder builder;
 
     @Test
     void getWorldGeometry() {
@@ -79,6 +79,6 @@ class BlockStationBuilderCurvesTest {
                 "west.entry", "curves.1.w",
                 "east.entry", "p.1.e");
         StationDef station = StationDef.create("station", orientation, blocks, links);
-        this.builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
+        builder= new BlockBuilder(station);
     }
 }

@@ -268,6 +268,26 @@ public class ExtendedPerformance extends Performance {
                 performance.trainWaitingTime, performance.elapsedTime);
     }
 
+    /**
+     * Returns the dump json node
+     */
+    public JsonNode toJsonDump() {
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("stationId", stationId);
+        result.put("player", player);
+        result.put("gameDuration", gameDuration);
+        result.put("timestamp", timestamp);
+        result.put("elapsedTime", elapsedTime);
+        result.put("incomingTrainNumber", incomingTrainNumber);
+        result.put("rightOutgoingTrainNumber", rightOutgoingTrainNumber);
+        result.put("wrongOutgoingTrainNumber", wrongOutgoingTrainNumber);
+        result.put("totalTrainTime", totalTrainTime);
+        result.put("traveledDistance", traveledDistance);
+        result.put("trainStopNumber", trainStopNumber);
+        result.put("trainWaitingTime", trainWaitingTime);
+        return result;
+    }
+
     @Override
     public String toString() {
         return new StringJoiner(", ", ExtendedPerformance.class.getSimpleName() + "[", "]")

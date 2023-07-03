@@ -30,9 +30,12 @@ package org.mmarini.railways2.model.blocks;
 
 import org.mmarini.LazyValue;
 import org.mmarini.Tuple2;
+import org.mmarini.railways2.model.RoutesBuilder;
 import org.mmarini.railways2.model.SoundEvent;
 import org.mmarini.railways2.model.StationStatus;
+import org.mmarini.railways2.model.Train;
 import org.mmarini.railways2.model.geometry.*;
+import org.mmarini.railways2.model.routes.Entry;
 import org.mmarini.railways2.model.routes.Junction;
 import org.mmarini.railways2.model.routes.Route;
 import org.reactivestreams.Subscriber;
@@ -66,74 +69,66 @@ import static org.mmarini.railways2.model.MathUtils.snapToGrid;
  *     </ul>
  * </p>
  */
-public class BlockStationBuilder {
+public class BlockBuilder {
 
     private final StationDef station;
-    private final double gameDuration;
     private final LazyValue<Map<String, OrientedGeometry>> worldBlockGeometries;
     private final LazyValue<Map<String, String>> nodeIdByBlockPointId;
     private final LazyValue<Collection<NodeBuilderParams>> junctionNodeParams;
     private final LazyValue<Map<String, OrientedGeometry>> worldGeometryByBlockPointId;
     private final LazyValue<Map<String, Tuple2<Point2D, List<String>>>> junctionParamsByJunctionId;
-    private final Random random;
-    private final double frequency;
-    private final Subscriber<SoundEvent> events;
+    private final LazyValue<StationMap> stationMap;
+    private final LazyValue<List<Route>> routes;
 
     /**
      * Creates the builder
      *
-     * @param station      the station definition
-     * @param gameDuration the game duration (s)
-     * @param frequency    the train frequency (#/s)
-     * @param random       the random number generator
-     * @param events       the event subscriber
+     * @param station the station definition
      */
-    public BlockStationBuilder(StationDef station, double gameDuration, double frequency, Random random, Subscriber<SoundEvent> events) {
+    public BlockBuilder(StationDef station) {
         this.station = requireNonNull(station);
-        this.gameDuration = gameDuration;
-        this.frequency = frequency;
-        this.random = random;
-        this.events = events;
         this.worldBlockGeometries = new LazyValue<>(this::createsBlockGeometries);
         this.nodeIdByBlockPointId = new LazyValue<>(this::createNodeIdByBlockPointId);
         this.junctionNodeParams = new LazyValue<>(this::createJunctionNodes);
         this.worldGeometryByBlockPointId = new LazyValue<>(this::createWorldGeometryByBlockPointId);
         this.junctionParamsByJunctionId = new LazyValue<>(this::createJunctionParamsByJunctionId);
+        this.stationMap = new LazyValue<>(this::createStationMap);
+        this.routes = new LazyValue<>(this::createsRoutes);
     }
 
     /**
-     * Returns the station built from the document
-     * <p>
-     * The build is performed in a sets of phases:
-     * <ol>
-     * <li>computes the location points of each block based on connections between blocks</li>
-     * <li>makes unique the locations for each node</li>
-     * <li>builds nodes and edges list by node</li>
-     * <li>builds edges with node identifiers</li>
-     * <li>builds station map</li>
-     * <li>builds routes with nodes references</li>
-     * <li>builds initial status</li>
-     * </l>
-     * </p>
+     * Returns the routes
      */
-    public StationStatus build() {
-        StationStatus.Builder statusBuilder = new StationStatus.Builder(buildStationMap(), frequency, gameDuration,
-                random, events);
-        createRoutes().forEach(t ->
-                statusBuilder.addRoute(t._1, t._2.toArray(String[]::new)));
-        return statusBuilder.build();
+    public List<Route> buildRoutes() {
+        return routes.get();
     }
 
     /**
      * Returns the station map
      */
-    StationMap buildStationMap() {
-        validateBlocks().validateJunctions();
-        StationBuilder builder = new StationBuilder(station.getId());
-        // Generates the edges
-        createGlobalEdgeParams().forEach(builder::addEdge);
-        createNodeBuilders().forEach(builder::addNode);
-        return builder.build();
+    public StationMap buildStationMap() {
+        return stationMap.get();
+    }
+
+    /**
+     * Returns the station Status
+     *
+     * @param gameDuration the game duration (s)
+     * @param frequency    the train frequency (#/s)
+     * @param random       the random number generator
+     * @param events       the event generator
+     */
+    public StationStatus buildStatus(double gameDuration, double frequency, Random random, Subscriber<SoundEvent> events) {
+        StationStatus stationStatus = StationStatus.create(buildStationMap(), buildRoutes(),
+                gameDuration, List.of(), 0, frequency, events);
+        if (random != null) {
+            List<Train> trains = new ArrayList<>();
+            for (Entry entry : stationStatus.getEntries()) {
+                trains.add(stationStatus.createNewTrain(trains, random, entry));
+            }
+            stationStatus = stationStatus.setTrains(trains).addIncomingTrains(trains.size());
+        }
+        return stationStatus;
     }
 
     /**
@@ -256,10 +251,32 @@ public class BlockStationBuilder {
     /**
      * Returns the routes building parameters
      */
-    private Stream<Tuple2<Function<Node[], ? extends Route>, List<String>>> createRoutes() {
+    private Stream<Tuple2<Function<Node[], ? extends Route>, List<String>>> createRouteBuilders() {
         Stream<Tuple2<Function<Node[], ? extends Route>, List<String>>> junctionRoutes = createJunctionRoutes();
         Stream<Tuple2<Function<Node[], ? extends Route>, List<String>>> innerRoutes = createInnerRoutes();
         return Stream.concat(junctionRoutes, innerRoutes);
+    }
+
+    /**
+     * Returns the station map built from the document
+     * <p>
+     * The build is performed in a sets of phases:
+     * <ol>
+     * <li>computes the location points of each block based on connections between blocks</li>
+     * <li>makes unique the locations for each node</li>
+     * <li>builds nodes and edges list by node</li>
+     * <li>builds edges with node identifiers</li>
+     * <li>builds station map</li>
+     * </l>
+     * </p>
+     */
+    StationMap createStationMap() {
+        validateBlocks().validateJunctions();
+        StationBuilder builder = new StationBuilder(station.getId());
+        // Generates the edges
+        createGlobalEdgeParams().forEach(builder::addEdge);
+        createNodeBuilders().forEach(builder::addNode);
+        return builder.build();
     }
 
     /**
@@ -290,6 +307,16 @@ public class BlockStationBuilder {
                 .orElseThrow();
         OrientedGeometry geometry = new OrientedGeometry(new Point2D.Double(), station.getOrientation());
         return traverseForWorldBlockGeometry(new HashMap<>(), ref, geometry);
+    }
+
+    /**
+     * Returns the list of routes
+     */
+    private List<Route> createsRoutes() {
+        RoutesBuilder routesBuilder = new RoutesBuilder(buildStationMap());
+        createRouteBuilders().forEach(t ->
+                routesBuilder.addRoute(t._1, t._2.toArray(String[]::new)));
+        return routesBuilder.build();
     }
 
     /**
@@ -325,7 +352,7 @@ public class BlockStationBuilder {
     /**
      * Returns the junction node parameters
      */
-    Collection<NodeBuilderParams> getJunctionNodeParams() {
+    public Collection<NodeBuilderParams> getJunctionNodeParams() {
         return junctionNodeParams.get();
     }
 
@@ -423,7 +450,7 @@ public class BlockStationBuilder {
     /**
      * Validates the blocks
      */
-    BlockStationBuilder validateBlocks() {
+    BlockBuilder validateBlocks() {
         // Validates blocks
         Map<String, OrientedGeometry> geometries = getWorldBlockGeometries();
         List<String> missing = station.getBlocks().stream()

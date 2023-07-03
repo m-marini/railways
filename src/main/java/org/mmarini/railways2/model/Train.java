@@ -28,6 +28,8 @@
 
 package org.mmarini.railways2.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.mmarini.Function4;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
@@ -48,12 +50,14 @@ import static java.util.Objects.requireNonNull;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 import static org.mmarini.railways2.model.SoundEvent.ARRIVED;
 import static org.mmarini.railways2.model.SoundEvent.STOPPED;
+import static org.mmarini.yaml.Utils.objectMapper;
 
 
 /**
  * Identifies the train, locates it, moves it in the dispatched routes
  */
 public class Train {
+
     public static final State STATE_EXITING = new State("EXITING", Train::exiting);
     public static final State STATE_WAITING_FOR_RUN = new State("WAITING_FOR_RUN", Train::waitingForRun);
     public static final State STATE_LOADING = new State("LOADING", Train::loading);
@@ -73,18 +77,33 @@ public class Train {
                 null, 0);
     }
 
+    /**
+     * Returns the train state from the identifier
+     *
+     * @param id the identifier
+     */
+    public static State getState(String id) {
+        Optional<State> result = STATES.stream().filter(s -> s.getId().equals(id))
+                .findAny();
+        if (result.isEmpty()) {
+            throw new IllegalArgumentException(format("State %s not found", id));
+        }
+        return result.orElseThrow();
+    }
+
     private final String id;
     private final int numCoaches;
     private final Entry arrival;
     private final Exit destination;
     private final State state;
-    private final EdgeLocation location;    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    private final EdgeLocation location;
     private final double arrivalTime;
     private final double speed;
     private final boolean loaded;
     private final double loadedTime;
     private final Exit exitingNode;
     private final double exitDistance;
+
     /**
      * Creates the train
      *
@@ -154,7 +173,7 @@ public class Train {
      */
     Tuple2<Optional<Train>, Performance> changeState(SimulationContext ctx, double t0, double dt) {
         return state.apply(this, ctx, t0, dt);
-    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    }
 
     /**
      * Returns the simulated entering train
@@ -269,12 +288,12 @@ public class Train {
      */
     double getExitDistance() {
         return exitDistance;
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     public Train setExitDistance(double exitDistance) {
         return this.exitDistance == exitDistance ? this :
                 new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed, loaded, loadedTime, exitingNode, exitDistance);
-    }    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
+    }
 
     /**
      * Returns the exiting node
@@ -293,6 +312,26 @@ public class Train {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * Returns the dump json node
+     */
+    public JsonNode getJson() {
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("id", this.id);
+        result.put("numCoaches", this.numCoaches);
+        result.put("arrival", this.arrival.getId());
+        result.put("destination", this.destination.getId());
+        result.put("state", state.getId());
+        result.put("arrivalTime", this.arrivalTime);
+        result.put("loadedTime", this.loadedTime);
+        result.put("loaded", this.loaded);
+        result.set("location", Optional.ofNullable(location).map(EdgeLocation::getJsonDump).orElse(null));
+        result.put("speed", this.speed);
+        result.put("exitingNode", Optional.ofNullable(exitingNode).map(Exit::getId).orElse(null));
+        result.put("exitDistance", this.exitDistance);
+        return result;
     }
 
     /**
@@ -350,7 +389,7 @@ public class Train {
      */
     public State getState() {
         return state;
-    }    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
+    }
 
     /**
      * Returns the train in the given state
@@ -574,7 +613,7 @@ public class Train {
     public double speedPhysics(double targetSpeed, double dt) {
         double acc = min(max((targetSpeed - speed) / dt, DEACCELERATION), ACCELERATION);
         return min(speed + acc * dt, MAX_SPEED);
-    }
+    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
     /**
      * Returns the train started
@@ -706,8 +745,18 @@ public class Train {
 
 
 
+    public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);
 
 
+    public static final State STATE_BRAKING = new State("BRAKING", Train::braking);
 
+    public static final List<State> STATES = List.of(
+            STATE_ENTERING,
+            STATE_RUNNING,
+            STATE_LOADING,
+            STATE_EXITING,
+            STATE_BRAKING,
+            STATE_WAITING_FOR_RUN,
+            STATE_WAITING_FOR_SIGNAL);
 
 }

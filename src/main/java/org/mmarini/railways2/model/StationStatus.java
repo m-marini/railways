@@ -28,15 +28,22 @@
 
 package org.mmarini.railways2.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.geometry.*;
 import org.mmarini.railways2.model.routes.*;
+import org.mmarini.yaml.schema.Locator;
+import org.mmarini.yaml.schema.Validator;
 import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,6 +56,9 @@ import static java.util.Objects.requireNonNull;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 import static org.mmarini.railways2.model.Train.*;
 import static org.mmarini.railways2.model.Utils.nextPoisson;
+import static org.mmarini.railways2.model.geometry.StationMap.LOCATION_VALIDATOR;
+import static org.mmarini.yaml.Utils.objectMapper;
+import static org.mmarini.yaml.schema.Validator.*;
 
 /**
  * Tracks the status of trains and station components.
@@ -56,6 +66,41 @@ import static org.mmarini.railways2.model.Utils.nextPoisson;
  */
 public class StationStatus {
 
+    public static final String DUMP_VERSION = "2.0";
+    public static final Validator TRAIN_VALIDATOR = objectPropertiesRequired(Map.ofEntries(
+                    Map.entry("id", string()),
+                    Map.entry("numCoaches", integer(minimum(MIN_COACH_COUNT), maximum(MAX_COACH_COUNT))),
+                    Map.entry("arrival", string()),
+                    Map.entry("destination", string()),
+                    Map.entry("arrivalTime", nonNegativeNumber()),
+                    Map.entry("loadedTime", nonNegativeNumber()),
+                    Map.entry("loaded", booleanValue()),
+                    Map.entry("location", nullable(LOCATION_VALIDATOR)),
+                    Map.entry("speed", nonNegativeNumber()),
+                    Map.entry("exitingNode", nullable(string())),
+                    Map.entry("exitDistance", nonNegativeNumber()),
+                    Map.entry("state", string(values(
+                            Train.STATE_ENTERING.getId(),
+                            Train.STATE_RUNNING.getId(),
+                            Train.STATE_LOADING.getId(),
+                            Train.STATE_WAITING_FOR_RUN.getId(),
+                            Train.STATE_WAITING_FOR_SIGNAL.getId(),
+                            Train.STATE_BRAKING.getId(),
+                            Train.STATE_EXITING.getId())))
+            ), List.of(
+                    "numCoaches",
+                    "arrival",
+                    "destination",
+                    "state",
+                    "arrivalTime",
+                    "loadedTime",
+                    "loaded",
+                    "location",
+                    "speed",
+                    "exitingNode",
+                    "exitDistance"
+            )
+    );
     /**
      * Arrival train frequency (#/s)
      */
@@ -82,13 +127,27 @@ public class StationStatus {
         );
     }
 
+    /**
+     * Returns the station status
+     *
+     * @param stationMap     the station map
+     * @param routes         the routes
+     * @param trainFrequency the train frequency (#/s)
+     * @param performance    the performance
+     */
+    public static StationStatus create(StationMap stationMap, List<Route> routes, double trainFrequency, ExtendedPerformance performance) {
+        return new StationStatus(stationMap, routes, List.of(), true, trainFrequency, performance,
+                null, null, null, null, null, null, null, null, null, null
+        );
+    }
+
     private final StationMap stationMap;
     private final Collection<? extends Route> routes;
     private final Collection<Train> trains;
     private final double trainFrequency;
     private final ExtendedPerformance performance;
     private final Subscriber<SoundEvent> events;
-    private final boolean autolock;
+    private final boolean autoLock;
     private List<Entry> entries;
     private List<Exit> exits;
     private Map<Node, ? extends Route> routeByNode;
@@ -105,7 +164,7 @@ public class StationStatus {
      * @param stationMap        the station map
      * @param routes            the routes
      * @param trains            the trains
-     * @param autolock
+     * @param autoLock          true if auto-lock set
      * @param trainFrequency    the train frequency
      * @param performance       the game performance
      * @param events            the event subscriber
@@ -120,7 +179,7 @@ public class StationStatus {
      * @param trainByExit       the train by exit
      */
     protected StationStatus(StationMap stationMap, Collection<? extends Route> routes,
-                            Collection<Train> trains, boolean autolock, double trainFrequency,
+                            Collection<Train> trains, boolean autoLock, double trainFrequency,
                             ExtendedPerformance performance, Subscriber<SoundEvent> events, List<Entry> entries, List<Exit> exits,
                             Map<Node, ? extends Route> routeByNode,
                             Map<Entry, Train> firstTrainByEntry, Collection<Section> sections,
@@ -129,7 +188,7 @@ public class StationStatus {
         this.stationMap = requireNonNull(stationMap);
         this.routes = requireNonNull(routes);
         this.trains = requireNonNull(trains);
-        this.autolock = autolock;
+        this.autoLock = autoLock;
         this.trainFrequency = trainFrequency;
         this.performance = requireNonNull(performance);
         this.entries = entries;
@@ -149,7 +208,7 @@ public class StationStatus {
      *
      * @param trainNumber the number of incoming train
      */
-    private StationStatus addIncomingTrains(int trainNumber) {
+    public StationStatus addIncomingTrains(int trainNumber) {
         return setPerformance(performance.addTrainIncomingNumber(trainNumber));
     }
 
@@ -205,7 +264,7 @@ public class StationStatus {
      * @param random  the random number generator
      * @param arrival the arrival entry
      */
-    Train createNewTrain(List<Train> trains, Random random, Entry arrival) {
+    public Train createNewTrain(List<Train> trains, Random random, Entry arrival) {
         List<Exit> exits = getExits();
         // Generates a unique id
         String trainId;
@@ -339,6 +398,29 @@ public class StationStatus {
     }
 
     /**
+     * Returns the status after dumping to file
+     *
+     * @param filename the filename
+     */
+    public StationStatus dump(String filename) {
+        return dump(new File(filename));
+    }
+
+    /**
+     * Returns the status after dumping to file
+     *
+     * @param file the file
+     */
+    public StationStatus dump(File file) {
+        try {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, getJson());
+        } catch (IOException e) {
+            logger.atError().setCause(e).log("Error dumping status");
+        }
+        return this;
+    }
+
+    /**
      * Returns the forward edges for the distance
      *
      * @param location the location
@@ -405,7 +487,7 @@ public class StationStatus {
     /**
      * Returns the list of entries
      */
-    List<Entry> getEntries() {
+    public List<Entry> getEntries() {
         if (entries == null) {
             entries = getRoutes().stream()
                     .filter(route -> route instanceof Entry)
@@ -457,6 +539,29 @@ public class StationStatus {
     }
 
     /**
+     * Returns the json node of status dump
+     */
+    private JsonNode getJson() {
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("version", DUMP_VERSION);
+        result.put("trainFrequency", trainFrequency);
+        result.set("performance", performance.getJson());
+        ArrayNode routesNode = objectMapper.createArrayNode();
+        for (Route route : routes) {
+            routesNode.add(route.getJson());
+        }
+        result.set("routes", routesNode);
+
+        ArrayNode trainsNode = objectMapper.createArrayNode();
+
+        for (Train train : trains) {
+            trainsNode.add(train.getJson());
+        }
+        result.set("trains", trainsNode);
+        return result;
+    }
+
+    /**
      * Returns the location from a point at a given distance
      *
      * @param start    the start location
@@ -499,7 +604,7 @@ public class StationStatus {
      * @param performance the new performance
      */
     private StationStatus setPerformance(ExtendedPerformance performance) {
-        return new StationStatus(stationMap, routes, trains, autolock, trainFrequency, performance, events, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
+        return new StationStatus(stationMap, routes, trains, autoLock, trainFrequency, performance, events, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
     }
 
     /**
@@ -542,7 +647,7 @@ public class StationStatus {
      * @param routes the routes
      */
     public StationStatus setRoutes(Collection<? extends Route> routes) {
-        return new StationStatus(stationMap, routes, trains, autolock, trainFrequency, performance, events, null, null, null, null, null, null, null, null, null);
+        return new StationStatus(stationMap, routes, trains, autoLock, trainFrequency, performance, events, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -621,7 +726,7 @@ public class StationStatus {
      */
     public StationStatus setTime(double time) {
         return time == this.getTime() ? this :
-                new StationStatus(stationMap, routes, trains, autolock, trainFrequency, performance.setElapsedTime(time), events, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
+                new StationStatus(stationMap, routes, trains, autoLock, trainFrequency, performance.setElapsedTime(time), events, entries, exits, routeByNode, firstTrainByEntry, sections, trainByEdge, trainBySection, sectionByEdge, trainByExit);
     }
 
     /**
@@ -776,7 +881,7 @@ public class StationStatus {
      * @param trains the trains
      */
     public StationStatus setTrains(Collection<Train> trains) {
-        return new StationStatus(stationMap, routes, trains, autolock, trainFrequency, performance, events, entries, exits, routeByNode, null, sections, null, null, sectionByEdge, null);
+        return new StationStatus(stationMap, routes, trains, autoLock, trainFrequency, performance, events, entries, exits, routeByNode, null, sections, null, null, sectionByEdge, null);
     }
 
     /**
@@ -788,21 +893,32 @@ public class StationStatus {
     }
 
     /**
-     * Returns true if autolock set
+     * Returns true if auto lock set
      */
-    public boolean isAutolock() {
-        return autolock;
+    public boolean isAutoLock() {
+        return autoLock;
     }
 
     /**
-     * Returns true if the status is conflict
+     * Returns the status with auto lock set
+     *
+     * @param autoLock true if auto lock
+     */
+    public StationStatus setAutoLock(boolean autoLock) {
+        return autoLock != this.autoLock
+                ? new StationStatus(stationMap, routes, trains, autoLock, trainFrequency, performance, events, null, null, null, null, null, null, null, null, null)
+                : this;
+    }
+
+    /**
+     * Returns true if the status is consistent (no crossing sectino with trains)
      */
     boolean isConsistent() {
-        return getSections().stream()
-                .filter(section -> section.getCrossingSections().stream()
-                        .anyMatch(this::isSectionWithTrain))
-                .findAny()
-                .isEmpty();
+        boolean consistent = !getSections().stream()
+                .filter(this::isSectionWithTrain)
+                .anyMatch(section -> section.getCrossingSections().stream()
+                        .anyMatch(this::isSectionWithTrain));
+        return consistent;
     }
 
     /**
@@ -1113,17 +1229,6 @@ public class StationStatus {
     }
 
     /**
-     * Returns the status with autolock set
-     *
-     * @param autolock true if autolock
-     */
-    public StationStatus setAutoLock(boolean autolock) {
-        return autolock != this.autolock
-                ? new StationStatus(stationMap, routes, trains, autolock, trainFrequency, performance, events, null, null, null, null, null, null, null, null, null)
-                : this;
-    }
-
-    /**
      * Returns the status with the train started
      *
      * @param trainId the train identifier
@@ -1246,7 +1351,8 @@ public class StationStatus {
     public StationStatus toggleSwitch(String id) {
         Switch route = getRoute(id);
         Edge entryEdge = route.getNodes().get(0).getEdges().get(0);
-        if (!isSectionClear(entryEdge)) {
+        if (getSection(entryEdge).flatMap(this::getTrain).isPresent()) {
+            // Train in the current section
             return this;
         }
         Switch newRoute = route.isThrough() ? route.diverging() : route.through();
@@ -1255,6 +1361,32 @@ public class StationStatus {
                 .collect(Collectors.toList());
         play(SoundEvent.SWITCH);
         return setRoutes(newRoutes);
+    }
+
+    /**
+     * Returns the train from json node
+     *
+     * @param root    the root document
+     * @param locator the locator
+     */
+    public Train trainFromJson(JsonNode root, Locator locator) {
+        TRAIN_VALIDATOR.apply(locator).accept(root);
+        String id = locator.path("id").getNode(root).asText();
+        int numCoaches = locator.path("numCoaches").getNode(root).asInt();
+        Entry arrival = getRoute(locator.path("arrival").getNode(root).asText());
+        Exit destination = getRoute(locator.path("destination").getNode(root).asText());
+        State state = Train.getState(locator.path("state").getNode(root).asText());
+        double arrivalTime = locator.path("arrivalTime").getNode(root).asDouble();
+        Locator locationLocator = locator.path("location");
+        EdgeLocation location = locationLocator.getNode(root).isNull() ? null : getStationMap().locationFromJson(root, locationLocator);
+        double speed = locator.path("speed").getNode(root).asDouble();
+        boolean loaded = locator.path("loaded").getNode(root).asBoolean();
+        double loadedTime = locator.path("loadedTime").getNode(root).asDouble();
+        JsonNode exitingNodeJson = locator.path("exitingNode").getNode(root);
+        Exit exitingNode = exitingNodeJson.isNull() ? null : getRoute(exitingNodeJson.asText());
+        double exitDistance = locator.path("exitDistance").getNode(root).asDouble();
+        return new Train(id, numCoaches, arrival, destination, state, arrivalTime, location, speed,
+                loaded, loadedTime, exitingNode, exitDistance);
     }
 
     /**
@@ -1324,7 +1456,7 @@ public class StationStatus {
      */
     public static class Builder {
         private final StationMap stationMap;
-        private final List<Tuple2<String[], Function<Node[], ? extends Route>>> builders;
+        private final RoutesBuilder routesBuilder;
         private final double trainFrequency;
         private final double gameDuration;
         private final Random random;
@@ -1345,7 +1477,7 @@ public class StationStatus {
             this.gameDuration = gameDuration;
             this.random = random;
             this.events = events;
-            builders = new ArrayList<>();
+            this.routesBuilder = new RoutesBuilder(stationMap);
         }
 
         /**
@@ -1355,7 +1487,7 @@ public class StationStatus {
          * @param nodes   the nodes
          */
         public Builder addRoute(Function<Node[], ? extends Route> builder, String... nodes) {
-            builders.add(Tuple2.of(nodes, builder));
+            routesBuilder.addRoute(builder, nodes);
             return this;
         }
 
@@ -1363,13 +1495,7 @@ public class StationStatus {
          * Returns the station status by the station map, route builders and trains (if random generator set)
          */
         public StationStatus build() {
-            List<Route> routes1 = builders.stream()
-                    .map(t -> {
-                        Node[] nodes = Arrays.stream(t._1)
-                                .map(stationMap::getNode)
-                                .toArray(Node[]::new);
-                        return t._2.apply(nodes);
-                    }).collect(Collectors.toList());
+            List<Route> routes1 = routesBuilder.build();
             StationStatus stationStatus = StationStatus.create(stationMap, routes1, gameDuration, List.of(), 0, trainFrequency, events);
             if (random != null) {
                 List<Train> trains = new ArrayList<>();

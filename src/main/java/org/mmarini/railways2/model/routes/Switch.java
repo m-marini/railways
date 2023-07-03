@@ -28,6 +28,7 @@
 
 package org.mmarini.railways2.model.routes;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.geometry.Node;
 
@@ -139,6 +140,13 @@ public class Switch extends AbstractSingleNodeRoute {
      */
     public Switch diverging() {
         return through ? diverging(node) : this;
+    }
+
+    @Override
+    public ObjectNode getJson() {
+        ObjectNode result = super.getJson();
+        result.put("through", through);
+        return result;
     }
 
     /**
