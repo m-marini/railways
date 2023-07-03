@@ -28,6 +28,7 @@
 
 package org.mmarini.railways2.model.routes;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.geometry.Edge;
 import org.mmarini.railways2.model.geometry.Node;
@@ -37,6 +38,7 @@ import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static org.mmarini.yaml.Utils.objectMapper;
 
 /**
  * Switches routes between the crossing tracks
@@ -314,6 +316,14 @@ public class DoubleSlipSwitch implements Route {
     @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public ObjectNode getJson() {
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("id", id);
+        result.put("through", through);
+        return result;
     }
 
     @Override

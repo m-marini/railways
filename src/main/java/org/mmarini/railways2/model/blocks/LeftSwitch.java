@@ -47,6 +47,12 @@ import static org.mmarini.railways2.model.RailwayConstants.*;
 
 /**
  * Describes the left switch
+ * <p>
+ * <pre>
+ *                                                   --- Curve(switch.d) --- Junction(d) --- Track(d.diverged) --- (diverged)
+ * (entry) +-- Track(entry.switch) -- Switch(switch) ------------------- Track(switch.through) ------------------- (through)
+ *</pre>
+ * </p>
  */
 public class LeftSwitch extends AbstractBlock {
     public static final List<EdgeBuilderParams> EDGE_BUILDERS = List.of(

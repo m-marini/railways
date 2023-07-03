@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import static java.lang.Math.sqrt;
@@ -70,6 +71,7 @@ import static org.mmarini.railways2.swing.SwingUtils.*;
  */
 public class UIController {
     public static final int DEFAULT_TAB_WITDH = 600;
+    public static final String DUMP_FILENAME = "dump.yml";
     private static final String IMAGE_RESOURCE_NAME = "org/mmarini/railways2/swing/railways.png";
     private static final int FPS = 60;
     private static final Logger logger = LoggerFactory.getLogger(UIController.class);
@@ -104,14 +106,17 @@ public class UIController {
     private final JMenuItem newGameMenu;
     private final JMenuItem exitMenu;
     private final JMenuItem lockMenu;
-    private final JMenuItem stopMenu;
+    private final JMenuItem stopTrainsMenu;
     private final JMenuItem userPreferencesMenu;
     private final JMenuItem aboutMenu;
+    private final JMenuItem dumpMenu;
     private final JCheckBoxMenuItem muteMenu;
     private final JCheckBoxMenuItem autoLockMenu;
+    private final JCheckBoxMenuItem pauseMenu;
     private final JButton newGameButton;
     private final JButton lockButton;
-    private final JButton stopButton;
+    private final JButton stopTrainsButton;
+    private final JToggleButton pauseButton;
     private final JButton userPreferencesButton;
     private final JButton exitButton;
     private final JToggleButton muteButton;
@@ -124,6 +129,8 @@ public class UIController {
     private Configuration configuration;
     private boolean autolock;
     private boolean layoutRequired;
+    private boolean pause;
+    private StationStatus status;
 
     /**
      * Creates the user interface controller
@@ -160,15 +167,18 @@ public class UIController {
         this.exitMenu = createMenuItem("UIController.exitAction");
         this.muteMenu = createCheckBoxMenuItem("UIController.muteAction");
         this.lockMenu = createMenuItem("UIController.lockAction");
-        this.stopMenu = createMenuItem("UIController.stopAction");
+        this.stopTrainsMenu = createMenuItem("UIController.stopAction");
         this.autoLockMenu = createCheckBoxMenuItem("UIController.autoLockAction");
         this.userPreferencesMenu = createMenuItem("UIController.userPreferencesAction");
         this.aboutMenu = createMenuItem("UIController.aboutAction");
+        this.dumpMenu = createMenuItem("UIController.dumpAction");
+        this.pauseMenu = createCheckBoxMenuItem("UIController.pauseAction");
 
         this.newGameButton = createToolBarButton("UIController.newGameAction");
         this.muteButton = createToolBarToggleButton("UIController.muteAction");
         this.lockButton = createToolBarButton("UIController.lockAction");
-        this.stopButton = createToolBarButton("UIController.stopAction");
+        this.stopTrainsButton = createToolBarButton("UIController.stopAction");
+        this.pauseButton = createToolBarToggleButton("UIController.pauseAction");
         this.autoLockButton = createToolBarToggleButton("UIController.autoLockAction");
         this.userPreferencesButton = createToolBarButton("UIController.userPreferencesAction");
         this.exitButton = createToolBarButton("UIController.exitAction");
@@ -229,9 +239,17 @@ public class UIController {
                 .toFlowable(BackpressureStrategy.LATEST)
                 .doOnNext(this::handleLockAction)
                 .subscribe();
-        SwingObservable.actions(stopButton).mergeWith(SwingObservable.actions(stopMenu))
+        SwingObservable.actions(stopTrainsButton).mergeWith(SwingObservable.actions(stopTrainsMenu))
                 .toFlowable(BackpressureStrategy.LATEST)
-                .doOnNext(this::handleStopAction)
+                .doOnNext(this::handleStopTrainAction)
+                .subscribe();
+        SwingObservable.actions(pauseButton).mergeWith(SwingObservable.actions(pauseMenu))
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handlePauseAction)
+                .subscribe();
+        SwingObservable.actions(dumpMenu)
+                .toFlowable(BackpressureStrategy.LATEST)
+                .doOnNext(this::handleDumpAction)
                 .subscribe();
         SwingObservable.actions(userPreferencesButton).mergeWith(SwingObservable.actions(userPreferencesMenu))
                 .toFlowable(BackpressureStrategy.LATEST)
@@ -291,11 +309,14 @@ public class UIController {
          */
         JMenu toolsMenu = new JMenu(Messages.getString("UIController.toolsMenu.name"));
         toolsMenu.setMnemonic(Messages.getString("UIController.toolsMenu.mnemonic").charAt(0));
-        toolsMenu.add(muteMenu);
         toolsMenu.add(lockMenu);
-        toolsMenu.add(stopMenu);
+        toolsMenu.add(stopTrainsMenu);
         toolsMenu.add(autoLockMenu);
+        toolsMenu.add(pauseMenu);
+        toolsMenu.add(new JPopupMenu.Separator());
+        toolsMenu.add(muteMenu);
         toolsMenu.add(userPreferencesMenu);
+        toolsMenu.add(dumpMenu);
         result.add(toolsMenu);
 
         /*
@@ -405,8 +426,9 @@ public class UIController {
         toolBar.add(newGameButton);
         toolBar.add(new JToolBar.Separator());
         toolBar.add(lockButton);
-        toolBar.add(stopButton);
+        toolBar.add(stopTrainsButton);
         toolBar.add(autoLockButton);
+        toolBar.add(pauseButton);
         toolBar.add(new JToolBar.Separator());
         toolBar.add(muteButton);
         toolBar.add(userPreferencesButton);
@@ -519,6 +541,17 @@ public class UIController {
     }
 
     /**
+     * Handles the dump status action
+     *
+     * @param actionEvent the action event
+     */
+    private void handleDumpAction(ActionEvent actionEvent) {
+        simulator.request(UnaryOperator.identity())
+                .doOnSuccess(status -> status.dump(DUMP_FILENAME))
+                .subscribe();
+    }
+
+    /**
      * Handles the exit action
      *
      * @param actionEvent the action event
@@ -534,6 +567,10 @@ public class UIController {
      */
     private void handleGameFinished(StationStatus stationStatus) {
         logger.atDebug().log("Game finished");
+        setPause(false);
+        pauseMenu.setEnabled(false);
+        pauseButton.setEnabled(false);
+        dumpMenu.setEnabled(false);
         ExtendedPerformance perf = stationStatus.getPerformance();
         summaryPanel.setPerformance(perf);
         boolean fame = configuration.isFame(perf);
@@ -605,7 +642,27 @@ public class UIController {
                     } else {
                         simulator.start(status1);
                     }
+                    setPause(false);
+                    pauseMenu.setEnabled(true);
+                    pauseButton.setEnabled(true);
+                    dumpMenu.setEnabled(true);
                 }));
+    }
+
+    /**
+     * Handles the stop game button
+     *
+     * @param actionEvent the action event
+     */
+    private void handlePauseAction(ActionEvent actionEvent) {
+        setPause(!pause);
+        if (pause) {
+            simulator.stop()
+                    .doOnSuccess(status -> this.status = status)
+                    .subscribe();
+        } else {
+            simulator.start(status);
+        }
     }
 
     /**
@@ -684,6 +741,7 @@ public class UIController {
      */
     private void handleSimulationEvent(StationStatus stationStatus) {
         if (simulator.isActive()) {
+            this.status = stationStatus;
             if (stationStatus.isGameFinished()) {
                 simulator.stop().doOnSuccess(this::handleGameFinished)
                         .subscribe();
@@ -713,7 +771,7 @@ public class UIController {
      *
      * @param actionEvent the action event
      */
-    private void handleStopAction(ActionEvent actionEvent) {
+    private void handleStopTrainAction(ActionEvent actionEvent) {
         simulator.request(status -> status.stopTrains());
     }
 
@@ -789,6 +847,9 @@ public class UIController {
         muteMenu.setSelected(mute);
         autoLockButton.setSelected(autolock);
         autoLockMenu.setSelected(autolock);
+        pauseMenu.setEnabled(false);
+        pauseButton.setEnabled(false);
+        dumpMenu.setEnabled(false);
         soundPlayer.setMute(mute);
         soundPlayer.setGain((float) userPreferences.getGain());
         simulator.setSpeed(userPreferences.getSimulationSpeed());
@@ -858,6 +919,17 @@ public class UIController {
     public void run() {
         frame.setVisible(true);
         simulator.setSpeed(1);
+    }
+
+    /**
+     * Set the stop game state
+     *
+     * @param pause true if game is stopped
+     */
+    private void setPause(boolean pause) {
+        this.pause = pause;
+        pauseMenu.setSelected(pause);
+        pauseButton.setSelected(pause);
     }
 
     /**

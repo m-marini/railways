@@ -28,6 +28,7 @@
 
 package org.mmarini.railways2.model.routes;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.geometry.Edge;
 import org.mmarini.railways2.model.geometry.Node;
@@ -35,6 +36,8 @@ import org.mmarini.railways2.model.geometry.Node;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
+import static org.mmarini.yaml.Utils.objectMapper;
 
 /**
  * Defines the junction of different edges by joining different directions
@@ -74,6 +77,15 @@ public interface Route {
      * Returns the identifier
      */
     String getId();
+
+    /**
+     * Returns the dump json node
+     */
+    default ObjectNode getJson() {
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("id", getId());
+        return result;
+    }
 
     /**
      * Returns the nodes

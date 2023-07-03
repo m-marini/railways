@@ -35,6 +35,7 @@ import org.mmarini.railways2.model.StationStatus;
 import org.mmarini.railways2.model.Train;
 import org.mmarini.railways2.model.WithStationStatusTest;
 import org.mmarini.railways2.model.geometry.Curve;
+import org.mmarini.railways2.model.routes.Switch;
 import org.mmarini.yaml.Utils;
 import org.mmarini.yaml.schema.Locator;
 
@@ -45,8 +46,7 @@ import java.util.Random;
 import static java.lang.Math.toRadians;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mmarini.railways2.Matchers.optionalOf;
 import static org.mmarini.railways2.Matchers.pointCloseTo;
 import static org.mmarini.railways2.model.RailwayConstants.*;
@@ -62,7 +62,7 @@ public class DownvilleTest extends WithStationStatusTest {
     @Test
     void build() {
         StationDef station = StationDef.create(root, Locator.root());
-        this.status = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null)
+        this.status = new BlockStationStatusBuilder(station, GAME_DURATION, FREQUENCY, null, null)
                 .build();
         assertEquals("downville", status.getStationMap().getId());
     }
@@ -84,6 +84,23 @@ public class DownvilleTest extends WithStationStatusTest {
     }
 
     @Test
+    void issue89WrongSwicthToggle() {
+        // Given
+        build();
+        status = withTrain()
+                .addTrain(3, "newesel.in", "newesel.out",
+                        "eastLeftSwitch.entry.switch", "eastLeftSwitch.switch", 0)
+                .build();
+
+        // When ...
+        StationStatus status1 = status.toggleSwitch("westLeftSwitch.switch");
+
+        // Then ...
+        Switch sw = status1.getRoute("westLeftSwitch.switch");
+        assertFalse(sw.isThrough());
+    }
+
+    @Test
     void parseYaml() {
         StationDef station = StationDef.create(root, Locator.root());
         assertEquals("downville", station.getId());
@@ -98,7 +115,7 @@ public class DownvilleTest extends WithStationStatusTest {
     void sowerthCurve() {
         // Given ...
         StationDef station = StationDef.create(root, Locator.root());
-        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
+        BlockBuilder builder = new BlockBuilder(station);
 
         // When ...
         OrientedGeometry geo1 = builder.getWorldGeometry("westSignals.2.w");
@@ -115,8 +132,8 @@ public class DownvilleTest extends WithStationStatusTest {
     void sowerthCurve1() {
         // Given ...
         StationDef station = StationDef.create(root, Locator.root());
-        BlockStationBuilder builder = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null);
-        StationStatus status = builder.build();
+        BlockBuilder builder = new BlockBuilder(station);
+        StationStatus status = builder.buildStatus(GAME_DURATION, FREQUENCY, null, null);
 
         // When ...
         Curve w1e2 = status.getStationMap().getEdge("sowerthCurves.1.track");

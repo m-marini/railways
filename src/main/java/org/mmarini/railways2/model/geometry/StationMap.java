@@ -28,21 +28,38 @@
 
 package org.mmarini.railways2.model.geometry;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.mmarini.yaml.schema.Locator;
+import org.mmarini.yaml.schema.Validator;
+
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static org.mmarini.yaml.schema.Validator.nonNegativeNumber;
+import static org.mmarini.yaml.schema.Validator.string;
 
 /**
  * Tracks the nodes of the station map
  */
 public class StationMap {
 
+    public static final Validator DIRECTION_VALIDATOR = Validator.objectPropertiesRequired(Map.of(
+            "edge", string(),
+            "destination", string()
+    ), List.of("edge", "destination"));
+
+    public static final Validator LOCATION_VALIDATOR = Validator.objectPropertiesRequired(Map.of(
+            "edge", string(),
+            "destination", string(),
+            "distance", nonNegativeNumber()
+    ), List.of("edge", "destination", "distance"));
     private final String id;
     private final Map<String, Node> nodeMap;
     private final Map<String, ? extends Edge> edges;
@@ -63,6 +80,19 @@ public class StationMap {
                 .distinct()
                 .collect(Collectors.toMap(Edge::getId, Function.identity()));
         this.bounds = bounds;
+    }
+
+    /**
+     * Returns the direction from json document
+     *
+     * @param root    the document
+     * @param locator the locator
+     */
+    public Direction directionFromJson(JsonNode root, Locator locator) {
+        DIRECTION_VALIDATOR.apply(locator).accept(root);
+        Edge edge = getEdge(locator.path("edge").getNode(root).asText());
+        Node dest = getNode(locator.path("destination").getNode(root).asText());
+        return new Direction(edge, dest);
     }
 
     /**
@@ -133,5 +163,19 @@ public class StationMap {
      */
     public Map<String, Node> getNodeMap() {
         return nodeMap;
+    }
+
+    /**
+     * Returns the direction from json document
+     *
+     * @param root    the document
+     * @param locator the locator
+     */
+    public EdgeLocation locationFromJson(JsonNode root, Locator locator) {
+        LOCATION_VALIDATOR.apply(locator).accept(root);
+        Edge edge = getEdge(locator.path("edge").getNode(root).asText());
+        Node dest = getNode(locator.path("destination").getNode(root).asText());
+        double distance = locator.path("distance").getNode(root).asDouble();
+        return EdgeLocation.create(edge, dest, distance);
     }
 }

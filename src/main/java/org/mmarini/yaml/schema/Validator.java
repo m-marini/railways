@@ -447,6 +447,21 @@ public interface Validator extends Function<Locator, Consumer<JsonNode>> {
     }
 
     /**
+     * Returns the nullable validator
+     *
+     * @param item the item type
+     */
+    static Validator nullable(Validator item) {
+        requireNonNull(item);
+        return locator -> root -> {
+            JsonNode node = locator.getNode(root);
+            if (!node.isNull()) {
+                item.apply(locator).accept(root);
+            }
+        };
+    }
+
+    /**
      *
      */
     static Validator number() {

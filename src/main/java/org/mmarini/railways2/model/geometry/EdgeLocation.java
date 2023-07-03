@@ -28,11 +28,15 @@
 
 package org.mmarini.railways2.model.geometry;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import java.awt.geom.Point2D;
 import java.util.Objects;
 import java.util.StringJoiner;
 
 import static java.util.Objects.requireNonNull;
+import static org.mmarini.yaml.Utils.objectMapper;
 
 /**
  * Stores the location of movement in the edge
@@ -92,6 +96,17 @@ public class EdgeLocation {
      */
     public EdgeLocation setDistance(double distance) {
         return new EdgeLocation(direction, distance);
+    }
+
+    /**
+     * Returns the json node of location
+     */
+    public JsonNode getJsonDump() {
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("edge", direction.getEdge().getId());
+        result.put("destination", direction.getDestination().getId());
+        result.put("distance", distance);
+        return result;
     }
 
     /**

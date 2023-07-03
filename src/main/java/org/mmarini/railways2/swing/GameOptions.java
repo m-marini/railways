@@ -69,7 +69,7 @@ public class GameOptions {
      * @param events the event subscriber
      */
     public Optional<StationStatus> createStatus(Random random, Subscriber<SoundEvent> events) {
-        return GameDialog.loadStation(stationResource, gameDuration * SPM, trainFrequency / SPH, random, events);
+        return GameDialog.loadStatus(stationResource, gameDuration * SPM, trainFrequency / SPH, random, events);
     }
 
     @Override

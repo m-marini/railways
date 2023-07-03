@@ -222,7 +222,7 @@ class StationStatusDoubleSlipSwitchTest extends WithStationStatusTest {
     }
 
     @Test
-    void toggleUnclear() {
+    void toggleTrainInSection() {
         // Given ...
         createStatus(false);
         status = withTrain()

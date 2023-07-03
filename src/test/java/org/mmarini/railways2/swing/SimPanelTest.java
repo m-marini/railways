@@ -31,7 +31,7 @@ package org.mmarini.railways2.swing;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.SimulatorEngineImpl;
 import org.mmarini.railways2.model.StationStatus;
-import org.mmarini.railways2.model.blocks.BlockStationBuilder;
+import org.mmarini.railways2.model.blocks.BlockBuilder;
 import org.mmarini.railways2.model.blocks.StationDef;
 import org.mmarini.yaml.Utils;
 import org.mmarini.yaml.schema.Locator;
@@ -71,10 +71,11 @@ class SimPanelTest {
                 .build();
          */
 
-        StationStatus status3 = new WithTrain(new BlockStationBuilder(StationDef.create(
-                Utils.fromResource("/stations/downville.station.yml"), Locator.root()), GAME_DURATION, FREQUENCY, new Random(SIMULATION_SEED), null).build())
-                .build()
-                .setTime(ENTRY_TIMEOUT);
+        StationStatus status3 = new WithTrain(new BlockBuilder(StationDef.create(
+                Utils.fromResource("/stations/downville.station.yml"), Locator.root()))
+                .buildStatus(GAME_DURATION, FREQUENCY, new Random(SIMULATION_SEED), null)
+                .setTime(ENTRY_TIMEOUT))
+                .build();
         new SimPanelTest(status3).run();
     }
 

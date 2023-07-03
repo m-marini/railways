@@ -31,7 +31,7 @@ package org.mmarini.railways2.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mmarini.railways2.model.blocks.BlockStationBuilder;
+import org.mmarini.railways2.model.blocks.BlockBuilder;
 import org.mmarini.railways2.model.blocks.StationDef;
 import org.mmarini.railways2.swing.WithTrain;
 import org.mmarini.yaml.schema.Locator;
@@ -54,7 +54,7 @@ class StationStatusTrainOnCCTest extends WithStationStatusTest {
     void beforeEach() throws IOException {
         JsonNode root = fromResource("/stations/downville.station.yml");
         StationDef station = StationDef.create(root, Locator.root());
-        status = new BlockStationBuilder(station, GAME_DURATION, FREQUENCY, null, null).build();
+        status = new BlockBuilder(station).buildStatus(GAME_DURATION, FREQUENCY, null, null);
         status = new WithTrain(status)
                 .addTrain(10, "norton.in", "norton.out", "westCentralCross.s5.s9", "westCentralCross.s9", 22.3)
                 .addTrain(10, "sowerth.in", "norton.out", "westCentralTrack6.1.track", "westCentralTrack6.1.e", 92.1)

@@ -34,7 +34,7 @@ import io.reactivex.rxjava3.core.BackpressureStrategy;
 import org.mmarini.Tuple2;
 import org.mmarini.railways2.model.SoundEvent;
 import org.mmarini.railways2.model.StationStatus;
-import org.mmarini.railways2.model.blocks.BlockStationBuilder;
+import org.mmarini.railways2.model.blocks.BlockBuilder;
 import org.mmarini.railways2.model.blocks.StationDef;
 import org.mmarini.railways2.model.geometry.StationMap;
 import org.mmarini.swing.GridLayoutHelper;
@@ -97,8 +97,7 @@ public class GameDialog extends JDialog {
     private static List<Tuple2<String, String>> getStationsDef() {
         return STATION_RESOURCES.stream()
                 .flatMap(resource ->
-                        loadStation(resource, 10, 0.1, null, null)
-                                .map(StationStatus::getStationMap)
+                        loadStation(resource)
                                 .map(StationMap::getId)
                                 .map(id -> Tuple2.of(id, resource))
                                 .stream()
@@ -107,21 +106,36 @@ public class GameDialog extends JDialog {
     }
 
     /**
-     * Returns the station status from resource
+     * Returns the station map from resource
      *
-     * @param resource     the resource name
-     * @param gameDuration the game duration (s)
-     * @param frequency    the train frequency (#/s)
-     * @param random       the random number generator
-     * @param events       the event subscriber
+     * @param resource the resource name
      */
-    static Optional<StationStatus> loadStation(String resource, double gameDuration, double frequency,
-                                               Random random, Subscriber<SoundEvent> events) {
+    static Optional<StationMap> loadStation(String resource) {
         try {
             JsonNode json = fromResource(resource);
             StationDef def = StationDef.create(json, Locator.root());
-            StationStatus result = new BlockStationBuilder(def, gameDuration, frequency, random, events)
-                    .build();
+            StationMap result = new BlockBuilder(def).buildStationMap();
+            return Optional.of(result);
+        } catch (Exception e) {
+            logger.atError().setCause(e).log("Read resource {}", resource);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Returns the station status from resource
+     *
+     * @param resource  the resource name
+     * @param duration  the game duration (s)
+     * @param frequency the train frequency (#/s)
+     * @param random    the random number generator
+     * @param events    the event generator
+     */
+    public static Optional<StationStatus> loadStatus(String resource, double duration, double frequency, Random random, Subscriber<SoundEvent> events) {
+        try {
+            JsonNode json = fromResource(resource);
+            StationDef def = StationDef.create(json, Locator.root());
+            StationStatus result = new BlockBuilder(def).buildStatus(duration, frequency, random, events);
             return Optional.of(result);
         } catch (Exception e) {
             logger.atError().setCause(e).log("Read resource {}", resource);
