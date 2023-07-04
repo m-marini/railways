@@ -288,7 +288,7 @@ public class Train {
      */
     double getExitDistance() {
         return exitDistance;
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     public Train setExitDistance(double exitDistance) {
         return this.exitDistance == exitDistance ? this :
@@ -312,7 +312,7 @@ public class Train {
      */
     public String getId() {
         return id;
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     /**
      * Returns the dump json node
@@ -547,11 +547,17 @@ public class Train {
         // end of edge reached
         if (route instanceof Exit) {
             // exit node reached
-            return Tuple2.of(Optional.of(
+            return context.isExitClear((Exit) route)
+                    ? Tuple2.of(Optional.of(
                             setState(STATE_EXITING)
                                     .setLocation(null)
                                     .setExitingNode((Exit) route)
                                     .setExitDistance(0)),
+                    Performance.running(timeToEndEdge, location.getDistance()))
+                    : Tuple2.of(Optional.of(
+                            setState(STATE_WAITING_FOR_SIGNAL)
+                                    .setLocation(location.setDistance(0))
+                                    .setSpeed(0)),
                     Performance.running(timeToEndEdge, location.getDistance()));
         }
         if (edge instanceof Platform && !loaded) {
@@ -578,7 +584,7 @@ public class Train {
             // Computes the new location
             EdgeLocation newLocation = new EdgeLocation(newDir, newEdge.getLength());
             // Lock signals of new section
-            if (route instanceof Signal && context.isAutolock()) {
+            if (route instanceof Signal && context.isAutoLock()) {
                 context.lockSignals(newDir);
             }
             return Tuple2.of(Optional.of(setSpeed(newSpeed).setLocation(newLocation)),
@@ -613,7 +619,7 @@ public class Train {
     public double speedPhysics(double targetSpeed, double dt) {
         double acc = min(max((targetSpeed - speed) / dt, DEACCELERATION), ACCELERATION);
         return min(speed + acc * dt, MAX_SPEED);
-    }    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
+    }
 
     /**
      * Returns the train started
@@ -740,7 +746,7 @@ public class Train {
         }
     }
 
-
+    public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
 
 
 

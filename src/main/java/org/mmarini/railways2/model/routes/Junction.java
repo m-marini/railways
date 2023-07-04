@@ -28,7 +28,6 @@
 
 package org.mmarini.railways2.model.routes;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.geometry.Node;
 
@@ -37,7 +36,6 @@ import java.util.Map;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
-import static org.mmarini.yaml.Utils.objectMapper;
 
 /**
  * Connects the two edges of a node in both the directions

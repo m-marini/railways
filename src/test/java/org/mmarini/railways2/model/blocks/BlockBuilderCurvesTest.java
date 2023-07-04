@@ -79,6 +79,6 @@ class BlockBuilderCurvesTest {
                 "west.entry", "curves.1.w",
                 "east.entry", "p.1.e");
         StationDef station = StationDef.create("station", orientation, blocks, links);
-        builder= new BlockBuilder(station);
+        builder = new BlockBuilder(station);
     }
 }
