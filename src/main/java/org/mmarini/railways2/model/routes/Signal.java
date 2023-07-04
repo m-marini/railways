@@ -28,7 +28,6 @@
 
 package org.mmarini.railways2.model.routes;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.mmarini.Tuple2;

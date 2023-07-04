@@ -30,6 +30,7 @@ package org.mmarini.railways2.model;
 
 import org.mmarini.railways2.model.geometry.Direction;
 import org.mmarini.railways2.model.geometry.Node;
+import org.mmarini.railways2.model.routes.Exit;
 import org.mmarini.railways2.model.routes.Route;
 
 import java.util.Optional;
@@ -83,9 +84,9 @@ public class SimulationContext {
     }
 
     /**
-     * Returns true if autolock set
+     * Returns true if auto lock set
      */
-    public boolean isAutolock() {
+    public boolean isAutoLock() {
         return status.isAutoLock();
     }
 
@@ -98,6 +99,15 @@ public class SimulationContext {
      */
     public boolean isEntryClear(Train train) {
         return status.isEntryClear(train);
+    }
+
+    /**
+     * Returns true if the exit is clear
+     *
+     * @param exit the exit
+     */
+    public boolean isExitClear(Exit exit) {
+        return status.isExitClear(exit);
     }
 
     /**

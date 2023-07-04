@@ -116,6 +116,21 @@ class StationStatus2DoubleSlipSwitchTest extends WithStationStatusTest {
     }
 
     @Test
+    void toggleCrossing() {
+        // Given ...
+        createStatus(true, true);
+        status = withTrain()
+                .addTrain(3, "a1", "f1", "a1b1", "b1", LENGTH)
+                .build();
+
+        // When ...
+        StationStatus status1 = status.toggleDoubleSlipSwitch("b1");
+
+        // Then ...
+        assertSame(status, status1);
+    }
+
+    @Test
     void toggleToDiverging() {
         // Given ...
         createStatus(true, true);
@@ -139,21 +154,6 @@ class StationStatus2DoubleSlipSwitchTest extends WithStationStatusTest {
         // Then ...
         assertTrue(status1.<DoubleSlipSwitch>getRoute("b1").isThrough());
         verify(events).onNext(SoundEvent.SWITCH);
-    }
-
-    @Test
-    void toggleCrossing() {
-        // Given ...
-        createStatus(true, true);
-        status = withTrain()
-                .addTrain(3, "a1", "f1", "a1b1", "b1", LENGTH)
-                .build();
-
-        // When ...
-        StationStatus status1 = status.toggleDoubleSlipSwitch("b1");
-
-        // Then ...
-        assertSame(status, status1);
     }
 
     @Test

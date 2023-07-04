@@ -57,6 +57,26 @@ class TrainWaitingForSignalTest extends WithStationStatusTest {
     private Subscriber<SoundEvent> events;
 
     @Test
+    void exitingClearing() {
+        // Given the train waiting for exit at exit point and no exiting trains
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("train", 3, "a", "c")
+                        .at("bc", "c", 0)
+                        .waitForSignal())
+                .build();
+
+        // When ...
+        Tuple2<Optional<Train>, Performance> next = train("train").changeState(new SimulationContext(status), 0, DT);
+
+        // Then ...
+        assertEquals(0, next._2.getElapsedTime());
+        assertTrue(next._1.isPresent());
+        Train tt0 = next._1.orElseThrow();
+        assertEquals(Train.STATE_RUNNING, tt0.getState());
+        assertEquals(0, tt0.getSpeed());
+    }
+
+    @Test
     void revertTrain() {
         // Given ...
         status = withTrain()

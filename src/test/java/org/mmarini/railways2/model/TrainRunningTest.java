@@ -57,6 +57,30 @@ class TrainRunningTest extends WithStationStatusTest {
     private Subscriber<SoundEvent> events;
 
     @Test
+    void exitingNotClear() {
+        // Given the exiting train at exit point and an other train exiting the node
+        double distance = 1;
+        status = withTrain()
+                .addTrain(3, "a", "c", "bc", "c", distance)
+                .addTrain(new WithTrain.TrainBuilder("train2", 3, "a", "c")
+                        .exiting("c", 3 * COACH_LENGTH + 1))
+                .build();
+
+        // When ...
+        Tuple2<Optional<Train>, Performance> next = train("TT0").changeState(new SimulationContext(status), 0, DT);
+
+        // Then ...
+        assertEquals(distance / MAX_SPEED, next._2.getElapsedTime());
+        assertEquals(distance, next._2.getTraveledDistance());
+        assertEquals(distance / MAX_SPEED, next._2.getTotalTrainTime());
+        assertTrue(next._1.isPresent());
+        Train tt0 = next._1.orElseThrow();
+        assertEquals(Train.STATE_WAITING_FOR_SIGNAL, tt0.getState());
+        assertEquals(0, tt0.getSpeed());
+        assertThat(tt0.getLocation(), optionalOf(locatedAt("bc", "c", 0)));
+    }
+
+    @Test
     void getStopDistance() {
         // Given ...
         Entry a = route("a");

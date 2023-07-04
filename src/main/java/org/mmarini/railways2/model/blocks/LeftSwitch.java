@@ -51,7 +51,7 @@ import static org.mmarini.railways2.model.RailwayConstants.*;
  * <pre>
  *                                                   --- Curve(switch.d) --- Junction(d) --- Track(d.diverged) --- (diverged)
  * (entry) +-- Track(entry.switch) -- Switch(switch) ------------------- Track(switch.through) ------------------- (through)
- *</pre>
+ * </pre>
  * </p>
  */
 public class LeftSwitch extends AbstractBlock {

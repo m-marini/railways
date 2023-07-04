@@ -28,18 +28,11 @@
 
 package org.mmarini.railways2.model.geometry;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.mmarini.yaml.schema.Locator;
-import org.mmarini.yaml.schema.Validator;
-
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
-import static org.mmarini.yaml.schema.Validator.string;
 
 /**
  * Defines the travel direction of an edge
