@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Issue #89: Wrong switch toggle
 - Issue #90: Duplicate key createTrainByExit
+- Issue #93: Wrong clear exit section
 
 ## [2.0.0] 2023-06-29
 

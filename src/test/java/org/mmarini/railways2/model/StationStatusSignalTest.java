@@ -169,8 +169,8 @@ class StationStatusSignalTest extends WithStationStatusTest {
                 .build();
 
         // When ... Than ...
-        assertTrue(status.isSectionClear(edge("ab")));
-        assertFalse(status.isSectionClear(edge("bc")));
+        assertTrue(status.isSectionClear(this.<Edge>edge("ab")));
+        assertFalse(status.isSectionClear(this.<Edge>edge("bc")));
     }
 
     @Test

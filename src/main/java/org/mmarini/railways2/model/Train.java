@@ -312,7 +312,7 @@ public class Train {
      */
     public String getId() {
         return id;
-    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
+    }
 
     /**
      * Returns the dump json node
@@ -332,7 +332,7 @@ public class Train {
         result.put("exitingNode", Optional.ofNullable(exitingNode).map(Exit::getId).orElse(null));
         result.put("exitDistance", this.exitDistance);
         return result;
-    }
+    }    public static final State STATE_RUNNING = new State("RUNNING", Train::running);
 
     /**
      * Returns the length of train (m)
@@ -746,9 +746,9 @@ public class Train {
         }
     }
 
+
+
     public static final State STATE_ENTERING = new State("ENTERING", Train::entering);
-
-
 
 
     public static final State STATE_WAITING_FOR_SIGNAL = new State("WAITING_FOR_SIGNAL", Train::waitingForSignal);

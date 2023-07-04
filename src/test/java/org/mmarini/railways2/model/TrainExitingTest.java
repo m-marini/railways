@@ -31,6 +31,7 @@ package org.mmarini.railways2.model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mmarini.Tuple2;
+import org.mmarini.railways2.model.geometry.Edge;
 import org.mmarini.railways2.model.geometry.StationBuilder;
 import org.mmarini.railways2.model.geometry.StationMap;
 import org.mmarini.railways2.model.routes.Entry;
@@ -43,8 +44,7 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mmarini.railways2.model.RailwayConstants.*;
 
 class TrainExitingTest extends WithStationStatusTest {
@@ -114,6 +114,25 @@ class TrainExitingTest extends WithStationStatusTest {
         assertEquals(0, perf.getWrongOutgoingTrainNumber());
         assertEquals(0, perf.getTrainStopNumber());
         assertEquals(0, perf.getTraveledDistance());
+    }
+
+    @Test
+    void isExitClear() {
+        // Given the exiting train at 10 m from exit point
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("train2", 3, "a", "c")
+                        .exiting("c", 10d))
+                .build();
+
+        // When ...
+        // Then the exit should not bw clear
+        assertFalse(status.isExitClear(route("c")));
+
+        // And the section should be not clear
+        assertFalse(status.isSectionClear(this.<Edge>edge("bc")));
+
+        // And the signal should be not clear
+        assertFalse(status.isNextRouteClear(direction("ab", "b")));
     }
 
     @Test
