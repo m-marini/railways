@@ -102,6 +102,29 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
     }
 
     @Test
+    void createTrainByExitExiting() {
+        // Give ...
+        status = withTrain()
+                .addTrain(new WithTrain.TrainBuilder("ex", 3, "a", "b")
+                        .exiting("b", 3 * COACH_LENGTH - 1))
+                .addTrain(3, "a", "b", "cd", "d", 0)
+                .build();
+
+        // When ...
+        Map<Section, Train> map = status.createTrainBySection();
+
+        // Than ...
+        assertNotNull(map);
+        assertEquals(2, map.size());
+        assertThat(map, hasEntry(
+                hasProperty("id", equalTo("ab")),
+                equalTo(train("ex"))));
+        assertThat(map, hasEntry(
+                hasProperty("id", equalTo("cd")),
+                equalTo(train("TT1"))));
+    }
+
+    @Test
     void createTrainBySection() {
         // Give ...
         status = withTrain()
@@ -120,28 +143,6 @@ class StationStatus2SectionsTest extends WithStationStatusTest {
         assertThat(map, hasEntry(
                 hasProperty("id", equalTo("ab")),
                 equalTo(train("TT0"))));
-        assertThat(map, hasEntry(
-                hasProperty("id", equalTo("cd")),
-                equalTo(train("TT1"))));
-    }
-    @Test
-    void createTrainByExitExiting() {
-        // Give ...
-        status = withTrain()
-                .addTrain(new WithTrain.TrainBuilder("ex", 3, "a", "b")
-                        .exiting("b", 3 * COACH_LENGTH - 1))
-                .addTrain(3, "a", "b", "cd", "d", 0)
-                .build();
-
-        // When ...
-        Map<Section, Train> map = status.createTrainBySection();
-
-        // Than ...
-        assertNotNull(map);
-        assertEquals(2, map.size());
-        assertThat(map, hasEntry(
-                hasProperty("id", equalTo("ab")),
-                equalTo(train("ex"))));
         assertThat(map, hasEntry(
                 hasProperty("id", equalTo("cd")),
                 equalTo(train("TT1"))));
