@@ -387,14 +387,27 @@ public class StationStatus {
      * Returns the train by section
      */
     Map<Section, Train> createTrainBySection() {
-        return getSections().stream()
-                .flatMap(section ->
-                        section.getEdges().stream()
-                                .flatMap(edge -> getTrain(edge).stream())
-                                .findAny()
-                                .map(train -> Tuple2.of(section, train))
-                                .stream()
-                ).collect(Tuple2.toMap());
+        // Gets the running trains by section
+        Stream<Tuple2<Section, Train>> trainsInStation = getSections().stream()
+                .flatMap(section -> section.getEdges().stream()
+                        .flatMap(edge -> getTrain(edge).stream())
+                        .findAny()
+                        .map(train -> Tuple2.of(section, train))
+                        .stream()
+                );
+        // Gets the exiting trains by section
+        Stream<Tuple2<Section, Train>> exitingTrains = trains.stream()
+                // Filters the exiting train no yet completely gone
+                .filter(train -> STATE_EXITING.equals(train.getState())
+                        && train.getExitDistance() < train.getLength())
+                .flatMap(train ->
+                        // Find exiting sections
+                        getSection(train.getExitingNode().getNodes().get(0).getEdges().get(0))
+                                .map(section -> Tuple2.of(section, train))
+                                .stream());
+
+        return Stream.concat(trainsInStation, exitingTrains).collect(Tuple2.toMap());
+
     }
 
     /**
@@ -911,14 +924,13 @@ public class StationStatus {
     }
 
     /**
-     * Returns true if the status is consistent (no crossing sectino with trains)
+     * Returns true if the status is consistent (no crossing section with trains)
      */
     boolean isConsistent() {
-        boolean consistent = !getSections().stream()
+        return getSections().stream()
                 .filter(this::isSectionWithTrain)
-                .anyMatch(section -> section.getCrossingSections().stream()
+                .noneMatch(section -> section.getCrossingSections().stream()
                         .anyMatch(this::isSectionWithTrain));
-        return consistent;
     }
 
     /**
@@ -1020,21 +1032,28 @@ public class StationStatus {
     }
 
     /**
+     * Returns true if the section is clear (no transiting train) and no trains is transiting in the crossing sections
+     *
+     * @param section the section
+     */
+    public boolean isSectionClear(Section section) {
+        boolean trainInSection = getTrain(section).isPresent();
+        if (trainInSection) {
+            return false;
+        }
+        boolean trainInCrossingSection = section.getCrossingSections().stream()
+                .anyMatch(crossSection -> getTrain(crossSection).isPresent());
+        return !trainInCrossingSection;
+    }
+
+    /**
      * Returns true if the section containing the edge is clear (no transiting train) and no trains is transiting in the crossing sections
      *
      * @param edge the edge
      */
     public boolean isSectionClear(Edge edge) {
         // Searches section
-        return getSection(edge)
-                // Filter for train in the section
-                .filter(section -> getTrain(section).isEmpty())
-                .filter(section ->
-                        // Filter for train in crossing sections
-                        section.getCrossingSections().stream()
-                                .noneMatch(crossSection -> getTrain(crossSection).isPresent())
-                )
-                .isPresent();
+        return getSection(edge).stream().anyMatch(this::isSectionClear);
     }
 
     /**

@@ -139,7 +139,7 @@ public class TrainTableModel extends AbstractTableModel {
                 .or(() ->
                         Optional.of(train.getState().equals(Train.STATE_ENTERING) ?
                                 train.getArrival().getId() :
-                                train.getDestination().getId()))
+                                train.getExitingNode().getId()))
                 .map(id -> StationLabels.getLabel(stationId, id))
                 .orElse(UNKONWN_STRING);
     }

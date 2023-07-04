@@ -69,7 +69,7 @@ public class StationStatus2CrossExitsTest extends WithStationStatusTest {
                 .build();
 
         // When ... Then ...
-        assertFalse(status.isSectionClear(edge("gh")));
-        assertFalse(status.isSectionClear(edge("bc")));
+        assertFalse(status.isSectionClear(this.<Edge>edge("gh")));
+        assertFalse(status.isSectionClear(this.<Edge>edge("bc")));
     }
 }
